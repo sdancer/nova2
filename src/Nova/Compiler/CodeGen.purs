@@ -9,7 +9,7 @@ import Data.String as String
 import Data.String.CodeUnits as SCU
 import Data.Set (Set)
 import Data.Set as Set
-import Data.Foldable (foldr)
+import Data.Foldable (foldr, foldl)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
 
 -- | Code generation context
@@ -95,11 +95,11 @@ genFunction ctx func =
               body <> "\n" <>
               "  end"
          else
-           -- Generate guarded function using cond expression
-           let guardClauses = map (genGuardedExpr ctxWithParams 4) func.guards
-               condExpr = "    cond do\n" <> intercalate "\n" guardClauses <> "\n    end"
+           -- Generate guarded function
+           -- Check if first guard has pattern guards - needs special handling
+           let bodyCode = genGuardedFunctionBody ctxWithParams 2 func.guards
            in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
-              condExpr <> "\n" <>
+              bodyCode <> "\n" <>
               "  end"
 
 -- | Handle point-free function aliases like: dropNewlines = skipNewlines
@@ -147,6 +147,115 @@ isPartialAppOfArity2 (ExprApp (ExprQualified "Array" fn) _) =
 isPartialAppOfArity2 (ExprApp (ExprVar fn) _) =
   fn == "filter" || fn == "map" || fn == "find" || fn == "any" || fn == "all"
 isPartialAppOfArity2 _ = false
+
+-- | Generate the body of a guarded function
+-- | When the first guard has pattern guards, generate case expressions
+-- | Otherwise use cond for all guards
+genGuardedFunctionBody :: GenCtx -> Int -> Array GuardedExpr -> String
+genGuardedFunctionBody ctx indent guards =
+  case Array.uncons guards of
+    Nothing -> ind indent <> "nil"  -- No guards, shouldn't happen
+    Just { head: firstGuard, tail: restGuards } ->
+      let patGuards = Array.filter isPatGuard firstGuard.guards
+          exprGuards = Array.filter (\g -> not (isPatGuard g)) firstGuard.guards
+      in if Array.null patGuards
+         then
+           -- No pattern guards in first clause, use simple cond for all
+           let guardClauses = map (genGuardedExprForCond ctx (indent + 1)) guards
+           in ind indent <> "cond do\n" <> intercalate "\n" guardClauses <> "\n" <> ind indent <> "end"
+         else
+           -- First clause has pattern guards - generate nested case
+           genPatternGuardCase ctx indent firstGuard restGuards
+  where
+    isPatGuard (GuardPat _ _) = true
+    isPatGuard _ = false
+
+-- | Generate a pattern guard as a case expression with fallthrough to remaining guards
+genPatternGuardCase :: GenCtx -> Int -> GuardedExpr -> Array GuardedExpr -> String
+genPatternGuardCase ctx indent firstGuard restGuards =
+  let patGuards = Array.filter isPatGuard firstGuard.guards
+      exprGuards = Array.filter (\g -> not (isPatGuard g)) firstGuard.guards
+      -- Build the case statement(s) for pattern guards
+      -- For now, handle the common case of a single pattern guard
+  in case patGuards of
+    [GuardPat pat scrutineeExpr] ->
+      let scrutinee = genExprCtx ctx 0 scrutineeExpr
+          patStr = genPattern pat
+          -- Add variables from pattern to context
+          ctxWithPat = addLocalsFromPattern pat ctx
+          bodyExpr = genExprCtx ctxWithPat 0 firstGuard.body
+          -- Generate the when clause if there are expression guards
+          whenClause = if Array.null exprGuards
+                       then ""
+                       else " when " <> genGuardClausesSimple ctxWithPat exprGuards
+          -- Generate fallthrough with remaining guards
+          fallthrough = if Array.null restGuards
+                        then ind (indent + 2) <> "nil"
+                        else genGuardedFunctionBody ctx (indent + 2) restGuards
+      in ind indent <> "case " <> scrutinee <> " do\n" <>
+         ind (indent + 1) <> patStr <> whenClause <> " ->\n" <>
+         ind (indent + 2) <> bodyExpr <> "\n" <>
+         ind (indent + 1) <> "_ ->\n" <>
+         fallthrough <> "\n" <>
+         ind indent <> "end"
+    -- Multiple pattern guards - chain them
+    _ ->
+      -- Fall back to generating nested cases for multiple pattern guards
+      genNestedPatternGuards ctx indent patGuards exprGuards firstGuard.body restGuards
+  where
+    isPatGuard (GuardPat _ _) = true
+    isPatGuard _ = false
+
+-- | Generate nested case statements for multiple pattern guards
+genNestedPatternGuards :: GenCtx -> Int -> Array GuardClause -> Array GuardClause -> Expr -> Array GuardedExpr -> String
+genNestedPatternGuards ctx indent patGuards exprGuards body restGuards =
+  case Array.uncons patGuards of
+    Nothing ->
+      -- No more pattern guards, check expression guards and emit body
+      if Array.null exprGuards
+      then genExprCtx ctx indent body
+      else
+        let fallthrough = if Array.null restGuards
+                          then ind (indent + 1) <> "nil"
+                          else genGuardedFunctionBody ctx (indent + 1) restGuards
+        in ind indent <> "if " <> genGuardClausesSimple ctx exprGuards <> " do\n" <>
+           genExprCtx ctx (indent + 1) body <> "\n" <>
+           ind indent <> "else\n" <>
+           fallthrough <> "\n" <>
+           ind indent <> "end"
+    Just { head: GuardPat pat scrutineeExpr, tail: remainingPatGuards } ->
+      let scrutinee = genExprCtx ctx 0 scrutineeExpr
+          patStr = genPattern pat
+          ctxWithPat = addLocalsFromPattern pat ctx
+          innerCode = genNestedPatternGuards ctxWithPat (indent + 2) remainingPatGuards exprGuards body restGuards
+          fallthrough = if Array.null restGuards
+                        then ind (indent + 1) <> "_ -> nil"
+                        else ind (indent + 1) <> "_ ->\n" <> genGuardedFunctionBody ctx (indent + 2) restGuards
+      in ind indent <> "case " <> scrutinee <> " do\n" <>
+         ind (indent + 1) <> patStr <> " ->\n" <>
+         innerCode <> "\n" <>
+         fallthrough <> "\n" <>
+         ind indent <> "end"
+    Just { head: GuardExpr _, tail: _ } ->
+      -- Expression guard in pattern guard list - shouldn't happen but handle gracefully
+      genGuardedFunctionBody ctx indent restGuards
+
+-- | Generate guard clauses as a simple boolean expression (for when clauses)
+genGuardClausesSimple :: GenCtx -> Array GuardClause -> String
+genGuardClausesSimple ctx clauses =
+  let exprs = Array.mapMaybe extractExprGuard clauses
+  in intercalate " and " (map (\e -> genExprCtx ctx 0 e) exprs)
+  where
+    extractExprGuard (GuardExpr e) = Just e
+    extractExprGuard _ = Nothing
+
+-- | Generate a guarded expression clause for cond (no pattern guards)
+genGuardedExprForCond :: GenCtx -> Int -> GuardedExpr -> String
+genGuardedExprForCond ctx indent ge =
+  let exprGuards = ge.guards
+      bodyExpr = genExprCtx ctx 0 ge.body
+      guardExpr = genGuardClauses ctx exprGuards
+  in ind indent <> guardExpr <> " ->\n" <> ind (indent + 1) <> bodyExpr
 
 -- | Generate a guarded expression clause for cond
 -- | Pattern guards need special handling - they become nested case expressions
@@ -222,6 +331,15 @@ genPattern (PatCons head tail) =
 genPattern (PatAs name pat) =
   genPattern pat <> " = " <> snakeCase name
 genPattern (PatParens p) = "(" <> genPattern p <> ")"
+
+-- | Generate chained application for curried functions: f a b -> f.(a).(b)
+genChainedApp :: String -> Array Expr -> GenCtx -> Int -> String
+genChainedApp funcName args ctx indent =
+  case Array.uncons args of
+    Nothing -> funcName  -- No args
+    Just { head: firstArg, tail: restArgs } ->
+      let firstApp = funcName <> ".(" <> genExpr' ctx indent firstArg <> ")"
+      in foldl (\acc arg -> acc <> ".(" <> genExpr' ctx indent arg <> ")") firstApp restArgs
 
 -- | Collect arguments from curried application
 collectArgs :: Expr -> { func :: Expr, args :: Array Expr }
@@ -403,10 +521,10 @@ typesModuleFuncArity name =
   else 1  -- Default to 1
 
 typesArity1Funcs :: Array String
-typesArity1Funcs = ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList"]
+typesArity1Funcs = ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
 
 typesArity2Funcs :: Array String
-typesArity2Funcs = ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tTuple", "tMap", "extendEnv", "lookupEnv", "freshVar", "generalize", "instantiate"]
+typesArity2Funcs = ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "extendEnv", "lookupEnv", "freshVar", "generalize", "instantiate"]
 
 -- | Functions from Nova.Compiler.Unify module
 isUnifyModuleFunc :: String -> Boolean
@@ -467,17 +585,19 @@ translateQualified mod name =
 
 -- | Generate a partial application wrapper
 -- | When a function with `arity` args is called with `numArgs` args,
--- | generate a closure for the remaining args
+-- | generate a curried closure for the remaining args
 genPartialApp :: String -> String -> Int -> Int -> String
 genPartialApp funcName appliedArgs numArgs arity =
   let remaining = arity - numArgs
       -- Generate parameter names for remaining args
       extraParams = map (\i -> "__p" <> show i <> "__") (Array.range 0 (remaining - 1))
-      extraParamsStr = intercalate ", " extraParams
+      -- Generate curried lambda headers: fn __p0__ -> fn __p1__ -> ...
+      curriedHeader = intercalate " " (map (\p -> "fn " <> p <> " ->") extraParams)
+      curriedEnds = intercalate "" (map (\_ -> " end") extraParams)
       allArgsStr = if numArgs == 0
-                   then extraParamsStr
-                   else appliedArgs <> ", " <> extraParamsStr
-  in "fn " <> extraParamsStr <> " -> " <> funcName <> "(" <> allArgsStr <> ") end"
+                   then intercalate ", " extraParams
+                   else appliedArgs <> ", " <> intercalate ", " extraParams
+  in curriedHeader <> " " <> funcName <> "(" <> allArgsStr <> ")" <> curriedEnds
 
 -- | Generate a data constructor application with proper arity
 genConstructorApp :: GenCtx -> Int -> String -> Array Expr -> String
@@ -660,12 +780,24 @@ genExpr' ctx indent (ExprApp f arg) =
               else "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"  -- More args than expected
       else if isPreludeFunc n
       then "Nova.Runtime." <> snakeCase n <> "(" <> argsS <> ")"
-      else snakeCase n <> ".(" <> argsS <> ")"
+      else
+        -- For local variables (lambdas), use chained application for curried calls
+        -- f a b -> f.(a).(b)
+        genChainedApp (snakeCase n) as c i
 
 genExpr' ctx indent (ExprLambda pats body) =
+  -- Generate curried lambda: \a b -> x becomes fn a -> fn b -> x end end
+  -- This is necessary for proper partial application
   let ctxWithParams = foldr addLocalsFromPattern ctx pats
-      params = intercalate ", " (map genPattern pats)
-  in "fn " <> params <> " -> " <> genExpr' ctxWithParams indent body <> " end"
+  in genCurriedLambda ctxWithParams indent pats body
+  where
+    genCurriedLambda :: GenCtx -> Int -> Array Pattern -> Expr -> String
+    genCurriedLambda c i ps b = case Array.uncons ps of
+      Nothing -> genExpr' c i b  -- No params, just body
+      Just { head: p, tail: rest } ->
+        if Array.null rest
+        then "fn " <> genPattern p <> " -> " <> genExpr' c i b <> " end"
+        else "fn " <> genPattern p <> " -> " <> genCurriedLambda c i rest b <> " end"
 
 genExpr' ctx indent (ExprLet binds body) =
   let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
@@ -954,6 +1086,9 @@ genMergedFunction ctx indent name arity clauses isRecursive =
   let -- Generate parameter names: __arg0__, __arg1__, etc.
       argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
       argsStr = intercalate ", " argNames
+      -- Generate curried lambda headers: fn a -> fn b -> ...
+      curriedLambdaHeader = intercalate " " (map (\a -> "fn " <> a <> " ->") argNames)
+      curriedLambdaEnds = intercalate "" (map (\_ -> " end") argNames)
       -- Generate case expression matching on tuple of args
       scrutinee = if arity == 1
                   then Array.head argNames # fromMaybe "__arg0__"
@@ -966,10 +1101,10 @@ genMergedFunction ctx indent name arity clauses isRecursive =
         4 -> "Nova.Runtime.fix4"
         _ -> "Nova.Runtime.fix5"
   in if isRecursive
-     then ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> fn " <> argsStr <> " -> case " <> scrutinee <> " do\n" <>
-          caseBody <> "\n" <> ind indent <> "end end end)"
-     else ind indent <> snakeCase name <> " = fn " <> argsStr <> " -> case " <> scrutinee <> " do\n" <>
-          caseBody <> "\n" <> ind indent <> "end end"
+     then ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> " <> curriedLambdaHeader <> " case " <> scrutinee <> " do\n" <>
+          caseBody <> "\n" <> ind indent <> "end" <> curriedLambdaEnds <> " end)"
+     else ind indent <> snakeCase name <> " = " <> curriedLambdaHeader <> " case " <> scrutinee <> " do\n" <>
+          caseBody <> "\n" <> ind indent <> "end" <> curriedLambdaEnds
 
 -- | Generate case clauses for merged function
 genMergedCaseClauses :: GenCtx -> Int -> Int -> Array { patterns :: Array Pattern, body :: Expr } -> String
@@ -1056,11 +1191,12 @@ genLetBindCtx ctx indent bind =
             3 -> "Nova.Runtime.fix3"
             4 -> "Nova.Runtime.fix4"
             _ -> "Nova.Runtime.fix5"
-          -- Generate lambda that takes the recursive function as first arg
+          -- Generate curried lambda: fn a -> fn b -> ... body ... end end
           ctxWithParams = foldr addLocalsFromPattern ctx pats
-          params = intercalate ", " (map genPattern pats)
+          curriedLambdaHeader = intercalate " " (map (\p -> "fn " <> genPattern p <> " ->") pats)
+          curriedLambdaEnds = intercalate "" (map (\_ -> " end") pats)
           bodyCode = genExpr' ctxWithParams indent body
-      in ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> fn " <> params <> " -> " <> bodyCode <> " end end)"
+      in ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> " <> curriedLambdaHeader <> " " <> bodyCode <> " " <> curriedLambdaEnds <> " end)"
     -- Non-recursive binding: normal generation
     _ -> ind indent <> genPattern bind.pattern <> " = " <> genExpr' ctx indent bind.value
 

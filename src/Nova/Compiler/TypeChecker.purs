@@ -1003,10 +1003,12 @@ checkModule env decls =
 collectTypeAliases :: Array Declaration -> Map.Map String Type
 collectTypeAliases decls = Array.foldl collect Map.empty decls
   where
-    collect m (DeclTypeAlias ta)
-      | Array.null ta.typeVars = Map.insert ta.name (typeExprToType Map.empty ta.ty) m
-      | otherwise = m  -- Skip parameterized aliases here
-    collect m _ = m
+    collect m decl = case decl of
+      DeclTypeAlias ta ->
+        if Array.null ta.typeVars
+        then Map.insert ta.name (typeExprToType Map.empty ta.ty) m
+        else m  -- Skip parameterized aliases here
+      _ -> m
 
 -- | Collect parameterized type aliases into a Map String TypeAliasInfo
 collectParamTypeAliases :: Array Declaration -> Map.Map String TypeAliasInfo
@@ -1024,16 +1026,16 @@ processNonFunctions env decls =
       aliasMap = collectTypeAliases decls
       paramAliasMap = collectParamTypeAliases decls
       -- Also add aliases to env for other purposes
+      processTypeAlias e decl = case decl of
+        DeclTypeAlias ta -> checkTypeAlias e ta
+        _ -> e
       env1 = Array.foldl processTypeAlias env decls
       -- Phase 2: Process data types (with type aliases available)
-      env2 = Array.foldl (processDataType aliasMap paramAliasMap) env1 decls
+      processDataType e decl = case decl of
+        DeclDataType dt -> checkDataTypeWithAliases aliasMap e dt
+        _ -> e
+      env2 = Array.foldl processDataType env1 decls
   in env2
-  where
-    processTypeAlias e (DeclTypeAlias ta) = checkTypeAlias e ta
-    processTypeAlias e _ = e
-
-    processDataType aliasM paramAliasM e (DeclDataType dt) = checkDataTypeWithAliases aliasM e dt
-    processDataType _ _ e _ = e
 
 -- | Add placeholder types for all functions
 -- Uses type signature if available, otherwise creates a fresh type variable
@@ -1043,74 +1045,75 @@ addFunctionPlaceholders env decls =
       aliasMap = collectTypeAliases decls
       paramAliasMap = collectParamTypeAliases decls
       -- Collect standalone type signatures into a map
+      collectSig m decl = case decl of
+        DeclTypeSig sig -> Map.insert sig.name sig.ty m
+        _ -> m
       sigMap = Array.foldl collectSig Map.empty decls
       -- Add placeholders for all functions
-  in Array.foldl (addPlaceholder aliasMap paramAliasMap sigMap) env decls
-  where
-    collectSig m (DeclTypeSig sig) = Map.insert sig.name sig.ty m
-    collectSig m _ = m
-
-    addPlaceholder aliasM paramAliasM sigs e (DeclFunction func) =
-      -- First check embedded type signature in the function (func.typeSignature is Maybe TypeSignature)
-      case func.typeSignature of
-        Just sig ->
-          -- sig is a TypeSignature record with { name, typeVars, constraints, ty }
-          let ty = typeExprToTypeWithAllAliases aliasM paramAliasM Map.empty sig.ty
-              scheme = mkScheme [] ty
-          in extendEnv e func.name scheme
-        Nothing ->
-          -- Then check standalone signatures
-          case Map.lookup func.name sigs of
-            Just tyExpr ->
-              let ty = typeExprToTypeWithAllAliases aliasM paramAliasM Map.empty tyExpr
+      addPlaceholder e decl = case decl of
+        DeclFunction func ->
+          -- First check embedded type signature in the function (func.typeSignature is Maybe TypeSignature)
+          case func.typeSignature of
+            Just sig ->
+              -- sig is a TypeSignature record with { name, typeVars, constraints, ty }
+              let ty = typeExprToTypeWithAllAliases aliasMap paramAliasMap Map.empty sig.ty
                   scheme = mkScheme [] ty
               in extendEnv e func.name scheme
             Nothing ->
-              -- No signature, add fresh type variable
-              let Tuple tv e' = freshVar e ("fn_" <> func.name)
-              in extendEnv e' func.name (mkScheme [] (TyVar tv))
-    addPlaceholder _ _ _ e _ = e
+              -- Then check standalone signatures
+              case Map.lookup func.name sigMap of
+                Just tyExpr ->
+                  let ty = typeExprToTypeWithAllAliases aliasMap paramAliasMap Map.empty tyExpr
+                      scheme = mkScheme [] ty
+                  in extendEnv e func.name scheme
+                Nothing ->
+                  -- No signature, add fresh type variable
+                  let Tuple tv e' = freshVar e ("fn_" <> func.name)
+                  in extendEnv e' func.name (mkScheme [] (TyVar tv))
+        _ -> e
+  in Array.foldl addPlaceholder env decls
 
 -- | Type check all function bodies
 -- Handles multi-clause functions by merging adjacent declarations with the same name
 checkFunctionBodies :: Env -> Array Declaration -> Either TCError Env
 checkFunctionBodies env decls =
   let mergedDecls = mergeMultiClauseFunctions decls
+      go e ds = case Array.uncons ds of
+        Nothing -> Right e
+        Just { head: DeclFunction func, tail: rest } ->
+          case checkFunction e func of
+            Left err -> Left err
+            Right r -> go r.env rest
+        Just { head: _, tail: rest } -> go e rest
   in go env mergedDecls
-  where
-    go e [] = Right e
-    go e ds = case Array.uncons ds of
-      Nothing -> Right e
-      Just { head: DeclFunction func, tail: rest } ->
-        case checkFunction e func of
-          Left err -> Left err
-          Right r -> go r.env rest
-      Just { head: _, tail: rest } -> go e rest
 
 -- | Merge adjacent function declarations with the same name into single functions
 -- Converts: f (Pat1) = body1; f (Pat2) = body2
 -- Into:     f x = case x of Pat1 -> body1; Pat2 -> body2
 mergeMultiClauseFunctions :: Array Declaration -> Array Declaration
-mergeMultiClauseFunctions decls = Array.fromFoldable (go (Array.toUnfoldable decls) [])
+mergeMultiClauseFunctions decls = goMerge decls []
   where
-    go :: List Declaration -> Array Declaration -> List Declaration
-    go Nil acc = List.fromFoldable (Array.reverse acc)
-    go (Cons d rest) acc = case d of
-      DeclFunction func ->
-        -- Collect all adjacent functions with the same name
-        let Tuple sameName remaining = collectSameName func.name rest Nil
-            allClauses = Array.cons func (Array.fromFoldable sameName)
-        in if Array.length allClauses > 1
-           then go remaining (Array.cons (DeclFunction (mergeClausesIntoOne allClauses)) acc)
-           else go rest (Array.cons d acc)
-      _ -> go rest (Array.cons d acc)
+    goMerge ds acc = case Array.uncons ds of
+      Nothing -> Array.reverse acc
+      Just { head: d, tail: rest } -> case d of
+        DeclFunction func ->
+          -- Collect all adjacent functions with the same name
+          let { sameName, remaining } = collectSameName func.name rest []
+              allClauses = Array.cons func sameName
+          in if Array.length allClauses > 1
+             then goMerge remaining (Array.cons (DeclFunction (mergeClausesIntoOne allClauses)) acc)
+             else goMerge rest (Array.cons d acc)
+        _ -> goMerge rest (Array.cons d acc)
 
-    -- Collect adjacent DeclFunction with same name
-    collectSameName :: String -> List Declaration -> List FunctionDeclaration -> Tuple (List FunctionDeclaration) (List Declaration)
-    collectSameName name Nil acc = Tuple acc Nil
-    collectSameName name (Cons (DeclFunction f) rest) acc
-      | f.name == name = collectSameName name rest (List.Cons f acc)
-    collectSameName _ remaining acc = Tuple acc remaining
+    -- Collect adjacent DeclFunction with same name (using arrays)
+    collectSameName :: String -> Array Declaration -> Array FunctionDeclaration -> { sameName :: Array FunctionDeclaration, remaining :: Array Declaration }
+    collectSameName name ds acc = case Array.uncons ds of
+      Nothing -> { sameName: acc, remaining: [] }
+      Just { head: DeclFunction f, tail: rest } ->
+        if f.name == name
+        then collectSameName name rest (Array.snoc acc f)
+        else { sameName: acc, remaining: ds }
+      Just _ -> { sameName: acc, remaining: ds }
 
     -- Merge multiple function clauses into one with case expression
     mergeClausesIntoOne :: Array FunctionDeclaration -> FunctionDeclaration

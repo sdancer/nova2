@@ -582,8 +582,8 @@ parseSimplePattern tokens =
     ]
     tokens
 
--- | Parse a qualified constructor pattern WITHOUT arguments (simple pattern context)
--- | e.g., Ast.PatWildcard as a function parameter
+-- | Parse a constructor pattern WITHOUT arguments (simple pattern context)
+-- | Handles both qualified (Ast.PatWildcard) and unqualified (PatWildcard) constructors
 parseQualifiedConstructorPatternSimple :: Array Token -> ParseResult Ast.Pattern
 parseQualifiedConstructorPatternSimple tokens =
   let ts = skipNewlines tokens
@@ -597,10 +597,15 @@ parseQualifiedConstructorPatternSimple tokens =
             -- We have "Identifier." - parse full qualified name
             Tuple name rest <- parseQualifiedConstructorName ts
             success (Ast.PatCon name []) rest
-          else failure "Expected qualified constructor pattern"
-        Nothing -> failure "Expected qualified constructor pattern"
-      else failure "Expected qualified constructor pattern"
-    Nothing -> failure "Expected qualified constructor pattern"
+          else
+            -- Unqualified constructor pattern (e.g., PatWildcard, Nothing, True)
+            -- This handles nullary constructors used as function parameters
+            success (Ast.PatCon t.value []) (Array.drop 1 ts)
+        Nothing ->
+          -- Just the identifier at end of tokens - treat as nullary constructor
+          success (Ast.PatCon t.value []) (Array.drop 1 ts)
+      else failure "Expected constructor pattern"
+    Nothing -> failure "Expected constructor pattern"
   where
     isCapital :: String -> Boolean
     isCapital s = case CU.charAt 0 s of
