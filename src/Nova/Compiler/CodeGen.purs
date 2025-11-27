@@ -10,7 +10,7 @@ import Data.String.CodeUnits as SCU
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Foldable (foldr, foldl)
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
 
 -- | Code generation context
 type GenCtx =
@@ -33,6 +33,85 @@ addLocalsFromPattern (PatList pats) ctx = foldr addLocalsFromPattern ctx pats
 addLocalsFromPattern (PatCons hd tl) ctx = addLocalsFromPattern tl (addLocalsFromPattern hd ctx)
 addLocalsFromPattern (PatAs name pat) ctx = addLocalsFromPattern pat (ctx { locals = Set.insert name ctx.locals })
 addLocalsFromPattern (PatParens p) ctx = addLocalsFromPattern p ctx
+
+-- | Collect free variables (variable references) from an expression
+freeVarsExpr :: Expr -> Set String
+freeVarsExpr (ExprVar name) = Set.singleton name
+freeVarsExpr (ExprLit _) = Set.empty
+freeVarsExpr (ExprApp f arg) = Set.union (freeVarsExpr f) (freeVarsExpr arg)
+freeVarsExpr (ExprLambda pats body) =
+  let bound = foldr (\p s -> Set.union (patternVars p) s) Set.empty pats
+  in Set.difference (freeVarsExpr body) bound
+freeVarsExpr (ExprLet binds body) =
+  let bound = foldr (\b s -> Set.union (patternVars b.pattern) s) Set.empty binds
+      bindVars = foldr (\b s -> Set.union (freeVarsExpr b.value) s) Set.empty binds
+  in Set.union (Set.difference bindVars bound) (Set.difference (freeVarsExpr body) bound)
+freeVarsExpr (ExprIf c t e) = Set.union (freeVarsExpr c) (Set.union (freeVarsExpr t) (freeVarsExpr e))
+freeVarsExpr (ExprCase scrut clauses) =
+  let scrutVars = freeVarsExpr scrut
+      clauseVars = foldr (\cl s -> Set.union (freeVarsClause cl) s) Set.empty clauses
+  in Set.union scrutVars clauseVars
+freeVarsExpr (ExprBinOp _ l r) = Set.union (freeVarsExpr l) (freeVarsExpr r)
+freeVarsExpr (ExprUnaryOp _ e) = freeVarsExpr e
+freeVarsExpr (ExprList elems) = foldr (\e s -> Set.union (freeVarsExpr e) s) Set.empty elems
+freeVarsExpr (ExprTuple elems) = foldr (\e s -> Set.union (freeVarsExpr e) s) Set.empty elems
+freeVarsExpr (ExprRecord fields) = foldr (\(Tuple _ e) s -> Set.union (freeVarsExpr e) s) Set.empty fields
+freeVarsExpr (ExprRecordAccess e _) = freeVarsExpr e
+freeVarsExpr (ExprRecordUpdate e fields) =
+  foldr (\(Tuple _ v) s -> Set.union (freeVarsExpr v) s) (freeVarsExpr e) fields
+freeVarsExpr (ExprParens e) = freeVarsExpr e
+freeVarsExpr (ExprDo stmts) = freeVarsDo stmts Set.empty
+freeVarsExpr (ExprQualified _ _) = Set.empty  -- qualified names are not free vars
+freeVarsExpr (ExprTyped e _) = freeVarsExpr e
+freeVarsExpr (ExprSection _) = Set.empty  -- operator section like (+ 1)
+
+-- | Helper: free vars in a case clause (body minus pattern-bound vars)
+freeVarsClause :: CaseClause -> Set String
+freeVarsClause cl =
+  let bound = patternVars cl.pattern
+      guardVars = case cl.guard of
+        Nothing -> Set.empty
+        Just g -> freeVarsExpr g
+      bodyVars = freeVarsExpr cl.body
+  in Set.difference (Set.union guardVars bodyVars) bound
+
+-- | Helper: get all vars used in clause body and guard (including pattern vars)
+-- | This is used to determine which pattern variables are actually used
+usedVarsInClause :: CaseClause -> Set String
+usedVarsInClause cl =
+  let guardVars = case cl.guard of
+        Nothing -> Set.empty
+        Just g -> freeVarsExpr g
+      bodyVars = freeVarsExpr cl.body
+  in Set.union guardVars bodyVars
+
+-- | Helper: free vars in do statements
+freeVarsDo :: Array DoStatement -> Set String -> Set String
+freeVarsDo stmts bound = case Array.uncons stmts of
+  Nothing -> Set.empty
+  Just { head: DoExpr e, tail: rest } ->
+    Set.union (Set.difference (freeVarsExpr e) bound) (freeVarsDo rest bound)
+  Just { head: DoBind pat e, tail: rest } ->
+    let exprVars = Set.difference (freeVarsExpr e) bound
+        newBound = Set.union bound (patternVars pat)
+    in Set.union exprVars (freeVarsDo rest newBound)
+  Just { head: DoLet binds, tail: rest } ->
+    let bindPatVars = foldr (\b s -> Set.union (patternVars b.pattern) s) Set.empty binds
+        bindVars = foldr (\b s -> Set.union (Set.difference (freeVarsExpr b.value) bound) s) Set.empty binds
+        newBound = Set.union bound bindPatVars
+    in Set.union bindVars (freeVarsDo rest newBound)
+
+-- | Get variable names bound by a pattern
+patternVars :: Pattern -> Set String
+patternVars (PatVar name) = Set.singleton name
+patternVars PatWildcard = Set.empty
+patternVars (PatLit _) = Set.empty
+patternVars (PatCon _ pats) = foldr (\p s -> Set.union (patternVars p) s) Set.empty pats
+patternVars (PatRecord fields) = foldr (\(Tuple _ p) s -> Set.union (patternVars p) s) Set.empty fields
+patternVars (PatList pats) = foldr (\p s -> Set.union (patternVars p) s) Set.empty pats
+patternVars (PatCons hd tl) = Set.union (patternVars hd) (patternVars tl)
+patternVars (PatAs name pat) = Set.insert name (patternVars pat)
+patternVars (PatParens p) = patternVars p
 
 -- | Collect function names from declarations (includes data constructors)
 collectModuleFuncs :: Array Declaration -> Set String
@@ -77,7 +156,22 @@ genDeclaration _ (DeclImport imp) =
   "  # import " <> imp.moduleName
 genDeclaration _ (DeclTypeSig _) = ""  -- Type sigs are comments in Elixir
 genDeclaration _ (DeclInfix inf) = genInfix inf
+genDeclaration _ (DeclForeignImport fi) = genForeignImport fi
 genDeclaration _ _ = "  # unsupported declaration"
+
+-- | Generate foreign import - delegates to an Elixir FFI module
+genForeignImport :: ForeignImport -> String
+genForeignImport fi =
+  let funcName = snakeCase fi.functionName
+      -- Foreign imports map to Nova.FFI.<ModuleName>.<function>
+      -- If moduleName is empty, use a default FFI module
+      ffiModule = case fi.moduleName of
+        "" -> "Nova.FFI"
+        m -> "Nova.FFI." <> m
+      aliasName = case fi.alias of
+        Just a -> snakeCase a
+        Nothing -> funcName
+  in "  def " <> aliasName <> "(arg), do: " <> ffiModule <> "." <> funcName <> "(arg)"
 
 -- | Generate function definition
 genFunction :: GenCtx -> FunctionDeclaration -> String
@@ -114,7 +208,7 @@ handlePointFreeAlias ctx func =
     ExprVar refName ->
       case lookupArity refName ctx of
         Just arity | arity > 0 ->
-          let argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
+          let argNames = map (\i -> "auto_arg" <> show i) (Array.range 0 (arity - 1))
               argsStr = intercalate ", " argNames
           in Just ("  def " <> snakeCase func.name <> "(" <> argsStr <> ") do\n    " <>
                    snakeCase refName <> "(" <> argsStr <> ")\n  end")
@@ -128,15 +222,15 @@ handlePointFreeAlias ctx func =
           then
             let argCode = genExprCtx ctx 0 arg
                 funcName = translateQualified mod fn
-            in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
-                     funcName <> "(" <> argCode <> ", __arg0__)\n  end")
+            in Just ("  def " <> snakeCase func.name <> "(auto_arg0) do\n    " <>
+                     funcName <> "(" <> argCode <> ", auto_arg0)\n  end")
           else Nothing
         ExprApp (ExprVar fn) arg ->
           if isPartialAppOfArity2 func.body
           then
             let argCode = genExprCtx ctx 0 arg
-            in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
-                     snakeCase fn <> "(" <> argCode <> ", __arg0__)\n  end")
+            in Just ("  def " <> snakeCase func.name <> "(auto_arg0) do\n    " <>
+                     snakeCase fn <> "(" <> argCode <> ", auto_arg0)\n  end")
           else Nothing
         _ -> Nothing
 
@@ -334,6 +428,39 @@ genPattern (PatAs name pat) =
   genPattern pat <> " = " <> snakeCase name
 genPattern (PatParens p) = "(" <> genPattern p <> ")"
 
+-- | Generate pattern code, prefixing unused variables with _
+-- | Takes a set of used variables; any PatVar not in the set gets _ prefix
+genPatternWithUsed :: Set String -> Pattern -> String
+genPatternWithUsed used (PatVar name) =
+  -- Special case: if name starts with _, treat as wildcard when unused
+  -- This avoids generating __ which is invalid in Elixir
+  if Set.member name used
+  then snakeCase name
+  else if String.take 1 name == "_"
+       then "_"  -- Convert to true wildcard
+       else "_" <> snakeCase name
+genPatternWithUsed _ PatWildcard = "_"
+genPatternWithUsed _ (PatLit lit) = genLiteral lit
+genPatternWithUsed used (PatCon name pats) =
+  let conName = case String.lastIndexOf (String.Pattern ".") name of
+        Just i -> String.drop (i + 1) name
+        Nothing -> name
+  in if Array.null pats
+     then ":" <> snakeCase conName
+     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (map (genPatternWithUsed used) pats) <> "}"
+genPatternWithUsed used (PatRecord fields) =
+  "%{" <> intercalate ", " (map genFieldPattern fields) <> "}"
+  where
+    genFieldPattern (Tuple label pat) = snakeCase label <> ": " <> genPatternWithUsed used pat
+genPatternWithUsed used (PatList pats) =
+  "[" <> intercalate ", " (map (genPatternWithUsed used) pats) <> "]"
+genPatternWithUsed used (PatCons head tail) =
+  "[" <> genPatternWithUsed used head <> " | " <> genPatternWithUsed used tail <> "]"
+genPatternWithUsed used (PatAs name pat) =
+  let prefix = if Set.member name used then "" else "_"
+  in genPatternWithUsed used pat <> " = " <> prefix <> snakeCase name
+genPatternWithUsed used (PatParens p) = "(" <> genPatternWithUsed used p <> ")"
+
 -- | Generate chained application for curried functions: f a b -> f.(a).(b)
 genChainedApp :: String -> Array Expr -> GenCtx -> Int -> String
 genChainedApp funcName args ctx indent =
@@ -483,6 +610,11 @@ isNullaryConstructor name = Array.elem name
   , "PatWildcard"
   -- Import specs
   , "ImportAll", "ImportNone"
+  -- Declaration kinds
+  , "KindFunction", "KindDataType", "KindTypeAlias", "KindTypeClass"
+  , "KindInstance", "KindForeignImport"
+  -- Associativity
+  , "AssocLeft", "AssocRight", "AssocNone"
   ]
 
 -- | Known 2-argument functions that may be partially applied
@@ -505,12 +637,14 @@ isTypesModuleFunc name = Array.elem name
   , "tInt", "tString", "tBool", "tChar", "tArray", "tArrow"
   , "tMaybe", "tEither", "tTuple", "tMap", "tSet", "tList", "tNumber"
   , "emptyEnv", "builtinPrelude"
+  -- Export/import functions
+  , "emptyExports", "mergeTypeExport", "mergeExportsToEnv", "registerModule", "lookupModule"
   ]
 
 -- | Values (zero-arity) from Types module that should be called with ()
 isTypesModuleValue :: String -> Boolean
 isTypesModuleValue name = Array.elem name
-  [ "emptySubst", "emptyEnv"
+  [ "emptySubst", "emptyEnv", "emptyExports"
   , "tInt", "tString", "tBool", "tChar", "tNumber"  -- Primitive types are values
   ]
 
@@ -592,8 +726,8 @@ genPartialApp :: String -> String -> Int -> Int -> String
 genPartialApp funcName appliedArgs numArgs arity =
   let remaining = arity - numArgs
       -- Generate parameter names for remaining args
-      extraParams = map (\i -> "__p" <> show i <> "__") (Array.range 0 (remaining - 1))
-      -- Generate curried lambda headers: fn __p0__ -> fn __p1__ -> ...
+      extraParams = map (\i -> "auto_p" <> show i) (Array.range 0 (remaining - 1))
+      -- Generate curried lambda headers: fn auto_p0 -> fn auto_p1 -> ...
       curriedHeader = intercalate " " (map (\p -> "fn " <> p <> " ->") extraParams)
       curriedEnds = intercalate "" (map (\_ -> " end") extraParams)
       allArgsStr = if numArgs == 0
@@ -1087,15 +1221,15 @@ extractLambdaClause bind = case bind.value of
 -- | Generate a merged function with multiple clauses as a case expression
 genMergedFunction :: GenCtx -> Int -> String -> Int -> Array { patterns :: Array Pattern, body :: Expr } -> Boolean -> String
 genMergedFunction ctx indent name arity clauses isRecursive =
-  let -- Generate parameter names: __arg0__, __arg1__, etc.
-      argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
+  let -- Generate parameter names: auto_arg0, auto_arg1, etc.
+      argNames = map (\i -> "auto_arg" <> show i) (Array.range 0 (arity - 1))
       argsStr = intercalate ", " argNames
       -- Generate curried lambda headers: fn a -> fn b -> ...
       curriedLambdaHeader = intercalate " " (map (\a -> "fn " <> a <> " ->") argNames)
       curriedLambdaEnds = intercalate "" (map (\_ -> " end") argNames)
       -- Generate case expression matching on tuple of args
       scrutinee = if arity == 1
-                  then Array.head argNames # fromMaybe "__arg0__"
+                  then Array.head argNames # fromMaybe "auto_arg0"
                   else "{" <> argsStr <> "}"
       caseBody = genMergedCaseClauses ctx (indent + 1) arity clauses
       fixFn = case arity of
@@ -1378,7 +1512,9 @@ genWithWildcardFallback ctx indent clauses =
       firstClause = case Array.head initClauses of
         Just c -> c
         Nothing -> lastClause
-      pat = genPattern firstClause.pattern
+      -- Compute used vars from ALL clause bodies and guards (use usedVarsInClause, not freeVarsClause)
+      usedVars = foldr (\cl s -> Set.union (usedVarsInClause cl) s) Set.empty clauses
+      pat = genPatternWithUsed usedVars firstClause.pattern
       ctxWithPat = addLocalsFromPattern firstClause.pattern ctx
       fallbackBody = genExpr' ctx (indent + 1) lastClause.body
   in ind indent <> pat <> " ->\n" <>
@@ -1394,7 +1530,9 @@ genWithCondOnly ctx indent clauses =
   let firstClause = case Array.head clauses of
         Just c -> c
         Nothing -> { pattern: PatWildcard, guard: Nothing, body: ExprLit (LitInt 0) }
-      pat = genPattern firstClause.pattern
+      -- Compute used vars from ALL clause bodies and guards (use usedVarsInClause, not freeVarsClause)
+      usedVars = foldr (\cl s -> Set.union (usedVarsInClause cl) s) Set.empty clauses
+      pat = genPatternWithUsed usedVars firstClause.pattern
       ctxWithPat = addLocalsFromPattern firstClause.pattern ctx
   in ind indent <> pat <> " ->\n" <>
      ind (indent + 1) <> "cond do\n" <>
@@ -1412,7 +1550,13 @@ genCondClause ctx indent clause =
 genCaseClauseCtx :: GenCtx -> Int -> CaseClause -> String
 genCaseClauseCtx ctx indent clause =
   let ctxWithPat = addLocalsFromPattern clause.pattern ctx
-      pat = genPattern clause.pattern
+      -- Compute used variables from body and guard to mark unused pattern vars
+      bodyVars = freeVarsExpr clause.body
+      guardVars = case clause.guard of
+        Nothing -> Set.empty
+        Just g -> freeVarsExpr g
+      usedVars = Set.union bodyVars guardVars
+      pat = genPatternWithUsed usedVars clause.pattern
       body = genExpr' ctxWithPat (indent + 1) clause.body
   in case clause.guard of
     Nothing -> ind indent <> pat <> " -> " <> body

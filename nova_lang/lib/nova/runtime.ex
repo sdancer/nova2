@@ -273,6 +273,7 @@ defmodule Nova.Map do
   def empty(), do: %{}
   def singleton(k, v), do: %{k => v}
   def insert(k, v, map), do: Map.put(map, k, v)
+  def delete(k, map), do: Map.delete(map, k)
   def map(f, map), do: Map.new(map, fn {k, v} -> {k, f.(v)} end)
   def lookup(k, map) do
     case Map.fetch(map, k) do
@@ -300,18 +301,23 @@ defmodule Nova.Set do
   def intersection(s1, s2), do: MapSet.intersection(s1, s2)
   def from_foldable(list), do: MapSet.new(list)
   def to_unfoldable(set), do: MapSet.to_list(set)
+  def size(set), do: MapSet.size(set)
+  def find_min(set) do
+    case MapSet.to_list(set) do
+      [] -> :nothing
+      list -> {:just, Enum.min(list)}
+    end
+  end
 end
 
 defmodule Nova.String do
   def length(s), do: String.length(s)
-  # O(1) character access using binary pattern matching
-  def char_at(n, s) when is_binary(s) and n >= 0 do
-    case s do
-      <<_::binary-size(n), c, _::binary>> -> {:just, c}
-      _ -> :nothing
+  def char_at(n, s) do
+    case String.at(s, n) do
+      nil -> :nothing
+      <<cp::utf8>> -> {:just, cp}
     end
   end
-  def char_at(_, _), do: :nothing
   def contains({:pattern, p}, s), do: String.contains?(s, p)
   def take(n, s), do: String.slice(s, 0, n)
   def drop(n, s), do: String.slice(s, n..-1//1)
