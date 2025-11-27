@@ -118,12 +118,25 @@ handlePointFreeAlias ctx func =
                    snakeCase refName <> "(" <> argsStr <> ")\n  end")
         _ -> Nothing
     _ ->
-      if isPartialAppOfArity2 func.body
-      then
-        let bodyCode = genExprCtx ctx 0 func.body
-        in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
-                 bodyCode <> ".(__arg0__)\n  end")
-      else Nothing
+      -- For partial applications like Array.filter(fn), we need to generate
+      -- a function that takes the remaining arg and passes both to the function
+      case func.body of
+        ExprApp (ExprQualified mod fn) arg ->
+          if isPartialAppOfArity2 func.body
+          then
+            let argCode = genExprCtx ctx 0 arg
+                funcName = translateQualified mod fn
+            in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
+                     funcName <> "(" <> argCode <> ", __arg0__)\n  end")
+          else Nothing
+        ExprApp (ExprVar fn) arg ->
+          if isPartialAppOfArity2 func.body
+          then
+            let argCode = genExprCtx ctx 0 arg
+            in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
+                     snakeCase fn <> "(" <> argCode <> ", __arg0__)\n  end")
+          else Nothing
+        _ -> Nothing
 
 -- | Check if expression is a partial application of a known 2-arity function
 -- | like Array.filter, Array.map, etc. applied to one argument
@@ -419,6 +432,8 @@ translateQualified mod name =
   case Tuple mod name of
     Tuple "Int" "fromString" -> "Nova.String.to_int"
     Tuple "Data.Int" "fromString" -> "Nova.String.to_int"
+    Tuple "Number" "fromString" -> "Nova.String.to_float"
+    Tuple "Data.Number" "fromString" -> "Nova.String.to_float"
     _ ->
       let elixirMod = case mod of
             "Map" -> "Nova.Map"
@@ -514,8 +529,13 @@ genExpr' ctx _ (ExprVar name) =
     "mod" -> "(&rem/2)"  -- PureScript's mod is Elixir's rem
     "__guarded__" -> ":__guarded__"  -- Placeholder for guarded where functions
     _ ->
+      -- First check: if it's a local variable, just use snake_case
+      -- This prevents local vars named 'left', 'right', etc. from being
+      -- mistakenly converted to runtime function references
+      if Set.member name ctx.locals
+      then snakeCase name
       -- Handle qualified names (e.g., Array.elem from backtick syntax)
-      if String.contains (String.Pattern ".") name
+      else if String.contains (String.Pattern ".") name
       then
         let parts = String.split (String.Pattern ".") name
             len = Array.length parts
