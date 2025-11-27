@@ -1,5 +1,7 @@
 module ModuleA where
 
+import Prelude
+
 data Color = Red | Green | Blue
 
 type Point = { x :: Int, y :: Int }

@@ -1,5 +1,6 @@
 module ModuleB where
 
+import Prelude
 import ModuleA (Color(..), add)
 
 isRed :: Color -> Boolean

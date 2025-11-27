@@ -885,7 +885,7 @@ emptyRegistry = Map.empty
 
 -- | Look up a module's exports
 lookupModule :: ModuleRegistry -> String -> Maybe ModuleExports
-lookupModule = flip Map.lookup
+lookupModule reg name = Map.lookup name reg
 
 -- | Register a module's exports
 registerModule :: ModuleRegistry -> String -> ModuleExports -> ModuleRegistry
