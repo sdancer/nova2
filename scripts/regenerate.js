@@ -45,12 +45,13 @@ function compile(name, path, deps) {
 const base = './src/Nova/Compiler/';
 const modules = [
   ['Ast', base + 'Ast.purs', []],
-  ['Types', base + 'Types.purs', []],
+  ['Types', base + 'Types.purs', [base + 'Ast.purs']],
   ['Tokenizer', base + 'Tokenizer.purs', []],
-  ['Unify', base + 'Unify.purs', []],
-  ['TypeChecker', base + 'TypeChecker.purs', []],
-  ['CodeGen', base + 'CodeGen.purs', []],
-  ['Parser', base + 'Parser.purs', [base + 'Types.purs', base + 'Ast.purs', base + 'Tokenizer.purs']],
+  ['Unify', base + 'Unify.purs', [base + 'Types.purs']],
+  ['TypeChecker', base + 'TypeChecker.purs', [base + 'Ast.purs', base + 'Types.purs', base + 'Unify.purs']],
+  ['CodeGen', base + 'CodeGen.purs', [base + 'Ast.purs']],
+  ['Parser', base + 'Parser.purs', [base + 'Ast.purs', base + 'Tokenizer.purs']],
+  ['Dependencies', base + 'Dependencies.purs', [base + 'Ast.purs']],
 ];
 
 for (const [name, path, deps] of modules) {

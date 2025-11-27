@@ -1746,8 +1746,12 @@ end
   end
 
   def is_maybe_returning(expr) do
-    
-      is_maybe_func = fn name -> ((name == "peek") or ((name == "peekAt") or ((name == "charAt") or ((name == "head") or ((name == "tail") or ((name == "last") or ((name == "init") or ((name == "find") or ((name == "findIndex") or ((name == "elemIndex") or ((name == "lookup") or ((name == "index") or ((name == "uncons") or ((name == "fromString") or ((name == "stripPrefix") or (name == "stripSuffix")))))))))))))))) end
+      # Check if a function/constructor returns Maybe
+      is_maybe_func = fn name ->
+        name in ~w(peek peekAt charAt head tail last init find findIndex
+                   elemIndex lookup index uncons fromString stripPrefix
+                   stripSuffix Just Nothing)
+      end
       go = Nova.Runtime.fix(fn go -> fn __arg0__ -> case __arg0__ do
         ({:expr_var, name}) -> is_maybe_func.(name)
         ({:expr_qualified, _, name}) -> is_maybe_func.(name)

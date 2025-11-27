@@ -8,11 +8,7 @@ defmodule Nova do
   @doc """
   Compile a Nova source file to Elixir code.
 
-  ## Examples
-
-      iex> Nova.compile_file("path/to/module.purs")
-      {:ok, elixir_code}
-
+  Returns `{:ok, elixir_code}` on success, or `{:error, reason}` on failure.
   """
   def compile_file(path, opts \\ []) do
     deps = Keyword.get(opts, :deps, [])

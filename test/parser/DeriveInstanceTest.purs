@@ -85,6 +85,8 @@ showDecl (Ast.DeclTypeClassInstance _) = "instance"
 showDecl (Ast.DeclForeignImport f) = "foreign " <> f.functionName
 showDecl (Ast.DeclTypeSig s) = "sig " <> s.name
 showDecl (Ast.DeclType t) = "type decl " <> t.name
+showDecl (Ast.DeclNewtype n) = "newtype " <> n.name
+showDecl (Ast.DeclInfix i) = "infix " <> i.operator
 
 testParse :: String -> Effect Unit
 testParse input = do

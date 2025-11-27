@@ -2094,28 +2094,39 @@ success(Nova.Compiler.Ast.decl_data_type(%{name: name, type_vars: vars, construc
       case parse_identifier_name(tokens) do
   {:left, err} -> {:left, err}
   {:right, {:tuple, name, rest}} ->
-        rest_prime = skip_newlines(rest)
-case Nova.Array.head(rest_prime) do
+case Nova.Array.head(rest) do
           {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-                     case parse_braced_record_fields(rest_prime) do
+                     case parse_braced_record_fields(rest) do
          {:left, err} -> {:left, err}
-         {:right, {:tuple, fields, rest_prime_prime}} ->
-success(%{name: name, fields: Nova.Runtime.map(field_to_data_field, fields), is_record: true}, rest_prime_prime)
+         {:right, {:tuple, fields, rest_prime}} ->
+success(%{name: name, fields: Nova.Runtime.map(field_to_data_field, fields), is_record: true}, rest_prime)
        end
             else
-                     case parse_many((&parse_type_atom/1), rest_prime) do
+                     case parse_data_field_types(rest) do
          {:left, err} -> {:left, err}
-         {:right, {:tuple, field_types, rest_prime_prime}} ->
-success(%{name: name, fields: Nova.Runtime.map(type_to_data_field, field_types), is_record: false}, rest_prime_prime)
+         {:right, {:tuple, field_types, rest_prime}} ->
+success(%{name: name, fields: Nova.Runtime.map(type_to_data_field, field_types), is_record: false}, rest_prime)
        end
             end
-          _ ->       case parse_many((&parse_type_atom/1), rest_prime) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, field_types, rest_prime_prime}} ->
-success(%{name: name, fields: Nova.Runtime.map(type_to_data_field, field_types), is_record: false}, rest_prime_prime)
-      end
+          _ -> success(%{name: name, fields: [], is_record: false}, rest)
         end
 end
+  end
+
+  def parse_data_field_types(tokens) do
+    
+      go = Nova.Runtime.fix2(fn go -> fn toks -> fn acc -> case Nova.Array.head(toks) do
+        :nothing -> success(acc, toks)
+        {:just, t} -> if ((t.token_type == :tok_newline) or ((t.token_type == :tok_operator) and (t.value == "|"))) do
+            success(acc, toks)
+          else
+            case parse_type_atom(toks) do
+              {:right, ({:tuple, ty, rest})} -> go.(rest).(Nova.Array.snoc(acc, ty))
+              {:left, _} -> success(acc, toks)
+            end
+          end
+      end  end end end)
+      go.(tokens).([])
   end
 
   def parse_braced_record_fields(tokens) do

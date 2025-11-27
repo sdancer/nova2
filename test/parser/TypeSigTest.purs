@@ -94,6 +94,8 @@ showDecl (Ast.DeclTypeClassInstance _) = "instance"
 showDecl (Ast.DeclForeignImport f) = "foreign " <> f.functionName
 showDecl (Ast.DeclTypeSig s) = "sig " <> s.name
 showDecl (Ast.DeclType t) = "type decl " <> t.name
+showDecl (Ast.DeclNewtype n) = "newtype " <> n.name
+showDecl (Ast.DeclInfix i) = "infix " <> i.operator
 
 showTokCol :: Token -> String
 showTokCol t = t.value <> "@" <> show t.column <> ":" <> showTokType t.tokenType

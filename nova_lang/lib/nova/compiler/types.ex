@@ -19,6 +19,8 @@ defmodule Nova.Compiler.Types do
 
   # import Data.String
 
+  # import Nova.Compiler.Ast
+
   # @type tvar :: %{id: int(), name: string()}
 
   def mk_tvar(id, name) do
@@ -380,5 +382,59 @@ defmodule Nova.Compiler.Types do
 
   def t_infer_result() do
     {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "ty", t_type()}, {:tuple, "env", t_env()}, {:tuple, "sub", t_subst()}]), row: :nothing}}
+  end
+
+  # @type type_alias_info :: %{params: array()(string()), body: type_expr()}
+
+  # @type module_exports :: %{types: map()(string())(type_info()), constructors: map()(string())(scheme()), values: map()(string())(scheme()), type_aliases: map()(string())(type_alias_info())}
+
+  # @type type_info :: %{arity: int(), constructors: array()(string())}
+
+  def empty_exports() do
+    %{types: Nova.Map.empty, constructors: Nova.Map.empty, values: Nova.Map.empty, type_aliases: Nova.Map.empty}
+  end
+
+  # @type module_registry :: map()(string())(module_exports())
+
+  def empty_registry() do
+    Nova.Map.empty
+  end
+
+  def lookup_module(reg, name) do
+    Nova.Map.lookup(name, reg)
+  end
+
+  def register_module(reg, name, exports) do
+    Nova.Map.insert(name, exports, reg)
+  end
+
+  def merge_exports_to_env(env, exports) do
+    
+      ctor_list = Nova.Map.to_unfoldable(exports.constructors)
+      val_list = Nova.Map.to_unfoldable(exports.values)
+      env1 = Nova.Array.foldl(fn e -> fn ({:tuple, name, scheme}) -> extend_env(e, name, scheme) end end, env, ctor_list)
+      env2 = Nova.Array.foldl(fn e -> fn ({:tuple, name, scheme}) -> extend_env(e, name, scheme) end end, env1, val_list)
+      env2
+  end
+
+  def merge_selected_exports(env, exports, items) do
+    
+      add_item = fn e -> fn name -> case Nova.Map.lookup(name, exports.constructors) do
+        {:just, scheme} -> extend_env(e, name, scheme)
+        :nothing -> case Nova.Map.lookup(name, exports.values) do
+            {:just, scheme} -> extend_env(e, name, scheme)
+            :nothing -> e
+          end
+      end end end
+      Nova.Array.foldl(add_item, env, items)
+  end
+
+  def merge_type_export(env, exports, type_name, ctor_names) do
+    
+      add_ctor = fn e -> fn ctor_name -> case Nova.Map.lookup(ctor_name, exports.constructors) do
+        {:just, scheme} -> extend_env(e, ctor_name, scheme)
+        :nothing -> e
+      end end end
+      Nova.Array.foldl(add_ctor, env, ctor_names)
   end
 end

@@ -624,9 +624,47 @@ parseExpression tokens =
     , parseCaseExpression
     , parseDoBlock
     , parseLambda
-    , parseDollarExpression
+    , parseTypedExpression
     ]
     tokens
+
+-- | Parse expression with optional type annotation: expr :: Type
+-- | Note: We DON'T skip newlines before :: to avoid consuming types across lines
+-- | in let bindings where the next line might be another binding
+parseTypedExpression :: Array Token -> ParseResult Ast.Expr
+parseTypedExpression tokens = do
+  Tuple expr rest <- parseDollarExpression tokens
+  -- Don't skip newlines - type annotation must be on same line
+  case Array.head rest of
+    Just t ->
+      if t.tokenType == TokOperator && t.value == "::"
+      then do
+        let rest' = Array.drop 1 rest
+        Tuple ty rest'' <- parseTypeAtomSequence rest'
+        success (Ast.ExprTyped expr ty) rest''
+      else success expr rest
+    _ -> success expr rest
+
+-- | Parse a sequence of type atoms (for inline type annotations)
+-- | This is more restrictive than parseType - doesn't cross newlines for applications
+parseTypeAtomSequence :: Array Token -> ParseResult Ast.TypeExpr
+parseTypeAtomSequence tokens = do
+  Tuple first rest <- parseTypeAtom tokens
+  parseTypeAtomSequenceRest first rest
+
+parseTypeAtomSequenceRest :: Ast.TypeExpr -> Array Token -> ParseResult Ast.TypeExpr
+parseTypeAtomSequenceRest acc tokens =
+  -- Don't skip newlines between type atoms for inline annotations
+  case Array.head tokens of
+    Just t | t.tokenType == TokNewline -> success acc tokens
+    Just t | t.tokenType == TokOperator && t.value == "->" -> do
+      -- Allow function types
+      let rest = Array.drop 1 tokens
+      Tuple right rest' <- parseTypeAtomSequence rest
+      success (Ast.TyExprArrow acc right) rest'
+    _ -> case parseTypeAtom tokens of
+      Right (Tuple next rest) -> parseTypeAtomSequenceRest (Ast.TyExprApp acc next) rest
+      Left _ -> success acc tokens
 
 parseDollarExpression :: Array Token -> ParseResult Ast.Expr
 parseDollarExpression tokens = do
@@ -1496,6 +1534,8 @@ parseDeclaration tokens =
     [ parseModuleHeader
     , parseImport
     , parseForeignImportSimple
+    , parseInfixDeclaration
+    , parseNewtypeDeclaration
     , parseDataDeclaration
     , parseTypeAlias
     , parseTypeClass
@@ -1630,6 +1670,74 @@ parseForeignImportSimple tokens = do
     , typeSignature: ty
     }) (dropNewlines rest4)
 
+-- | Parse infix declarations: infixl 5 +, infixr 5 $, infix 5 `elem`
+parseInfixDeclaration :: Array Token -> ParseResult Ast.Declaration
+parseInfixDeclaration tokens = do
+  let tokens' = dropNewlines tokens
+  -- Check for infixl, infixr, or infix keyword
+  case Array.head tokens' of
+    Just t | t.tokenType == TokKeyword && t.value == "infixl" ->
+      parseInfixWith Ast.AssocLeft (Array.drop 1 tokens')
+    Just t | t.tokenType == TokKeyword && t.value == "infixr" ->
+      parseInfixWith Ast.AssocRight (Array.drop 1 tokens')
+    Just t | t.tokenType == TokKeyword && t.value == "infix" ->
+      parseInfixWith Ast.AssocNone (Array.drop 1 tokens')
+    _ -> failure "Expected infix declaration"
+
+parseInfixWith :: Ast.Associativity -> Array Token -> ParseResult Ast.Declaration
+parseInfixWith assoc tokens = do
+  let tokens' = skipNewlines tokens
+  -- Parse precedence (integer)
+  case Array.head tokens' of
+    Just t | t.tokenType == TokNumber -> do
+      let prec = case Int.fromString t.value of
+            Just n -> n
+            Nothing -> 9  -- default precedence
+      let rest = Array.drop 1 tokens'
+      -- Parse operator (could be symbol or backtick-quoted identifier)
+      Tuple op rest' <- parseInfixOperator rest
+      success (Ast.DeclInfix { associativity: assoc, precedence: prec, operator: op }) rest'
+    _ -> failure "Expected precedence number"
+
+parseInfixOperator :: Array Token -> ParseResult String
+parseInfixOperator tokens = do
+  let tokens' = skipNewlines tokens
+  case Array.head tokens' of
+    -- Symbol operator like +, *, $, etc.
+    Just t | t.tokenType == TokOperator ->
+      success t.value (Array.drop 1 tokens')
+    -- Backtick-quoted identifier like `elem`
+    Just t | t.tokenType == TokDelimiter && t.value == "`" -> do
+      let rest = Array.drop 1 tokens'
+      Tuple name rest' <- parseIdentifierName rest
+      Tuple _ rest'' <- expectDelimiter rest' "`"
+      success name rest''
+    -- Allow type keyword for type operator
+    Just t | t.tokenType == TokKeyword && t.value == "type" -> do
+      let rest = Array.drop 1 tokens'
+      Tuple op rest' <- parseInfixOperator rest
+      success ("type " <> op) rest'
+    _ -> failure "Expected operator"
+
+-- | Parse newtype declarations: newtype Name a = Constructor Type
+parseNewtypeDeclaration :: Array Token -> ParseResult Ast.Declaration
+parseNewtypeDeclaration tokens = do
+  Tuple _ rest <- expectKeyword tokens "newtype"
+  Tuple name rest' <- parseIdentifierName rest
+  Tuple vars rest'' <- parseMany parseIdentifierName rest'
+  let rest''' = skipNewlines rest''
+  Tuple _ rest4 <- expectOperator rest''' "="
+  let rest5 = skipNewlines rest4
+  -- Parse single constructor with single field
+  Tuple ctorName rest6 <- parseIdentifierName rest5
+  Tuple wrappedTy rest7 <- parseTypeAtom rest6
+  success (Ast.DeclNewtype
+    { name: name
+    , typeVars: vars
+    , constructor: ctorName
+    , wrappedType: wrappedTy
+    }) rest7
+
 parseDataDeclaration :: Array Token -> ParseResult Ast.Declaration
 parseDataDeclaration tokens = do
   Tuple _ rest <- expectKeyword tokens "data"
@@ -1648,25 +1756,41 @@ parseDataConstructors tokens =
 parseDataConstructor :: Array Token -> ParseResult Ast.DataConstructor
 parseDataConstructor tokens = do
   Tuple name rest <- parseIdentifierName tokens
-  let rest' = skipNewlines rest
-  case Array.head rest' of
+  -- Don't skip newlines here - field types must be on the same line as the constructor
+  case Array.head rest of
     Just t ->
       if t.tokenType == TokDelimiter && t.value == "{"
       then do
-        Tuple fields rest'' <- parseBracedRecordFields rest'
-        success { name: name, fields: map fieldToDataField fields, isRecord: true } rest''
+        -- For record syntax, we do allow newlines inside braces
+        Tuple fields rest' <- parseBracedRecordFields rest
+        success { name: name, fields: map fieldToDataField fields, isRecord: true } rest'
       else do
-        Tuple fieldTypes rest'' <- parseMany parseTypeAtom rest'
-        success { name: name, fields: map typeToDataField fieldTypes, isRecord: false } rest''
-    _ -> do
-      Tuple fieldTypes rest'' <- parseMany parseTypeAtom rest'
-      success { name: name, fields: map typeToDataField fieldTypes, isRecord: false } rest''
+        -- Parse field types only until we hit a newline or pipe
+        Tuple fieldTypes rest' <- parseDataFieldTypes rest
+        success { name: name, fields: map typeToDataField fieldTypes, isRecord: false } rest'
+    _ -> success { name: name, fields: [], isRecord: false } rest
   where
     fieldToDataField :: { label :: String, ty :: Ast.TypeExpr } -> Ast.DataField
     fieldToDataField f = { label: f.label, ty: f.ty }
 
     typeToDataField :: Ast.TypeExpr -> Ast.DataField
     typeToDataField ty = { label: "", ty: ty }
+
+-- Parse data constructor field types, stopping at newline or pipe
+parseDataFieldTypes :: Array Token -> ParseResult (Array Ast.TypeExpr)
+parseDataFieldTypes tokens = go tokens []
+  where
+    go :: Array Token -> Array Ast.TypeExpr -> ParseResult (Array Ast.TypeExpr)
+    go toks acc =
+      case Array.head toks of
+        Nothing -> success acc toks
+        Just t ->
+          -- Stop at newline, pipe, or end of input
+          if t.tokenType == TokNewline || (t.tokenType == TokOperator && t.value == "|")
+          then success acc toks
+          else case parseTypeAtom toks of
+            Right (Tuple ty rest) -> go rest (Array.snoc acc ty)
+            Left _ -> success acc toks
 
 parseBracedRecordFields :: Array Token -> ParseResult (Array { label :: String, ty :: Ast.TypeExpr })
 parseBracedRecordFields tokens =

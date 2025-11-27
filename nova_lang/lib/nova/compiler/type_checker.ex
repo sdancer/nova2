@@ -742,8 +742,67 @@ end
     {:right, check_type_alias(env, ta)}
   end
 
+  def check_decl(env, ({:decl_type_class, tc})) do
+    {:right, check_type_class(env, tc)}
+  end
+
+  def check_decl(env, ({:decl_type_class_instance, inst})) do
+    check_type_class_instance(env, inst)
+  end
+
   def check_decl(env, _) do
     {:right, env}
+  end
+
+  # Process a type class declaration
+  # Adds the class methods to the environment with constrained types
+  def check_type_class(env, tc) do
+    # Create type variable for the class parameter(s)
+    type_var_pairs = Nova.Array.map_with_index(
+      fn i -> fn v -> {:tuple, v, Nova.Compiler.Types.mk_tvar((env.counter + i), v)} end end,
+      tc.type_vars
+    )
+    new_counter = env.counter + Nova.Array.length(tc.type_vars)
+    type_var_map = Nova.Map.from_foldable(type_var_pairs)
+    env1 = %{env | counter: new_counter}
+
+    # Add each method to the environment
+    # For now, we add methods with their base type (without constraint checking)
+    # A full implementation would track constraints separately
+    Enum.reduce(tc.methods, env1, fn method, acc_env ->
+      # Convert the method's type expression to a Type
+      method_ty = type_expr_to_type(type_var_map, method.ty)
+
+      # Create a scheme with the class type vars
+      vars = Enum.map(type_var_pairs, fn {:tuple, _, tv} -> tv end)
+      scheme = Nova.Compiler.Types.mk_scheme(vars, method_ty)
+
+      # Add to environment
+      Nova.Compiler.Types.extend_env(acc_env, method.name, scheme)
+    end)
+  end
+
+  # Check a type class instance declaration
+  # Verifies that instance methods type-check correctly
+  def check_type_class_instance(env, inst) do
+    # For now, just type-check the instance methods as regular functions
+    # A full implementation would:
+    # 1. Look up the class and verify all methods are provided
+    # 2. Check method types match class signatures with the instance type substituted
+    # 3. Register the instance for constraint resolution
+
+    # Type check each instance method
+    result = Enum.reduce_while(inst.methods, {:ok, env}, fn method, {:ok, acc_env} ->
+      case check_function(acc_env, method) do
+        {:left, err} -> {:halt, {:error, err}}
+        {:right, r} -> {:cont, {:ok, r.env}}
+      end
+    end)
+
+    case result do
+      {:ok, final_env} -> {:right, final_env}
+      {:error, err} -> {:left, err}
+    end
   end
 
   def check_data_type(env, dt) do
@@ -1204,7 +1263,7 @@ end
   end
 
   def process_non_functions(env, decls) do
-    
+
       alias_map = collect_type_aliases(decls)
       param_alias_map = collect_param_type_aliases(decls)
       process_type_alias = fn e -> fn decl -> case decl do
@@ -1217,7 +1276,13 @@ end
         _ -> e
       end end end
       env2 = Nova.Array.foldl(process_data_type, env1, decls)
-      env2
+      # Also process type classes to add their methods to the environment
+      process_type_class = fn e -> fn decl -> case decl do
+        {:decl_type_class, tc} -> check_type_class(e, tc)
+        _ -> e
+      end end end
+      env3 = Nova.Array.foldl(process_type_class, env2, decls)
+      env3
   end
 
   def add_function_placeholders(env, decls) do

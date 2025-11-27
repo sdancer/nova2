@@ -346,6 +346,8 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Map.values" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (TyVar v))))
   , Tuple "Map.union" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
   , Tuple "Map.fromFoldable" (mkScheme [k, v] (tArrow (tArray (tTuple [TyVar k, TyVar v])) (tMap (TyVar k) (TyVar v))))
+  , Tuple "Map.toUnfoldable" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (tTuple [TyVar k, TyVar v]))))
+  , Tuple "Map.delete" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
 
   -- Set functions
   , Tuple "Set.empty" (mkScheme [a] (tSet (TyVar a)))
@@ -357,6 +359,13 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Set.difference" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
   , Tuple "Set.fromFoldable" (mkScheme [a] (tArrow (tArray (TyVar a)) (tSet (TyVar a))))
   , Tuple "Set.toUnfoldable" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArray (TyVar a))))
+  , Tuple "Set.map" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tSet (TyVar a)) (tSet (TyVar b)))))
+  , Tuple "Set.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tSet (TyVar a)) (tSet (TyVar b)))))
+  , Tuple "Set.filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
+  , Tuple "Set.size" (mkScheme [a] (tArrow (tSet (TyVar a)) tInt))
+  , Tuple "Set.isEmpty" (mkScheme [a] (tArrow (tSet (TyVar a)) tBool))
+  , Tuple "Set.intersection" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
+  , Tuple "Set.findMin" (mkScheme [a] (tArrow (tSet (TyVar a)) (tMaybe (TyVar a))))
 
   -- Foldable functions
   , Tuple "foldl" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b))))) -- generic Foldable
@@ -896,10 +905,10 @@ registerModule reg name exports = Map.insert name exports reg
 mergeExportsToEnv :: Env -> ModuleExports -> Env
 mergeExportsToEnv env exports =
   let -- Add constructors
-      ctorList = Map.toUnfoldable exports.constructors :: Array (Tuple String Scheme)
+      ctorList = Map.toUnfoldable exports.constructors
       env1 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env ctorList
       -- Add values
-      valList = Map.toUnfoldable exports.values :: Array (Tuple String Scheme)
+      valList = Map.toUnfoldable exports.values
       env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env1 valList
   in env2
 

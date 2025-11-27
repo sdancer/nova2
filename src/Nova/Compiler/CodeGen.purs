@@ -10,7 +10,7 @@ import Data.String.CodeUnits as SCU
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Foldable (foldr, foldl)
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
 
 -- | Code generation context
 type GenCtx =
@@ -71,10 +71,12 @@ elixirModuleName name = String.replaceAll (String.Pattern ".") (String.Replaceme
 genDeclaration :: GenCtx -> Declaration -> String
 genDeclaration ctx (DeclFunction func) = genFunction ctx func
 genDeclaration _ (DeclDataType dt) = genDataType dt
+genDeclaration _ (DeclNewtype nt) = genNewtype nt
 genDeclaration _ (DeclTypeAlias ta) = genTypeAlias ta
 genDeclaration _ (DeclImport imp) =
   "  # import " <> imp.moduleName
 genDeclaration _ (DeclTypeSig _) = ""  -- Type sigs are comments in Elixir
+genDeclaration _ (DeclInfix inf) = genInfix inf
 genDeclaration _ _ = "  # unsupported declaration"
 
 -- | Generate function definition
@@ -1567,6 +1569,21 @@ genDataType dt =
           args = intercalate ", " params
           fields = intercalate ", " (map (\f -> snakeCase f.label <> ": " <> snakeCase f.label) con.fields)
       in "  def " <> snakeCase con.name <> "(" <> args <> "), do: %{__type__: :" <> snakeCase con.name <> ", " <> fields <> "}"
+
+-- | Generate newtype (single constructor wrapping a type)
+genNewtype :: NewtypeDecl -> String
+genNewtype nt =
+  "  # Newtype: " <> nt.name <> "\n" <>
+  "  def " <> snakeCase nt.constructor <> "(arg0), do: {:'" <> snakeCase nt.constructor <> "', arg0}"
+
+-- | Generate infix declaration (just a comment - metadata only)
+genInfix :: InfixDecl -> String
+genInfix inf =
+  let assocStr = case inf.associativity of
+        AssocLeft -> "infixl"
+        AssocRight -> "infixr"
+        AssocNone -> "infix"
+  in "  # " <> assocStr <> " " <> show inf.precedence <> " " <> inf.operator
 
 -- | Generate type alias (just a comment in Elixir)
 genTypeAlias :: TypeAlias -> String

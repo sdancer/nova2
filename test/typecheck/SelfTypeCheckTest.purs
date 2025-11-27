@@ -183,6 +183,7 @@ getDeclName :: Declaration -> String
 getDeclName (DeclFunction f) = f.name
 getDeclName (DeclTypeSig sig) = sig.name
 getDeclName (DeclDataType dt) = dt.name
+getDeclName (DeclNewtype nt) = nt.name
 getDeclName (DeclTypeAlias ta) = ta.name
 getDeclName (DeclTypeClass c) = c.name
 getDeclName (DeclTypeClassInstance i) = i.className
@@ -192,3 +193,4 @@ getDeclName (DeclImport im) = case im.alias of
 getDeclName (DeclModule m) = m.name
 getDeclName (DeclForeignImport f) = f.functionName
 getDeclName (DeclType t) = t.name
+getDeclName (DeclInfix inf) = inf.operator

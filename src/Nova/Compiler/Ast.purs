@@ -3,6 +3,106 @@ module Nova.Compiler.Ast where
 import Prelude
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
+import Data.Set (Set)
+
+-- ============================================================================
+-- Namespace Service Types (Phase 1 Foundation)
+-- ============================================================================
+
+-- | Unique identifier for a declaration
+-- | Format: "namespace:kind:name:version"
+type DeclId = String
+
+-- | Status of a declaration in the namespace service
+data DeclStatus
+  = Fresh        -- Not yet type-checked
+  | Valid        -- Type-checked successfully
+  | Invalid      -- Has type errors
+  | Stale        -- Needs re-check (dependency changed)
+
+-- | Metadata for a managed declaration
+type DeclMetadata =
+  { declId :: DeclId
+  , namespace :: String
+  , name :: String
+  , kind :: DeclKind
+  , version :: Int
+  , status :: DeclStatus
+  , dependencies :: Set DeclId    -- What this declaration depends on
+  , dependents :: Set DeclId      -- What depends on this declaration
+  }
+
+-- | Kind of declaration (for DeclId generation)
+data DeclKind
+  = KindFunction
+  | KindDataType
+  | KindTypeAlias
+  | KindTypeClass
+  | KindInstance
+  | KindForeignImport
+
+-- | A declaration managed by the namespace service
+type ManagedDecl =
+  { meta :: DeclMetadata
+  , decl :: Declaration
+  , sourceText :: String          -- Original source for re-parsing
+  , errors :: Array String        -- Cached type errors
+  }
+
+-- | Generate a DeclId from components
+makeDeclId :: String -> DeclKind -> String -> Int -> DeclId
+makeDeclId namespace kind name version =
+  namespace <> ":" <> kindToString kind <> ":" <> name <> ":" <> show version
+
+-- | Convert DeclKind to string for DeclId
+kindToString :: DeclKind -> String
+kindToString KindFunction = "function"
+kindToString KindDataType = "datatype"
+kindToString KindTypeAlias = "typealias"
+kindToString KindTypeClass = "typeclass"
+kindToString KindInstance = "instance"
+kindToString KindForeignImport = "foreign"
+
+-- | Get the kind of a declaration
+getDeclKind :: Declaration -> DeclKind
+getDeclKind (DeclFunction _) = KindFunction
+getDeclKind (DeclDataType _) = KindDataType
+getDeclKind (DeclNewtype _) = KindDataType  -- Newtypes are like data types
+getDeclKind (DeclTypeAlias _) = KindTypeAlias
+getDeclKind (DeclTypeClass _) = KindTypeClass
+getDeclKind (DeclTypeClassInstance _) = KindInstance
+getDeclKind (DeclForeignImport _) = KindForeignImport
+getDeclKind (DeclTypeSig _) = KindFunction  -- Type sigs are associated with functions
+getDeclKind (DeclType _) = KindTypeAlias
+getDeclKind (DeclModule _) = KindFunction  -- Shouldn't happen
+getDeclKind (DeclImport _) = KindFunction  -- Imports are special
+getDeclKind (DeclInfix _) = KindFunction  -- Infix declarations are metadata
+
+-- | Get the name of a declaration
+getDeclName :: Declaration -> String
+getDeclName (DeclFunction f) = f.name
+getDeclName (DeclDataType d) = d.name
+getDeclName (DeclNewtype n) = n.name
+getDeclName (DeclTypeAlias a) = a.name
+getDeclName (DeclTypeClass c) = c.name
+getDeclName (DeclTypeClassInstance i) = i.className <> "_" <> typeExprToString i.ty
+getDeclName (DeclForeignImport f) = f.functionName
+getDeclName (DeclTypeSig s) = s.name
+getDeclName (DeclType t) = t.name
+getDeclName (DeclModule m) = m.name
+getDeclName (DeclImport i) = i.moduleName
+getDeclName (DeclInfix inf) = inf.operator
+
+-- | Simple type expression to string (for instance naming)
+typeExprToString :: TypeExpr -> String
+typeExprToString (TyExprCon s) = s
+typeExprToString (TyExprVar s) = s
+typeExprToString (TyExprApp t1 t2) = typeExprToString t1 <> "_" <> typeExprToString t2
+typeExprToString _ = "complex"
+
+-- ============================================================================
+-- Original AST Types
+-- ============================================================================
 
 -- | Module definition
 type Module =
@@ -17,11 +117,13 @@ data Declaration
   | DeclType TypeDeclaration
   | DeclTypeAlias TypeAlias
   | DeclDataType DataType
+  | DeclNewtype NewtypeDecl
   | DeclTypeClass TypeClass
   | DeclTypeClassInstance TypeClassInstance
   | DeclImport ImportDeclaration
   | DeclForeignImport ForeignImport
   | DeclTypeSig TypeSignature
+  | DeclInfix InfixDecl
 
 -- | Function declaration
 type FunctionDeclaration =
@@ -125,6 +227,27 @@ type ForeignImport =
   , functionName :: String
   , alias :: Maybe String
   , typeSignature :: TypeExpr
+  }
+
+-- | Infix declaration (infixl, infixr, infix)
+type InfixDecl =
+  { associativity :: Associativity
+  , precedence :: Int
+  , operator :: String
+  }
+
+-- | Associativity for infix operators
+data Associativity
+  = AssocLeft    -- infixl
+  | AssocRight   -- infixr
+  | AssocNone    -- infix
+
+-- | Newtype declaration (like data but with exactly one constructor and one field)
+type NewtypeDecl =
+  { name :: String
+  , typeVars :: Array String
+  , constructor :: String
+  , wrappedType :: TypeExpr
   }
 
 -- | Constraint in type signature
