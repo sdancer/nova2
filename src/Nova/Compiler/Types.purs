@@ -120,7 +120,7 @@ applySubst sub (TyRecord r) = TyRecord (r { fields = map (applySubst sub) r.fiel
 composeSubst :: Subst -> Subst -> Subst
 composeSubst s1 s2 = Map.union s1 (map (applySubst s1) s2)
 
--- | Type scheme: quantified polymorphic type (∀ vars . type)
+-- | Type scheme: quantified polymorphic type (forall vars . type)
 type Scheme = { vars :: Array TVar, ty :: Type }
 
 mkScheme :: Array TVar -> Type -> Scheme
