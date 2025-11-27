@@ -638,7 +638,10 @@ genConstructorApp ctx indent name args =
 genExpr' :: GenCtx -> Int -> Expr -> String
 genExpr' ctx _ (ExprVar name) =
   -- Handle special constants and functions
-  case name of
+  -- First check if it's a local variable - locals take precedence
+  if Set.member name ctx.locals
+  then snakeCase name
+  else case name of
     "Nothing" -> ":nothing"
     "nothing" -> ":nothing"
     "Nil" -> "[]"
@@ -646,16 +649,11 @@ genExpr' ctx _ (ExprVar name) =
     "True" -> "true"
     "False" -> "false"
     "not" -> "(&Kernel.not/1)"  -- PureScript's not is a function
-    "mod" -> "(&rem/2)"  -- PureScript's mod is Elixir's rem
+    "mod" -> "(&rem/2)"  -- PureScript's mod is Elixir's rem (only when not local)
     "__guarded__" -> ":__guarded__"  -- Placeholder for guarded where functions
     _ ->
-      -- First check: if it's a local variable, just use snake_case
-      -- This prevents local vars named 'left', 'right', etc. from being
-      -- mistakenly converted to runtime function references
-      if Set.member name ctx.locals
-      then snakeCase name
       -- Handle qualified names (e.g., Array.elem from backtick syntax)
-      else if String.contains (String.Pattern ".") name
+      if String.contains (String.Pattern ".") name
       then
         let parts = String.split (String.Pattern ".") name
             len = Array.length parts
@@ -830,6 +828,10 @@ genExpr' ctx indent (ExprDo stmts) =
 genExpr' ctx _ (ExprBinOp ":" l r) =
   -- Cons operator needs special list syntax in Elixir
   "[" <> genExpr' ctx 0 l <> " | " <> genExpr' ctx 0 r <> "]"
+
+genExpr' ctx _ (ExprBinOp "<>" l r) =
+  -- Use runtime append for polymorphic semigroup (works for both strings and arrays)
+  "Nova.Runtime.append(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
 
 genExpr' ctx _ (ExprBinOp op l r) =
   -- Check if this is a backtick function call (contains . or starts with uppercase)
@@ -1644,6 +1646,8 @@ escapeReserved s = if isReserved s then s <> "_" else s
       , "import", "require", "use", "alias", "for", "with", "quote"
       , "unquote", "receive", "try", "catch", "rescue", "after", "raise"
       , "throw", "exit", "super", "spawn", "send", "self"
+      -- Elixir special forms and kernel functions that conflict
+      , "mod", "rem", "div", "abs", "max", "min"
       ]
 
 -- | Indentation helper
