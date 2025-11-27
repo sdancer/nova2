@@ -1,7 +1,7 @@
 module Nova.Compiler.CodeGen where
 
 import Prelude
-import Data.Array (intercalate, mapWithIndex, length, (:))
+import Data.Array (intercalate, length, (:))
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), fst, snd)
@@ -106,24 +106,24 @@ genFunction ctx func =
 -- | When a function has no parameters and its body is a reference to another function,
 -- | generate a wrapper that passes through arguments
 handlePointFreeAlias :: GenCtx -> FunctionDeclaration -> Maybe String
-handlePointFreeAlias ctx func
-  -- Case 1: Simple alias like dropNewlines = skipNewlines
-  | Array.null func.parameters
-  , ExprVar refName <- func.body
-  , Just arity <- lookupArity refName ctx
-  , arity > 0 =
-      let argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
-          argsStr = intercalate ", " argNames
-      in Just $ "  def " <> snakeCase func.name <> "(" <> argsStr <> ") do\n    " <>
-                snakeCase refName <> "(" <> argsStr <> ")\n  end"
-  -- Case 2: Partial application like stripNewlines = Array.filter (\t -> ...)
-  -- Generate wrapper that adds the missing argument
-  | Array.null func.parameters
-  , isPartialAppOfArity2 func.body =
-      let bodyCode = genExprCtx ctx 0 func.body
-      in Just $ "  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
-                bodyCode <> ".(__arg0__)\n  end"
-  | otherwise = Nothing
+handlePointFreeAlias ctx func =
+  if not (Array.null func.parameters) then Nothing
+  else case func.body of
+    ExprVar refName ->
+      case lookupArity refName ctx of
+        Just arity | arity > 0 ->
+          let argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
+              argsStr = intercalate ", " argNames
+          in Just ("  def " <> snakeCase func.name <> "(" <> argsStr <> ") do\n    " <>
+                   snakeCase refName <> "(" <> argsStr <> ")\n  end")
+        _ -> Nothing
+    _ ->
+      if isPartialAppOfArity2 func.body
+      then
+        let bodyCode = genExprCtx ctx 0 func.body
+        in Just ("  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
+                 bodyCode <> ".(__arg0__)\n  end")
+      else Nothing
 
 -- | Check if expression is a partial application of a known 2-arity function
 -- | like Array.filter, Array.map, etc. applied to one argument
@@ -269,6 +269,34 @@ isDataConstructor name = Array.elem name
   , "GuardExpr", "GuardPat"
   ]
 
+-- | Get the arity of an AST constructor
+getAstConstructorArity :: String -> Int
+getAstConstructorArity name =
+  -- Nullary constructors
+  if name == "PatWildcard" || name == "ImportAll" || name == "ImportNone"
+  then 0
+  -- 3-arg constructor
+  else if name == "ExprIf"
+  then 3
+  -- 2-arg constructors
+  else if isArity2Constructor name
+  then 2
+  -- Default: 1-arg
+  else 1
+
+-- | 2-argument AST constructors
+isArity2Constructor :: String -> Boolean
+isArity2Constructor name = Array.elem name arity2Constructors
+
+arity2Constructors :: Array String
+arity2Constructors =
+  [ "ExprApp", "ExprCase", "ExprBinOp", "ExprRecordAccess", "ExprRecordUpdate"
+  , "ExprQualified", "ExprTyped", "ExprUnaryOp", "ExprLambda", "ExprLet"
+  , "PatCon", "PatCons", "PatAs"
+  , "TyExprApp", "TyExprArrow", "TyExprRecord", "TyExprForAll", "TyExprConstrained"
+  , "DoBind", "GuardPat", "ImportType"
+  ]
+
 -- | Check if a data constructor belongs to Nova.Compiler.Ast module
 -- | These constructors need to be qualified when used in other modules
 isAstConstructor :: String -> Boolean
@@ -355,12 +383,17 @@ isTypesModuleValue name = Array.elem name
 
 -- | Get the arity of a Types module function
 typesModuleFuncArity :: String -> Int
-typesModuleFuncArity name
-  | isTypesModuleValue name = 0
-  | Array.elem name ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList"] = 1
-  | Array.elem name ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tTuple", "tMap", "extendEnv", "lookupEnv"] = 2
-  | Array.elem name ["freshVar", "generalize", "instantiate"] = 2
-  | otherwise = 1  -- Default to 1
+typesModuleFuncArity name =
+  if isTypesModuleValue name then 0
+  else if Array.elem name typesArity1Funcs then 1
+  else if Array.elem name typesArity2Funcs then 2
+  else 1  -- Default to 1
+
+typesArity1Funcs :: Array String
+typesArity1Funcs = ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList"]
+
+typesArity2Funcs :: Array String
+typesArity2Funcs = ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tTuple", "tMap", "extendEnv", "lookupEnv", "freshVar", "generalize", "instantiate"]
 
 -- | Functions from Nova.Compiler.Unify module
 isUnifyModuleFunc :: String -> Boolean
@@ -519,7 +552,27 @@ genExpr' ctx _ (ExprVar name) =
       else if isDataConstructor name && not (isNullaryConstructor name)
       then "(&" <> snakeCase name <> "/1)"
       else snakeCase name
-genExpr' _ _ (ExprQualified mod name) = translateQualified mod name
+genExpr' _ _ (ExprQualified mod name) =
+  -- Check if this is an AST constructor used as a function value
+  -- These need to be wrapped in lambdas because Elixir doesn't support
+  -- passing module functions without explicit capture
+  if isAstConstructor name
+  then
+    -- Generate lambda wrapper for AST constructors
+    -- Most AST constructors take 1-2 arguments
+    let arity = getAstConstructorArity name
+    in if arity == 0
+       then translateQualified mod name <> "()"
+       else if arity == 1
+       then "fn a -> " <> translateQualified mod name <> "(a) end"
+       else "fn a, b -> " <> translateQualified mod name <> "(a, b) end"
+  else if isTypesModuleFunc name
+  then
+    let arity = typesModuleFuncArity name
+    in if arity == 0
+       then "Nova.Compiler.Types." <> snakeCase name <> "()"
+       else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
+  else translateQualified mod name
 genExpr' _ _ (ExprLit lit) = genLiteral lit
 
 genExpr' ctx indent (ExprApp f arg) =
@@ -680,7 +733,7 @@ genExpr' ctx _ (ExprRecordAccess rec field) =
     collectRecordAccessChain :: Expr -> { base :: Expr, fields :: Array String }
     collectRecordAccessChain (ExprRecordAccess inner f) =
       let result = collectRecordAccessChain inner
-      in result { fields = result.fields <> [f] }
+      in result { fields = Array.snoc result.fields f }
     collectRecordAccessChain e = { base: e, fields: [] }
 
 genExpr' ctx _ (ExprRecordUpdate rec fields) =
@@ -773,48 +826,54 @@ groupBindsByName binds = go binds []
             let spanned = Array.span (\b' -> getBindName b' == Just n) rest
                 same = spanned.init
                 different = spanned.rest
-                group = [b] <> same
+                group = Array.cons b same
             in go different (Array.snoc acc group)
 
 -- | Sort groups of bindings by dependencies
 -- | Groups that don't depend on other groups come first
 sortGroupsByDependencies :: Array (Array LetBind) -> Array (Array LetBind)
 sortGroupsByDependencies groups =
-  let -- Get the primary name of each group
-      groupName :: Array LetBind -> Maybe String
-      groupName grp = case Array.head grp of
+  let groupName grp = case Array.head grp of
         Nothing -> Nothing
         Just b -> getBindName b
-      -- Get all names
       allNames = Array.mapMaybe groupName groups
-      -- Get dependencies for a group (names used that are defined in other groups)
-      groupDeps :: Array LetBind -> Array String
       groupDeps grp =
         let selfName = groupName grp
             usedNames = Array.concatMap (\b -> getUsedVars b.value) grp
         in Array.filter (\n -> Just n /= selfName && Array.elem n allNames) usedNames
-      -- Build info for each group
       groupInfo = map (\g -> { group: g, name: groupName g, deps: groupDeps g }) groups
-  in topoSortGroups groupInfo []
-  where
-    topoSortGroups :: Array { group :: Array LetBind, name :: Maybe String, deps :: Array String }
-                   -> Array (Array LetBind)
-                   -> Array (Array LetBind)
-    topoSortGroups infos resolved =
-      if Array.null infos
-      then resolved
-      else
-        let resolvedNames = Array.mapMaybe (\g -> case Array.head g of
-                                                    Nothing -> Nothing
-                                                    Just b -> getBindName b) resolved
-            partitioned = Array.partition (\info ->
-              Array.all (\d -> Array.elem d resolvedNames || not (Array.any (\i -> i.name == Just d) infos)) info.deps
-            ) infos
-            canResolve = partitioned.yes
-            remaining = partitioned.no
-        in if Array.null canResolve
-           then resolved <> map _.group remaining
-           else topoSortGroups remaining (resolved <> map _.group canResolve)
+  in topoSortBindGroups allNames groupInfo []
+
+topoSortBindGroups :: Array String -> Array BindGroupInfo -> Array (Array LetBind) -> Array (Array LetBind)
+topoSortBindGroups allNames infos resolved =
+  if Array.null infos
+  then resolved
+  else
+    let resolvedNames = Array.mapMaybe extractBindGroupName resolved
+        partitioned = Array.partition (canResolveGroup resolvedNames infos) infos
+        canResolve = partitioned.yes
+        remaining = partitioned.no
+    in if Array.null canResolve
+       then resolved <> map _.group remaining
+       else topoSortBindGroups allNames remaining (resolved <> map _.group canResolve)
+
+type BindGroupInfo = { group :: Array LetBind, name :: Maybe String, deps :: Array String }
+
+extractBindGroupName :: Array LetBind -> Maybe String
+extractBindGroupName g = case Array.head g of
+  Nothing -> Nothing
+  Just b -> getBindName b
+
+canResolveGroup :: Array String -> Array BindGroupInfo -> BindGroupInfo -> Boolean
+canResolveGroup resolvedNames infos info =
+  Array.all (depResolved resolvedNames infos) info.deps
+
+depResolved :: Array String -> Array BindGroupInfo -> String -> Boolean
+depResolved resolvedNames infos d =
+  Array.elem d resolvedNames || not (Array.any (hasName d) infos)
+
+hasName :: String -> BindGroupInfo -> Boolean
+hasName d info = info.name == Just d
 
 -- | Get variable names used in an expression
 getUsedVars :: Expr -> Array String
@@ -919,34 +978,41 @@ getBindDependencies allNames bind =
 -- | Bindings that don't depend on other bindings come first
 sortBindsByDependencies :: Array LetBind -> Array LetBind
 sortBindsByDependencies binds =
-  let -- Get names of all bindings
-      allNames = Array.mapMaybe getBindName binds
-      -- Build dependency info for each binding
-      bindInfo = map (\b -> { bind: b, name: getBindName b, deps: getBindDependencies allNames b }) binds
-  in topoSort bindInfo []
-  where
-    -- Topological sort: repeatedly take bindings whose dependencies are all resolved
-    topoSort :: Array { bind :: LetBind, name :: Maybe String, deps :: Array String }
-             -> Array LetBind
-             -> Array LetBind
-    topoSort infos resolved =
-      if Array.null infos
-      then resolved
-      else
-        let resolvedNames = Array.mapMaybe getBindName resolved
-            -- Find bindings whose dependencies are all in resolved
-            partitioned = Array.partition (\info ->
-              Array.all (\d -> Array.elem d resolvedNames || not (isBindName d infos)) info.deps
-            ) infos
-            canResolve = partitioned.yes
-            remaining = partitioned.no
-        in if Array.null canResolve
-           -- No progress - just append remaining in original order (may have circular deps)
-           then resolved <> map _.bind remaining
-           else topoSort remaining (resolved <> map _.bind canResolve)
+  let allNames = Array.mapMaybe getBindName binds
+      bindInfo = map (mkBindInfo allNames) binds
+  in topoSortLetBinds bindInfo []
 
-    -- Check if a name is a binding name (not an external reference)
-    isBindName name infos = Array.any (\info -> info.name == Just name) infos
+mkBindInfo :: Array String -> LetBind -> LetBindInfo
+mkBindInfo allNames b = { bind: b, name: getBindName b, deps: getBindDependencies allNames b }
+
+type LetBindInfo = { bind :: LetBind, name :: Maybe String, deps :: Array String }
+
+topoSortLetBinds :: Array LetBindInfo -> Array LetBind -> Array LetBind
+topoSortLetBinds infos resolved =
+  if Array.null infos
+  then resolved
+  else
+    let resolvedNames = Array.mapMaybe getBindName resolved
+        partitioned = Array.partition (canResolveLetBind resolvedNames infos) infos
+        canResolve = partitioned.yes
+        remaining = partitioned.no
+    in if Array.null canResolve
+       then resolved <> map _.bind remaining
+       else topoSortLetBinds remaining (resolved <> map _.bind canResolve)
+
+canResolveLetBind :: Array String -> Array LetBindInfo -> LetBindInfo -> Boolean
+canResolveLetBind resolvedNames infos info =
+  Array.all (letDepResolved resolvedNames infos) info.deps
+
+letDepResolved :: Array String -> Array LetBindInfo -> String -> Boolean
+letDepResolved resolvedNames infos d =
+  Array.elem d resolvedNames || not (isBindInfoName d infos)
+
+isBindInfoName :: String -> Array LetBindInfo -> Boolean
+isBindInfoName name infos = Array.any (hasInfoName name) infos
+
+hasInfoName :: String -> LetBindInfo -> Boolean
+hasInfoName name info = info.name == Just name
 
 -- | Generate let binding
 genLetBind :: Int -> LetBind -> String
@@ -1071,58 +1137,55 @@ exprToPattern _ = "_"
 -- | Multiple `pat | guard -> body` clauses become a single `pat ->` with a cond inside
 -- | A trailing fallback clause is included as the catch-all
 groupWildcardGuardedClauses :: Array CaseClause -> Array (Array CaseClause)
-groupWildcardGuardedClauses clauses = go clauses []
-  where
-    go cs acc = case Array.uncons cs of
-      Nothing -> acc
-      Just { head: c, tail: rest } ->
-        if hasGuard c && not (isGuardSafe' c)
-        then
-          -- This guarded clause uses non-guard-safe functions
-          -- Group it with the fallback clause
-          let samePat = samePattern c.pattern
-              -- Collect consecutive guarded clauses with same pattern
-              spanned = Array.span (\cl -> hasGuard cl && samePat cl.pattern) rest
-              guarded = [c] <> spanned.init
-              -- Check if next clause can serve as fallback
-              group = case Array.uncons spanned.rest of
-                Just { head: next, tail: remaining }
-                  | canBeFallback c.pattern next.pattern -> guarded <> [next]
-                  | otherwise -> guarded
-                Nothing -> guarded
-              remainingClauses = case Array.uncons spanned.rest of
-                Just { head: next, tail: remaining }
-                  | canBeFallback c.pattern next.pattern -> remaining
-                  | otherwise -> spanned.rest
-                Nothing -> []
-          in go remainingClauses (Array.snoc acc group)
-        else
-          -- Regular clause or guard-safe, standalone
-          go rest (Array.snoc acc [c])
+groupWildcardGuardedClauses clauses = groupGuardedGo clauses []
 
-    hasGuard clause = case clause.guard of
-      Just _ -> true
-      Nothing -> false
+groupGuardedGo :: Array CaseClause -> Array (Array CaseClause) -> Array (Array CaseClause)
+groupGuardedGo cs acc = case Array.uncons cs of
+  Nothing -> acc
+  Just { head: c, tail: rest } ->
+    if clauseHasGuard c && not (isClauseGuardSafe c)
+    then
+      let samePat = sameClausePattern c.pattern
+          spanned = Array.span (shouldGroup samePat) rest
+          guarded = Array.cons c spanned.init
+          groupAndRemaining = computeGroupAndRemaining c.pattern guarded spanned.rest
+      in groupGuardedGo groupAndRemaining.remaining (Array.snoc acc groupAndRemaining.group)
+    else
+      groupGuardedGo rest (Array.snoc acc [c])
 
-    -- Check if guard expression is safe for Elixir's when clause
-    isGuardSafe' clause = case clause.guard of
-      Just g -> isGuardSafe g
-      Nothing -> true
+shouldGroup :: (Pattern -> Boolean) -> CaseClause -> Boolean
+shouldGroup samePat cl = clauseHasGuard cl && samePat cl.pattern
 
-    -- Check if fallback pattern can catch failed guard of original pattern
-    -- `_ -> ...` can be fallback for any pattern
-    -- Same pattern can be fallback
-    canBeFallback origPat fallbackPat = case fallbackPat of
-      PatWildcard -> true
-      _ -> samePattern origPat fallbackPat
+computeGroupAndRemaining :: Pattern -> Array CaseClause -> Array CaseClause -> { group :: Array CaseClause, remaining :: Array CaseClause }
+computeGroupAndRemaining origPat guarded restClauses = case Array.uncons restClauses of
+  Just { head: next, tail: remaining } ->
+    if canPatBeFallback origPat next.pattern
+    then { group: Array.snoc guarded next, remaining: remaining }
+    else { group: guarded, remaining: restClauses }
+  Nothing -> { group: guarded, remaining: [] }
 
-    -- Check if two patterns match on same constructor/type
-    samePattern p1 p2 = case Tuple p1 p2 of
-      Tuple PatWildcard PatWildcard -> true
-      Tuple (PatVar _) (PatVar _) -> true
-      Tuple (PatCon n1 _) (PatCon n2 _) -> n1 == n2
-      Tuple (PatLit l1) (PatLit l2) -> true  -- Same literal type
-      _ -> false
+clauseHasGuard :: CaseClause -> Boolean
+clauseHasGuard clause = case clause.guard of
+  Just _ -> true
+  Nothing -> false
+
+isClauseGuardSafe :: CaseClause -> Boolean
+isClauseGuardSafe clause = case clause.guard of
+  Just g -> isGuardSafe g
+  Nothing -> true
+
+canPatBeFallback :: Pattern -> Pattern -> Boolean
+canPatBeFallback origPat fallbackPat = case fallbackPat of
+  PatWildcard -> true
+  _ -> sameClausePattern origPat fallbackPat
+
+sameClausePattern :: Pattern -> Pattern -> Boolean
+sameClausePattern p1 p2 = case Tuple p1 p2 of
+  Tuple PatWildcard PatWildcard -> true
+  Tuple (PatVar _) (PatVar _) -> true
+  Tuple (PatCon n1 _) (PatCon n2 _) -> n1 == n2
+  Tuple (PatLit _) (PatLit _) -> true
+  _ -> false
 
 -- | Generate code for a group of case clauses
 -- | Single clause: normal generation
@@ -1334,7 +1397,7 @@ genDataType dt =
 
     genTupleConstructor con =
       let arity = length con.fields
-          params = mapWithIndex (\i _ -> "arg" <> show i) con.fields
+          params = Array.mapWithIndex (\i _ -> "arg" <> show i) con.fields
           args = intercalate ", " params
           body = if arity == 0
                  then ":" <> snakeCase con.name

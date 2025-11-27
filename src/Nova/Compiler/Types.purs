@@ -262,6 +262,13 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array.dropWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.span" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "init" (tArray (TyVar a)), Tuple "rest" (tArray (TyVar a))], row: Nothing }))))
   , Tuple "Array.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
+  , Tuple "Array.range" (mkScheme [] (tArrow tInt (tArrow tInt (tArray tInt))))
+  , Tuple "Array.any" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
+  , Tuple "Array.all" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
+  , Tuple "Array.concatMap" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tArray (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
+  , Tuple "Array.concat" (mkScheme [a] (tArrow (tArray (tArray (TyVar a))) (tArray (TyVar a))))
+  , Tuple "Array.partition" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "yes" (tArray (TyVar a)), Tuple "no" (tArray (TyVar a))], row: Nothing }))))
+  , Tuple "Array.mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
 
   -- Char comparison (needed for isAlpha, isDigit etc)
   , Tuple "charLt" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
