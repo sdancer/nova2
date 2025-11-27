@@ -270,6 +270,7 @@ isPreludeFunc name = Array.elem name
   , "pure", "otherwise", "length", "zip", "tuple"
   , "just", "nothing", "left", "right"
   , "fromMaybe", "maybe", "either", "isJust", "isNothing"
+  , "fst", "snd"  -- Tuple accessors
   ]
 
 -- | Check if a name is a nullary (zero-argument) data constructor
@@ -307,11 +308,38 @@ isTypesModuleFunc name = Array.elem name
   , "emptyEnv", "builtinPrelude"
   ]
 
+-- | Values (zero-arity) from Types module that should be called with ()
+isTypesModuleValue :: String -> Boolean
+isTypesModuleValue name = Array.elem name
+  [ "emptySubst", "emptyEnv"
+  , "tInt", "tString", "tBool", "tChar", "tNumber"  -- Primitive types are values
+  ]
+
+-- | Get the arity of a Types module function
+typesModuleFuncArity :: String -> Int
+typesModuleFuncArity name
+  | isTypesModuleValue name = 0
+  | Array.elem name ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList"] = 1
+  | Array.elem name ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tTuple", "tMap", "extendEnv", "lookupEnv"] = 2
+  | Array.elem name ["freshVar", "generalize", "instantiate"] = 2
+  | otherwise = 1  -- Default to 1
+
 -- | Functions from Nova.Compiler.Unify module
 isUnifyModuleFunc :: String -> Boolean
 isUnifyModuleFunc name = Array.elem name
-  [ "unify", "unifyMany", "bindVar", "occurs", "unifyRecords"
+  [ "unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField"
   ]
+
+-- | Get the arity of an Unify module function
+unifyModuleFuncArity :: String -> Int
+unifyModuleFuncArity name = case name of
+  "unify" -> 2
+  "unifyMany" -> 2
+  "bindVar" -> 2
+  "occurs" -> 2
+  "unifyRecords" -> 2
+  "unifyField" -> 4
+  _ -> 2
 
 -- | Translate qualified module calls to Nova.* modules
 translateQualified :: String -> String -> String
@@ -330,6 +358,20 @@ translateQualified mod name =
         "CU" -> "Nova.String"
         _ -> elixirModuleName mod
   in elixirMod <> "." <> snakeCase name
+
+-- | Generate a partial application wrapper
+-- | When a function with `arity` args is called with `numArgs` args,
+-- | generate a closure for the remaining args
+genPartialApp :: String -> String -> Int -> Int -> String
+genPartialApp funcName appliedArgs numArgs arity =
+  let remaining = arity - numArgs
+      -- Generate parameter names for remaining args
+      extraParams = map (\i -> "__p" <> show i <> "__") (Array.range 0 (remaining - 1))
+      extraParamsStr = intercalate ", " extraParams
+      allArgsStr = if numArgs == 0
+                   then extraParamsStr
+                   else appliedArgs <> ", " <> extraParamsStr
+  in "fn " <> extraParamsStr <> " -> " <> funcName <> "(" <> allArgsStr <> ") end"
 
 -- | Generate a data constructor application with proper arity
 genConstructorApp :: GenCtx -> Int -> String -> Array Expr -> String
@@ -379,6 +421,7 @@ genExpr' ctx _ (ExprVar name) =
     "False" -> "false"
     "not" -> "(&Kernel.not/1)"  -- PureScript's not is a function
     "mod" -> "(&rem/2)"  -- PureScript's mod is Elixir's rem
+    "__guarded__" -> ":__guarded__"  -- Placeholder for guarded where functions
     _ ->
       -- Handle qualified names (e.g., Array.elem from backtick syntax)
       if String.contains (String.Pattern ".") name
@@ -403,11 +446,20 @@ genExpr' ctx _ (ExprVar name) =
              Just arity -> "(&" <> snakeCase name <> "/" <> show arity <> ")"  -- Generate function reference
              Nothing -> "(&" <> snakeCase name <> "/1)"  -- Default to arity 1
       else if isTypesModuleFunc name
-      then "(&Nova.Compiler.Types." <> snakeCase name <> "/1)"
+      then let arity = typesModuleFuncArity name
+           in if arity == 0
+              then "Nova.Compiler.Types." <> snakeCase name <> "()"
+              else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
       else if isUnifyModuleFunc name
-      then "(&Nova.Compiler.Unify." <> snakeCase name <> "/1)"
+      then "(&Nova.Compiler.Unify." <> snakeCase name <> "/" <> show (unifyModuleFuncArity name) <> ")"
       else if isPreludeFunc name
       then "(&Nova.Runtime." <> snakeCase name <> "/1)"
+      -- Handle AST constructors used as functions (e.g., PatVar, ExprVar)
+      else if isAstConstructor name
+      then "(&Nova.Compiler.Ast." <> snakeCase name <> "/1)"
+      -- Handle other data constructors as function references
+      else if isDataConstructor name && not (isNullaryConstructor name)
+      then "(&" <> snakeCase name <> "/1)"
       else snakeCase name
 genExpr' _ _ (ExprQualified mod name) = translateQualified mod name
 genExpr' _ _ (ExprLit lit) = genLiteral lit
@@ -445,20 +497,36 @@ genExpr' ctx indent (ExprApp f arg) =
       -- Handle data constructors specially
       else if isDataConstructor n
       then genConstructorApp c i n as
-      -- Handle partial applications of known binary functions
-      else if isModuleFunc c n && isBinaryFunc n && length as == 1
-      then "fn __x__ -> " <> snakeCase n <> "(" <> argsS <> ", __x__) end"
+      -- Handle module-level functions (possibly with partial application)
       else if isModuleFunc c n
-      then snakeCase n <> "(" <> argsS <> ")"
-      -- Handle external module functions
-      else if isTypesModuleFunc n && isBinaryFunc n && length as == 1
-      then "fn __x__ -> Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ", __x__) end"
+      then case lookupArity n c of
+             Just arity ->
+               let numArgs = length as
+               in if numArgs == arity
+                  then snakeCase n <> "(" <> argsS <> ")"
+                  else if numArgs < arity
+                  then genPartialApp (snakeCase n) argsS numArgs arity
+                  else snakeCase n <> "(" <> argsS <> ")"  -- More args than expected
+             Nothing ->
+               -- Unknown arity, just generate the call
+               snakeCase n <> "(" <> argsS <> ")"
+      -- Handle external Types module functions
       else if isTypesModuleFunc n
-      then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
-      else if isUnifyModuleFunc n && isBinaryFunc n && length as == 1
-      then "fn __x__ -> Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ", __x__) end"
+      then let arity = typesModuleFuncArity n
+               numArgs = length as
+           in if numArgs == arity
+              then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
+              else if numArgs < arity
+              then genPartialApp ("Nova.Compiler.Types." <> snakeCase n) argsS numArgs arity
+              else "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
       else if isUnifyModuleFunc n
-      then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
+      then let arity = unifyModuleFuncArity n
+               numArgs = length as
+           in if numArgs == arity
+              then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
+              else if numArgs < arity
+              then genPartialApp ("Nova.Compiler.Unify." <> snakeCase n) argsS numArgs arity
+              else "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"  -- More args than expected
       else if isPreludeFunc n
       then "Nova.Runtime." <> snakeCase n <> "(" <> argsS <> ")"
       else snakeCase n <> ".(" <> argsS <> ")"
@@ -470,9 +538,12 @@ genExpr' ctx indent (ExprLambda pats body) =
 
 genExpr' ctx indent (ExprLet binds body) =
   let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
-      -- Sort bindings by dependencies: bindings that don't depend on others come first
-      sortedBinds = sortBindsByDependencies binds
-      bindCode = intercalate "\n" (map (genLetBindCtx ctx (indent + 1)) sortedBinds)
+      -- First group consecutive bindings by name (for multi-clause functions in where)
+      groupedBinds = groupBindsByName binds
+      -- Then sort groups by dependencies
+      sortedGroups = sortGroupsByDependencies groupedBinds
+      -- Generate code for each group
+      bindCode = intercalate "\n" (map (genBindingGroup ctx (indent + 1)) sortedGroups)
   in "\n" <> bindCode <> "\n" <> ind (indent + 1) <> genExpr' ctxWithBinds 0 body
 
 genExpr' ctx indent (ExprIf cond then_ else_) =
@@ -624,6 +695,147 @@ getBindName :: LetBind -> Maybe String
 getBindName bind = case bind.pattern of
   PatVar n -> Just n
   _ -> Nothing
+
+-- | Group consecutive let bindings by name
+-- | Bindings with the same name (multiple pattern clauses) are grouped together
+groupBindsByName :: Array LetBind -> Array (Array LetBind)
+groupBindsByName binds = go binds []
+  where
+    go :: Array LetBind -> Array (Array LetBind) -> Array (Array LetBind)
+    go arr acc = case Array.uncons arr of
+      Nothing -> acc
+      Just { head: b, tail: rest } ->
+        let name = getBindName b
+        in case name of
+          Nothing -> go rest (Array.snoc acc [b])  -- Non-variable pattern, single group
+          Just n ->
+            -- Collect all consecutive bindings with the same name
+            let spanned = Array.span (\b' -> getBindName b' == Just n) rest
+                same = spanned.init
+                different = spanned.rest
+                group = [b] <> same
+            in go different (Array.snoc acc group)
+
+-- | Sort groups of bindings by dependencies
+-- | Groups that don't depend on other groups come first
+sortGroupsByDependencies :: Array (Array LetBind) -> Array (Array LetBind)
+sortGroupsByDependencies groups =
+  let -- Get the primary name of each group
+      groupName :: Array LetBind -> Maybe String
+      groupName grp = case Array.head grp of
+        Nothing -> Nothing
+        Just b -> getBindName b
+      -- Get all names
+      allNames = Array.mapMaybe groupName groups
+      -- Get dependencies for a group (names used that are defined in other groups)
+      groupDeps :: Array LetBind -> Array String
+      groupDeps grp =
+        let selfName = groupName grp
+            usedNames = Array.concatMap (\b -> getUsedVars b.value) grp
+        in Array.filter (\n -> Just n /= selfName && Array.elem n allNames) usedNames
+      -- Build info for each group
+      groupInfo = map (\g -> { group: g, name: groupName g, deps: groupDeps g }) groups
+  in topoSortGroups groupInfo []
+  where
+    topoSortGroups :: Array { group :: Array LetBind, name :: Maybe String, deps :: Array String }
+                   -> Array (Array LetBind)
+                   -> Array (Array LetBind)
+    topoSortGroups infos resolved =
+      if Array.null infos
+      then resolved
+      else
+        let resolvedNames = Array.mapMaybe (\g -> case Array.head g of
+                                                    Nothing -> Nothing
+                                                    Just b -> getBindName b) resolved
+            partitioned = Array.partition (\info ->
+              Array.all (\d -> Array.elem d resolvedNames || not (Array.any (\i -> i.name == Just d) infos)) info.deps
+            ) infos
+            canResolve = partitioned.yes
+            remaining = partitioned.no
+        in if Array.null canResolve
+           then resolved <> map _.group remaining
+           else topoSortGroups remaining (resolved <> map _.group canResolve)
+
+-- | Get variable names used in an expression
+getUsedVars :: Expr -> Array String
+getUsedVars (ExprVar n) = [n]
+getUsedVars (ExprApp f a) = getUsedVars f <> getUsedVars a
+getUsedVars (ExprLambda _ body) = getUsedVars body
+getUsedVars (ExprLet binds body) = Array.concatMap (\b -> getUsedVars b.value) binds <> getUsedVars body
+getUsedVars (ExprIf c t e) = getUsedVars c <> getUsedVars t <> getUsedVars e
+getUsedVars (ExprCase scrut clauses) = getUsedVars scrut <> Array.concatMap (\cl -> getUsedVars cl.body) clauses
+getUsedVars (ExprBinOp _ l r) = getUsedVars l <> getUsedVars r
+getUsedVars (ExprList elems) = Array.concatMap getUsedVars elems
+getUsedVars (ExprRecord fields) = Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprRecordAccess rec _) = getUsedVars rec
+getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars _ = []
+
+-- | Generate code for a group of bindings (possibly multiple pattern clauses)
+genBindingGroup :: GenCtx -> Int -> Array LetBind -> String
+genBindingGroup ctx indent binds = case binds of
+  [] -> ""
+  [single] -> genLetBindCtx ctx indent single
+  -- Multiple bindings with same name - generate merged function with case
+  _ -> case Array.head binds of
+    Nothing -> ""
+    Just firstBind -> case getBindName firstBind of
+      Nothing -> intercalate "\n" (map (genLetBindCtx ctx indent) binds)
+      Just name ->
+        -- All bindings are lambdas with the same name - merge into one with case
+        let clauses = Array.mapMaybe extractLambdaClause binds
+            arity = case Array.head clauses of
+              Nothing -> 0
+              Just c -> length c.patterns
+            isRecursive = Array.any (\b -> containsVar name b.value) binds
+        in if Array.null clauses || arity == 0
+           then intercalate "\n" (map (genLetBindCtx ctx indent) binds)
+           else genMergedFunction ctx indent name arity clauses isRecursive
+
+-- | Extract pattern and body from a lambda binding
+extractLambdaClause :: LetBind -> Maybe { patterns :: Array Pattern, body :: Expr }
+extractLambdaClause bind = case bind.value of
+  ExprLambda pats body -> Just { patterns: pats, body }
+  _ -> Nothing
+
+-- | Generate a merged function with multiple clauses as a case expression
+genMergedFunction :: GenCtx -> Int -> String -> Int -> Array { patterns :: Array Pattern, body :: Expr } -> Boolean -> String
+genMergedFunction ctx indent name arity clauses isRecursive =
+  let -- Generate parameter names: __arg0__, __arg1__, etc.
+      argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
+      argsStr = intercalate ", " argNames
+      -- Generate case expression matching on tuple of args
+      scrutinee = if arity == 1
+                  then Array.head argNames # fromMaybe "__arg0__"
+                  else "{" <> argsStr <> "}"
+      caseBody = genMergedCaseClauses ctx (indent + 1) arity clauses
+      fixFn = case arity of
+        1 -> "Nova.Runtime.fix"
+        2 -> "Nova.Runtime.fix2"
+        3 -> "Nova.Runtime.fix3"
+        4 -> "Nova.Runtime.fix4"
+        _ -> "Nova.Runtime.fix5"
+  in if isRecursive
+     then ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> fn " <> argsStr <> " -> case " <> scrutinee <> " do\n" <>
+          caseBody <> "\n" <> ind indent <> "end end end)"
+     else ind indent <> snakeCase name <> " = fn " <> argsStr <> " -> case " <> scrutinee <> " do\n" <>
+          caseBody <> "\n" <> ind indent <> "end end"
+
+-- | Generate case clauses for merged function
+genMergedCaseClauses :: GenCtx -> Int -> Int -> Array { patterns :: Array Pattern, body :: Expr } -> String
+genMergedCaseClauses ctx indent arity clauses =
+  intercalate "\n" (map genClause clauses)
+  where
+    genClause :: { patterns :: Array Pattern, body :: Expr } -> String
+    genClause clause =
+      let patStr = if arity == 1
+                   then case Array.head clause.patterns of
+                          Nothing -> "_"
+                          Just p -> genPattern p
+                   else "{" <> intercalate ", " (map genPattern clause.patterns) <> "}"
+          ctxWithPats = foldr addLocalsFromPattern ctx clause.patterns
+          bodyStr = genExpr' ctxWithPats 0 clause.body
+      in ind indent <> patStr <> " -> " <> bodyStr
 
 -- | Get all variable names referenced in a let binding's value
 -- | Excludes self-references (those are handled by the fix combinator)
