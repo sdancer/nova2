@@ -779,7 +779,58 @@ end
   end
 
   def parse_expression(tokens) do
-    parse_any([(&parse_let_expression/1), (&parse_if_expression/1), (&parse_case_expression/1), (&parse_do_block/1), (&parse_lambda/1), (&parse_dollar_expression/1)], tokens)
+    parse_any([(&parse_let_expression/1), (&parse_if_expression/1), (&parse_case_expression/1), (&parse_do_block/1), (&parse_lambda/1), (&parse_typed_expression/1)], tokens)
+  end
+
+  def parse_typed_expression(tokens) do
+      case parse_dollar_expression(tokens) do
+    {:left, err} -> {:left, err}
+    {:right, {:tuple, expr, rest}} ->
+case Nova.Array.head(rest) do
+              {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "::")) do
+                                    rest_prime = Nova.Array.drop(1, rest)
+         case parse_type_atom_sequence(rest_prime) do
+           {:left, err} -> {:left, err}
+           {:right, {:tuple, ty, rest_prime_prime}} ->
+success(Nova.Compiler.Ast.expr_typed(expr, ty), rest_prime_prime)
+         end
+                else
+                  success(expr, rest)
+                end
+              _ -> success(expr, rest)
+            end
+  end
+  end
+
+  def parse_type_atom_sequence(tokens) do
+      case parse_type_atom(tokens) do
+    {:left, err} -> {:left, err}
+    {:right, {:tuple, first, rest}} ->
+parse_type_atom_sequence_rest(first, rest)
+  end
+  end
+
+  def parse_type_atom_sequence_rest(acc, tokens) do
+    case Nova.Array.head(tokens) do
+      {:just, t} ->
+        cond do
+          (t.token_type == :tok_newline) -> success(acc, tokens)
+          ((t.token_type == :tok_operator) and (t.value == "->")) ->             rest = Nova.Array.drop(1, tokens)
+      case parse_type_atom_sequence(rest) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, right, rest_prime}} ->
+success(Nova.Compiler.Ast.ty_expr_arrow(acc, right), rest_prime)
+      end
+          true -> case parse_type_atom(tokens) do
+          {:right, ({:tuple, next, rest})} -> parse_type_atom_sequence_rest(Nova.Compiler.Ast.ty_expr_app(acc, next), rest)
+          {:left, _} -> success(acc, tokens)
+        end
+        end
+      _ -> case parse_type_atom(tokens) do
+          {:right, ({:tuple, next, rest})} -> parse_type_atom_sequence_rest(Nova.Compiler.Ast.ty_expr_app(acc, next), rest)
+          {:left, _} -> success(acc, tokens)
+        end
+    end
   end
 
   def parse_dollar_expression(tokens) do
@@ -1861,7 +1912,7 @@ success(%{name: name, type_vars: [], constraints: [], ty: ty}, rest_prime_prime)
   end
 
   def parse_declaration(tokens) do
-    parse_any([(&parse_module_header/1), (&parse_import/1), (&parse_foreign_import_simple/1), (&parse_data_declaration/1), (&parse_type_alias/1), (&parse_type_class/1), (&parse_type_class_instance/1), (&parse_function_with_type_signature/1), (&parse_function_declaration/1), (&parse_type_signature_decl/1)], tokens)
+    parse_any([(&parse_module_header/1), (&parse_import/1), (&parse_foreign_import_simple/1), (&parse_infix_declaration/1), (&parse_newtype_declaration/1), (&parse_data_declaration/1), (&parse_type_alias/1), (&parse_type_class/1), (&parse_type_class_instance/1), (&parse_function_with_type_signature/1), (&parse_function_declaration/1), (&parse_type_signature_decl/1)], tokens)
   end
 
   def parse_module_header(tokens) do
@@ -2050,6 +2101,99 @@ success(Nova.Compiler.Ast.import_some(names), rest_prime)
                     {:left, err} -> {:left, err}
                     {:right, {:tuple, ty, rest4}} ->
 success(Nova.Compiler.Ast.decl_foreign_import(%{module_name: "", function_name: name, alias_: {:just, name}, type_signature: ty}), drop_newlines(rest4))
+                  end
+              end
+          end
+      end
+  end
+  end
+
+  def parse_infix_declaration(tokens) do
+        tokens_prime = drop_newlines(tokens)
+case Nova.Array.head(tokens_prime) do
+      {:just, t} ->
+        cond do
+          ((t.token_type == :tok_keyword) and (t.value == "infixl")) -> parse_infix_with(Nova.Compiler.Ast.assoc_left, Nova.Array.drop(1, tokens_prime))
+          ((t.token_type == :tok_keyword) and (t.value == "infixr")) -> parse_infix_with(Nova.Compiler.Ast.assoc_right, Nova.Array.drop(1, tokens_prime))
+          ((t.token_type == :tok_keyword) and (t.value == "infix")) -> parse_infix_with(Nova.Compiler.Ast.assoc_none, Nova.Array.drop(1, tokens_prime))
+          true -> failure("Expected infix declaration")
+        end
+      _ -> failure("Expected infix declaration")
+    end
+  end
+
+  def parse_infix_with(assoc, tokens) do
+        tokens_prime = skip_newlines(tokens)
+case Nova.Array.head(tokens_prime) do
+      {:just, t} ->
+        cond do
+          (t.token_type == :tok_number) ->             prec = case Nova.String.to_int(t.value) do
+              {:just, n} -> n
+              :nothing -> 9
+            end
+            rest = Nova.Array.drop(1, tokens_prime)
+      case parse_infix_operator(rest) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, op, rest_prime}} ->
+success(Nova.Compiler.Ast.decl_infix(%{associativity: assoc, precedence: prec, operator: op}), rest_prime)
+      end
+          true -> failure("Expected precedence number")
+        end
+      _ -> failure("Expected precedence number")
+    end
+  end
+
+  def parse_infix_operator(tokens) do
+        tokens_prime = skip_newlines(tokens)
+case Nova.Array.head(tokens_prime) do
+      {:just, t} ->
+        cond do
+          (t.token_type == :tok_operator) -> success(t.value, Nova.Array.drop(1, tokens_prime))
+          ((t.token_type == :tok_delimiter) and (t.value == "`")) ->             rest = Nova.Array.drop(1, tokens_prime)
+      case parse_identifier_name(rest) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, name, rest_prime}} ->
+          case expect_delimiter(rest_prime, "`") do
+            {:left, err} -> {:left, err}
+            {:right, {:tuple, _, rest_prime_prime}} ->
+success(name, rest_prime_prime)
+          end
+      end
+          ((t.token_type == :tok_keyword) and (t.value == "type")) ->             rest = Nova.Array.drop(1, tokens_prime)
+      case parse_infix_operator(rest) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, op, rest_prime}} ->
+success(Nova.Runtime.append("type ", op), rest_prime)
+      end
+          true -> failure("Expected operator")
+        end
+      _ -> failure("Expected operator")
+    end
+  end
+
+  def parse_newtype_declaration(tokens) do
+      case expect_keyword(tokens, "newtype") do
+    {:left, err} -> {:left, err}
+    {:right, {:tuple, _, rest}} ->
+      case parse_identifier_name(rest) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, name, rest_prime}} ->
+          case parse_many((&parse_identifier_name/1), rest_prime) do
+            {:left, err} -> {:left, err}
+            {:right, {:tuple, vars, rest_prime_prime}} ->
+                            rest_prime_prime_prime = skip_newlines(rest_prime_prime)
+              case expect_operator(rest_prime_prime_prime, "=") do
+                {:left, err} -> {:left, err}
+                {:right, {:tuple, _, rest4}} ->
+                                    rest5 = skip_newlines(rest4)
+                  case parse_identifier_name(rest5) do
+                    {:left, err} -> {:left, err}
+                    {:right, {:tuple, ctor_name, rest6}} ->
+                      case parse_type_atom(rest6) do
+                        {:left, err} -> {:left, err}
+                        {:right, {:tuple, wrapped_ty, rest7}} ->
+success(Nova.Compiler.Ast.decl_newtype(%{name: name, type_vars: vars, constructor: ctor_name, wrapped_type: wrapped_ty}), rest7)
+                      end
                   end
               end
           end
