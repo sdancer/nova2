@@ -902,6 +902,8 @@ typeExprToType varMap (TyExprCon name) =
   case name of
     -- Type wildcard/hole - use a special placeholder type var
     "_" -> TyVar (mkTVar (-999) "_")
+    -- PureScript uses Boolean, we use Bool internally
+    "Boolean" -> tBool
     "TCon" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "args" (tArray tTypeHolder)], row: Nothing }
     "TVar" -> TyRecord { fields: Map.fromFoldable [Tuple "id" tInt, Tuple "name" tString], row: Nothing }
     "Token" -> TyRecord { fields: Map.fromFoldable [Tuple "tokenType" (TyCon (mkTCon "TokenType" [])), Tuple "value" tString, Tuple "line" tInt, Tuple "column" tInt, Tuple "pos" tInt], row: Nothing }

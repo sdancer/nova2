@@ -190,6 +190,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "String" (mkScheme [] tString)
   , Tuple "Char" (mkScheme [] tChar)
   , Tuple "Bool" (mkScheme [] tBool)
+  , Tuple "Boolean" (mkScheme [] tBool)  -- PureScript uses Boolean, alias to Bool
   , Tuple "True" (mkScheme [] tBool)
   , Tuple "False" (mkScheme [] tBool)
   , Tuple "Array" (mkScheme [a] (tArray (TyVar a)))

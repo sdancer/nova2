@@ -80,22 +80,60 @@ genDeclaration _ _ = "  # unsupported declaration"
 -- | Generate function definition
 genFunction :: GenCtx -> FunctionDeclaration -> String
 genFunction ctx func =
-  let -- Add parameters to locals
-      ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
-      params = intercalate ", " (map genPattern func.parameters)
-  in if Array.null func.guards
-     then
-       let body = genExprCtx ctxWithParams 2 func.body
-       in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
-          body <> "\n" <>
-          "  end"
-     else
-       -- Generate guarded function using cond expression
-       let guardClauses = map (genGuardedExpr ctxWithParams 4) func.guards
-           condExpr = "    cond do\n" <> intercalate "\n" guardClauses <> "\n    end"
-       in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
-          condExpr <> "\n" <>
-          "  end"
+  -- Handle point-free function aliases: dropNewlines = skipNewlines
+  -- When body is just a variable reference to another function with known arity > 0
+  case handlePointFreeAlias ctx func of
+    Just code -> code
+    Nothing ->
+      let -- Add parameters to locals
+          ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
+          params = intercalate ", " (map genPattern func.parameters)
+      in if Array.null func.guards
+         then
+           let body = genExprCtx ctxWithParams 2 func.body
+           in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
+              body <> "\n" <>
+              "  end"
+         else
+           -- Generate guarded function using cond expression
+           let guardClauses = map (genGuardedExpr ctxWithParams 4) func.guards
+               condExpr = "    cond do\n" <> intercalate "\n" guardClauses <> "\n    end"
+           in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
+              condExpr <> "\n" <>
+              "  end"
+
+-- | Handle point-free function aliases like: dropNewlines = skipNewlines
+-- | When a function has no parameters and its body is a reference to another function,
+-- | generate a wrapper that passes through arguments
+handlePointFreeAlias :: GenCtx -> FunctionDeclaration -> Maybe String
+handlePointFreeAlias ctx func
+  -- Case 1: Simple alias like dropNewlines = skipNewlines
+  | Array.null func.parameters
+  , ExprVar refName <- func.body
+  , Just arity <- lookupArity refName ctx
+  , arity > 0 =
+      let argNames = map (\i -> "__arg" <> show i <> "__") (Array.range 0 (arity - 1))
+          argsStr = intercalate ", " argNames
+      in Just $ "  def " <> snakeCase func.name <> "(" <> argsStr <> ") do\n    " <>
+                snakeCase refName <> "(" <> argsStr <> ")\n  end"
+  -- Case 2: Partial application like stripNewlines = Array.filter (\t -> ...)
+  -- Generate wrapper that adds the missing argument
+  | Array.null func.parameters
+  , isPartialAppOfArity2 func.body =
+      let bodyCode = genExprCtx ctx 0 func.body
+      in Just $ "  def " <> snakeCase func.name <> "(__arg0__) do\n    " <>
+                bodyCode <> ".(__arg0__)\n  end"
+  | otherwise = Nothing
+
+-- | Check if expression is a partial application of a known 2-arity function
+-- | like Array.filter, Array.map, etc. applied to one argument
+isPartialAppOfArity2 :: Expr -> Boolean
+isPartialAppOfArity2 (ExprApp (ExprQualified "Array" fn) _) =
+  fn == "filter" || fn == "map" || fn == "find" || fn == "any" || fn == "all" ||
+  fn == "takeWhile" || fn == "dropWhile" || fn == "sortBy" || fn == "groupBy"
+isPartialAppOfArity2 (ExprApp (ExprVar fn) _) =
+  fn == "filter" || fn == "map" || fn == "find" || fn == "any" || fn == "all"
+isPartialAppOfArity2 _ = false
 
 -- | Generate a guarded expression clause for cond
 -- | Pattern guards need special handling - they become nested case expressions
@@ -344,20 +382,40 @@ unifyModuleFuncArity name = case name of
 -- | Translate qualified module calls to Nova.* modules
 translateQualified :: String -> String -> String
 translateQualified mod name =
-  let elixirMod = case mod of
-        "Map" -> "Nova.Map"
-        "Data.Map" -> "Nova.Map"
-        "Set" -> "Nova.Set"
-        "Data.Set" -> "Nova.Set"
-        "Array" -> "Nova.Array"
-        "Data.Array" -> "Nova.Array"
-        "String" -> "Nova.String"
-        "Data.String" -> "Nova.String"
-        "Data.String.CodeUnits" -> "Nova.String"
-        "SCU" -> "Nova.String"
-        "CU" -> "Nova.String"
-        _ -> elixirModuleName mod
-  in elixirMod <> "." <> snakeCase name
+  -- Special case translations for specific module.function combinations
+  case Tuple mod name of
+    Tuple "Int" "fromString" -> "Nova.String.to_int"
+    Tuple "Data.Int" "fromString" -> "Nova.String.to_int"
+    _ ->
+      let elixirMod = case mod of
+            "Map" -> "Nova.Map"
+            "Data.Map" -> "Nova.Map"
+            "Set" -> "Nova.Set"
+            "Data.Set" -> "Nova.Set"
+            "Array" -> "Nova.Array"
+            "Data.Array" -> "Nova.Array"
+            "String" -> "Nova.String"
+            "Data.String" -> "Nova.String"
+            "Data.String.CodeUnits" -> "Nova.String"
+            "SCU" -> "Nova.String"
+            "CU" -> "Nova.String"
+            -- Nova compiler modules
+            "Ast" -> "Nova.Compiler.Ast"
+            "Nova.Compiler.Ast" -> "Nova.Compiler.Ast"
+            "Types" -> "Nova.Compiler.Types"
+            "Nova.Compiler.Types" -> "Nova.Compiler.Types"
+            "Unify" -> "Nova.Compiler.Unify"
+            "Nova.Compiler.Unify" -> "Nova.Compiler.Unify"
+            "Tokenizer" -> "Nova.Compiler.Tokenizer"
+            "Nova.Compiler.Tokenizer" -> "Nova.Compiler.Tokenizer"
+            "Parser" -> "Nova.Compiler.Parser"
+            "Nova.Compiler.Parser" -> "Nova.Compiler.Parser"
+            "TypeChecker" -> "Nova.Compiler.TypeChecker"
+            "Nova.Compiler.TypeChecker" -> "Nova.Compiler.TypeChecker"
+            "CodeGen" -> "Nova.Compiler.CodeGen"
+            "Nova.Compiler.CodeGen" -> "Nova.Compiler.CodeGen"
+            _ -> elixirModuleName mod
+      in elixirMod <> "." <> snakeCase name
 
 -- | Generate a partial application wrapper
 -- | When a function with `arity` args is called with `numArgs` args,
@@ -554,9 +612,11 @@ genExpr' ctx indent (ExprIf cond then_ else_) =
   ind indent <> "end"
 
 genExpr' ctx indent (ExprCase scrutinee clauses) =
-  "case " <> genExpr' ctx indent scrutinee <> " do\n" <>
-  intercalate "\n" (map (genCaseClauseCtx ctx (indent + 1)) clauses) <> "\n" <>
-  ind indent <> "end"
+  -- Group consecutive wildcard-guarded clauses together for cond expression
+  let groupedClauses = groupWildcardGuardedClauses clauses
+  in "case " <> genExpr' ctx indent scrutinee <> " do\n" <>
+     intercalate "\n" (map (genCaseClauseGroup ctx (indent + 1)) groupedClauses) <> "\n" <>
+     ind indent <> "end"
 
 genExpr' ctx indent (ExprDo stmts) =
   -- Do notation becomes a series of binds/flatMaps
@@ -769,6 +829,17 @@ getUsedVars (ExprList elems) = Array.concatMap getUsedVars elems
 getUsedVars (ExprRecord fields) = Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
 getUsedVars (ExprRecordAccess rec _) = getUsedVars rec
 getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprDo stmts) = Array.concatMap getUsedVarsStmt stmts
+  where
+    getUsedVarsStmt (DoLet binds) = Array.concatMap (\b -> getUsedVars b.value) binds
+    getUsedVarsStmt (DoBind _ e) = getUsedVars e
+    getUsedVarsStmt (DoExpr e) = getUsedVars e
+getUsedVars (ExprTuple elems) = Array.concatMap getUsedVars elems
+getUsedVars (ExprTyped e _) = getUsedVars e
+getUsedVars (ExprParens e) = getUsedVars e
+getUsedVars (ExprSection _) = []  -- operator section like (+ 1), no vars
+getUsedVars (ExprQualified _ _) = []  -- Qualified names are external
+getUsedVars (ExprUnaryOp _ e) = getUsedVars e
 getUsedVars _ = []
 
 -- | Generate code for a group of bindings (possibly multiple pattern clauses)
@@ -996,6 +1067,125 @@ exprToPattern (ExprRecord fields) = "%" <> genRecordFields fields
 exprToPattern (ExprParens e) = exprToPattern e
 exprToPattern _ = "_"
 
+-- | Group consecutive guarded clauses with same pattern together
+-- | Multiple `pat | guard -> body` clauses become a single `pat ->` with a cond inside
+-- | A trailing fallback clause is included as the catch-all
+groupWildcardGuardedClauses :: Array CaseClause -> Array (Array CaseClause)
+groupWildcardGuardedClauses clauses = go clauses []
+  where
+    go cs acc = case Array.uncons cs of
+      Nothing -> acc
+      Just { head: c, tail: rest } ->
+        if hasGuard c && not (isGuardSafe' c)
+        then
+          -- This guarded clause uses non-guard-safe functions
+          -- Group it with the fallback clause
+          let samePat = samePattern c.pattern
+              -- Collect consecutive guarded clauses with same pattern
+              spanned = Array.span (\cl -> hasGuard cl && samePat cl.pattern) rest
+              guarded = [c] <> spanned.init
+              -- Check if next clause can serve as fallback
+              group = case Array.uncons spanned.rest of
+                Just { head: next, tail: remaining }
+                  | canBeFallback c.pattern next.pattern -> guarded <> [next]
+                  | otherwise -> guarded
+                Nothing -> guarded
+              remainingClauses = case Array.uncons spanned.rest of
+                Just { head: next, tail: remaining }
+                  | canBeFallback c.pattern next.pattern -> remaining
+                  | otherwise -> spanned.rest
+                Nothing -> []
+          in go remainingClauses (Array.snoc acc group)
+        else
+          -- Regular clause or guard-safe, standalone
+          go rest (Array.snoc acc [c])
+
+    hasGuard clause = case clause.guard of
+      Just _ -> true
+      Nothing -> false
+
+    -- Check if guard expression is safe for Elixir's when clause
+    isGuardSafe' clause = case clause.guard of
+      Just g -> isGuardSafe g
+      Nothing -> true
+
+    -- Check if fallback pattern can catch failed guard of original pattern
+    -- `_ -> ...` can be fallback for any pattern
+    -- Same pattern can be fallback
+    canBeFallback origPat fallbackPat = case fallbackPat of
+      PatWildcard -> true
+      _ -> samePattern origPat fallbackPat
+
+    -- Check if two patterns match on same constructor/type
+    samePattern p1 p2 = case Tuple p1 p2 of
+      Tuple PatWildcard PatWildcard -> true
+      Tuple (PatVar _) (PatVar _) -> true
+      Tuple (PatCon n1 _) (PatCon n2 _) -> n1 == n2
+      Tuple (PatLit l1) (PatLit l2) -> true  -- Same literal type
+      _ -> false
+
+-- | Generate code for a group of case clauses
+-- | Single clause: normal generation
+-- | Multiple guarded clauses: generate cond expression
+genCaseClauseGroup :: GenCtx -> Int -> Array CaseClause -> String
+genCaseClauseGroup ctx indent clauses = case clauses of
+  [] -> ""
+  [single] -> genCaseClauseCtx ctx indent single
+  _ ->
+    -- Multiple guarded clauses
+    -- Check if last clause is a wildcard - if so, we need to duplicate it for both patterns
+    let lastClause = Array.last clauses
+        hasWildcardFallback = case lastClause of
+          Just c -> case c.pattern of
+            PatWildcard -> true
+            _ -> false
+          Nothing -> false
+    in if hasWildcardFallback
+       then genWithWildcardFallback ctx indent clauses
+       else genWithCondOnly ctx indent clauses
+
+-- | Generate case group where last clause is a wildcard fallback
+-- | Generates separate case arms for each pattern type
+genWithWildcardFallback :: GenCtx -> Int -> Array CaseClause -> String
+genWithWildcardFallback ctx indent clauses =
+  let lastClause = case Array.last clauses of
+        Just c -> c
+        Nothing -> { pattern: PatWildcard, guard: Nothing, body: ExprLit (LitInt 0) }
+      initClauses = fromMaybe [] (Array.init clauses)
+      firstClause = case Array.head initClauses of
+        Just c -> c
+        Nothing -> lastClause
+      pat = genPattern firstClause.pattern
+      ctxWithPat = addLocalsFromPattern firstClause.pattern ctx
+      fallbackBody = genExpr' ctx (indent + 1) lastClause.body
+  in ind indent <> pat <> " ->\n" <>
+     ind (indent + 1) <> "cond do\n" <>
+     intercalate "\n" (map (genCondClause ctxWithPat (indent + 2)) initClauses) <> "\n" <>
+     ind (indent + 2) <> "true -> " <> fallbackBody <> "\n" <>
+     ind (indent + 1) <> "end\n" <>
+     ind indent <> "_ -> " <> fallbackBody
+
+-- | Generate case group using only cond (all clauses have same pattern)
+genWithCondOnly :: GenCtx -> Int -> Array CaseClause -> String
+genWithCondOnly ctx indent clauses =
+  let firstClause = case Array.head clauses of
+        Just c -> c
+        Nothing -> { pattern: PatWildcard, guard: Nothing, body: ExprLit (LitInt 0) }
+      pat = genPattern firstClause.pattern
+      ctxWithPat = addLocalsFromPattern firstClause.pattern ctx
+  in ind indent <> pat <> " ->\n" <>
+     ind (indent + 1) <> "cond do\n" <>
+     intercalate "\n" (map (genCondClause ctxWithPat (indent + 2)) clauses) <> "\n" <>
+     ind (indent + 1) <> "end"
+
+-- | Generate a single clause within a cond expression
+genCondClause :: GenCtx -> Int -> CaseClause -> String
+genCondClause ctx indent clause =
+  let body = genExpr' ctx (indent + 1) clause.body
+  in case clause.guard of
+    Just g -> ind indent <> genExpr' ctx 0 g <> " -> " <> body
+    Nothing -> ind indent <> "true -> " <> body  -- Final catch-all
+
 genCaseClauseCtx :: GenCtx -> Int -> CaseClause -> String
 genCaseClauseCtx ctx indent clause =
   let ctxWithPat = addLocalsFromPattern clause.pattern ctx
@@ -1085,14 +1275,50 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
         let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
         in intercalate "\n" (map (genLetBindCtx ctx indent) binds) <> "\n" <> genDoStmtsCtx ctxWithBinds indent rest
       DoBind pat e ->
-        -- Monadic bind: unwrap Either result with {:right, {:tuple, ...}} pattern
+        -- Monadic bind: detect monad type from expression
+        -- Maybe monad: peek, peekAt, charAt, Array.head, Array.find, etc.
+        -- Either monad: parse functions, etc.
         let ctxWithPat = addLocalsFromPattern pat ctx
+            isMaybeExpr = isMaybeReturning e
+            indStr = repeatStr indent " "
             -- Check if pattern is a Tuple destructuring - common for parser results
-            wrappedPat = case pat of
-              PatCon "Tuple" [p1, p2] ->
-                "{:right, {:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}}"
-              _ -> "{:right, " <> genPattern pat <> "}"
-        in wrappedPat <> " = " <> genExpr' ctx indent e <> "\n" <> genDoStmtsCtx ctxWithPat indent rest
+            patStr = case pat of
+              PatCon "Tuple" [p1, p2] -> "{:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}"
+              _ -> genPattern pat
+        in if isMaybeExpr
+           then
+             -- Maybe monad: use case expression to handle :nothing
+             indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
+             indStr <> "  :nothing -> :nothing\n" <>
+             indStr <> "  {:just, " <> patStr <> "} ->\n" <>
+             genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
+             indStr <> "end"
+           else
+             -- Either monad: use case expression to propagate :left
+             indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
+             indStr <> "  {:left, err} -> {:left, err}\n" <>
+             indStr <> "  {:right, " <> patStr <> "} ->\n" <>
+             genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
+             indStr <> "end"
+
+-- | Check if an expression returns a Maybe value (vs Either)
+-- | Used to determine the correct wrapper tag for do-notation binds
+isMaybeReturning :: Expr -> Boolean
+isMaybeReturning expr = go expr
+  where
+    go (ExprVar name) = isMaybeFunc name
+    go (ExprQualified _ name) = isMaybeFunc name
+    go (ExprApp f _) = go f  -- Check the function being applied
+    go (ExprParens e) = go e
+    go _ = false
+
+    -- Known functions that return Maybe
+    isMaybeFunc name =
+      name == "peek" || name == "peekAt" || name == "charAt" ||
+      name == "head" || name == "tail" || name == "last" || name == "init" ||
+      name == "find" || name == "findIndex" || name == "elemIndex" ||
+      name == "lookup" || name == "index" || name == "uncons" ||
+      name == "fromString" || name == "stripPrefix" || name == "stripSuffix"
 
 -- | Generate data type (as tagged tuples or structs)
 genDataType :: DataType -> String
