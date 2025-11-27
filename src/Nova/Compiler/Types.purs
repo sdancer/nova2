@@ -10,6 +10,7 @@ import Data.Tuple (Tuple(..))
 import Data.Foldable (foldl)
 import Data.Array as Array
 import Data.String as String
+import Nova.Compiler.Ast (TypeExpr)
 
 -- | Type variable identified by integer id for fast comparisons
 type TVar = { id :: Int, name :: String }
@@ -845,3 +846,83 @@ tInferResult = TyRecord { fields: Map.fromFoldable
   , Tuple "env" tEnv
   , Tuple "sub" tSubst
   ], row: Nothing }
+
+-- | Type alias info for parameterized type aliases
+-- | e.g., type ParseResult a = Either String (Tuple a (Array Token))
+-- | has params = ["a"], body = TyExprApp ...
+type TypeAliasInfo = { params :: Array String, body :: TypeExpr }
+
+-- | Module exports: what a module makes available to importers
+-- | This is the core data structure for the module system
+type ModuleExports =
+  { types :: Map String TypeInfo           -- Type constructors (e.g., Maybe, Either)
+  , constructors :: Map String Scheme      -- Data constructors (e.g., Just, Nothing, Left, Right)
+  , values :: Map String Scheme            -- Functions and values
+  , typeAliases :: Map String TypeAliasInfo  -- Type aliases
+  }
+
+-- | Information about an exported type
+type TypeInfo =
+  { arity :: Int                           -- Number of type parameters
+  , constructors :: Array String           -- Names of data constructors
+  }
+
+-- | Empty module exports
+emptyExports :: ModuleExports
+emptyExports =
+  { types: Map.empty
+  , constructors: Map.empty
+  , values: Map.empty
+  , typeAliases: Map.empty
+  }
+
+-- | Module registry: maps module names to their exports
+type ModuleRegistry = Map String ModuleExports
+
+-- | Empty module registry
+emptyRegistry :: ModuleRegistry
+emptyRegistry = Map.empty
+
+-- | Look up a module's exports
+lookupModule :: ModuleRegistry -> String -> Maybe ModuleExports
+lookupModule = flip Map.lookup
+
+-- | Register a module's exports
+registerModule :: ModuleRegistry -> String -> ModuleExports -> ModuleRegistry
+registerModule reg name exports = Map.insert name exports reg
+
+-- | Merge exports into environment bindings
+-- | Used when processing imports
+mergeExportsToEnv :: Env -> ModuleExports -> Env
+mergeExportsToEnv env exports =
+  let -- Add constructors
+      ctorList = Map.toUnfoldable exports.constructors :: Array (Tuple String Scheme)
+      env1 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env ctorList
+      -- Add values
+      valList = Map.toUnfoldable exports.values :: Array (Tuple String Scheme)
+      env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env1 valList
+  in env2
+
+-- | Merge specific items from exports into environment
+-- | items: list of names to import
+mergeSelectedExports :: Env -> ModuleExports -> Array String -> Env
+mergeSelectedExports env exports items =
+  Array.foldl addItem env items
+  where
+    addItem e name =
+      case Map.lookup name exports.constructors of
+        Just scheme -> extendEnv e name scheme
+        Nothing -> case Map.lookup name exports.values of
+          Just scheme -> extendEnv e name scheme
+          Nothing -> e  -- Item not found, skip
+
+-- | Merge a type and its constructors into environment
+mergeTypeExport :: Env -> ModuleExports -> String -> Array String -> Env
+mergeTypeExport env exports typeName ctorNames =
+  -- Add the type constructors
+  Array.foldl addCtor env ctorNames
+  where
+    addCtor e ctorName =
+      case Map.lookup ctorName exports.constructors of
+        Just scheme -> extendEnv e ctorName scheme
+        Nothing -> e

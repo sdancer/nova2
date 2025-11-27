@@ -11,14 +11,9 @@ import Data.List as List
 import Data.Map as Map
 import Data.Set as Set
 import Data.String as String
-import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple)
-import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias)
+import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo)
+import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, ImportItem(..), ImportSpec(..), ImportDeclaration)
 import Nova.Compiler.Unify (UnifyError, unify)
-
--- | Type alias info for parameterized type aliases
--- | e.g., type ParseResult a = Either String (Tuple a (Array Token))
--- | has params = ["a"], body = TyExprApp ...
-type TypeAliasInfo = { params :: Array String, body :: TypeExpr }
 
 -- | Type checking error
 data TCError
@@ -997,6 +992,115 @@ checkModule env decls =
       env2 = addFunctionPlaceholders env1 decls
   -- Pass 3: Type check all function bodies
   in checkFunctionBodies env2 decls
+
+-- | Type check a module with imports resolved from a module registry
+-- This is the new version that supports the module system
+checkModuleWithRegistry :: ModuleRegistry -> Env -> Array Declaration -> Either TCError Env
+checkModuleWithRegistry registry env decls =
+  -- First process imports to add imported types/values to environment
+  let env1 = processImports registry env decls
+      -- Then proceed with normal type checking
+      env2 = processNonFunctions env1 decls
+      env3 = addFunctionPlaceholders env2 decls
+  in checkFunctionBodies env3 decls
+
+-- | Process import declarations and add imported types/values to environment
+processImports :: ModuleRegistry -> Env -> Array Declaration -> Env
+processImports registry env decls =
+  Array.foldl processImport env decls
+  where
+    processImport :: Env -> Declaration -> Env
+    processImport e (DeclImport imp) = processImportDecl registry e imp
+    processImport e _ = e
+
+-- | Process a single import declaration
+processImportDecl :: ModuleRegistry -> Env -> ImportDeclaration -> Env
+processImportDecl registry env imp =
+  case lookupModule registry imp.moduleName of
+    Nothing -> env  -- Module not found, skip (could add warning)
+    Just exports ->
+      if imp.hiding then
+        -- Import everything EXCEPT the listed items
+        -- For now, just import everything (hiding not fully implemented)
+        mergeExportsToEnv env exports
+      else if Array.null imp.items then
+        -- Empty import list - import everything
+        mergeExportsToEnv env exports
+      else
+        -- Import only specified items
+        Array.foldl (importItem exports) env imp.items
+
+-- | Import a single item from module exports
+importItem :: ModuleExports -> Env -> ImportItem -> Env
+importItem exports env item = case item of
+  ImportValue name ->
+    -- Import a value or constructor by name
+    case Map.lookup name exports.values of
+      Just scheme -> extendEnv env name scheme
+      Nothing -> case Map.lookup name exports.constructors of
+        Just scheme -> extendEnv env name scheme
+        Nothing -> env  -- Not found, skip
+  ImportType typeName spec ->
+    -- Import a type and optionally its constructors
+    case Map.lookup typeName exports.types of
+      Nothing -> env  -- Type not found
+      Just typeInfo ->
+        case spec of
+          ImportAll ->
+            -- Import all constructors
+            mergeTypeExport env exports typeName typeInfo.constructors
+          ImportSome ctorNames ->
+            -- Import specific constructors
+            mergeTypeExport env exports typeName ctorNames
+          ImportNone ->
+            -- Import just the type, no constructors
+            env
+
+-- | Extract exports from a module's declarations
+-- This is used to build the registry from parsed modules
+extractExports :: Array Declaration -> ModuleExports
+extractExports decls =
+  Array.foldl collectExport emptyExports decls
+  where
+    collectExport :: ModuleExports -> Declaration -> ModuleExports
+    collectExport exp (DeclDataType dt) =
+      let -- Add the type
+          typeInfo = { arity: Array.length dt.typeVars
+                     , constructors: map _.name dt.constructors
+                     }
+          exp1 = exp { types = Map.insert dt.name typeInfo exp.types }
+          -- Add constructors (we need to compute their types)
+          -- For now, just store the constructor names - actual schemes would need type checking
+      in Array.foldl (addConstructorPlaceholder dt) exp1 dt.constructors
+    collectExport exp (DeclTypeAlias ta) =
+      exp { typeAliases = Map.insert ta.name { params: ta.typeVars, body: ta.ty } exp.typeAliases }
+    collectExport exp (DeclFunction func) =
+      -- Functions need their types inferred, so we can't add them pre-typecheck
+      -- They would be added after type checking
+      exp
+    collectExport exp _ = exp
+
+    addConstructorPlaceholder :: DataType -> ModuleExports -> DataConstructor -> ModuleExports
+    addConstructorPlaceholder dt exp ctor =
+      -- Create a placeholder scheme - actual type would need proper construction
+      -- This is a simplified version; full implementation would compute the actual type
+      let resultType = if Array.null dt.typeVars
+                       then TyCon (mkTCon dt.name [])
+                       else TyCon (mkTCon dt.name (map (\v -> TyVar (mkTVar 0 v)) dt.typeVars))
+          ctorType = Array.foldr (\_ t -> tArrow tInt t) resultType ctor.fields  -- Placeholder
+          scheme = mkScheme [] ctorType
+      in exp { constructors = Map.insert ctor.name scheme exp.constructors }
+
+-- | Add values to exports after type checking (when we know the types)
+addValuesToExports :: ModuleExports -> Env -> Array Declaration -> ModuleExports
+addValuesToExports exports env decls =
+  Array.foldl addValue exports decls
+  where
+    addValue exp (DeclFunction func) =
+      case Map.lookup func.name env.bindings of
+        Just scheme -> exp { values = Map.insert func.name scheme exp.values }
+        Nothing -> exp
+    addValue exp _ = exp
 
 -- | Collect type aliases from declarations into a Map String Type
 -- | For non-parameterized aliases only (backward compatible)
