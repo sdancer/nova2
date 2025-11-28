@@ -263,6 +263,16 @@ defmodule Nova.Array do
   def from_foldable(:nil), do: []
   def from_foldable({:cons, h, t}), do: [h | from_foldable(t)]
   def from_foldable(list) when is_list(list), do: list  # Already an Elixir list
+  # nubByEq - remove duplicates using custom equality function
+  def nub_by_eq(eq, list) do
+    Enum.reduce(list, [], fn x, acc ->
+      if Enum.any?(acc, fn y -> eq.(x).(y) end) do
+        acc
+      else
+        acc ++ [x]
+      end
+    end)
+  end
 end
 
 defmodule Nova.List do

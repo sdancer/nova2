@@ -202,6 +202,10 @@ coreVar name =
   where
     toSnake s = String.replaceAll (String.Pattern "'") (String.Replacement "_") s
 
+-- | Check if name starts with underscore
+startsWithUnderscore :: String -> Boolean
+startsWithUnderscore name = String.take 1 name == "_"
+
 -- | Generate module
 genModule :: Module -> String
 genModule m =
@@ -398,8 +402,10 @@ genPattern pat = (genPatternWithCounter pat 0).str
 -- | Generate pattern with unique wildcard counter
 -- Returns { str: pattern string, counter: updated counter }
 genPatternWithCounter :: Pattern -> Int -> { str :: String, counter :: Int }
-genPatternWithCounter (PatVar name) n | String.take 1 name == "_" = { str: "_W" <> show n, counter: n + 1 }  -- Treat PatVar "_" and "_x" as wildcard
-genPatternWithCounter (PatVar name) n = { str: coreVar name, counter: n }
+genPatternWithCounter (PatVar name) n =
+  if startsWithUnderscore name
+  then { str: "_W" <> show n, counter: n + 1 }  -- Treat PatVar "_" and "_x" as wildcard
+  else { str: coreVar name, counter: n }
 genPatternWithCounter PatWildcard n = { str: "_W" <> show n, counter: n + 1 }
 genPatternWithCounter (PatLit lit) n = { str: genLiteral lit, counter: n }
 genPatternWithCounter (PatCon name pats) n =
@@ -787,7 +793,7 @@ genLetBindsWithBody ctx binds body =
   let -- Separate function bindings (lambdas with arity > 0) from value bindings
       isLambdaBind b = getLambdaArity b.value > 0
       funcBinds = Array.filter isLambdaBind binds
-      valueBinds = Array.filter (not <<< isLambdaBind) binds
+      valueBinds = Array.filter (\b -> not (isLambdaBind b)) binds
 
       -- For letrec functions, add them to moduleFuncs with their arities
       -- This makes genExpr generate proper 'apply funcname/arity(...)' calls
@@ -809,7 +815,7 @@ genLetBindsWithBody ctx binds body =
       -- - Independent: don't reference any letrec function (can go before letrec)
       -- - Dependent: reference letrec functions (must go after first letrec)
       usesFunc b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor funcNames Set.empty b.value) funcNames))
-      independentValueBinds = Array.filter (not <<< usesFunc) valueBinds
+      independentValueBinds = Array.filter (\b -> not (usesFunc b)) valueBinds
       dependentValueBinds = Array.filter usesFunc valueBinds
       dependentValueNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) dependentValueBinds)
 
@@ -817,7 +823,7 @@ genLetBindsWithBody ctx binds body =
       -- - Group 1: functions that DON'T use dependent value bindings (can go in first letrec)
       -- - Group 2: functions that DO use dependent value bindings (need second letrec after values)
       funcUsesDepValue b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor dependentValueNames Set.empty b.value) dependentValueNames))
-      funcGroup1 = Array.filter (not <<< funcUsesDepValue) funcBinds
+      funcGroup1 = Array.filter (\b -> not (funcUsesDepValue b)) funcBinds
       funcGroup2 = Array.filter funcUsesDepValue funcBinds
 
       -- Get names of functions in each group
@@ -827,7 +833,7 @@ genLetBindsWithBody ctx binds body =
       -- - depValuesGroup1: values that only need funcGroup1 (don't reference funcGroup2)
       -- - depValuesGroup2: values that need funcGroup2 (reference funcGroup2 functions)
       valueUsesFuncGroup2 b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor funcGroup2Names Set.empty b.value) funcGroup2Names))
-      depValuesGroup1 = Array.filter (not <<< valueUsesFuncGroup2) dependentValueBinds
+      depValuesGroup1 = Array.filter (\b -> not (valueUsesFuncGroup2 b)) dependentValueBinds
       depValuesGroup2 = Array.filter valueUsesFuncGroup2 dependentValueBinds
 
   in if Array.null funcBinds
