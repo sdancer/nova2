@@ -1,5 +1,5 @@
 defmodule Nova.Prelude do
-  import Nova.Runtime.Prelude
+  @moduledoc "Nova.Prelude - basic functions from Prelude"
 
   # Data type: Maybe
   def nothing(), do: :nothing
@@ -46,12 +46,12 @@ defmodule Nova.Prelude do
 
   def otherwise(), do: true
 
-  def show(x), do: show_impl().(x)
-  def negate(x), do: Nova.Runtime.Prelude.negate().(x)
-  def map(f, xs), do: map_impl().(f).(xs)
-  def filter(f, xs), do: filter_impl().(f).(xs)
-  def length(xs), do: length_impl().(xs)
-  def append(xs, ys), do: append_impl().(xs).(ys)
-  def foldl(f, acc, xs), do: foldl_impl().(f).(acc).(xs)
-  def foldr(f, acc, xs), do: foldr_impl().(f).(acc).(xs)
+  def show(x), do: Nova.Runtime.show(x)
+  def negate(x), do: -x
+  def map(f, xs), do: Nova.Runtime.map(f, xs)
+  def filter(f, xs), do: Nova.Runtime.filter(f, xs)
+  def length(xs), do: Nova.Runtime.length(xs)
+  def append(xs, ys), do: Nova.Runtime.append(xs, ys)
+  def foldl(f, acc, xs), do: Nova.Runtime.foldl(f, acc, xs)
+  def foldr(f, acc, xs), do: Nova.Runtime.foldr(f, acc, xs)
 end

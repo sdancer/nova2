@@ -288,6 +288,9 @@ defmodule Nova.Map do
   def from_foldable(list) do
     Enum.reduce(list, %{}, fn {:tuple, k, v}, acc -> Map.put(acc, k, v) end)
   end
+  def to_unfoldable(map) do
+    Enum.map(map, fn {k, v} -> {:tuple, k, v} end)
+  end
 end
 
 defmodule Nova.Set do
@@ -307,6 +310,17 @@ defmodule Nova.Set do
       [] -> :nothing
       list -> {:just, Enum.min(list)}
     end
+  end
+  def map_maybe(f, set) do
+    set
+    |> MapSet.to_list()
+    |> Enum.flat_map(fn x ->
+      case f.(x) do
+        {:just, v} -> [v]
+        :nothing -> []
+      end
+    end)
+    |> MapSet.new()
   end
 end
 

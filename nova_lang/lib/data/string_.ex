@@ -1,21 +1,22 @@
 defmodule Data.String do
-  import Nova.Runtime.String
+  @moduledoc "Data.String wrapper - delegates to Nova.String"
 
-  def length(s), do: length_impl().(s)
-  def take(n, s), do: take_impl().(n).(s)
-  def drop(n, s), do: drop_impl().(n).(s)
-  def char_at(n, s), do: char_at_impl().(n).(s)
-  def contains(pattern, s), do: contains_impl().(pattern).(s)
-  def split(sep, s), do: split_impl().(sep).(s)
-  def join_with(sep, xs), do: join_with_impl().(sep).(xs)
-  def replace_all(pattern, replacement, s), do: replace_all_impl().(pattern).(replacement).(s)
-  def trim(s), do: trim_impl().(s)
-  def to_lower(s), do: to_lower_impl().(s)
-  def to_upper(s), do: to_upper_impl().(s)
-  def strip_prefix(prefix, s), do: strip_prefix_impl().(prefix).(s)
-  def last_index_of(pattern, s), do: last_index_of_impl().(pattern).(s)
-  def to_int(s), do: to_int_impl().(s)
-  def to_code_point_array(s), do: to_code_point_array_impl().(s)
-  def singleton(cp), do: singleton_impl().(cp)
-  def from_char_array(cs), do: from_char_array_impl().(cs)
+  defdelegate length(s), to: Nova.String
+  defdelegate trim(s), to: Nova.String
+  defdelegate to_lower(s), to: Nova.String
+  defdelegate to_int(s), to: Nova.String
+  defdelegate to_code_point_array(s), to: Nova.String
+  defdelegate singleton(cp), to: Nova.String
+  defdelegate from_char_array(cs), to: Nova.String
+
+  def take(n, s), do: Nova.String.take(n, s)
+  def drop(n, s), do: Nova.String.drop(n, s)
+  def char_at(n, s), do: Nova.String.char_at(n, s)
+  def contains(pattern, s), do: Nova.String.contains(pattern, s)
+  def split(sep, s), do: Nova.String.split(sep, s)
+  def join_with(sep, xs), do: Nova.String.join_with(sep, xs)
+  def replace_all(pattern, replacement, s), do: Nova.String.replace_all(pattern, replacement, s)
+  def to_upper(s), do: String.upcase(s)
+  def strip_prefix(prefix, s), do: Nova.String.strip_prefix(prefix, s)
+  def last_index_of(pattern, s), do: Nova.String.last_index_of(pattern, s)
 end

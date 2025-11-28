@@ -1,36 +1,37 @@
 defmodule Data.Array do
-  import Nova.Runtime.Array
+  @moduledoc "Data.Array wrapper - delegates to Nova.Array"
 
-  def head(xs), do: head_impl().(xs)
-  def last(xs), do: last_impl().(xs)
-  def tail(xs), do: tail_impl().(xs)
-  def init(xs), do: init_impl().(xs)
-  def uncons(xs), do: uncons_impl().(xs)
-  def length(xs), do: length_impl().(xs)
-  def null(xs), do: null_impl().(xs)
-  def elem(x, xs), do: elem_impl().(x).(xs)
-  def cons(x, xs), do: cons_impl().(x).(xs)
-  def snoc(xs, x), do: snoc_impl().(xs).(x)
-  def take(n, xs), do: take_impl().(n).(xs)
-  def drop(n, xs), do: drop_impl().(n).(xs)
-  def reverse(xs), do: reverse_impl().(xs)
-  def filter(f, xs), do: filter_impl().(f).(xs)
-  def find(f, xs), do: find_impl().(f).(xs)
-  def index(x, xs), do: index_impl().(x).(xs)
-  def map(f, xs), do: map_impl().(f).(xs)
-  def map_with_index(f, xs), do: map_with_index_impl().(f).(xs)
-  def foldl(f, acc, xs), do: foldl_impl().(f).(acc).(xs)
-  def foldr(f, acc, xs), do: foldr_impl().(f).(acc).(xs)
-  def zip(xs, ys), do: zip_impl().(xs).(ys)
-  def zip_with(f, xs, ys), do: zip_with_impl().(f).(xs).(ys)
-  def concat(xs), do: concat_impl().(xs)
-  def concat_map(f, xs), do: concat_map_impl().(f).(xs)
-  def range(a, b), do: range_impl().(a).(b)
-  def replicate(n, x), do: replicate_impl().(n).(x)
-  def sort_by(f, xs), do: sort_by_impl().(f).(xs)
-  def all(f, xs), do: all_impl().(f).(xs)
-  def any(f, xs), do: any_impl().(f).(xs)
-  def drop_while(f, xs), do: drop_while_impl().(f).(xs)
-  def span(f, xs), do: span_impl().(f).(xs)
-  def partition(f, xs), do: partition_impl().(f).(xs)
+  defdelegate head(xs), to: Nova.Array
+  defdelegate last(xs), to: Nova.Array
+  defdelegate tail(xs), to: Nova.Array
+  defdelegate init(xs), to: Nova.Array
+  defdelegate uncons(xs), to: Nova.Array
+  defdelegate length(xs), to: Nova.Array
+  defdelegate null(xs), to: Nova.Array
+  defdelegate reverse(xs), to: Nova.Array
+  defdelegate concat(xs), to: Nova.Array
+
+  def elem(x, xs), do: Nova.Array.elem(x, xs)
+  def cons(x, xs), do: Nova.Array.cons(x, xs)
+  def snoc(xs, x), do: Nova.Array.snoc(xs, x)
+  def take(n, xs), do: Nova.Array.take(n, xs)
+  def drop(n, xs), do: Nova.Array.drop(n, xs)
+  def filter(f, xs), do: Nova.Array.filter(f, xs)
+  def find(f, xs), do: Nova.Array.find(f, xs)
+  def index(x, xs), do: Nova.Array.index(x, xs)
+  def map(f, xs), do: Nova.Array.map(f, xs)
+  def map_with_index(f, xs), do: Nova.Array.map_with_index(f, xs)
+  def foldl(f, acc, xs), do: Nova.Array.foldl(f, acc, xs)
+  def foldr(f, acc, xs), do: Nova.Array.foldr(f, acc, xs)
+  def zip(xs, ys), do: Nova.Array.zip(xs, ys)
+  def zip_with(f, xs, ys), do: Nova.Array.zip_with(f, xs, ys)
+  def concat_map(f, xs), do: Nova.Array.concat_map(f, xs)
+  def range(a, b), do: Nova.Array.range(a, b)
+  def replicate(n, x), do: Nova.Array.replicate(n, x)
+  def sort_by(f, xs), do: Nova.Array.sort_by(f, xs)
+  def all(f, xs), do: Nova.Array.all(f, xs)
+  def any(f, xs), do: Nova.Array.any(f, xs)
+  def drop_while(f, xs), do: Nova.Array.drop_while(f, xs)
+  def span(f, xs), do: Nova.Array.span(f, xs)
+  def partition(f, xs), do: Nova.Array.partition(f, xs)
 end

@@ -19,7 +19,9 @@ defmodule Nova.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:ex_mcp, "~> 0.1"}
+    ]
   end
 
   defp escript do

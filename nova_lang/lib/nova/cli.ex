@@ -8,6 +8,9 @@ defmodule Nova.CLI do
       {:compile, files, opts} ->
         compile_files(files, opts)
 
+      {:mcp, _opts} ->
+        start_mcp_server()
+
       {:help, _} ->
         print_help()
 
@@ -18,6 +21,13 @@ defmodule Nova.CLI do
         IO.puts(:stderr, "Error: #{msg}")
         System.halt(1)
     end
+  end
+
+  defp start_mcp_server do
+    IO.puts(:stderr, "Starting Nova MCP Server...")
+    Nova.MCP.Server.start()
+    # Keep the process alive
+    Process.sleep(:infinity)
   end
 
   defp parse_args(args) do
@@ -32,6 +42,7 @@ defmodule Nova.CLI do
     end
   end
 
+  defp parse_args(["mcp" | _rest], acc), do: {:mcp, acc}
   defp parse_args(["--help" | _], acc), do: {:help, acc}
   defp parse_args(["-h" | _], acc), do: {:help, acc}
   defp parse_args(["--version" | _], acc), do: {:version, acc}
@@ -123,7 +134,10 @@ defmodule Nova.CLI do
     IO.puts("""
     Nova Lang Compiler v0.1.0
 
-    Usage: nova [options] <files...>
+    Usage: nova [command] [options] <files...>
+
+    Commands:
+      mcp                 Start MCP (Model Context Protocol) server
 
     Options:
       -o, --output DIR    Output directory (default: current directory)
@@ -135,6 +149,7 @@ defmodule Nova.CLI do
       nova src/MyModule.purs
       nova -o lib/ src/*.purs
       nova -d src/Types.purs -d src/Ast.purs src/Parser.purs
+      nova mcp                              # Start MCP server
     """)
   end
 end
