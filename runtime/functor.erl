@@ -1,11 +1,15 @@
 -module(functor).
 -export([map/2, foldl/3, foldr/3]).
 
-%% Polymorphic map function that works on both lists and maps
+%% Polymorphic map function that works on lists, maps, and Maybe
 map(F, Collection) when is_list(Collection) ->
     lists:map(F, Collection);
 map(F, Collection) when is_map(Collection) ->
-    maps:map(fun(_K, V) -> F(V) end, Collection).
+    maps:map(fun(_K, V) -> F(V) end, Collection);
+map(_F, '_nothing') ->
+    '_nothing';
+map(F, {'_just', V}) ->
+    {'_just', F(V)}.
 
 %% Polymorphic foldl for lists and maps (maps fold over values like PureScript)
 %% F can be either curried (1-arity) or uncurried (2-arity)
