@@ -10,17 +10,30 @@ import Data.String.CodeUnits as SCU
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Foldable (foldr, foldl)
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
 
 -- | Code generation context
 type GenCtx =
   { moduleFuncs :: Set String  -- Names of module-level functions
   , locals :: Set String       -- Local variables (params, let-bindings)
-  , funcArities :: Array { name :: String, arity :: Int }  -- Function arities
+  , funcArities :: Array { name :: String, arity :: Int }  -- Module function arities
+  , localArities :: Array { name :: String, arity :: Int }  -- Local function arities (from let bindings)
   }
 
 emptyCtx :: GenCtx
-emptyCtx = { moduleFuncs: Set.empty, locals: Set.empty, funcArities: [] }
+emptyCtx = { moduleFuncs: Set.empty, locals: Set.empty, funcArities: [], localArities: [] }
+
+-- | Look up arity of a local variable (lambda)
+lookupLocalArity :: String -> GenCtx -> Maybe Int
+lookupLocalArity name ctx =
+  case Array.find (\x -> x.name == name) ctx.localArities of
+    Just rec -> Just rec.arity
+    Nothing -> Nothing
+
+-- | Add local arity tracking
+addLocalArity :: String -> Int -> GenCtx -> GenCtx
+addLocalArity name arity ctx =
+  ctx { localArities = { name, arity } : ctx.localArities }
 
 -- | Add local variables from a pattern
 addLocalsFromPattern :: Pattern -> GenCtx -> GenCtx
@@ -64,6 +77,8 @@ freeVarsExpr (ExprDo stmts) = freeVarsDo stmts Set.empty
 freeVarsExpr (ExprQualified _ _) = Set.empty  -- qualified names are not free vars
 freeVarsExpr (ExprTyped e _) = freeVarsExpr e
 freeVarsExpr (ExprSection _) = Set.empty  -- operator section like (+ 1)
+freeVarsExpr (ExprSectionLeft e _) = freeVarsExpr e  -- left section like (1 +)
+freeVarsExpr (ExprSectionRight _ e) = freeVarsExpr e  -- right section like (+ 1)
 
 -- | Helper: free vars in a case clause (body minus pattern-bound vars)
 freeVarsClause :: CaseClause -> Set String
@@ -157,6 +172,8 @@ genDeclaration _ (DeclImport imp) =
 genDeclaration _ (DeclTypeSig _) = ""  -- Type sigs are comments in Elixir
 genDeclaration _ (DeclInfix inf) = genInfix inf
 genDeclaration _ (DeclForeignImport fi) = genForeignImport fi
+genDeclaration _ (DeclTypeClass tc) = genTypeClass tc
+genDeclaration _ (DeclTypeClassInstance inst) = genTypeClassInstance inst
 genDeclaration _ _ = "  # unsupported declaration"
 
 -- | Generate foreign import - delegates to an Elixir FFI module
@@ -467,6 +484,7 @@ genChainedApp funcName args ctx indent =
   case Array.uncons args of
     Nothing -> funcName  -- No args
     Just { head: firstArg, tail: restArgs } ->
+      -- Generate chained application for curried functions: f.(a).(b)
       let firstApp = funcName <> ".(" <> genExpr' ctx indent firstArg <> ")"
       in foldl (\acc arg -> acc <> ".(" <> genExpr' ctx indent arg <> ")") firstApp restArgs
 
@@ -921,7 +939,7 @@ genExpr' ctx indent (ExprApp f arg) =
 
 genExpr' ctx indent (ExprLambda pats body) =
   -- Generate curried lambda: \a b -> x becomes fn a -> fn b -> x end end
-  -- This is necessary for proper partial application
+  -- This is necessary for proper partial application in functional code
   let ctxWithParams = foldr addLocalsFromPattern ctx pats
   in genCurriedLambda ctxWithParams indent pats body
   where
@@ -1038,7 +1056,15 @@ genExpr' _ _ (ExprSection op) =
   -- Check if it's a record accessor (.field) vs a binary operator section
   case String.stripPrefix (String.Pattern ".") op of
     Just field -> "& &1." <> snakeCase field  -- Record accessor: .id -> & &1.id
-    Nothing -> "&(" <> genBinOp op <> "(&1, &2))"  -- Binary operator section
+    Nothing -> "fn __x__, __y__ -> (__x__ " <> genBinOp op <> " __y__) end"  -- Binary operator section: (+) -> fn x, y -> x + y
+
+-- Left section: (1 +) => fn x -> 1 + x  (using infix syntax)
+genExpr' ctx _ (ExprSectionLeft expr op) =
+  "fn __x__ -> (" <> genExpr' ctx 0 expr <> " " <> genBinOp op <> " __x__) end"
+
+-- Right section: (+ 1) => fn x -> x + 1  (using infix syntax)
+genExpr' ctx _ (ExprSectionRight op expr) =
+  "fn __x__ -> (__x__ " <> genBinOp op <> " " <> genExpr' ctx 0 expr <> ") end"
 
 -- | Generate literal
 genLiteral :: Literal -> String
@@ -1187,6 +1213,8 @@ getUsedVars (ExprTuple elems) = Array.concatMap getUsedVars elems
 getUsedVars (ExprTyped e _) = getUsedVars e
 getUsedVars (ExprParens e) = getUsedVars e
 getUsedVars (ExprSection _) = []  -- operator section like (+ 1), no vars
+getUsedVars (ExprSectionLeft e _) = getUsedVars e  -- left section like (1 +)
+getUsedVars (ExprSectionRight _ e) = getUsedVars e  -- right section like (+ 1)
 getUsedVars (ExprQualified _ _) = []  -- Qualified names are external
 getUsedVars (ExprUnaryOp _ e) = getUsedVars e
 getUsedVars _ = []
@@ -1635,9 +1663,10 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
   Just { head: stmt, tail: rest } ->
     case stmt of
       DoExpr e ->
-        if Array.null rest
-        then genExpr' ctx indent e
-        else genExpr' ctx indent e <> "\n" <> genDoStmtsCtx ctx indent rest
+        let indStr = repeatStr indent " "
+        in if Array.null rest
+           then indStr <> genExpr' ctx 0 e
+           else indStr <> genExpr' ctx 0 e <> "\n" <> genDoStmtsCtx ctx indent rest
       DoLet binds ->
         let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
         in intercalate "\n" (map (genLetBindCtx ctx indent) binds) <> "\n" <> genDoStmtsCtx ctxWithBinds indent rest
@@ -1645,14 +1674,15 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
         -- Monadic bind: detect monad type from expression
         -- Maybe monad: peek, peekAt, charAt, Array.head, Array.find, etc.
         -- Either monad: parse functions, etc.
+        -- Generic: use bind function (for Effect, custom monads)
         let ctxWithPat = addLocalsFromPattern pat ctx
-            isMaybeExpr = isMaybeReturning e
+            monadType = detectMonadType e
             indStr = repeatStr indent " "
             -- Check if pattern is a Tuple destructuring - common for parser results
             patStr = case pat of
               PatCon "Tuple" [p1, p2] -> "{:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}"
               _ -> genPattern pat
-        in if isMaybeExpr
+        in if monadType == 0
            then
              -- Maybe monad: use case expression to handle :nothing
              indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
@@ -1660,24 +1690,36 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
              indStr <> "  {:just, " <> patStr <> "} ->\n" <>
              genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
              indStr <> "end"
-           else
+           else if monadType == 1
+           then
              -- Either monad: use case expression to propagate :left
              indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
              indStr <> "  {:left, err} -> {:left, err}\n" <>
              indStr <> "  {:right, " <> patStr <> "} ->\n" <>
              genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
              indStr <> "end"
+           else
+             -- Generic monad: use bind function
+             -- Desugar: x <- e; rest  =>  bind(e, fn x -> rest end)
+             indStr <> "bind(" <> genExpr' ctx 0 e <> ", fn " <> patStr <> " ->\n" <>
+             genDoStmtsCtx ctxWithPat (indent + 2) rest <> "\n" <>
+             indStr <> "end)"
 
--- | Check if an expression returns a Maybe value (vs Either)
--- | Used to determine the correct wrapper tag for do-notation binds
-isMaybeReturning :: Expr -> Boolean
-isMaybeReturning expr = go expr
+-- | Detect which monad type an expression returns
+-- | Returns: 0 = Maybe, 1 = Either, 2 = Generic
+detectMonadType :: Expr -> Int
+detectMonadType expr = go expr
   where
-    go (ExprVar name) = isMaybeFunc name
-    go (ExprQualified _ name) = isMaybeFunc name
+    go (ExprVar name) = classifyFunc name
+    go (ExprQualified _ name) = classifyFunc name
     go (ExprApp f _) = go f  -- Check the function being applied
     go (ExprParens e) = go e
-    go _ = false
+    go _ = 2  -- Generic
+
+    classifyFunc name =
+      if isMaybeFunc name then 0
+      else if isEitherFunc name then 1
+      else 2
 
     -- Known functions that return Maybe
     isMaybeFunc name =
@@ -1686,6 +1728,19 @@ isMaybeReturning expr = go expr
       name == "find" || name == "findIndex" || name == "elemIndex" ||
       name == "lookup" || name == "index" || name == "uncons" ||
       name == "fromString" || name == "stripPrefix" || name == "stripSuffix"
+
+    -- Known functions that return Either (parser functions, unification, type inference)
+    isEitherFunc name =
+      String.contains (String.Pattern "parse") (String.toLower name) ||
+      String.contains (String.Pattern "unify") (String.toLower name) ||
+      String.contains (String.Pattern "expect") (String.toLower name) ||
+      String.contains (String.Pattern "collect") (String.toLower name) ||
+      String.contains (String.Pattern "infer") (String.toLower name) ||
+      String.contains (String.Pattern "check") (String.toLower name) ||
+      String.contains (String.Pattern "instantiate") (String.toLower name) ||
+      String.contains (String.Pattern "generalize") (String.toLower name) ||
+      String.contains (String.Pattern "lookup") (String.toLower name) ||
+      name == "success" || name == "failure"
 
 -- | Generate data type (as tagged tuples or structs)
 genDataType :: DataType -> String
@@ -1720,6 +1775,20 @@ genNewtype nt =
   "  # Newtype: " <> nt.name <> "\n" <>
   "  def " <> snakeCase nt.constructor <> "(arg0), do: {:'" <> snakeCase nt.constructor <> "', arg0}"
 
+-- | Generate type class declaration (just a comment in Elixir)
+genTypeClass :: TypeClass -> String
+genTypeClass tc =
+  "  # Type class: " <> tc.name <> " " <> intercalate " " tc.typeVars
+
+-- | Generate type class instance
+-- For derived instances, we just emit a comment because Elixir's
+-- native operators (==, etc.) handle structural equality
+genTypeClassInstance :: TypeClassInstance -> String
+genTypeClassInstance inst =
+  if inst.derived
+  then "  # derive instance " <> inst.className <> " " <> genTypeExpr inst.ty
+  else "  # instance " <> inst.className <> " " <> genTypeExpr inst.ty
+
 -- | Generate infix declaration (just a comment - metadata only)
 genInfix :: InfixDecl -> String
 genInfix inf =
@@ -1727,7 +1796,7 @@ genInfix inf =
         AssocLeft -> "infixl"
         AssocRight -> "infixr"
         AssocNone -> "infix"
-  in "  # " <> assocStr <> " " <> show inf.precedence <> " " <> inf.operator
+  in "  # " <> assocStr <> " " <> show inf.precedence <> " " <> inf.functionName <> " as " <> inf.operator
 
 -- | Generate type alias (just a comment in Elixir)
 genTypeAlias :: TypeAlias -> String

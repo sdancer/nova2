@@ -270,6 +270,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array.concat" (mkScheme [a] (tArrow (tArray (tArray (TyVar a))) (tArray (TyVar a))))
   , Tuple "Array.partition" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "yes" (tArray (TyVar a)), Tuple "no" (tArray (TyVar a))], row: Nothing }))))
   , Tuple "Array.mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
+  , Tuple "Array.nubByEq" (mkScheme [a] (tArrow (tArrow (TyVar a) (tArrow (TyVar a) tBool)) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
 
   -- Char comparison (needed for isAlpha, isDigit etc)
   , Tuple "charLt" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))

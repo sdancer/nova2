@@ -55,6 +55,16 @@ expectKeyword tokens expected =
       else failure $ "Expected keyword '" <> expected <> "'"
     Nothing -> failure $ "Expected keyword '" <> expected <> "'"
 
+expectIdentifier :: Array Token -> String -> ParseResult String
+expectIdentifier tokens expected =
+  let ts = skipNewlines tokens
+  in case Array.head ts of
+    Just t ->
+      if t.tokenType == TokIdentifier && t.value == expected
+      then success expected (Array.drop 1 ts)
+      else failure $ "Expected identifier '" <> expected <> "'"
+    Nothing -> failure $ "Expected identifier '" <> expected <> "'"
+
 expectOperator :: Array Token -> String -> ParseResult String
 expectOperator tokens expected =
   let ts = skipNewlines tokens
@@ -981,9 +991,9 @@ parseTerm tokens =
     [ parseRecordLiteral
     , parseExprLiteral
     , parseListLiteral
+    , parseParenExpr  -- Must be before parseTupleLiteral to detect operator sections
     , parseTupleLiteral
     , parseQualifiedIdentifier
-    , parseParenExpr
     ]
     tokens
 
@@ -998,12 +1008,64 @@ parseParenExpr tokens =
   in case Array.head ts of
     Just t ->
       if t.tokenType == TokDelimiter && t.value == "("
-      then do
-        Tuple expr rest <- parseExpression (Array.drop 1 ts)
-        Tuple _ rest' <- expectDelimiter rest ")"
-        success (Ast.ExprParens expr) rest'
+      then
+        let inner = skipNewlines (Array.drop 1 ts)
+        in case Array.head inner of
+          -- Check for operator section: ( op ... ) or ( op )
+          -- BUT exclude "-" because (- expr) is always unary minus in PureScript
+          Just opTok | isOperatorToken opTok && opTok.value /= "-" ->
+            let afterOp = skipNewlines (Array.drop 1 inner)
+            in case Array.head afterOp of
+              -- Bare operator section: ( op )
+              Just closeTok | closeTok.tokenType == TokDelimiter && closeTok.value == ")" ->
+                success (Ast.ExprSection opTok.value) (Array.drop 1 afterOp)
+              -- Right section: ( op expr )
+              _ -> do
+                Tuple expr rest <- parseExpression (Array.drop 1 inner)
+                Tuple _ rest' <- expectDelimiter rest ")"
+                success (Ast.ExprSectionRight opTok.value expr) rest'
+          -- Not starting with operator, check for left section pattern
+          _ ->
+            -- First try to detect left section: parse a single term, check for "op )"
+            case parseApplication inner of
+              Right (Tuple expr rest) ->
+                let rest' = skipNewlines rest
+                in case Array.head rest' of
+                  Just opTok | isOperatorToken opTok ->
+                    -- Check if this is a left section: expr op )
+                    let afterOp = skipNewlines (Array.drop 1 rest')
+                    in case Array.head afterOp of
+                      Just closeT | closeT.tokenType == TokDelimiter && closeT.value == ")" ->
+                        success (Ast.ExprSectionLeft expr opTok.value) (Array.drop 1 afterOp)
+                      -- Operator followed by more - this is a normal binary expr
+                      _ -> do
+                        Tuple e r <- parseExpression inner
+                        Tuple _ r' <- expectDelimiter r ")"
+                        success e r'
+                  -- Not followed by operator - parse as normal paren expr
+                  _ -> do
+                    Tuple e r <- parseExpression inner
+                    Tuple _ r' <- expectDelimiter r ")"
+                    success e r'
+              -- parseApplication failed, try full expression
+              Left _ -> do
+                Tuple e r <- parseExpression inner
+                Tuple _ r' <- expectDelimiter r ")"
+                success e r'
       else failure "Expected parenthesized expression"
     Nothing -> failure "Expected parenthesized expression"
+
+-- | Check if a token is an operator (excluding delimiters and special symbols)
+isOperatorToken :: Token -> Boolean
+isOperatorToken tok =
+  tok.tokenType == TokOperator &&
+  tok.value /= "=" &&
+  tok.value /= "|" &&
+  tok.value /= "\\" &&
+  tok.value /= "->" &&
+  tok.value /= "<-" &&
+  tok.value /= "::" &&
+  tok.value /= "=>"
 
 parseRecordLiteral :: Array Token -> ParseResult Ast.Expr
 parseRecordLiteral tokens =
@@ -1694,9 +1756,13 @@ parseInfixWith assoc tokens = do
             Just n -> n
             Nothing -> 9  -- default precedence
       let rest = Array.drop 1 tokens'
+      -- Parse function name
+      Tuple funcName rest' <- parseIdentifierName rest
+      -- Parse "as" keyword
+      Tuple _ rest'' <- expectIdentifier rest' "as"
       -- Parse operator (could be symbol or backtick-quoted identifier)
-      Tuple op rest' <- parseInfixOperator rest
-      success (Ast.DeclInfix { associativity: assoc, precedence: prec, operator: op }) rest'
+      Tuple op rest''' <- parseInfixOperator rest''
+      success (Ast.DeclInfix { associativity: assoc, precedence: prec, functionName: funcName, operator: op }) rest'''
     _ -> failure "Expected precedence number"
 
 parseInfixOperator :: Array Token -> ParseResult String

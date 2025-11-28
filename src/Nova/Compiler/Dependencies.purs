@@ -110,6 +110,8 @@ getExprDeps expr = case expr of
   ExprTyped e _ -> getExprDeps e
   ExprParens e -> getExprDeps e
   ExprSection _ -> Set.empty  -- Operator sections are handled specially
+  ExprSectionLeft e _ -> getExprDeps e  -- Left section like (1 +)
+  ExprSectionRight _ e -> getExprDeps e  -- Right section like (+ 1)
 
 -- | Get dependencies from let bindings
 getLetBindsDeps :: Array LetBind -> Set String

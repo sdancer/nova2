@@ -233,6 +233,7 @@ type ForeignImport =
 type InfixDecl =
   { associativity :: Associativity
   , precedence :: Int
+  , functionName :: String
   , operator :: String
   }
 
@@ -300,7 +301,9 @@ data Expr
   | ExprRecordUpdate Expr (Array (Tuple String Expr))
   | ExprTyped Expr TypeExpr
   | ExprParens Expr
-  | ExprSection String  -- operator section like (+ 1)
+  | ExprSection String              -- record accessor section like (.field) or bare operator like (+)
+  | ExprSectionLeft Expr String     -- left section like (1 +), apply left operand first
+  | ExprSectionRight String Expr    -- right section like (+ 1), apply right operand first
 
 -- | Literal values
 data Literal
