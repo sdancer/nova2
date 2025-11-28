@@ -944,12 +944,65 @@ genCaseClausesWithFallback ctx clauses = case Array.uncons clauses of
     if isWildcardPattern clause.pattern && isJust clause.guard
     then genGuardedWildcardClause ctx clause rest
     else
-      -- For guarded non-wildcards, pass remaining clauses as fallback
-      let fallback = if Array.null rest || isNothing clause.guard
+      -- For guarded non-wildcards, we need to collect all clauses with the same pattern
+      -- to avoid generating duplicate Core Erlang case clauses
+      let { samePattern, different } = splitSamePatternClauses clause.pattern rest
+          -- Build fallback chain from all clauses with same pattern (after current) + the different ones
+          ctxWithVars = addLocalsFromPattern clause.pattern ctx
+          fallback = if Array.null samePattern && (Array.null different || isNothing clause.guard)
                      then Nothing
-                     else Just (genFallbackForRest (addLocalsFromPattern clause.pattern ctx) rest)
+                     else Just (genFallbackForSamePattern ctxWithVars samePattern different)
       in genCaseClause ctx clause fallback <>
-         (if Array.null rest then "" else "\n" <> genCaseClausesWithFallback ctx rest)
+         -- Only continue with clauses that have DIFFERENT patterns
+         (if Array.null different then "" else "\n" <> genCaseClausesWithFallback ctx different)
+
+-- | Split clauses into those with the same pattern (must have guards) and those with different patterns
+splitSamePatternClauses :: Pattern -> Array CaseClause -> { samePattern :: Array CaseClause, different :: Array CaseClause }
+splitSamePatternClauses pat clauses =
+  let isSameGuarded c = genPattern c.pattern == genPattern pat && isJust c.guard
+      samePattern = Array.takeWhile isSameGuarded clauses
+      different = Array.drop (Array.length samePattern) clauses
+  in { samePattern, different }
+
+-- | Generate fallback for clauses with the same pattern, then try different patterns
+genFallbackForSamePattern :: CoreCtx -> Array CaseClause -> Array CaseClause -> String
+genFallbackForSamePattern ctx samePattern different = case Array.uncons samePattern of
+  Nothing ->
+    -- No more same-pattern clauses, try different patterns
+    genFallbackForDifferent ctx different
+  Just { head: clause, tail: rest } ->
+    -- Generate nested guard check for this clause
+    let guardExpr = case clause.guard of
+          Just g -> genExpr ctx g
+          Nothing -> "'true'"
+        body = genExpr ctx clause.body
+        fallback = genFallbackForSamePattern ctx rest different
+    in "case " <> guardExpr <> " of\n" <>
+       "            <'true'> when 'true' -> " <> body <> "\n" <>
+       "            <_> when 'true' -> " <> fallback <> "\n" <>
+       "          end"
+
+-- | Generate fallback that tries remaining clauses with different patterns
+genFallbackForDifferent :: CoreCtx -> Array CaseClause -> String
+genFallbackForDifferent ctx clauses = case Array.uncons clauses of
+  Nothing -> "primop 'match_fail'({'case_clause', 'no_match'})"
+  Just { head: clause, tail: rest } ->
+    if isWildcardPattern clause.pattern
+    then
+      -- Wildcard - either guarded or unguarded
+      case clause.guard of
+        Just g ->
+          let body = genExpr ctx clause.body
+              fallback = genFallbackForDifferent ctx rest
+          in "case " <> genExpr ctx g <> " of\n" <>
+             "            <'true'> when 'true' -> " <> body <> "\n" <>
+             "            <_> when 'true' -> " <> fallback <> "\n" <>
+             "          end"
+        Nothing -> genExpr ctx clause.body
+    else
+      -- Non-wildcard pattern - can't match without re-doing the case
+      -- This is a fallback situation, so just fail
+      "primop 'match_fail'({'case_clause', 'pattern_mismatch'})"
 
 -- | Generate a guarded wildcard clause with fallback to remaining clauses
 genGuardedWildcardClause :: CoreCtx -> CaseClause -> Array CaseClause -> String
@@ -960,40 +1013,15 @@ genGuardedWildcardClause ctx clause rest =
         Just g -> genExpr ctxWithVars g
         Nothing -> "'true'"  -- shouldn't happen
       body = genExpr ctxWithVars clause.body
-      -- Fallback: try remaining clauses (but they're in same case, so need to nest)
+      -- Fallback: try remaining clauses (wildcards can match anything, so all are "different")
       fallback = if Array.null rest
                  then "primop 'match_fail'({'case_clause', 'guard_failed'})"
-                 else genFallbackForRest ctxWithVars rest
+                 else genFallbackForDifferent ctxWithVars rest
   in "      <" <> pat <> "> when 'true' ->\n" <>
      "        case " <> guardExpr <> " of\n" <>
      "          <'true'> when 'true' -> " <> body <> "\n" <>
      "          <_> when 'true' -> " <> fallback <> "\n" <>
      "        end"
-
--- | Generate fallback code for remaining clauses (as nested conditionals)
-genFallbackForRest :: CoreCtx -> Array CaseClause -> String
-genFallbackForRest ctx clauses = case Array.uncons clauses of
-  Nothing -> "primop 'match_fail'({'case_clause', 'no_match'})"
-  Just { head: clause, tail: rest } ->
-    if isWildcardPattern clause.pattern && isJust clause.guard
-    then
-      -- Another guarded wildcard - nest it
-      let guardExpr = case clause.guard of
-            Just g -> genExpr ctx g
-            Nothing -> "'true'"
-          body = genExpr ctx clause.body
-          fallback = genFallbackForRest ctx rest
-      in "case " <> guardExpr <> " of\n" <>
-         "            <'true'> when 'true' -> " <> body <> "\n" <>
-         "            <_> when 'true' -> " <> fallback <> "\n" <>
-         "          end"
-    else if isWildcardPattern clause.pattern && isNothing clause.guard
-    then
-      -- Unguarded wildcard - always matches
-      genExpr ctx clause.body
-    else
-      -- Non-wildcard pattern - shouldn't be mixed, but handle it
-      genExpr ctx clause.body
 
 -- | Generate case clause with optional fallback for guard failure
 genCaseClause :: CoreCtx -> CaseClause -> Maybe String -> String

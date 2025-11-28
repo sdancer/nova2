@@ -10,3 +10,17 @@
 /.spago
 package-lock.json
 package.json
+
+# Erlang/BEAM build artifacts
+*.beam
+*.core
+erl_crash.dump
+nova_lang/_build/
+nova_lang/deps/
+nova_lang/*.beam
+nova_lang/*.ex
+runtime/*.beam
+
+# Test artifacts
+test*.beam
+test*.core
