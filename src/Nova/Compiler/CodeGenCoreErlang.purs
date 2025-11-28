@@ -45,9 +45,9 @@ type PreludeFuncInfo = { mod :: String, func :: String, arity :: Int }
 
 getPreludeFunc :: String -> Maybe PreludeFuncInfo
 getPreludeFunc "show" = Just { mod: "erlang", func: "integer_to_list", arity: 1 }  -- Simple case: assume Int
-getPreludeFunc "foldl" = Just { mod: "lists", func: "foldl", arity: 3 }
-getPreludeFunc "foldr" = Just { mod: "lists", func: "foldr", arity: 3 }
-getPreludeFunc "map" = Just { mod: "lists", func: "map", arity: 2 }
+getPreludeFunc "foldl" = Just { mod: "functor", func: "foldl", arity: 3 }  -- Polymorphic foldl for lists and maps
+getPreludeFunc "foldr" = Just { mod: "functor", func: "foldr", arity: 3 }  -- Polymorphic foldr for lists and maps
+getPreludeFunc "map" = Just { mod: "functor", func: "map", arity: 2 }  -- Polymorphic map for lists and maps
 getPreludeFunc "filter" = Just { mod: "lists", func: "filter", arity: 2 }
 getPreludeFunc "length" = Just { mod: "erlang", func: "length", arity: 1 }
 getPreludeFunc "reverse" = Just { mod: "lists", func: "reverse", arity: 1 }
@@ -478,10 +478,11 @@ genExpr ctx (ExprVar name) =
                        in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show arity <>
                           "(" <> paramsStr <> ")"
           else case Map.lookup name ctx.imports of
-               -- Imported function - wrap in lambda with 2 args (most common case)
+               -- Imported value/function - when referenced as a value (not applied),
+               -- assume it's a 0-arity value and call it directly
                Just srcMod ->
                  let modName = translateModuleName srcMod
-                 in "fun (_Iv0, _Iv1) -> call " <> atom modName <> ":" <> atom name <> "(_Iv0, _Iv1)"
+                 in "call " <> atom modName <> ":" <> atom name <> "()"
                Nothing ->
                  if isConstructorName name
                  -- Nullary data constructor - use as atom
@@ -831,11 +832,24 @@ genLetBindsWithBody ctx binds body =
   in if Array.null funcBinds
      then genValueBindsWithBody ctxWithAllBinds valueBinds body
      else -- Generate: independent values -> letrec1 -> depValues1 -> letrec2 -> depValues2 -> body
-          let genLetrec :: Array LetBind -> String -> String
+          let -- Group function bindings by name (for multi-clause local functions)
+              groupByName :: Array LetBind -> Array { name :: String, binds :: Array LetBind, arity :: Int }
+              groupByName binds_ =
+                let names = Array.nub (Array.mapMaybe (\b -> getPatternVarName b.pattern) binds_)
+                    mkGroup n =
+                      let matching = Array.filter (\b -> getPatternVarName b.pattern == Just n) binds_
+                          arity = case Array.head matching of
+                            Just b -> getLambdaArity b.value
+                            Nothing -> 0
+                      in { name: n, binds: matching, arity: arity }
+                in map mkGroup names
+
+              genLetrec :: Array LetBind -> String -> String
               genLetrec fs bodyStr =
                 if Array.null fs
                 then bodyStr
-                else let defs = intercalate "\n       " (map (genLetrecDef ctxWithAllBinds) fs)
+                else let grouped = groupByName fs
+                         defs = intercalate "\n       " (map (genLetrecDefGrouped ctxWithAllBinds) grouped)
                      in "letrec " <> defs <> "\n      in " <> bodyStr
 
               -- Build from inside out: body <- depValues2 <- letrec2 <- depValues1 <- letrec1 <- independent values
@@ -870,6 +884,40 @@ genLetBindsWithBody ctx binds body =
           -- Use uncurried lambda generation for letrec to match declared arity
           val = genExprLetrec ctx' bind.value
       in atom bindName <> "/" <> show arity <> " = " <> val
+
+    -- Generate a grouped function definition for letrec
+    -- Handles multiple clauses with the same function name by merging them into a case
+    genLetrecDefGrouped :: CoreCtx -> { name :: String, binds :: Array LetBind, arity :: Int } -> String
+    genLetrecDefGrouped ctx' group =
+      case group.binds of
+        [] -> ""
+        [single] -> genLetrecDef ctx' single  -- Single clause - use simple generation
+        multiple ->
+          -- Multiple clauses - generate a function with case
+          let paramNames = Array.range 0 (group.arity - 1) # map (\i -> "_L" <> show i)
+              paramsStr = intercalate ", " paramNames
+              -- Generate case clauses from each binding's lambda
+              caseClauses = map (genLetrecClauseAsCase ctx' paramNames) multiple
+          in atom group.name <> "/" <> show group.arity <> " = fun (" <> paramsStr <> ") ->\n" <>
+             "      case {" <> paramsStr <> "} of\n" <>
+             intercalate "\n" caseClauses <> "\n" <>
+             "      end"
+
+    -- Generate a letrec clause as a case clause
+    -- Extracts patterns from the lambda and generates a case clause
+    genLetrecClauseAsCase :: CoreCtx -> Array String -> LetBind -> String
+    genLetrecClauseAsCase ctx' _paramNames bind =
+      case bind.value of
+        ExprLambda pats body ->
+          let patsResult = genPatsWithCounter pats 0
+              patTuple = "{" <> intercalate ", " patsResult.strs <> "}"
+              ctxWithParams = foldr addLocalsFromPattern ctx' pats
+              bodyStr = genExpr ctxWithParams body
+          in "        <" <> patTuple <> "> when 'true' -> " <> bodyStr
+        ExprParens e -> genLetrecClauseAsCase ctx' _paramNames (bind { value = e })
+        _ ->
+          -- Shouldn't happen - we only call this for lambda bindings
+          "        <_W0> when 'true' -> " <> genExpr ctx' bind.value
 
 -- | Generate value bindings (non-lambda) with body expression
 genValueBindsWithBody :: CoreCtx -> Array LetBind -> Expr -> String
