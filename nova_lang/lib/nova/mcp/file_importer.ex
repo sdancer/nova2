@@ -210,11 +210,14 @@ defmodule Nova.MCP.FileImporter do
   end
 
   defp format_function(f) do
-    params = Enum.map(f.params, &format_pattern/1) |> Enum.join(" ")
+    # Handle both :params and :parameters field names
+    params_list = Map.get(f, :params) || Map.get(f, :parameters) || []
+    params = Enum.map(params_list, &format_pattern/1) |> Enum.join(" ")
     body = format_expr(f.body)
 
-    where_clause = if f.where_decls && f.where_decls != [] do
-      where_str = f.where_decls
+    where_decls = Map.get(f, :where_decls) || []
+    where_clause = if where_decls != [] do
+      where_str = where_decls
       |> Enum.map(&format_where_decl/1)
       |> Enum.join("\n  ")
       "\n  where\n  #{where_str}"
@@ -229,7 +232,8 @@ defmodule Nova.MCP.FileImporter do
   defp format_where_decl(decl), do: inspect(decl)
 
   defp format_data_type(d) do
-    type_params = Enum.join(d.type_params, " ")
+    type_vars = Map.get(d, :type_vars) || Map.get(d, :type_params) || []
+    type_params = Enum.join(type_vars, " ")
     type_params_str = if type_params == "", do: "", else: " #{type_params}"
 
     constructors = d.constructors
@@ -243,7 +247,8 @@ defmodule Nova.MCP.FileImporter do
   end
 
   defp format_type_alias(a) do
-    type_params = Enum.join(a.type_params, " ")
+    type_vars = Map.get(a, :type_vars) || Map.get(a, :type_params) || []
+    type_params = Enum.join(type_vars, " ")
     type_params_str = if type_params == "", do: "", else: " #{type_params}"
     "type #{a.name}#{type_params_str} = #{format_type_expr(a.ty)}"
   end
@@ -296,7 +301,8 @@ defmodule Nova.MCP.FileImporter do
   end
 
   defp format_newtype(n) do
-    type_params = Enum.join(n.type_params, " ")
+    type_vars = Map.get(n, :type_vars) || Map.get(n, :type_params) || []
+    type_params = Enum.join(type_vars, " ")
     type_params_str = if type_params == "", do: "", else: " #{type_params}"
     field = format_type_expr(hd(n.constructor.fields))
     "newtype #{n.name}#{type_params_str} = #{n.constructor.name} #{field}"
