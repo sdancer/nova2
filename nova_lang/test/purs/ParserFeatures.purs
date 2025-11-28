@@ -16,6 +16,9 @@ newtype UserId = UserId Int
 -- Type alias with record
 type Person = { name :: String, age :: Int }
 
+-- Infix declaration
+infixl 6 add as +
+
 -- Multi-parameter function with guards
 clamp :: Int -> Int -> Int -> Int
 clamp low high x

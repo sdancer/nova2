@@ -51,11 +51,25 @@ index(List, I) ->
         false -> '_nothing'
     end.
 
-%% Fold left - F is curried: F(Acc)(Elem) -> NewAcc
-foldl(F, Acc, List) -> lists:foldl(fun(Elem, A) -> (F(A))(Elem) end, Acc, List).
+%% Fold left - F can be either:
+%%   - Curried: F(Acc) returns fun(Elem) -> NewAcc
+%%   - Uncurried: F(Acc, Elem) -> NewAcc
+foldl(F, Acc, List) ->
+    lists:foldl(fun(Elem, A) ->
+        case erlang:fun_info(F, arity) of
+            {arity, 1} -> (F(A))(Elem);  % curried
+            {arity, 2} -> F(A, Elem)      % uncurried
+        end
+    end, Acc, List).
 
-%% Fold right - F is curried: F(Elem)(Acc) -> NewAcc
-foldr(F, Acc, List) -> lists:foldr(fun(Elem, A) -> (F(Elem))(A) end, Acc, List).
+%% Fold right - F can be either curried or uncurried
+foldr(F, Acc, List) ->
+    lists:foldr(fun(Elem, A) ->
+        case erlang:fun_info(F, arity) of
+            {arity, 1} -> (F(Elem))(A);  % curried
+            {arity, 2} -> F(Elem, A)     % uncurried
+        end
+    end, Acc, List).
 
 %% Get first element (returns Maybe)
 head([]) -> '_nothing';
@@ -83,11 +97,11 @@ nub([H|T], Acc) ->
         false -> nub(T, [H|Acc])
     end.
 
-%% Remove duplicates using custom equality function
+%% Remove duplicates using custom equality function (2-arity uncurried)
 nubByEq(Eq, List) -> nubByEq(Eq, List, []).
 nubByEq(_Eq, [], Acc) -> lists:reverse(Acc);
 nubByEq(Eq, [H|T], Acc) ->
-    case lists:any(fun(X) -> (Eq(H))(X) end, Acc) of
+    case lists:any(fun(X) -> Eq(H, X) end, Acc) of
         true -> nubByEq(Eq, T, Acc);
         false -> nubByEq(Eq, T, [H|Acc])
     end.

@@ -50,6 +50,7 @@ const modules = [
   ['Unify', base + 'Unify.purs', [base + 'Types.purs']],
   ['TypeChecker', base + 'TypeChecker.purs', [base + 'Ast.purs', base + 'Types.purs', base + 'Unify.purs']],
   ['CodeGen', base + 'CodeGen.purs', [base + 'Ast.purs']],
+  ['CodeGenCoreErlang', base + 'CodeGenCoreErlang.purs', [base + 'Ast.purs']],
   ['Parser', base + 'Parser.purs', [base + 'Ast.purs', base + 'Tokenizer.purs']],
   ['Dependencies', base + 'Dependencies.purs', [base + 'Ast.purs']],
 ];
@@ -57,8 +58,6 @@ const modules = [
 for (const [name, path, deps] of modules) {
   const code = compile(name, path, deps);
   if (code) {
-    fs.writeFileSync('./output/' + name + '.ex', code);
-    // Also copy to nova_lang for running
     fs.writeFileSync('./nova_lang/lib/nova/compiler/' + name + '.ex', code);
   }
 }

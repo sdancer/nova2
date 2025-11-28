@@ -231,6 +231,9 @@ builtinPrelude = Map.fromFoldable
   -- Function operators
   , Tuple "$" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar b))))
   , Tuple "." (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
+  -- Compose operators (<<< is same as ., >>> is flipped)
+  , Tuple "<<<" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
+  , Tuple ">>>" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (TyVar a) (TyVar c)))))
   -- Identity and const
   , Tuple "identity" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
   , Tuple "const" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
@@ -252,6 +255,8 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array.take" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.drop" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.reverse" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
+  , Tuple "Array.nub" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
+  , Tuple "Array.takeWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.find" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tMaybe (TyVar a)))))
   , Tuple "Array.foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tArray (TyVar a)) (TyVar b)))))

@@ -33,6 +33,7 @@ const MODULES = [
   { name: 'Unify', path: 'src/Nova/Compiler/Unify.purs', deps: ['src/Nova/Compiler/Types.purs'] },
   { name: 'TypeChecker', path: 'src/Nova/Compiler/TypeChecker.purs', deps: ['src/Nova/Compiler/Ast.purs', 'src/Nova/Compiler/Types.purs', 'src/Nova/Compiler/Unify.purs'] },
   { name: 'CodeGen', path: 'src/Nova/Compiler/CodeGen.purs', deps: ['src/Nova/Compiler/Ast.purs'] },
+  { name: 'CodeGenCoreErlang', path: 'src/Nova/Compiler/CodeGenCoreErlang.purs', deps: ['src/Nova/Compiler/Ast.purs'] },
   { name: 'Parser', path: 'src/Nova/Compiler/Parser.purs', deps: ['src/Nova/Compiler/Ast.purs', 'src/Nova/Compiler/Tokenizer.purs'] },
   { name: 'Dependencies', path: 'src/Nova/Compiler/Dependencies.purs', deps: ['src/Nova/Compiler/Ast.purs'] },
 ];

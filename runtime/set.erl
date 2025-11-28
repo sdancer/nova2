@@ -1,6 +1,6 @@
 -module(set).
 -export([delete/2, difference/2, empty/0, insert/2, intersection/2,
-         member/2, singleton/1, size/1, union/2, fromFoldable/1]).
+         member/2, singleton/1, size/1, toUnfoldable/1, union/2, fromFoldable/1]).
 
 %% Using Erlang's sets module internally
 
@@ -33,3 +33,6 @@ difference(S1, S2) -> sets:subtract(S1, S2).
 
 %% Create set from list
 fromFoldable(List) -> sets:from_list(List).
+
+%% Convert set to list
+toUnfoldable(Set) -> sets:to_list(Set).

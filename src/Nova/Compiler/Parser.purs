@@ -769,7 +769,7 @@ parseAdditiveExpression tokens = do
 
 parseMultiplicativeExpression :: Array Token -> ParseResult Ast.Expr
 parseMultiplicativeExpression tokens = do
-  Tuple left rest <- parseBacktickExpression tokens
+  Tuple left rest <- parseComposeExpression tokens
   case Array.head rest of
     Just t ->
       if t.tokenType == TokOperator && isMultOp t.value
@@ -780,6 +780,21 @@ parseMultiplicativeExpression tokens = do
     _ -> success left rest
   where
     isMultOp op = op == "*" || op == "/"
+
+-- | Parse compose operators (<<<, >>>) - right associative, high precedence
+parseComposeExpression :: Array Token -> ParseResult Ast.Expr
+parseComposeExpression tokens = do
+  Tuple left rest <- parseBacktickExpression tokens
+  case Array.head rest of
+    Just t ->
+      if t.tokenType == TokOperator && isComposeOp t.value
+      then do
+        Tuple right rest' <- parseComposeExpression (Array.drop 1 rest)
+        success (Ast.ExprBinOp t.value left right) rest'
+      else success left rest
+    _ -> success left rest
+  where
+    isComposeOp op = op == "<<<" || op == ">>>"
 
 -- | Parse backtick infix expressions like: x `elem` ys
 -- | Transforms to: elem x ys
@@ -1041,17 +1056,20 @@ parseParenExpr tokens =
                       _ -> do
                         Tuple e r <- parseExpression inner
                         Tuple _ r' <- expectDelimiter r ")"
-                        success e r'
+                        -- Check for field access: (expr).field
+                        parseRecordAccessChain e r'
                   -- Not followed by operator - parse as normal paren expr
                   _ -> do
                     Tuple e r <- parseExpression inner
                     Tuple _ r' <- expectDelimiter r ")"
-                    success e r'
+                    -- Check for field access: (expr).field
+                    parseRecordAccessChain e r'
               -- parseApplication failed, try full expression
               Left _ -> do
                 Tuple e r <- parseExpression inner
                 Tuple _ r' <- expectDelimiter r ")"
-                success e r'
+                -- Check for field access: (expr).field
+                parseRecordAccessChain e r'
       else failure "Expected parenthesized expression"
     Nothing -> failure "Expected parenthesized expression"
 
@@ -1148,15 +1166,41 @@ parseLetExpression tokens = do
 parseBinding :: Array Token -> ParseResult Ast.LetBind
 parseBinding tokens = do
   let tokens' = skipNewlines tokens
-  -- First try function-style binding: name params = expr
-  case parseFunctionStyleBinding tokens' of
-    Right r -> Right r
-    Left _ -> do
-      -- Fall back to simple pattern binding: pat = expr
-      Tuple pat rest <- parsePattern tokens'
-      Tuple _ rest' <- expectOperator rest "="
-      Tuple expr rest'' <- parseExpression rest'
-      success { pattern: pat, value: expr, typeAnn: Nothing } rest''
+  -- Check if this is a type signature (name ::) - skip it and try next binding
+  case isLetTypeSig tokens' of
+    true -> do
+      let rest = skipToNextBindingLine tokens'
+      parseBinding rest
+    false -> do
+      -- First try function-style binding: name params = expr
+      case parseFunctionStyleBinding tokens' of
+        Right r -> Right r
+        Left _ -> do
+          -- Fall back to simple pattern binding: pat = expr
+          Tuple pat rest <- parsePattern tokens'
+          Tuple _ rest' <- expectOperator rest "="
+          Tuple expr rest'' <- parseExpression rest'
+          success { pattern: pat, value: expr, typeAnn: Nothing } rest''
+  where
+    isLetTypeSig :: Array Token -> Boolean
+    isLetTypeSig toks =
+      case Array.head toks of
+        Just t1 ->
+          if t1.tokenType == TokIdentifier
+          then case Array.head (Array.drop 1 toks) of
+            Just t2 -> t2.tokenType == TokOperator && t2.value == "::"
+            _ -> false
+          else false
+        _ -> false
+
+    skipToNextBindingLine :: Array Token -> Array Token
+    skipToNextBindingLine toks =
+      case Array.head toks of
+        Nothing -> toks
+        Just t ->
+          if t.tokenType == TokNewline
+          then Array.drop 1 toks
+          else skipToNextBindingLine (Array.drop 1 toks)
 
 -- | Parse function-style let binding: name param1 param2 = body
 -- Note: Constructor patterns like "Tuple x y" should NOT be parsed as function bindings
@@ -1257,6 +1301,9 @@ parseCaseClausesAt tokens indent acc =
         case Array.last acc of
           Just prevClause -> parseAdditionalGuard tokens' prevClause.pattern indent acc
           Nothing -> failure "Internal error: no previous clause"
+      -- Stop at 'where' keyword - this belongs to the outer function, not the case
+      else if t.tokenType == TokKeyword && t.value == "where" && Array.length acc > 0
+      then success acc tokens'
       else if t.column /= indent && Array.length acc > 0
       then success acc tokens'
       else if t.column /= indent
@@ -1428,6 +1475,9 @@ takeBody tokens acc indent =
         case Array.head rest of
           Just t' ->
             if t'.column < indent
+            then Tuple (Array.reverse acc) rest
+            -- Stop at 'where' keyword - belongs to outer function, not case body
+            else if t'.tokenType == TokKeyword && t'.value == "where"
             then Tuple (Array.reverse acc) rest
             else if t'.column == indent && clauseStart rest
             then Tuple (Array.reverse acc) rest
@@ -2266,7 +2316,8 @@ parseGuardExprAtom tokens =
       then do
         Tuple expr rest <- parseExpression (Array.drop 1 tokens')
         Tuple _ rest' <- expectDelimiter rest ")"
-        success expr rest'
+        -- Check for field access after parenthesized expression: (foo x).field
+        parseRecordAccessChain expr rest'
       else if tok.tokenType == TokOperator && tok.value == "."
       then
         -- Record accessor like .id
@@ -2305,7 +2356,8 @@ maybeParseWhere tokens _ body = do
             rest = skipNewlines (Array.drop 1 tokens')
         in case Array.head rest of
           Just firstTok ->
-            if firstTok.column > whereCol
+            -- Allow bindings at same column as 'where' (common style)
+            if firstTok.column >= whereCol
             then do
               Tuple bindings rest' <- collectWhereBindings rest whereCol []
               success (Ast.ExprLet bindings body) rest'
@@ -2319,7 +2371,8 @@ collectWhereBindings tokens whereCol acc = do
   let tokens' = skipNewlines tokens
   case Array.head tokens' of
     Just t ->
-      if t.column > whereCol
+      -- Allow bindings at same column as 'where' (common style)
+      if t.column >= whereCol
       then do
         -- Check if this is a type signature (name ::) or a function definition (name params =)
         case isTypeSignatureLine tokens' of

@@ -1,293 +1,280 @@
-# Nova Self-Hosting Compiler Roadmap
+# Nova Lang Roadmap
 
-## Goal
-Bootstrap a fully self-hosting compiler that can:
-1. Parse itself (PureScript source → AST)
-2. Type-check itself (AST → Typed AST)
-3. Generate Elixir code (Typed AST → .ex files)
-4. Run the generated Elixir to compile the next iteration
-
-## Current State
-
-### ✅ Complete
-- **Tokenizer**: Full lexical analysis with position tracking
-- **Parser**: 1500+ lines covering all syntax forms
-- **AST**: Complete node definitions for all language constructs
-- **Types**: Core type representation (TVar, TCon, TyRecord, Scheme)
-- **Unify**: Unification with occurs check
-- **TypeChecker**: Basic Algorithm W (literals, vars, app, lambda, let, if, case, records, lists)
-- **CodeGen**: Elixir generation (functions, expressions, data types)
-- **E2E Tests**: Generated Elixir executes correctly
-
-### 🔶 Partial
-- Case expressions with guards (parsed, codegen works, TC partial)
-- Do-notation (parsed, codegen works, TC missing)
-- Record patterns (parsed, codegen works, TC missing)
-
-### ❌ Missing for Self-Hosting
-- Type class resolution
-- Constraint solving
-- Module system (imports/exports)
-- Foreign imports
-- Prelude/standard library types
+A long-term development roadmap for the Nova compiler project.
 
 ---
 
-## Phase 1: Core Language Completion
-**Goal**: Type-check and compile simple, single-module programs
+## Current Status: Bootstrap Complete ✅
 
-### 1.1 Complete Pattern Type Inference
-- [ ] `PatRecord` - record destructuring
-- [ ] `PatList` - list patterns `[a, b, c]`
-- [ ] `PatCons` - cons patterns `(h : t)`
-- [ ] `PatAs` - as-patterns `x@(Just y)`
+**The Nova compiler successfully compiles itself.** Stage 1 (PureScript→JS) and Stage 2 (Elixir) produce identical output for all 8 core modules.
 
-### 1.2 Complete Expression Type Inference
-- [ ] `ExprRecordUpdate` - `rec { field = value }`
-- [ ] `ExprDo` - do-notation (desugar to bind/pure)
-- [ ] `ExprSection` - operator sections `(+ 1)`
-- [ ] `ExprUnaryOp` - unary operators
+### What's Working
+- ~8,300 lines of compiler code across 8 modules
+- Full pipeline: Tokenizer → Parser → TypeChecker → CodeGen
+- Hindley-Milner type inference with unification
+- 25+ expression types, 10 pattern types, all declaration forms
+- Elixir/BEAM code generation
+- Recursive functions, pattern matching, do-notation
+- Operator sections, guards, where clauses
 
-### 1.3 Add Standard Operators to Prelude
-- [ ] Arithmetic: `+`, `-`, `*`, `/`, `mod`
-- [ ] Comparison: `==`, `/=`, `<`, `>`, `<=`, `>=`
-- [ ] Boolean: `&&`, `||`, `not`
-- [ ] List: `:`, `++`
-- [ ] Function: `$`, `.`, `<<<`, `>>>`
-
-### 1.4 Tests
-- [ ] E2E: Pattern matching (all patterns)
-- [ ] E2E: Record operations
-- [ ] E2E: List operations with cons
-
----
-
-## Phase 2: Type Classes (Minimal)
-**Goal**: Support `Show`, `Eq`, `Functor`, `Monad` for basic operations
-
-### 2.1 Type Class Infrastructure
-- [ ] Parse type class declarations → `DeclTypeClass`
-- [ ] Parse instance declarations → `DeclTypeClassInstance`
-- [ ] Store class definitions in environment
-- [ ] Store instance definitions
-
-### 2.2 Constraint Collection
-- [ ] Collect constraints during inference
-- [ ] Propagate constraints through applications
-- [ ] Handle `=>` in type signatures
-
-### 2.3 Constraint Resolution
-- [ ] Instance lookup by type
-- [ ] Dictionary passing transformation
-- [ ] Generate instance dictionaries in Elixir
-
-### 2.4 Core Instances
-- [ ] `Show` for Int, String, Bool, List, Maybe
-- [ ] `Eq` for Int, String, Bool, List
-- [ ] `Functor` for List, Maybe
-- [ ] `Monad` for Maybe, Either (for do-notation)
-
----
-
-## Phase 3: Module System
-**Goal**: Compile multi-file programs with imports
-
-### 3.1 Module Resolution
-- [ ] Parse module headers
-- [ ] Track module dependencies
-- [ ] Topological sort for compilation order
-
-### 3.2 Import/Export Handling
-- [ ] Export all by default
-- [ ] Selective imports `import Foo (bar, Baz(..))`
-- [ ] Qualified imports `import Foo as F`
-- [ ] Hiding `import Foo hiding (bar)`
-
-### 3.3 Cross-Module Type Checking
-- [ ] Load type signatures from compiled modules
-- [ ] Resolve qualified names
-- [ ] Handle re-exports
-
-### 3.4 Code Generation Updates
-- [ ] Generate proper Elixir module structure
-- [ ] Handle qualified function calls
-- [ ] Import statements in generated code
-
----
-
-## Phase 4: Data Types & Pattern Matching
-**Goal**: Full ADT support with exhaustive pattern matching
-
-### 4.1 Data Type Processing
-- [ ] Register constructors with their types
-- [ ] Generate constructor functions in Elixir
-- [ ] Support record syntax in constructors
-
-### 4.2 Pattern Matching Compilation
-- [ ] Constructor pattern type checking
-- [ ] Nested pattern flattening
-- [ ] Guard expression evaluation
-- [ ] Exhaustiveness checking (warning)
-
-### 4.3 Generated Elixir Patterns
-- [ ] Tagged tuples: `{:Just, x}`
-- [ ] Record constructors: `%{__tag__: :Person, name: n}`
-- [ ] Optimized boolean/int patterns
-
----
-
-## Phase 5: Self-Hosting Bootstrap
-**Goal**: Compiler can compile itself
-
-### 5.1 Compile Compiler Modules
-Order of compilation:
-1. [ ] `Nova.Compiler.Ast` - pure data definitions
-2. [ ] `Nova.Compiler.Types` - type system types
-3. [ ] `Nova.Compiler.Tokenizer` - lexical analysis
-4. [ ] `Nova.Compiler.Unify` - unification
-5. [ ] `Nova.Compiler.Parser` - syntax analysis
-6. [ ] `Nova.Compiler.TypeChecker` - type inference
-7. [ ] `Nova.Compiler.CodeGen` - Elixir generation
-
-### 5.2 Runtime Support
-- [ ] Prelude module with core functions
-- [ ] Effect system (or simple IO monad)
-- [ ] String operations
-- [ ] Array operations
-- [ ] File I/O (for reading source files)
-
-### 5.3 Bootstrap Process
+### Architecture
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Stage 0: PureScript Compiler (via spago/node)          │
-│  ├── Compiles Nova sources → .ex files                  │
-│  └── Output: output/elixir/*.ex                         │
-├─────────────────────────────────────────────────────────┤
-│  Stage 1: Elixir Compiler (via elixir/mix)              │
-│  ├── Runs compiled .ex files                            │
-│  ├── Compiles Nova sources → .ex files (round 2)        │
-│  └── Output: _build/stage1/*.ex                         │
-├─────────────────────────────────────────────────────────┤
-│  Stage 2: Verify                                        │
-│  ├── Compare Stage 0 output vs Stage 1 output           │
-│  └── If identical: bootstrap complete!                  │
-└─────────────────────────────────────────────────────────┘
-```
-
-### 5.4 Verification
-- [ ] Diff generated code between stages
-- [ ] Run test suite with self-compiled compiler
-- [ ] Performance benchmarks
-
----
-
-## Phase 6: Polish & Optimization
-**Goal**: Production-ready compiler
-
-### 6.1 Error Messages
-- [ ] Source location in all errors
-- [ ] Type mismatch suggestions
-- [ ] Undefined variable hints
-- [ ] Import resolution errors
-
-### 6.2 Optimization
-- [ ] Dead code elimination
-- [ ] Inline small functions
-- [ ] Tail call optimization markers
-- [ ] Constant folding
-
-### 6.3 Developer Experience
-- [ ] Watch mode (recompile on change)
-- [ ] REPL via Elixir IEx
-- [ ] LSP server basics (hover types)
-
----
-
-## Implementation Priority
-
-### Sprint 1 (Foundation)
-1. Pattern inference: `PatRecord`, `PatList`, `PatCons`
-2. Operators in prelude with types
-3. E2E tests for patterns
-
-### Sprint 2 (Expressions)
-1. `ExprRecordUpdate` inference
-2. `ExprDo` desugaring + inference
-3. E2E tests for do-notation
-
-### Sprint 3 (Type Classes Minimal)
-1. Class/instance storage
-2. Constraint collection
-3. `Show` and `Eq` instances
-
-### Sprint 4 (Modules)
-1. Multi-file compilation
-2. Import resolution
-3. Qualified names
-
-### Sprint 5 (Self-Host Attempt)
-1. Compile `Ast.purs`
-2. Compile `Tokenizer.purs`
-3. Compile `Parser.purs`
-4. Iterate on missing features
-
-### Sprint 6+ (Complete Bootstrap)
-1. Full compiler compilation
-2. Stage comparison
-3. Test suite verification
-
----
-
-## File Organization
-
-```
-purs/
-├── src/Nova/Compiler/
-│   ├── Ast.purs           ✅ Complete
-│   ├── Tokenizer.purs     ✅ Complete
-│   ├── Parser.purs        ✅ Complete
-│   ├── Types.purs         ✅ Complete
-│   ├── Unify.purs         ✅ Complete
-│   ├── TypeChecker.purs   🔶 Needs: patterns, do, classes
-│   ├── CodeGen.purs       ✅ Complete (may need updates)
-│   ├── Module.purs        ❌ TODO: module system
-│   └── Prelude.purs       ❌ TODO: standard library types
-├── test/
-│   ├── tokenizer/         ✅
-│   ├── parser/            ✅
-│   ├── typecheck/         🔶 Needs more coverage
-│   └── codegen_elixir/    ✅ E2E working
-└── output/elixir/         ❌ TODO: generated .ex files
+Nova Source → Tokenizer → Parser → TypeChecker → CodeGen → Elixir/BEAM
+                 ↓          ↓          ↓            ↓
+             [Token]     [AST]   [Typed AST]    [String]
 ```
 
 ---
 
-## Success Metrics
+## Phase 1: Language Completeness (Current)
 
-1. **Phase 1 Complete**: Can compile `factorial` with pattern matching
-2. **Phase 2 Complete**: Can use `show` and `==`
-3. **Phase 3 Complete**: Can compile multi-file project
-4. **Phase 4 Complete**: Can compile ADTs with full pattern matching
-5. **Phase 5 Complete**: Compiler compiles itself, output matches
-6. **Phase 6 Complete**: Error messages are helpful, compilation is fast
+### 1.1 Type Class Resolution 🔶
+Complete the type class system for proper method dispatch.
+
+- [ ] Implement constraint solving in type checker
+- [ ] Generate dictionary-passing style code
+- [ ] Support multi-parameter type classes
+- [ ] Functional dependencies
+- [ ] Default method implementations
+
+**Impact**: Enables idiomatic `Functor`, `Monad`, `Show`, `Eq` usage
+
+### 1.2 Module System Improvements
+- [x] Basic imports/exports
+- [ ] Qualified imports with aliases (`import Data.Map as M`)
+- [ ] Re-exports
+- [ ] Orphan instance detection
+
+### 1.3 Error Messages
+- [ ] Source location in all error messages
+- [ ] Contextual errors with code snippets
+- [ ] Type error explanations (expected vs actual)
+- [ ] Suggestions for common mistakes
+
+### 1.4 Pattern Matching Completeness
+- [x] All pattern types working
+- [ ] Exhaustiveness checking
+- [ ] Redundant pattern warnings
 
 ---
 
-## Dependencies & Risks
+## Phase 2: Performance & Tooling (Near-term)
 
-### Dependencies
-- Elixir 1.14+ for running generated code
-- Node.js for running PureScript compiler
-- spago for PureScript package management
+### 2.1 Compilation Performance
+- [ ] Incremental compilation
+- [ ] Parallel module compilation
+- [ ] Type checking result caching
+- [ ] Native tokenizer (consider Rust/Zig)
 
-### Risks
-- **Type class complexity**: May need to simplify to dictionary-passing
-- **Module cycles**: Need careful ordering
-- **Performance**: Generated Elixir may be slow initially
-- **FFI**: May need escape hatch for some operations
+### 2.2 Runtime Performance
+Current codegen is reasonable but has room for improvement:
 
-### Mitigations
-- Start with subset of type classes
-- Use topological sort for modules
-- Profile and optimize hot paths
-- Allow inline Elixir for FFI
+- [ ] Arity analysis for lambda optimization
+- [ ] Strictness analysis
+- [ ] Unboxing for primitive types
+- [ ] Specialization for monomorphic sites
+
+**Note**: BEAM already handles tail calls and constant folding.
+
+### 2.3 Developer Tooling
+- [ ] Language Server Protocol (LSP)
+  - Go to definition
+  - Find references
+  - Hover type info
+  - Completion
+- [ ] REPL with type display
+- [ ] Source maps for debugging
+- [ ] Code formatter
+
+### 2.4 Package Manager
+- [ ] Package manifest (nova.toml)
+- [ ] Dependency resolution
+- [ ] Registry integration
+- [ ] Semantic versioning
+
+---
+
+## Phase 3: Advanced Type Features (Medium-term)
+
+### 3.1 Type System Extensions
+- [x] Higher-kinded types (partial)
+- [ ] Type families / Associated types
+- [ ] GADTs
+- [ ] Rank-N types
+- [ ] Existential types
+
+### 3.2 Row Types & Records
+- [x] Basic records
+- [ ] Extensible records with row polymorphism
+- [ ] Record concatenation/restriction
+- [ ] Variant types (extensible sums)
+
+### 3.3 Effect System (Optional)
+- [ ] Algebraic effects
+- [ ] Effect inference
+- [ ] Effect handlers
+
+---
+
+## Phase 4: Alternative Backends (Long-term)
+
+### 4.1 JavaScript Backend
+Most practical for web deployment.
+
+```
+Nova Source → ... → CodeGenJS → JavaScript
+```
+
+- [ ] `CodeGenJS.purs` module
+- [ ] JS runtime library
+- [ ] JS FFI
+- [ ] Source maps
+- [ ] Tree shaking
+- [ ] Bundle optimization
+
+**Use cases**: Browser apps, Node.js, React/Vue integration
+
+### 4.2 WebAssembly Backend
+For performance-critical browser applications.
+
+**Approach Options**:
+
+| Option | Complexity | Performance | Effort |
+|--------|------------|-------------|--------|
+| Via JS + wasm-pack | Low | Medium | Low |
+| Direct WAT/WASM | High | High | High |
+| Via Grain/AssemblyScript | Medium | Medium | Medium |
+
+- [ ] Choose approach
+- [ ] Implement CodeGenWasm
+- [ ] Memory management strategy
+- [ ] WASM runtime
+
+### 4.3 Native Backend (LLVM)
+For systems programming.
+
+- [ ] CodeGenLLVM module
+- [ ] Memory management (RC/GC)
+- [ ] C FFI
+- [ ] Platform optimizations
+
+### 4.4 Other Potential Targets
+- **Lua** - Embedded scripting (games, nginx)
+- **Go** - Cloud infrastructure
+- **Rust** - Systems with safety
+- **JVM** - Enterprise ecosystem
+
+---
+
+## Phase 5: Ecosystem (Long-term)
+
+### 5.1 Standard Library
+- [ ] Core data structures (List, Map, Set, Vector)
+- [ ] Text processing (Unicode strings)
+- [ ] Numeric types (BigInt, Decimal)
+- [ ] Date/Time
+- [ ] JSON
+- [ ] HTTP client
+- [ ] File system
+- [ ] Concurrency
+
+### 5.2 Testing Framework
+- [ ] Property-based testing (QuickCheck)
+- [ ] Unit testing
+- [ ] Test runner
+- [ ] Coverage
+
+### 5.3 Documentation
+- [ ] Doc generator (Haddock-style)
+- [ ] Interactive examples
+- [ ] Tutorials
+
+### 5.4 Build System
+- [ ] Declarative config
+- [ ] Multi-target builds
+- [ ] Conditional compilation
+- [ ] Build caching
+
+---
+
+## Version Milestones
+
+### v0.1 - Bootstrap ✅ DONE
+- [x] Self-hosting compiler
+- [x] Basic type inference
+- [x] Elixir code generation
+- [x] Core language features
+
+### v0.2 - Usability
+- [ ] Good error messages
+- [ ] Complete module system
+- [ ] Formatter, REPL
+
+### v0.3 - Type Classes
+- [ ] Full type class resolution
+- [ ] Dictionary passing codegen
+- [ ] Standard type class hierarchy
+
+### v0.4 - Performance
+- [ ] Incremental compilation
+- [ ] Benchmark suite
+- [ ] Optimization passes
+
+### v0.5 - Multi-Target
+- [ ] JavaScript backend
+- [ ] Cross-compilation
+
+### v1.0 - Production Ready
+- [ ] Stable specification
+- [ ] Comprehensive stdlib
+- [ ] Production tooling
+- [ ] Documentation
+
+---
+
+## Research Areas
+
+### Language Features to Investigate
+- **Dependent types** - Types depending on values
+- **Linear types** - Resource management
+- **Refinement types** - Types with predicates
+- **Gradual typing** - Mixed static/dynamic
+- **Metaprogramming** - Compile-time codegen
+- **Hot reloading** - BEAM capability
+
+### Interop Priorities
+1. **Elixir/Erlang** - First-class OTP
+2. **JavaScript** - Browser/Node.js
+3. **C** - System access
+
+---
+
+## Design Principles
+
+1. **Simplicity** - Simple solutions over clever ones
+2. **Correctness** - Type safety and sound semantics
+3. **Performance** - Efficient generated code
+4. **Pragmatism** - Real-world usability
+5. **Interop** - First-class FFI
+
+---
+
+## Contributing
+
+High-value contribution areas:
+
+1. **Error messages** - User experience
+2. **Testing** - Expand test suite
+3. **Documentation** - Tutorials, guides
+4. **Standard library** - Core utilities
+5. **Tooling** - Editor integrations
+
+---
+
+## References
+
+- [PureScript](https://www.purescript.org/) - Language inspiration
+- [Haskell](https://www.haskell.org/) - Type system foundation
+- [Elixir](https://elixir-lang.org/) - Primary target
+- [Erlang/OTP](https://www.erlang.org/) - Runtime platform
+- [Elm](https://elm-lang.org/) - Error message inspiration
