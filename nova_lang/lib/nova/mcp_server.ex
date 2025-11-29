@@ -286,6 +286,54 @@ defmodule Nova.MCPServer do
           },
           required: ["namespace"]
         }
+      },
+
+      # File operations
+      %{
+        name: "load_file",
+        description: "Load and parse a .purs source file into a namespace",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "path" => %{
+              type: "string",
+              description: "Path to the .purs file"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "Optional namespace name (defaults to module name from file)"
+            }
+          },
+          required: ["path"]
+        }
+      },
+      %{
+        name: "compile_file",
+        description: "Compile a .purs source file to Elixir code",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "path" => %{
+              type: "string",
+              description: "Path to the .purs file"
+            }
+          },
+          required: ["path"]
+        }
+      },
+      %{
+        name: "compile_namespace",
+        description: "Generate Elixir code from all declarations in a namespace",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "namespace" => %{
+              type: "string",
+              description: "The namespace to compile"
+            }
+          },
+          required: ["namespace"]
+        }
       }
     ]
 
@@ -406,6 +454,16 @@ defmodule Nova.MCPServer do
           {:error, reason} -> {:error, format_error(reason)}
         end
 
+      # File operations
+      "load_file" ->
+        load_file(svc, args["path"], args["namespace"])
+
+      "compile_file" ->
+        compile_file(args["path"])
+
+      "compile_namespace" ->
+        compile_namespace(svc, args["namespace"])
+
       _ ->
         {:error, "Unknown tool: #{name}"}
     end
@@ -432,4 +490,158 @@ defmodule Nova.MCPServer do
 
   defp format_type(nil), do: "unknown"
   defp format_type(type), do: Nova.Compiler.Unify.show_type(type)
+
+  # File operations
+
+  defp load_file(svc, path, namespace_override) do
+    case File.read(path) do
+      {:ok, source} ->
+        tokens = Nova.Compiler.Tokenizer.tokenize(source)
+
+        case Nova.Compiler.Parser.parse_module(tokens) do
+          {:right, {:tuple, mod, _rest}} ->
+            namespace = namespace_override || mod.name
+
+            # Create namespace if it doesn't exist
+            Nova.NamespaceService.create_namespace(svc, namespace)
+
+            # Add each declaration
+            results = Enum.map(mod.declarations, fn decl ->
+              # Convert declaration back to source (simplified - just use inspect for now)
+              decl_source = format_declaration_source(decl)
+              case Nova.NamespaceService.add_declaration(svc, namespace, decl_source) do
+                {:ok, id} -> {:ok, id}
+                {:error, reason} -> {:error, reason}
+              end
+            end)
+
+            ok_count = Enum.count(results, fn {status, _} -> status == :ok end)
+            error_count = Enum.count(results, fn {status, _} -> status == :error end)
+
+            {:ok, %{
+              namespace: namespace,
+              module_name: mod.name,
+              declarations_loaded: ok_count,
+              errors: error_count,
+              path: path
+            }}
+
+          {:left, error} ->
+            {:error, "Parse error: #{inspect(error)}"}
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to read file: #{reason}"}
+    end
+  end
+
+  defp compile_file(path) do
+    case File.read(path) do
+      {:ok, source} ->
+        tokens = Nova.Compiler.Tokenizer.tokenize(source)
+
+        case Nova.Compiler.Parser.parse_module(tokens) do
+          {:right, {:tuple, mod, _rest}} ->
+            code = Nova.Compiler.CodeGen.gen_module(mod)
+            {:ok, %{
+              module_name: mod.name,
+              elixir_code: code,
+              lines: length(String.split(code, "\n"))
+            }}
+
+          {:left, error} ->
+            {:error, "Parse error: #{inspect(error)}"}
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to read file: #{reason}"}
+    end
+  end
+
+  defp compile_namespace(svc, namespace) do
+    case Nova.NamespaceService.list_declarations(svc, namespace) do
+      {:ok, decls} ->
+        # Build a module AST from the declarations
+        declarations = Enum.flat_map(decls, fn decl_info ->
+          case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+            {:ok, managed_decl} -> [managed_decl.decl]
+            _ -> []
+          end
+        end)
+
+        mod = %{name: namespace, declarations: declarations}
+        code = Nova.Compiler.CodeGen.gen_module(mod)
+
+        {:ok, %{
+          namespace: namespace,
+          elixir_code: code,
+          lines: length(String.split(code, "\n")),
+          declarations: length(decls)
+        }}
+
+      {:error, reason} ->
+        {:error, format_error(reason)}
+    end
+  end
+
+  # Format a declaration back to source code (simplified)
+  defp format_declaration_source(decl) do
+    case decl do
+      {:decl_function, func} ->
+        params = Enum.map(func.parameters, &format_pattern/1) |> Enum.join(" ")
+        "#{func.name} #{params} = #{format_expr(func.body)}"
+
+      {:decl_data_type, dt} ->
+        ctors = Enum.map(dt.constructors, fn ctor ->
+          if Enum.empty?(ctor.fields) do
+            ctor.name
+          else
+            fields = Enum.map(ctor.fields, fn f -> format_type_expr(f.ty) end) |> Enum.join(" ")
+            "#{ctor.name} #{fields}"
+          end
+        end) |> Enum.join(" | ")
+        type_vars = if Enum.empty?(dt.typeVars), do: "", else: " " <> Enum.join(dt.typeVars, " ")
+        "data #{dt.name}#{type_vars} = #{ctors}"
+
+      {:decl_type_alias, ta} ->
+        type_vars = if Enum.empty?(ta.typeVars), do: "", else: " " <> Enum.join(ta.typeVars, " ")
+        "type #{ta.name}#{type_vars} = #{format_type_expr(ta.ty)}"
+
+      {:decl_type_sig, sig} ->
+        "#{sig.name} :: #{format_type_expr(sig.ty)}"
+
+      _ ->
+        "-- unsupported declaration"
+    end
+  end
+
+  defp format_pattern({:pat_var, name}), do: name
+  defp format_pattern({:pat_wildcard}), do: "_"
+  defp format_pattern({:pat_literal, {:lit_int, n}}), do: to_string(n)
+  defp format_pattern({:pat_literal, {:lit_string, s}}), do: "\"#{s}\""
+  defp format_pattern({:pat_constructor, name, args}) do
+    if Enum.empty?(args), do: name, else: "(#{name} #{Enum.map(args, &format_pattern/1) |> Enum.join(" ")})"
+  end
+  defp format_pattern(_), do: "_"
+
+  defp format_expr({:expr_var, name}), do: name
+  defp format_expr({:expr_literal, {:lit_int, n}}), do: to_string(n)
+  defp format_expr({:expr_literal, {:lit_string, s}}), do: "\"#{s}\""
+  defp format_expr({:expr_app, f, arg}), do: "(#{format_expr(f)} #{format_expr(arg)})"
+  defp format_expr({:expr_lambda, params, body}) do
+    ps = Enum.map(params, &format_pattern/1) |> Enum.join(" ")
+    "(\\#{ps} -> #{format_expr(body)})"
+  end
+  defp format_expr({:expr_infix, op, l, r}), do: "(#{format_expr(l)} #{op} #{format_expr(r)})"
+  defp format_expr(_), do: "..."
+
+  defp format_type_expr({:ty_expr_con, name}), do: name
+  defp format_type_expr({:ty_expr_var, name}), do: name
+  defp format_type_expr({:ty_expr_app, f, arg}), do: "(#{format_type_expr(f)} #{format_type_expr(arg)})"
+  defp format_type_expr({:ty_expr_arrow, a, b}), do: "(#{format_type_expr(a)} -> #{format_type_expr(b)})"
+  defp format_type_expr({:ty_expr_record, fields, _row}) do
+    fs = Enum.map(fields, fn {name, ty} -> "#{name} :: #{format_type_expr(ty)}" end) |> Enum.join(", ")
+    "{ #{fs} }"
+  end
+  defp format_type_expr(_), do: "?"
 end
