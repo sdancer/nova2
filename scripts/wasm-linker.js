@@ -70,6 +70,32 @@ class NovaLinker {
     return arg;
   }
 
+  // Helper to create a curried function from a multi-arity function
+  _makeCurried(func, arity) {
+    const rt = this.runtime;
+    const self = this;
+
+    // Create a curried version that collects args
+    const curried = (collectedArgs) => (arg) => {
+      const newArgs = [...collectedArgs, arg];
+      if (newArgs.length >= arity) {
+        // All args collected, call the function
+        return func(...newArgs);
+      } else {
+        // Need more args, return another closure
+        const id = rt.nextId++;
+        rt.closures.set(id, {
+          func: curried(newArgs),
+          arity: 1,
+          args: []
+        });
+        return rt.makeHeapPtr(id);
+      }
+    };
+
+    return curried([]);
+  }
+
   // Create standard library implementations
   getStdLib() {
     const rt = this.runtime;
@@ -918,17 +944,17 @@ class NovaLinker {
         return rt.makeHeapPtr(id);
       }, 1), 1), 1), 4),
 
-      Ast_DeclFunction: () => curry((name) => curry((clauses) => {
+      Ast_DeclFunction: () => curry((funcDecl) => {
         const id = rt.nextId++;
-        rt.arrays.set(id, [rt.makeCtor(9, 2), name, clauses]); // DeclFunction tag=9
+        rt.arrays.set(id, [rt.makeCtor(1, 1), funcDecl]); // DeclFunction tag=1, arity=1
         return rt.makeHeapPtr(id);
-      }, 1), 2),
+      }, 1),
 
-      Ast_DeclTypeSig: () => curry((name) => curry((ty) => {
+      Ast_DeclTypeSig: () => curry((sig) => {
         const id = rt.nextId++;
-        rt.arrays.set(id, [rt.makeCtor(10, 2), name, ty]); // DeclTypeSig tag=10
+        rt.arrays.set(id, [rt.makeCtor(10, 1), sig]); // DeclTypeSig tag=10, arity=1
         return rt.makeHeapPtr(id);
-      }, 1), 2),
+      }, 1),
 
       // Associativity constructors
       Ast_AssocLeft: () => rt.makeCtor(0, 0),
@@ -1298,7 +1324,25 @@ class NovaLinker {
           // Check other loaded modules
           for (const [name, instance] of self.modules) {
             if (instance.exports[prop]) {
-              return instance.exports[prop];
+              const func = instance.exports[prop];
+              // Get function arity
+              const arity = func.length;
+              if (arity === 0) {
+                // Zero-arity function - return as-is
+                return func;
+              } else {
+                // Multi-arity function - wrap as curried closure
+                // Return a zero-arity function that returns a curried closure
+                return () => {
+                  const id = rt.nextId++;
+                  rt.closures.set(id, {
+                    func: self._makeCurried(func, arity),
+                    arity,
+                    args: []
+                  });
+                  return rt.makeHeapPtr(id);
+                };
+              }
             }
           }
           // Return a stub that returns 0
@@ -1334,17 +1378,99 @@ class NovaLinker {
     this.currentModuleName = name;
 
     // Register all exports
+    // Export names are already fully qualified (e.g., Nova_Compiler_Types_tInt)
     for (const [exportName, value] of Object.entries(instance.exports)) {
       if (typeof value === 'function') {
-        this.exports[`${name}_${exportName}`] = value;
+        this.exports[exportName] = value;
       }
     }
 
     return instance;
   }
 
-  async loadModules(watFiles) {
-    for (const { name, path } of watFiles) {
+  // Extract module dependencies from WAT source
+  extractDependencies(watSource) {
+    const deps = new Set();
+    // Look for (import "modules" "Nova_Compiler_Foo_bar" ...) patterns
+    const importRegex = /\(import\s+"modules"\s+"(Nova_Compiler_([^_]+)_[^"]+)"/g;
+    let match;
+    while ((match = importRegex.exec(watSource)) !== null) {
+      const moduleName = match[2]; // e.g., "Types" from "Nova_Compiler_Types_tInt"
+      deps.add(moduleName);
+    }
+    return [...deps];
+  }
+
+  // Topologically sort modules by dependencies
+  sortByDependencies(watFiles) {
+    // Build dependency graph
+    const deps = new Map();
+    const watByName = new Map();
+
+    for (const { name, path: watPath } of watFiles) {
+      watByName.set(name, watPath);
+      const source = fs.readFileSync(watPath, 'utf8');
+      const moduleDeps = this.extractDependencies(source);
+      // Filter to only include deps that are in our module set
+      const filteredDeps = moduleDeps.filter(d => watFiles.some(f => f.name === d));
+      deps.set(name, filteredDeps);
+    }
+
+    // Kahn's algorithm for topological sort
+    const inDegree = new Map();
+    for (const name of deps.keys()) {
+      inDegree.set(name, 0);
+    }
+    for (const [, moduleDeps] of deps) {
+      for (const dep of moduleDeps) {
+        inDegree.set(dep, (inDegree.get(dep) || 0) + 1);
+      }
+    }
+
+    // Start with modules that have no dependencies on them
+    const queue = [];
+    for (const [name, degree] of inDegree) {
+      if (degree === 0) {
+        queue.push(name);
+      }
+    }
+
+    const sorted = [];
+    while (queue.length > 0) {
+      const name = queue.shift();
+      sorted.push(name);
+      for (const dep of (deps.get(name) || [])) {
+        const newDegree = inDegree.get(dep) - 1;
+        inDegree.set(dep, newDegree);
+        if (newDegree === 0) {
+          queue.push(dep);
+        }
+      }
+    }
+
+    // Reverse so dependencies come first (we want Types before TypeChecker)
+    sorted.reverse();
+
+    // Return in sorted order
+    return sorted.map(name => ({
+      name,
+      path: watByName.get(name)
+    }));
+  }
+
+  async loadModules(watFiles, { sortDependencies = true } = {}) {
+    let orderedFiles = watFiles;
+
+    if (sortDependencies && watFiles.length > 1) {
+      try {
+        orderedFiles = this.sortByDependencies(watFiles);
+        console.log('Loading order:', orderedFiles.map(f => f.name).join(' -> '));
+      } catch (e) {
+        console.warn('Could not sort dependencies, using provided order:', e.message);
+      }
+    }
+
+    for (const { name, path } of orderedFiles) {
       console.log(`Loading ${name}...`);
       try {
         await this.loadModule(name, path);

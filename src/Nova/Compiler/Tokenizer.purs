@@ -88,12 +88,13 @@ initState input = { input, chars: CU.toCharArray input, pos: 0, line: 1, column:
 
 -- | Main tokenize function
 tokenize :: String -> Array Token
-tokenize source = go (initState source) []
-  where
-    go :: TokState -> Array Token -> Array Token
-    go state acc = case nextToken state of
-      Nothing -> Array.reverse acc
-      Just (Tuple tok state') -> go state' (Array.cons tok acc)
+tokenize source = tokenizeGo (initState source) []
+
+-- | Tokenize helper (recursive)
+tokenizeGo :: TokState -> Array Token -> Array Token
+tokenizeGo state acc = case nextToken state of
+  Nothing -> Array.reverse acc
+  Just (Tuple tok state') -> tokenizeGo state' (Array.cons tok acc)
 
 -- | Get the next token, if any
 nextToken :: TokState -> Maybe (Tuple Token TokState)

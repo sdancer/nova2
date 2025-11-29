@@ -6,13 +6,13 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Data.String as String
-import Data.String.Pattern (Pattern(..)) as StringPattern
+import Data.String.Pattern as StringPattern
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Foldable (foldr)
-import Data.Int (floor) as Int
+import Data.Int as Int
 import Data.Enum (fromEnum)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..))
 import Nova.Compiler.RefEq (refEqExpr)
@@ -197,24 +197,20 @@ collectFreeVars bound (ExprRecordUpdate e fs) =
   Set.union (collectFreeVars bound e) (Array.foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty fs)
 collectFreeVars bound (ExprParens e) = collectFreeVars bound e
 collectFreeVars bound (ExprDo stmts) = collectDoFreeVars bound stmts
-  where
-    collectDoFreeVars _ arr | Array.null arr = Set.empty
-    collectDoFreeVars b arr = case Array.uncons arr of
-      Nothing -> Set.empty
-      Just { head: DoExpr e, tail: rest } ->
-        Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
-      Just { head: DoBind pat e, tail: rest } ->
-        let patVars = Set.fromFoldable (patternVars pat)
-        in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
-      Just { head: DoLet binds, tail: rest } ->
-        let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
-            b' = Set.union b bindNames
-        in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds)
-                     (collectDoFreeVars b' rest)
 collectFreeVars bound (ExprTyped e _) = collectFreeVars bound e
 collectFreeVars bound (ExprSectionLeft e _) = collectFreeVars bound e
 collectFreeVars bound (ExprSectionRight _ e) = collectFreeVars bound e
 collectFreeVars _ _ = Set.empty
+
+collectDoFreeVars :: Set.Set String -> Array DoStatement -> Set.Set String
+collectDoFreeVars _ arr | Array.null arr = Set.empty
+collectDoFreeVars b arr = collectDoFreeVarsHelper b (Array.uncons arr)
+
+collectDoFreeVarsHelper :: Set.Set String -> Maybe { head :: DoStatement, tail :: Array DoStatement } -> Set.Set String
+collectDoFreeVarsHelper _ Nothing = Set.empty
+collectDoFreeVarsHelper b (Just { head: DoExpr e, tail: rest }) = Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
+collectDoFreeVarsHelper b (Just { head: DoBind pat e, tail: rest }) = let patVars = Set.fromFoldable (patternVars pat) in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
+collectDoFreeVarsHelper b (Just { head: DoLet binds, tail: rest }) = let b' = Set.union b (Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)) in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds) (collectDoFreeVars b' rest)
 
 -- | Collect lambdas from expression and assign unique IDs
 -- Returns updated counter and list of lifted lambdas
@@ -228,17 +224,13 @@ getLambdaParamName i PatWildcard = "__w" <> show i  -- Unique names for wildcard
 getLambdaParamName i _ = "__p" <> show i  -- Unique names for complex patterns
 
 collectLambdas :: Set String -> Expr -> LambdaCollector -> LambdaCollector
-collectLambdas bound e@(ExprLambda pats body) state =
+collectLambdas bound (ExprLambda pats body) state =
   let paramNames = Array.mapWithIndex getLambdaParamName pats
       bound' = Set.union bound (Set.fromFoldable paramNames)
-      -- Collect lambdas in the body first
       state' = collectLambdas bound' body state
-      -- Compute free vars (variables needed from enclosing scope, excluding ONLY lambda params)
-      -- We use only paramNames here, not bound', because bound contains outer scope vars
-      -- that the lambda needs to capture in its closure
       lambdaParams = Set.fromFoldable paramNames
       freeVars = Set.toUnfoldable (collectFreeVars lambdaParams body)
-      lambda = { id: state'.counter, expr: e, params: paramNames, freeVars: freeVars, body: body }
+      lambda = { id: state'.counter, expr: ExprLambda pats body, params: paramNames, freeVars: freeVars, body: body }
   in { counter: state'.counter + 1, lambdas: Array.snoc state'.lambdas lambda }
 collectLambdas bound (ExprApp f a) state =
   collectLambdas bound a (collectLambdas bound f state)
@@ -269,24 +261,27 @@ collectLambdas bound (ExprRecordUpdate e fs) state =
   in Array.foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' fs
 collectLambdas bound (ExprParens e) state = collectLambdas bound e state
 collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound stmts state
-  where
-    collectDoLambdas _ arr st | Array.null arr = st
-    collectDoLambdas b arr st = case Array.uncons arr of
-      Nothing -> st
-      Just { head: DoExpr e, tail: rest } ->
-        collectDoLambdas b rest (collectLambdas b e st)
-      Just { head: DoBind pat e, tail: rest } ->
-        let patVars = Set.fromFoldable (patternVars pat)
-        in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
-      Just { head: DoLet binds, tail: rest } ->
-        let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
-            b' = Set.union b bindNames
-            st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st binds
-        in collectDoLambdas b' rest st'
 collectLambdas bound (ExprTyped e _) state = collectLambdas bound e state
 collectLambdas bound (ExprSectionLeft e _) state = collectLambdas bound e state
 collectLambdas bound (ExprSectionRight _ e) state = collectLambdas bound e state
 collectLambdas _ _ state = state
+
+-- | Helper for collecting lambdas from do statements
+collectDoLambdas :: Set String -> Array DoStatement -> LambdaCollector -> LambdaCollector
+collectDoLambdas _ arr st | Array.null arr = st
+collectDoLambdas b arr st =
+  case Array.uncons arr of
+    Nothing -> st
+    Just { head: DoExpr e, tail: rest } ->
+      collectDoLambdas b rest (collectLambdas b e st)
+    Just { head: DoBind pat e, tail: rest } ->
+      let patVars = Set.fromFoldable (patternVars pat)
+      in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
+    Just { head: DoLet binds, tail: rest } ->
+      let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
+          b' = Set.union b bindNames
+          st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st binds
+      in collectDoLambdas b' rest st'
 
 -- | Collect all lambdas from a declaration
 collectDeclLambdas :: Declaration -> LambdaCollector -> LambdaCollector
@@ -377,16 +372,17 @@ genDataSegment strs baseOffset =
   if Array.null strs
   then ""
   else "  ;; String data\n  (data (i32.const " <> show baseOffset <> ") \"" <>
-       intercalate "" (map escapeString strs) <> "\")\n\n"
-  where
-    -- Escape backslashes FIRST, before adding any new escape sequences
-    escapeString s =
-      let s1 = String.replaceAll (String.Pattern "\\") (String.Replacement "\\\\") s
-          s2 = String.replaceAll (String.Pattern "\"") (String.Replacement "\\\"") s1
-          s3 = String.replaceAll (String.Pattern "\n") (String.Replacement "\\n") s2
-          s4 = String.replaceAll (String.Pattern "\t") (String.Replacement "\\t") s3
-          s5 = String.replaceAll (String.Pattern "\r") (String.Replacement "\\r") s4
-      in s5
+       intercalate "" (map escapeWasmString strs) <> "\")\n\n"
+
+-- | Escape a string for WASM data segment
+escapeWasmString :: String -> String
+escapeWasmString s =
+  let s1 = String.replaceAll (String.Pattern "\\") (String.Replacement "\\\\") s
+      s2 = String.replaceAll (String.Pattern "\"") (String.Replacement "\\\"") s1
+      s3 = String.replaceAll (String.Pattern "\n") (String.Replacement "\\n") s2
+      s4 = String.replaceAll (String.Pattern "\t") (String.Replacement "\\t") s3
+      s5 = String.replaceAll (String.Pattern "\r") (String.Replacement "\\r") s4
+  in s5
 
 -- | Generate module
 genModule :: Module -> String
@@ -912,9 +908,9 @@ genExpr ctx (ExprApp func arg) =
       -- Not a simple variable - use closures
       genClosureApps ctx baseFunc allArgs
 
-genExpr ctx e@(ExprLambda pats body) =
-  -- Find matching lambda in the lifted lambdas using reference equality
-  let matchingLambda = Array.find (\l -> refEqExpr l.expr e) ctx.lambdas
+genExpr ctx (ExprLambda pats body) =
+  let thisLambda = ExprLambda pats body
+      matchingLambda = Array.find (\l -> refEqExpr l.expr thisLambda) ctx.lambdas
   in case matchingLambda of
     Just lambda ->
       let freeVars = lambda.freeVars

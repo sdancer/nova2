@@ -30,10 +30,10 @@ skipNewlines :: Array Token -> Array Token
 skipNewlines tokens = Array.dropWhile (\t -> t.tokenType == TokNewline) tokens
 
 dropNewlines :: Array Token -> Array Token
-dropNewlines = skipNewlines
+dropNewlines tokens = skipNewlines tokens
 
 stripNewlines :: Array Token -> Array Token
-stripNewlines = Array.filter (\t -> t.tokenType /= TokNewline)
+stripNewlines tokens = Array.filter (\t -> t.tokenType /= TokNewline) tokens
 
 -- | Check if a string starts with a lowercase letter
 isLowerCase :: String -> Boolean
@@ -1958,7 +1958,10 @@ parseTypeClass tokens = do
 skipSuperclassConstraints :: Array Token -> Tuple (Array Token) (Array Token)
 skipSuperclassConstraints tokens =
   let tokens' = skipNewlines tokens
-      { init: before, rest: after } = Array.span (\t -> not (t.tokenType == TokOperator && t.value == "<=")) tokens'
+      -- Avoid using 'not' function - use negated conditions directly
+      spanResult = Array.span (\t -> t.tokenType /= TokOperator || t.value /= "<=") tokens'
+      before = spanResult.init
+      after = spanResult.rest
   in case Array.head after of
     Just t ->
       if t.tokenType == TokOperator && t.value == "<="
