@@ -248,14 +248,14 @@ end
       {:just, c} ->
         cond do
           is_digit(c) -> consume_number(advance(state, 1), Nova.Runtime.append(acc, Nova.String.singleton(c)))
-          true -> case peek_at(state, 1) do
-              {:just, d} ->
-                cond do
-                  is_digit(d) -> consume_number(advance(state, 2), Nova.Runtime.append(acc, Nova.Runtime.append(".", Nova.String.singleton(d))))
-                  true -> {:tuple, acc, state}
-                end
+          # Only treat as decimal if current char is '.' AND next char is a digit
+          c == ?. ->
+            case peek_at(state, 1) do
+              {:just, d} when d >= ?0 and d <= ?9 ->
+                consume_number(advance(state, 2), Nova.Runtime.append(acc, Nova.Runtime.append(".", Nova.String.singleton(d))))
               _ -> {:tuple, acc, state}
             end
+          true -> {:tuple, acc, state}
         end
       _ -> {:tuple, acc, state}
     end
