@@ -1,0 +1,4 @@
+#!/bin/bash
+# Nova MCP Server wrapper
+cd /home/sdancer/nova2/nova_lang
+exec ./nova mcp
