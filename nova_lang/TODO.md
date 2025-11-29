@@ -5,9 +5,6 @@
 ### Merge beam → main
 The `beam` branch has major features ready. Should consolidate progress.
 
-### Fix Tokenizer Bug
-`10 20` parses as `10.20` (treats space between numbers as decimal point). This affects multi-arg function calls in eval. Workaround: use `let` bindings or parentheses `(add 10) 20`.
-
 ## Features
 
 ### Export Namespace to File
@@ -91,3 +88,4 @@ Generate comprehensive documentation for all 31 MCP tools with examples.
 - [x] Expression evaluation (eval)
 - [x] Testing framework (run_tests, assert)
 - [x] Claude Code MCP registration
+- [x] Fix tokenizer bug (`10 20` was parsed as `10.20`)
