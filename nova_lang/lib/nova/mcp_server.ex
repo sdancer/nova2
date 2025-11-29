@@ -225,6 +225,24 @@ defmodule Nova.MCPServer do
         }
       },
       %{
+        name: "get_expression_type",
+        description: "Infer the type of an expression in a namespace context. Useful for understanding what type is expected or returned.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "expression" => %{
+              type: "string",
+              description: "The expression to type check (e.g., 'map show', 'x + 1', '\\x -> x')"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "Optional namespace for context (provides access to its declarations)"
+            }
+          },
+          required: ["expression"]
+        }
+      },
+      %{
         name: "get_diagnostics",
         description: "Get all type errors and warnings for a namespace",
         inputSchema: %{
@@ -374,6 +392,29 @@ defmodule Nova.MCPServer do
         inputSchema: %{
           type: "object",
           properties: %{}
+        }
+      },
+      %{
+        name: "compile_project",
+        description: "Compile multiple namespaces to Elixir files with proper dependency ordering",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "namespaces" => %{
+              type: "array",
+              items: %{type: "string"},
+              description: "List of namespaces to compile (if omitted, compiles all namespaces)"
+            },
+            "output_dir" => %{
+              type: "string",
+              description: "Output directory for compiled .ex files (required)"
+            },
+            "validate" => %{
+              type: "boolean",
+              description: "Whether to validate (type check) before compiling (default: true)"
+            }
+          },
+          required: ["output_dir"]
         }
       },
 
@@ -651,6 +692,9 @@ defmodule Nova.MCPServer do
           {:error, reason} -> {:error, format_error(reason)}
         end
 
+      "get_expression_type" ->
+        get_expression_type(svc, args["expression"], args["namespace"])
+
       "get_diagnostics" ->
         case Nova.NamespaceService.get_diagnostics(svc, args["namespace"]) do
           {:ok, diagnostics} -> {:ok, diagnostics}
@@ -696,6 +740,9 @@ defmodule Nova.MCPServer do
 
       "validate_compiler" ->
         validate_compiler(svc)
+
+      "compile_project" ->
+        compile_project(svc, args["namespaces"], args["output_dir"], args["validate"])
 
       # Session persistence
       "save_session" ->
@@ -767,7 +814,73 @@ defmodule Nova.MCPServer do
   defp format_error(reason), do: inspect(reason)
 
   defp format_type(nil), do: "unknown"
-  defp format_type(type), do: Nova.Compiler.Unify.show_type(type)
+  defp format_type(type), do: pretty_type(type)
+
+  # Pretty-print types in human-readable format
+  defp pretty_type({:ty_var, v}), do: v.name
+
+  defp pretty_type({:ty_con, %{name: "Fun", args: [arg, ret]}}) do
+    arg_str = case arg do
+      {:ty_con, %{name: "Fun", args: _}} -> "(#{pretty_type(arg)})"
+      _ -> pretty_type(arg)
+    end
+    "#{arg_str} -> #{pretty_type(ret)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Array", args: [elem]}}) do
+    "Array #{pretty_type_arg(elem)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "List", args: [elem]}}) do
+    "List #{pretty_type_arg(elem)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Maybe", args: [elem]}}) do
+    "Maybe #{pretty_type_arg(elem)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Either", args: [l, r]}}) do
+    "Either #{pretty_type_arg(l)} #{pretty_type_arg(r)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Map", args: [k, v]}}) do
+    "Map #{pretty_type_arg(k)} #{pretty_type_arg(v)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Set", args: [elem]}}) do
+    "Set #{pretty_type_arg(elem)}"
+  end
+
+  defp pretty_type({:ty_con, %{name: "Tuple", args: elems}}) do
+    inner = Enum.map_join(elems, ", ", &pretty_type/1)
+    "(#{inner})"
+  end
+
+  defp pretty_type({:ty_con, %{name: name, args: []}}) do
+    name
+  end
+
+  defp pretty_type({:ty_con, %{name: name, args: args}}) do
+    args_str = Enum.map_join(args, " ", &pretty_type_arg/1)
+    "#{name} #{args_str}"
+  end
+
+  defp pretty_type({:ty_record, %{fields: fields, row: row}}) do
+    fields_str = fields
+      |> Nova.Map.to_unfoldable()
+      |> Enum.map_join(", ", fn {:tuple, name, ty} -> "#{name} :: #{pretty_type(ty)}" end)
+    case row do
+      :nothing -> "{ #{fields_str} }"
+      {:just, r} -> "{ #{fields_str} | #{r} }"
+    end
+  end
+
+  defp pretty_type(other), do: inspect(other)
+
+  # Wrap complex types in parens when used as arguments
+  defp pretty_type_arg({:ty_con, %{name: "Fun", args: _}} = ty), do: "(#{pretty_type(ty)})"
+  defp pretty_type_arg({:ty_con, %{name: _, args: args}} = ty) when length(args) > 0, do: "(#{pretty_type(ty)})"
+  defp pretty_type_arg(ty), do: pretty_type(ty)
 
   # File operations
 
@@ -1075,6 +1188,187 @@ defmodule Nova.MCPServer do
       modules: Enum.map(successes, fn {:ok, info} -> info end),
       errors: Enum.map(failures, fn {:error, info} -> info end)
     }}
+  end
+
+  # ============================================================================
+  # Multi-file Compilation
+  # ============================================================================
+
+  defp compile_project(svc, namespaces, output_dir, validate) do
+    validate = if validate == nil, do: true, else: validate
+
+    # Get list of namespaces to compile
+    target_namespaces = case namespaces do
+      nil ->
+        {:ok, all} = Nova.NamespaceService.list_namespaces(svc)
+        all
+      list when is_list(list) -> list
+    end
+
+    if Enum.empty?(target_namespaces) do
+      {:error, "No namespaces to compile"}
+    else
+      # Build dependency graph from imports
+      dep_map = build_namespace_dependencies(svc, target_namespaces)
+
+      # Topologically sort namespaces
+      case topological_sort(target_namespaces, dep_map) do
+        {:error, cycle} ->
+          {:error, "Circular dependency detected: #{inspect(cycle)}"}
+
+        {:ok, sorted_namespaces} ->
+          # Optionally validate all namespaces first
+          validation_results = if validate do
+            Enum.map(sorted_namespaces, fn ns ->
+              case Nova.NamespaceService.validate_namespace(svc, ns) do
+                {:ok, _} -> {:ok, ns}
+                {:error, {:type_errors, errors}} -> {:error, ns, errors}
+                {:error, reason} -> {:error, ns, [inspect(reason)]}
+              end
+            end)
+          else
+            Enum.map(sorted_namespaces, fn ns -> {:ok, ns} end)
+          end
+
+          # Check for validation failures
+          failures = Enum.filter(validation_results, fn
+            {:error, _, _} -> true
+            _ -> false
+          end)
+
+          if !Enum.empty?(failures) and validate do
+            {:error, %{
+              message: "Validation failed",
+              errors: Enum.map(failures, fn {:error, ns, errs} ->
+                %{namespace: ns, errors: errs}
+              end)
+            }}
+          else
+            # Create output directory
+            File.mkdir_p!(output_dir)
+
+            # Compile each namespace and write to file
+            compile_results = Enum.map(sorted_namespaces, fn ns ->
+              case compile_namespace(svc, ns) do
+                {:ok, result} ->
+                  # Convert namespace to file path
+                  file_name = namespace_to_filename(ns)
+                  file_path = Path.join(output_dir, file_name)
+
+                  # Ensure subdirectories exist
+                  File.mkdir_p!(Path.dirname(file_path))
+
+                  case File.write(file_path, result.elixir_code) do
+                    :ok ->
+                      {:ok, %{
+                        namespace: ns,
+                        file: file_path,
+                        lines: result.lines,
+                        declarations: result.declarations
+                      }}
+                    {:error, reason} ->
+                      {:error, %{namespace: ns, error: "Failed to write file: #{reason}"}}
+                  end
+
+                {:error, reason} ->
+                  {:error, %{namespace: ns, error: inspect(reason)}}
+              end
+            end)
+
+            successes = Enum.filter(compile_results, fn {status, _} -> status == :ok end)
+            failures = Enum.filter(compile_results, fn {status, _} -> status == :error end)
+
+            {:ok, %{
+              output_dir: output_dir,
+              compiled: length(successes),
+              failed: length(failures),
+              order: sorted_namespaces,
+              files: Enum.map(successes, fn {:ok, info} -> info end),
+              errors: Enum.map(failures, fn {:error, info} -> info end)
+            }}
+          end
+      end
+    end
+  end
+
+  defp build_namespace_dependencies(svc, namespaces) do
+    namespace_set = MapSet.new(namespaces)
+
+    Enum.reduce(namespaces, %{}, fn ns, acc ->
+      imports = case Nova.NamespaceService.list_imports(svc, ns) do
+        {:ok, imp_list} -> imp_list
+        _ -> []
+      end
+
+      # Only include dependencies that are in our target set
+      relevant_deps = Enum.filter(imports, fn imp -> MapSet.member?(namespace_set, imp) end)
+      Map.put(acc, ns, relevant_deps)
+    end)
+  end
+
+  defp topological_sort(namespaces, dep_map) do
+    # Kahn's algorithm for topological sort
+    # dep_map: namespace -> [namespaces it depends on (imports)]
+    # We want to output in order where dependencies come BEFORE dependents
+    # So a namespace with 0 dependencies can be compiled first
+
+    # Calculate out-degrees (how many dependencies each node has)
+    out_degrees = Enum.reduce(namespaces, %{}, fn ns, acc ->
+      deps = Map.get(dep_map, ns, [])
+      Map.put(acc, ns, length(deps))
+    end)
+
+    # Start with nodes that have no dependencies (out-degree 0)
+    queue = Enum.filter(namespaces, fn ns -> Map.get(out_degrees, ns, 0) == 0 end)
+
+    # Build reverse dependency map (who depends on each namespace)
+    reverse_deps = Enum.reduce(dep_map, %{}, fn {ns, deps}, acc ->
+      Enum.reduce(deps, acc, fn dep, acc2 ->
+        Map.update(acc2, dep, [ns], fn existing -> [ns | existing] end)
+      end)
+    end)
+
+    topological_sort_loop(queue, out_degrees, reverse_deps, [])
+  end
+
+  defp topological_sort_loop([], out_degrees, _reverse_deps, result) do
+    # Check if all nodes processed
+    remaining = Enum.filter(out_degrees, fn {_k, v} -> v > 0 end)
+    if Enum.empty?(remaining) do
+      {:ok, Enum.reverse(result)}
+    else
+      {:error, Enum.map(remaining, fn {k, _} -> k end)}
+    end
+  end
+
+  defp topological_sort_loop([node | rest], out_degrees, reverse_deps, result) do
+    # This node has no unprocessed dependencies, add to result
+    # Now update nodes that depend on this one
+
+    dependents = Map.get(reverse_deps, node, [])
+
+    # Decrease out-degree for all dependents (they have one fewer unprocessed dependency)
+    new_out_degrees = Enum.reduce(dependents, out_degrees, fn dep, acc ->
+      new_deg = Map.get(acc, dep, 1) - 1
+      Map.put(acc, dep, new_deg)
+    end)
+
+    # Remove processed node
+    new_out_degrees = Map.delete(new_out_degrees, node)
+
+    # Add newly available nodes (out-degree became 0, meaning all their dependencies are processed)
+    new_available = Enum.filter(dependents, fn dep ->
+      Map.get(new_out_degrees, dep, 0) == 0
+    end)
+
+    topological_sort_loop(rest ++ new_available, new_out_degrees, reverse_deps, [node | result])
+  end
+
+  defp namespace_to_filename(namespace) do
+    # Convert "Nova.Compiler.Parser" to "nova/compiler/parser.ex"
+    parts = String.split(namespace, ".")
+    snake_parts = Enum.map(parts, &Macro.underscore/1)
+    Path.join(snake_parts) <> ".ex"
   end
 
   # ============================================================================
@@ -1619,5 +1913,88 @@ defmodule Nova.MCPServer do
             {:error, "Evaluation error: #{Exception.message(e)}"}
         end
     end
+  end
+
+  # ============================================================================
+  # Expression Type Inference
+  # ============================================================================
+
+  defp get_expression_type(svc, expression, namespace) do
+    # Build type environment from namespace context
+    env = build_type_env(svc, namespace)
+
+    # Parse the expression
+    tokens = Nova.Compiler.Tokenizer.tokenize(expression)
+
+    case Nova.Compiler.Parser.parse_expression(tokens) do
+      {:left, err} ->
+        {:error, "Parse error: #{inspect(err)}"}
+
+      {:right, {:tuple, expr, _rest}} ->
+        # Run type inference
+        case Nova.Compiler.TypeChecker.infer(env, expr) do
+          {:right, result} ->
+            # Apply substitution to get final type
+            final_type = Nova.Compiler.Types.apply_subst(result.sub, result.ty)
+            {:ok, %{
+              expression: expression,
+              type: format_type(final_type),
+              raw_type: inspect_type(final_type)
+            }}
+
+          {:left, err} ->
+            {:error, "Type error: #{format_type_error(err)}"}
+        end
+    end
+  end
+
+  defp build_type_env(svc, namespace) do
+    base_env = Nova.Compiler.Types.empty_env()
+
+    if namespace do
+      # Get declarations from the namespace and add their types to the env
+      case Nova.NamespaceService.list_declarations(svc, namespace) do
+        {:ok, decls} ->
+          Enum.reduce(decls, base_env, fn decl_info, env ->
+            case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+              {:ok, managed} ->
+                # If we have type info, add it to the environment
+                case managed.type_info do
+                  %{scheme: scheme} when not is_nil(scheme) ->
+                    Nova.Compiler.Types.extend_env(env, decl_info.name, scheme)
+                  _ ->
+                    env
+                end
+              _ ->
+                env
+            end
+          end)
+        _ ->
+          base_env
+      end
+    else
+      base_env
+    end
+  end
+
+  defp inspect_type(type) do
+    # Return a more detailed internal representation
+    inspect(type)
+  end
+
+  defp format_type_error({:unbound_variable, name}) do
+    "Unbound variable: #{name}"
+  end
+
+  defp format_type_error({:unify_err, {:type_mismatch, t1, t2}}) do
+    "Type mismatch: expected #{format_type(t1)}, got #{format_type(t2)}"
+  end
+
+  defp format_type_error({:unify_err, {:occurs_check, var, ty}}) do
+    "Infinite type: #{inspect(var)} occurs in #{format_type(ty)}"
+  end
+
+  defp format_type_error(err) do
+    inspect(err)
   end
 end

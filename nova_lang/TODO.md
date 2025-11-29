@@ -30,22 +30,29 @@ Notify on namespace changes. Useful for reactive UIs or agent workflows that nee
 subscribe(namespace: "MyApp", events: ["declaration_added", "validation_complete"])
 ```
 
-### Better Diagnostics
-Structure type errors with:
-- Line numbers and column positions
-- Source code snippets
-- Suggested fixes
-- Related declarations
+### ~~Better Diagnostics~~ ✓
+~~Structure type errors with:~~
+- ~~Line numbers and column positions~~
+- ~~Source code snippets~~
+- ~~Suggested fixes~~
+- ~~Related declarations~~
 
-### Multi-file Compilation
-Compile multiple namespaces with proper dependency ordering to an output directory, preserving module structure.
+*Implemented: Structured diagnostics with error codes (E001-E005), precise locations, source snippets, and contextual suggestions (e.g., "Did you mean: length?" for typos, type conversion hints for mismatches)*
 
-### Type Hole Support
-Add `_` as a type hole that returns the inferred type. Useful for agents exploring what type is expected.
+### ~~Multi-file Compilation~~ ✓
+~~Compile multiple namespaces with proper dependency ordering to an output directory, preserving module structure.~~
+*Implemented: `compile_project` tool with topological sorting of dependencies*
+
+### ~~Type Hole Support~~ ✓
+~~Add `_` as a type hole that returns the inferred type.~~
+*Replaced with `get_expression_type` tool - query the type of any expression directly*
 
 ```
-add_declaration(source: "foo x = _ x")
-# Returns: Expected type at hole: Int -> Int
+get_expression_type(expression: "\\x -> x + 1")
+# Returns: Int -> Int
+
+get_expression_type(expression: "Array.map show")
+# Returns: Array a -> Array String
 ```
 
 ## Infrastructure
@@ -89,3 +96,6 @@ Generate comprehensive documentation for all 31 MCP tools with examples.
 - [x] Testing framework (run_tests, assert)
 - [x] Claude Code MCP registration
 - [x] Fix tokenizer bug (`10 20` was parsed as `10.20`)
+- [x] Multi-file compilation (`compile_project` with dependency ordering)
+- [x] Expression type inference (`get_expression_type` - query type of any expression)
+- [x] Structured diagnostics with error codes, locations, snippets, and suggestions

@@ -57,6 +57,36 @@ defmodule Nova.NamespaceService do
     }
   end
 
+  defmodule Diagnostic do
+    @moduledoc "A structured diagnostic (error or warning)"
+    defstruct [
+      :severity,       # :error | :warning | :info | :hint
+      :code,           # Error code like "E001" or category like "type_mismatch"
+      :message,        # Human-readable message
+      :location,       # %{line: int, column: int, end_line: int, end_column: int} or nil
+      :source_snippet, # The relevant source code lines
+      :suggestions,    # List of suggested fixes
+      :related         # List of related locations/info
+    ]
+
+    @type location :: %{
+      line: non_neg_integer(),
+      column: non_neg_integer(),
+      end_line: non_neg_integer() | nil,
+      end_column: non_neg_integer() | nil
+    }
+
+    @type t :: %__MODULE__{
+      severity: :error | :warning | :info | :hint,
+      code: String.t() | nil,
+      message: String.t(),
+      location: location() | nil,
+      source_snippet: String.t() | nil,
+      suggestions: [String.t()],
+      related: [%{message: String.t(), location: location()}]
+    }
+  end
+
   defmodule ManagedDecl do
     @moduledoc "A declaration managed by the namespace service"
     defstruct [
@@ -64,7 +94,8 @@ defmodule Nova.NamespaceService do
       :decl,           # Parsed AST
       :source_text,    # Original source
       :inferred_type,  # Cached type after type-check
-      errors: []       # Cached errors
+      errors: [],      # Cached errors (legacy string format)
+      diagnostics: []  # Structured diagnostics
     ]
 
     @type t :: %__MODULE__{
@@ -72,7 +103,8 @@ defmodule Nova.NamespaceService do
       decl: term(),
       source_text: String.t(),
       inferred_type: term() | nil,
-      errors: [String.t()]
+      errors: [String.t()],
+      diagnostics: [Diagnostic.t()]
     }
   end
 
@@ -436,14 +468,36 @@ defmodule Nova.NamespaceService do
         diagnostics = ns.declarations
         |> Map.values()
         |> Enum.flat_map(fn managed ->
-          Enum.map(managed.errors, fn error ->
-            %{
-              decl_id: managed.meta.decl_id,
-              name: managed.meta.name,
-              severity: :error,
-              message: error
-            }
-          end)
+          # Use structured diagnostics if available, fall back to legacy errors
+          if managed.diagnostics != [] do
+            Enum.map(managed.diagnostics, fn diag ->
+              %{
+                decl_id: managed.meta.decl_id,
+                name: managed.meta.name,
+                severity: diag.severity,
+                code: diag.code,
+                message: diag.message,
+                location: diag.location,
+                source_snippet: diag.source_snippet,
+                suggestions: diag.suggestions,
+                related: diag.related
+              }
+            end)
+          else
+            Enum.map(managed.errors, fn error ->
+              %{
+                decl_id: managed.meta.decl_id,
+                name: managed.meta.name,
+                severity: :error,
+                code: nil,
+                message: error,
+                location: nil,
+                source_snippet: nil,
+                suggestions: [],
+                related: []
+              }
+            end)
+          end
         end)
         {:reply, {:ok, diagnostics}, state}
     end
@@ -614,10 +668,12 @@ defmodule Nova.NamespaceService do
     case Nova.Compiler.TypeChecker.check_module(env, [decl]) do
       {:left, err} ->
         error_msg = format_type_error(err)
+        diagnostic = build_diagnostic(err, managed.source_text, managed.meta.name)
         updated = %{managed |
           meta: %{managed.meta | status: :invalid},
           inferred_type: nil,
-          errors: [error_msg]
+          errors: [error_msg],
+          diagnostics: [diagnostic]
         }
         {:error, error_msg, updated}
 
@@ -627,7 +683,8 @@ defmodule Nova.NamespaceService do
         updated = %{managed |
           meta: %{managed.meta | status: :valid},
           inferred_type: inferred_type,
-          errors: []
+          errors: [],
+          diagnostics: []
         }
         {:ok, new_env, updated}
     end
@@ -836,6 +893,179 @@ defmodule Nova.NamespaceService do
     "{ #{field_strs} }"
   end
   defp format_type(other), do: inspect(other)
+
+  # Build a structured diagnostic from a type error
+  defp build_diagnostic(err, source_text, decl_name) do
+    {code, message, suggestions} = classify_error(err)
+    location = find_error_location(err, source_text)
+    snippet = extract_snippet(source_text, location)
+
+    %Diagnostic{
+      severity: :error,
+      code: code,
+      message: message,
+      location: location,
+      source_snippet: snippet,
+      suggestions: suggestions,
+      related: []
+    }
+  end
+
+  # Classify error and generate helpful message with suggestions
+  defp classify_error({:unbound_variable, name}) do
+    suggestions = suggest_similar_names(name)
+    suggestion_text = if suggestions != [], do: " Did you mean: #{Enum.join(suggestions, ", ")}?", else: ""
+    {
+      "E001",
+      "Unknown identifier '#{name}'.#{suggestion_text}",
+      suggestions
+    }
+  end
+
+  defp classify_error({:unify_err, {:type_mismatch, t1, t2}}) do
+    {
+      "E002",
+      "Type mismatch: expected '#{format_type(t1)}' but got '#{format_type(t2)}'.",
+      generate_type_mismatch_suggestions(t1, t2)
+    }
+  end
+
+  defp classify_error({:unify_err, {:occurs_check, v, t}}) do
+    {
+      "E003",
+      "Infinite type detected: '#{v.name}' occurs within '#{format_type(t)}'. This usually means a function is being applied to itself incorrectly.",
+      ["Check for recursive calls without a base case", "Ensure function arguments have the correct types"]
+    }
+  end
+
+  defp classify_error({:unify_err, {:arity_mismatch, name, expected, got}}) do
+    {
+      "E004",
+      "Arity mismatch for '#{name}': expected #{expected} type arguments but got #{got}.",
+      []
+    }
+  end
+
+  defp classify_error({:unify_err, {:record_field_mismatch, field}}) do
+    {
+      "E005",
+      "Record field mismatch: field '#{field}' has incompatible types.",
+      []
+    }
+  end
+
+  defp classify_error({:not_implemented, feature}) do
+    {
+      "E099",
+      "Feature not yet implemented: #{feature}",
+      []
+    }
+  end
+
+  defp classify_error(other) do
+    {
+      "E000",
+      "Type error: #{inspect(other)}",
+      []
+    }
+  end
+
+  # Find location in source where error occurred
+  # For now, use line 1 as default since we don't have position tracking in type errors yet
+  defp find_error_location({:unbound_variable, name}, source_text) do
+    # Try to find the variable in the source
+    case find_identifier_position(source_text, name) do
+      nil -> %{line: 1, column: 1, end_line: nil, end_column: nil}
+      pos -> pos
+    end
+  end
+
+  defp find_error_location(_err, _source_text) do
+    # Default to first line
+    %{line: 1, column: 1, end_line: nil, end_column: nil}
+  end
+
+  # Find position of an identifier in source text
+  defp find_identifier_position(source_text, name) do
+    lines = String.split(source_text, "\n")
+    # Build a regex that matches the identifier as a whole word
+    pattern = ~r/\b#{Regex.escape(name)}\b/
+
+    Enum.with_index(lines, 1)
+    |> Enum.find_value(fn {line, line_num} ->
+      case Regex.run(pattern, line, return: :index) do
+        [{start, len}] ->
+          %{
+            line: line_num,
+            column: start + 1,
+            end_line: line_num,
+            end_column: start + len + 1
+          }
+        _ -> nil
+      end
+    end)
+  end
+
+  # Extract a source snippet around the error location
+  defp extract_snippet(source_text, nil), do: nil
+  defp extract_snippet(source_text, %{line: line}) do
+    lines = String.split(source_text, "\n")
+    # Get 2 lines before and after for context
+    start_line = max(1, line - 2)
+    end_line = min(length(lines), line + 2)
+
+    lines
+    |> Enum.with_index(1)
+    |> Enum.filter(fn {_, idx} -> idx >= start_line and idx <= end_line end)
+    |> Enum.map(fn {text, idx} ->
+      marker = if idx == line, do: "> ", else: "  "
+      "#{marker}#{String.pad_leading(Integer.to_string(idx), 3)} | #{text}"
+    end)
+    |> Enum.join("\n")
+  end
+
+  # Suggest similar names for unbound variable errors
+  defp suggest_similar_names(name) do
+    # Get common builtins that might be misspelled
+    builtins = ["map", "filter", "foldl", "foldr", "head", "tail", "length", "reverse",
+                "concat", "take", "drop", "show", "pure", "identity", "const",
+                "Just", "Nothing", "Left", "Right", "True", "False"]
+
+    builtins
+    |> Enum.filter(fn builtin ->
+      String.jaro_distance(String.downcase(name), String.downcase(builtin)) > 0.8
+    end)
+    |> Enum.take(3)
+  end
+
+  # Generate suggestions for type mismatch errors
+  defp generate_type_mismatch_suggestions(t1, t2) do
+    cond do
+      # Int vs String
+      match?({:ty_con, %{name: "Int"}}, t1) and match?({:ty_con, %{name: "String"}}, t2) ->
+        ["Use 'show' to convert Int to String", "Use 'Int.fromString' to parse String to Int"]
+
+      match?({:ty_con, %{name: "String"}}, t1) and match?({:ty_con, %{name: "Int"}}, t2) ->
+        ["Use 'Int.fromString' to parse String to Int", "Use 'show' to convert Int to String"]
+
+      # Maybe vs bare value
+      match?({:ty_con, %{name: "Maybe"}}, t1) ->
+        ["The value might be wrapped in Maybe - use pattern matching or 'fromMaybe'"]
+
+      match?({:ty_con, %{name: "Maybe"}}, t2) ->
+        ["Wrap the value with 'Just' or handle Nothing case"]
+
+      # Array vs single value
+      match?({:ty_con, %{name: "Array"}}, t1) ->
+        ["Expected an Array - wrap single value in brackets: [value]"]
+
+      match?({:ty_con, %{name: "Array"}}, t2) ->
+        ["Got an Array but expected single value - use 'head' or index"]
+
+      true ->
+        []
+    end
+  end
 
   def handle_call({:get_completions, namespace, prefix}, _from, state) do
     case Map.get(state.namespaces, namespace) do
