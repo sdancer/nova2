@@ -24,8 +24,15 @@ defmodule Nova.CLI do
   end
 
   defp start_mcp_server do
-    IO.puts(:stderr, "Starting Nova MCP Server...")
-    Nova.MCP.Server.start()
+    IO.puts(:stderr, "Starting Nova MCP Server on stdio...")
+
+    {:ok, _server} = ExMCP.Server.start_link(
+      handler: Nova.MCPServer,
+      transport: Nova.MCPStdioTransport
+    )
+
+    IO.puts(:stderr, "Nova MCP Server running. Accepting JSON-RPC over stdio.")
+
     # Keep the process alive
     Process.sleep(:infinity)
   end
