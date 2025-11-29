@@ -58,6 +58,8 @@ for (const [name, path, deps] of modules) {
   const code = compile(name, path, deps);
   if (code) {
     fs.writeFileSync('./output/' + name + '.ex', code);
+    // Also copy to nova_lang for running
+    fs.writeFileSync('./nova_lang/lib/nova/compiler/' + name + '.ex', code);
   }
 }
 console.log('Done!');

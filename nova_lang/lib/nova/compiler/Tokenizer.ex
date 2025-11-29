@@ -60,10 +60,10 @@ defmodule Nova.Compiler.Tokenizer do
     (is_alpha(c) or (is_digit(c) or ((c == ?_) or (c == ?'))))
   end
 
-  # @type tok_state :: %{input: string(), pos: int(), line: int(), column: int()}
+  # @type tok_state :: %{input: string(), chars: array()(char()), pos: int(), line: int(), column: int()}
 
   def init_state(input) do
-    %{input: input, pos: 0, line: 1, column: 1}
+    %{input: input, chars: Nova.String.to_char_array(input), pos: 0, line: 1, column: 1}
   end
 
   def tokenize(source) do
@@ -121,21 +121,21 @@ end
   end
 
   def peek(state) do
-    Nova.String.char_at(state.pos, state.input)
+    Nova.Array.head(state.chars)
   end
 
   def peek_at(state, offset) do
-    Nova.String.char_at((state.pos + offset), state.input)
+    Nova.Array.index(state.chars, offset)
   end
 
   def advance(state, n) do
-    %{state | pos: (state.pos + n), column: (state.column + n)}
+    %{state | pos: (state.pos + n), column: (state.column + n), chars: Nova.Array.drop(n, state.chars)}
   end
 
   def advance_tab(state) do
     
       next_col = (state.column + (8 - rem((state.column - 1), 8)))
-      %{state | pos: (state.pos + 1), column: next_col}
+      %{state | pos: (state.pos + 1), column: next_col, chars: Nova.Array.drop(1, state.chars)}
   end
 
   def advance_newline(state) do
@@ -291,9 +291,9 @@ end
       start_line = state.line
       start_col = state.column
       start_pos = state.pos
-      remaining = Nova.String.drop(state.pos, state.input)
+      prefix = Nova.String.from_char_array(Nova.Array.take(3, state.chars))
       tok_type = :tok_operator
-      op = find_operator(remaining, operators())
+      op = find_operator(prefix, operators())
       len = Nova.String.length(op)
       {:just, {:tuple, mk_token(tok_type, op, start_line, start_col, start_pos), advance(state, len)}}
   end

@@ -1,0 +1,8 @@
+src = File.read!("../src/Nova/Compiler/Types.purs")
+IO.puts("Source length: #{String.length(src)}")
+IO.puts("Tokenizing...")
+tokens = Nova.Compiler.Tokenizer.tokenize(src)
+IO.puts("Got #{length(tokens)} tokens")
+IO.puts("Parsing...")
+result = Nova.Compiler.Parser.parse_module(tokens)
+IO.puts("Parse result: #{inspect(elem(result, 0))}")

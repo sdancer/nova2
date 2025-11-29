@@ -185,10 +185,18 @@ defmodule Nova.Array do
       x -> {:just, x}
     end
   end
-  def index(x, list) do
+  # elem_index - find index of element in list (previously named index)
+  def elem_index(x, list) do
     case Enum.find_index(list, fn el -> el == x end) do
       nil -> :nothing
       idx -> {:just, idx}
+    end
+  end
+  # index - get element at index (PureScript Array.index)
+  def index(list, idx) when is_list(list) and is_integer(idx) do
+    case Enum.at(list, idx) do
+      nil -> :nothing
+      x -> {:just, x}
     end
   end
   def filter(f, list), do: Enum.filter(list, f)
@@ -349,6 +357,7 @@ defmodule Nova.String do
   end
   def trim(s), do: String.trim(s)
   def to_code_point_array(s), do: String.to_charlist(s)
+  def to_char_array(s), do: String.to_charlist(s)  # CU.toCharArray
   def singleton(cp), do: <<cp::utf8>>
   def from_char_array(chars), do: List.to_string(chars)
   def to_lower(s), do: String.downcase(s)

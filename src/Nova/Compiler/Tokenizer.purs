@@ -73,15 +73,18 @@ isIdentChar :: Char -> Boolean
 isIdentChar c = isAlpha c || isDigit c || c == '_' || c == '\''
 
 -- | Tokenizer state
+-- | Note: We use chars (Array Char) for O(1) head access on BEAM VM
+-- | The input string is kept for substring operations
 type TokState =
   { input :: String
+  , chars :: Array Char  -- Remaining characters for O(1) peek
   , pos :: Int
   , line :: Int
   , column :: Int
   }
 
 initState :: String -> TokState
-initState input = { input, pos: 0, line: 1, column: 1 }
+initState input = { input, chars: CU.toCharArray input, pos: 0, line: 1, column: 1 }
 
 -- | Main tokenize function
 tokenize :: String -> Array Token
@@ -147,23 +150,23 @@ nextToken state = do
     -- Unrecognized
     _ -> Just (Tuple (mkToken TokUnrecognized (CU.singleton c) state.line state.column state.pos) (advance state 1))
 
--- | Peek at current character
+-- | Peek at current character (O(1) using chars array head)
 peek :: TokState -> Maybe Char
-peek state = CU.charAt state.pos state.input
+peek state = Array.head state.chars
 
--- | Peek at character at offset
+-- | Peek at character at offset (O(n) but rarely used with large offsets)
 peekAt :: TokState -> Int -> Maybe Char
-peekAt state offset = CU.charAt (state.pos + offset) state.input
+peekAt state offset = Array.index state.chars offset
 
--- | Advance state by n characters
+-- | Advance state by n characters (drops from chars array for O(1) peek)
 advance :: TokState -> Int -> TokState
-advance state n = state { pos = state.pos + n, column = state.column + n }
+advance state n = state { pos = state.pos + n, column = state.column + n, chars = Array.drop n state.chars }
 
 -- | Advance for tab (to next 8-column stop)
 advanceTab :: TokState -> TokState
 advanceTab state =
   let nextCol = state.column + (8 - ((state.column - 1) `mod` 8))
-  in state { pos = state.pos + 1, column = nextCol }
+  in state { pos = state.pos + 1, column = nextCol, chars = Array.drop 1 state.chars }
 
 -- | Advance to new line
 advanceNewline :: TokState -> TokState
@@ -283,9 +286,10 @@ tokenizeOperator state =
   let startLine = state.line
       startCol = state.column
       startPos = state.pos
-      remaining = CU.drop state.pos state.input
+      -- Use chars array prefix (max 3 chars for operators) for O(1) access
+      prefix = CU.fromCharArray (Array.take 3 state.chars)
       -- Find longest matching operator
-      op = findOperator remaining operators
+      op = findOperator prefix operators
       len = String.length op
       tokType = TokOperator
   in Just (Tuple (mkToken tokType op startLine startCol startPos) (advance state len))

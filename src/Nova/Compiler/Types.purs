@@ -239,6 +239,7 @@ builtinPrelude = Map.fromFoldable
 
   -- Array functions
   , Tuple "Array.head" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a))))
+  , Tuple "Array.index" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArrow tInt (tMaybe (TyVar a)))))
   , Tuple "Array.last" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a))))
   , Tuple "Array.tail" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (tArray (TyVar a)))))
   , Tuple "Array.init" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (tArray (TyVar a)))))
