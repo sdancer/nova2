@@ -45,7 +45,12 @@ defmodule Nova.MCPServer do
   def init(_args) do
     # Start the namespace service
     {:ok, svc} = Nova.NamespaceService.start_link()
-    {:ok, %{namespace_service: svc}}
+    {:ok, %{
+      namespace_service: svc,
+      undo_stack: [],      # Stack of previous states for undo
+      redo_stack: [],      # Stack of undone states for redo
+      max_history: 50      # Maximum undo history size
+    }}
   end
 
   @impl true
@@ -467,6 +472,45 @@ defmodule Nova.MCPServer do
           },
           required: ["expression"]
         }
+      },
+
+      # Undo/Redo
+      %{
+        name: "checkpoint",
+        description: "Create a checkpoint of current state that can be restored with undo",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "description" => %{
+              type: "string",
+              description: "Optional description of this checkpoint"
+            }
+          }
+        }
+      },
+      %{
+        name: "undo",
+        description: "Undo the last change by restoring previous checkpoint",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
+      },
+      %{
+        name: "redo",
+        description: "Redo a previously undone change",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
+      },
+      %{
+        name: "list_checkpoints",
+        description: "List available checkpoints in undo history",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
       }
     ]
 
@@ -624,11 +668,32 @@ defmodule Nova.MCPServer do
       "eval" ->
         eval_expression(svc, args["expression"], args["namespace"])
 
+      # Undo/Redo
+      "checkpoint" ->
+        {:ok_with_state, create_checkpoint(state, args["description"])}
+
+      "undo" ->
+        case undo(state) do
+          {:ok, new_state, info} -> {:ok_with_state, {new_state, info}}
+          {:error, reason} -> {:error, reason}
+        end
+
+      "redo" ->
+        case redo(state) do
+          {:ok, new_state, info} -> {:ok_with_state, {new_state, info}}
+          {:error, reason} -> {:error, reason}
+        end
+
+      "list_checkpoints" ->
+        {:ok, list_checkpoints(state)}
+
       _ ->
         {:error, "Unknown tool: #{name}"}
     end
 
     case result do
+      {:ok_with_state, {new_state, data}} ->
+        {:ok, [%{type: "text", text: format_result(data)}], new_state}
       {:ok, data} ->
         {:ok, [%{type: "text", text: format_result(data)}], state}
       {:error, msg} ->
@@ -1178,4 +1243,141 @@ defmodule Nova.MCPServer do
   defp format_eval_result(result) when is_binary(result), do: inspect(result)
   defp format_eval_result(result) when is_list(result), do: inspect(result, charlists: :as_lists)
   defp format_eval_result(result), do: inspect(result)
+
+  # ============================================================================
+  # Undo/Redo
+  # ============================================================================
+
+  defp create_checkpoint(state, description) do
+    svc = state.namespace_service
+
+    # Export current state
+    {:ok, namespaces} = Nova.NamespaceService.export_state(svc)
+
+    checkpoint = %{
+      timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
+      description: description || "Checkpoint",
+      namespaces: namespaces,
+      namespace_count: length(namespaces),
+      declaration_count: Enum.reduce(namespaces, 0, fn ns, acc -> acc + length(ns.declarations) end)
+    }
+
+    # Add to undo stack, clear redo stack
+    new_undo_stack = [checkpoint | state.undo_stack] |> Enum.take(state.max_history)
+    new_state = %{state | undo_stack: new_undo_stack, redo_stack: []}
+
+    {new_state, %{
+      message: "Checkpoint created",
+      description: checkpoint.description,
+      namespaces: checkpoint.namespace_count,
+      declarations: checkpoint.declaration_count,
+      undo_stack_size: length(new_undo_stack)
+    }}
+  end
+
+  defp undo(state) do
+    case state.undo_stack do
+      [] ->
+        {:error, "Nothing to undo"}
+
+      [checkpoint | rest] ->
+        svc = state.namespace_service
+
+        # Save current state to redo stack
+        {:ok, current_namespaces} = Nova.NamespaceService.export_state(svc)
+        current_checkpoint = %{
+          timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
+          description: "Before undo",
+          namespaces: current_namespaces,
+          namespace_count: length(current_namespaces),
+          declaration_count: Enum.reduce(current_namespaces, 0, fn ns, acc -> acc + length(ns.declarations) end)
+        }
+
+        # Restore checkpoint state
+        Nova.NamespaceService.import_state(svc, checkpoint.namespaces, false)
+
+        new_state = %{state |
+          undo_stack: rest,
+          redo_stack: [current_checkpoint | state.redo_stack] |> Enum.take(state.max_history)
+        }
+
+        {:ok, new_state, %{
+          message: "Undo successful",
+          restored: checkpoint.description,
+          restored_at: checkpoint.timestamp,
+          namespaces: checkpoint.namespace_count,
+          declarations: checkpoint.declaration_count,
+          undo_remaining: length(rest),
+          redo_available: length(new_state.redo_stack)
+        }}
+    end
+  end
+
+  defp redo(state) do
+    case state.redo_stack do
+      [] ->
+        {:error, "Nothing to redo"}
+
+      [checkpoint | rest] ->
+        svc = state.namespace_service
+
+        # Save current state to undo stack
+        {:ok, current_namespaces} = Nova.NamespaceService.export_state(svc)
+        current_checkpoint = %{
+          timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
+          description: "Before redo",
+          namespaces: current_namespaces,
+          namespace_count: length(current_namespaces),
+          declaration_count: Enum.reduce(current_namespaces, 0, fn ns, acc -> acc + length(ns.declarations) end)
+        }
+
+        # Restore checkpoint state
+        Nova.NamespaceService.import_state(svc, checkpoint.namespaces, false)
+
+        new_state = %{state |
+          undo_stack: [current_checkpoint | state.undo_stack] |> Enum.take(state.max_history),
+          redo_stack: rest
+        }
+
+        {:ok, new_state, %{
+          message: "Redo successful",
+          restored: checkpoint.description,
+          namespaces: checkpoint.namespace_count,
+          declarations: checkpoint.declaration_count,
+          undo_available: length(new_state.undo_stack),
+          redo_remaining: length(rest)
+        }}
+    end
+  end
+
+  defp list_checkpoints(state) do
+    undo_list = Enum.with_index(state.undo_stack) |> Enum.map(fn {cp, idx} ->
+      %{
+        index: idx,
+        type: "undo",
+        description: cp.description,
+        timestamp: cp.timestamp,
+        namespaces: cp.namespace_count,
+        declarations: cp.declaration_count
+      }
+    end)
+
+    redo_list = Enum.with_index(state.redo_stack) |> Enum.map(fn {cp, idx} ->
+      %{
+        index: idx,
+        type: "redo",
+        description: cp.description,
+        timestamp: cp.timestamp,
+        namespaces: cp.namespace_count,
+        declarations: cp.declaration_count
+      }
+    end)
+
+    %{
+      undo_stack: undo_list,
+      redo_stack: redo_list,
+      undo_count: length(state.undo_stack),
+      redo_count: length(state.redo_stack)
+    }
+  end
 end
