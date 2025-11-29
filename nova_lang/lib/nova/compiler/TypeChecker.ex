@@ -1118,6 +1118,8 @@ end
   "ModuleDeclaration" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "name", Nova.Compiler.Types.t_string()}]), row: :nothing}}
   "GenCtx" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "moduleFuncs", {:ty_con, Nova.Compiler.Types.mk_tcon("Set", [Nova.Compiler.Types.t_string()])}}, {:tuple, "locals", {:ty_con, Nova.Compiler.Types.mk_tcon("Set", [Nova.Compiler.Types.t_string()])}}]), row: :nothing}}
   "Module" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "name", Nova.Compiler.Types.t_string()}, {:tuple, "declarations", Nova.Compiler.Types.t_array({:ty_con, Nova.Compiler.Types.mk_tcon("Declaration", [])})}]), row: :nothing}}
+  "TypeAliasInfo" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "params", Nova.Compiler.Types.t_array(Nova.Compiler.Types.t_string())}, {:tuple, "body", t_type_expr_holder}]), row: :nothing}}
+  "TypeInfo" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "arity", Nova.Compiler.Types.t_int()}, {:tuple, "constructors", Nova.Compiler.Types.t_array(Nova.Compiler.Types.t_string())}]), row: :nothing}}
   _ -> {:ty_con, Nova.Compiler.Types.mk_tcon(name, [])}
 end
   end

@@ -931,6 +931,10 @@ typeExprToType varMap (TyExprCon name) =
     "ModuleDeclaration" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString], row: Nothing }
     "GenCtx" -> TyRecord { fields: Map.fromFoldable [Tuple "moduleFuncs" (TyCon (mkTCon "Set" [tString])), Tuple "locals" (TyCon (mkTCon "Set" [tString]))], row: Nothing }
     "Module" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "declarations" (tArray (TyCon (mkTCon "Declaration" [])))], row: Nothing }
+    -- TypeAliasInfo from Types.purs
+    "TypeAliasInfo" -> TyRecord { fields: Map.fromFoldable [Tuple "params" (tArray tString), Tuple "body" tTypeExprHolder], row: Nothing }
+    -- TypeInfo from Types.purs
+    "TypeInfo" -> TyRecord { fields: Map.fromFoldable [Tuple "arity" tInt, Tuple "constructors" (tArray tString)], row: Nothing }
     _ -> TyCon (mkTCon name [])
   where
     -- Avoid circular dependency with tType
