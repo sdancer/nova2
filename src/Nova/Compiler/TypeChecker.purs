@@ -997,11 +997,13 @@ checkModule env decls =
 -- This is the new version that supports the module system
 checkModuleWithRegistry :: ModuleRegistry -> Env -> Array Declaration -> Either TCError Env
 checkModuleWithRegistry registry env decls =
-  -- First process imports to add imported types/values to environment
-  let env1 = processImports registry env decls
-      -- Then proceed with normal type checking
-      env2 = processNonFunctions env1 decls
-      env3 = addFunctionPlaceholders env2 decls
+  -- First collect imported type aliases
+  let importedAliases = collectImportedAliases registry decls
+      -- Process imports to add imported types/values to environment
+      env1 = processImports registry env decls
+      -- Then proceed with normal type checking, passing imported aliases
+      env2 = processNonFunctionsWithAliases importedAliases env1 decls
+      env3 = addFunctionPlaceholdersWithAliases importedAliases env2 decls
   in checkFunctionBodies env3 decls
 
 -- | Process import declarations and add imported types/values to environment
@@ -1056,6 +1058,18 @@ importItem exports env item = case item of
             -- Import just the type, no constructors
             env
 
+-- | Collect type aliases from all imported modules
+-- Returns a map of alias name to TypeAliasInfo
+collectImportedAliases :: ModuleRegistry -> Array Declaration -> Map.Map String TypeAliasInfo
+collectImportedAliases registry decls =
+  Array.foldl collectFromImport Map.empty decls
+  where
+    collectFromImport acc (DeclImport imp) =
+      case lookupModule registry imp.moduleName of
+        Nothing -> acc
+        Just exports -> Map.union acc exports.typeAliases
+    collectFromImport acc _ = acc
+
 -- | Extract exports from a module's declarations
 -- This is used to build the registry from parsed modules
 extractExports :: Array Declaration -> ModuleExports
@@ -1080,15 +1094,23 @@ extractExports decls =
       exp
     collectExport exp _ = exp
 
+    -- Build alias maps for resolving field types
+    aliasMap = collectTypeAliases decls
+    paramAliasMap = collectParamTypeAliases decls
+
     addConstructorPlaceholder :: DataType -> ModuleExports -> DataConstructor -> ModuleExports
     addConstructorPlaceholder dt exp ctor =
-      -- Create a placeholder scheme - actual type would need proper construction
-      -- This is a simplified version; full implementation would compute the actual type
-      let resultType = if Array.null dt.typeVars
+      -- Build proper constructor type using type aliases
+      let -- Create type var map for the data type's type parameters
+          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) dt.typeVars
+          typeVarMap = Map.fromFoldable typeVarPairs
+          -- Result type is the data type applied to its type vars
+          resultType = if Array.null dt.typeVars
                        then TyCon (mkTCon dt.name [])
-                       else TyCon (mkTCon dt.name (map (\v -> TyVar (mkTVar 0 v)) dt.typeVars))
-          ctorType = Array.foldr (\_ t -> tArrow tInt t) resultType ctor.fields  -- Placeholder
-          scheme = mkScheme [] ctorType
+                       else TyCon (mkTCon dt.name (map (\(Tuple _ tv) -> TyVar tv) typeVarPairs))
+          -- Build constructor type: field1 -> field2 -> ... -> ResultType
+          ctorType = buildConstructorTypeWithAliases aliasMap typeVarMap ctor.fields resultType
+          scheme = mkScheme (map snd typeVarPairs) ctorType
       in exp { constructors = Map.insert ctor.name scheme exp.constructors }
 
 -- | Add values to exports after type checking (when we know the types)
@@ -1125,10 +1147,22 @@ collectParamTypeAliases decls = Array.foldl collect Map.empty decls
 -- Process in two phases: type aliases first, then data types
 -- This ensures type aliases are available when processing data constructor fields
 processNonFunctions :: Env -> Array Declaration -> Env
-processNonFunctions env decls =
-  let -- Phase 1: Collect all type aliases into maps
-      aliasMap = collectTypeAliases decls
-      paramAliasMap = collectParamTypeAliases decls
+processNonFunctions env decls = processNonFunctionsWithAliases Map.empty env decls
+
+-- | Process non-function declarations with imported type aliases
+processNonFunctionsWithAliases :: Map.Map String TypeAliasInfo -> Env -> Array Declaration -> Env
+processNonFunctionsWithAliases importedAliases env decls =
+  let -- Phase 1: Collect all type aliases into maps (local + imported)
+      localAliasMap = collectTypeAliases decls
+      localParamAliasMap = collectParamTypeAliases decls
+      -- Merge imported aliases (imported ones take precedence for now)
+      paramAliasMap = Map.union localParamAliasMap importedAliases
+      -- Convert imported TypeAliasInfo to Type for simple aliases
+      importedSimpleAliases = Map.mapMaybe (\info ->
+        if Array.null info.params
+        then Just (typeExprToType Map.empty info.body)
+        else Nothing) importedAliases
+      aliasMap = Map.union localAliasMap importedSimpleAliases
       -- Also add aliases to env for other purposes
       processTypeAlias e decl = case decl of
         DeclTypeAlias ta -> checkTypeAlias e ta
@@ -1144,10 +1178,22 @@ processNonFunctions env decls =
 -- | Add placeholder types for all functions
 -- Uses type signature if available, otherwise creates a fresh type variable
 addFunctionPlaceholders :: Env -> Array Declaration -> Env
-addFunctionPlaceholders env decls =
-  let -- Collect type aliases for expanding type signatures
-      aliasMap = collectTypeAliases decls
-      paramAliasMap = collectParamTypeAliases decls
+addFunctionPlaceholders env decls = addFunctionPlaceholdersWithAliases Map.empty env decls
+
+-- | Add placeholder types for all functions with imported type aliases
+addFunctionPlaceholdersWithAliases :: Map.Map String TypeAliasInfo -> Env -> Array Declaration -> Env
+addFunctionPlaceholdersWithAliases importedAliases env decls =
+  let -- Collect type aliases for expanding type signatures (local + imported)
+      localAliasMap = collectTypeAliases decls
+      localParamAliasMap = collectParamTypeAliases decls
+      -- Merge imported aliases
+      paramAliasMap = Map.union localParamAliasMap importedAliases
+      -- Convert imported TypeAliasInfo to Type for simple aliases
+      importedSimpleAliases = Map.mapMaybe (\info ->
+        if Array.null info.params
+        then Just (typeExprToType Map.empty info.body)
+        else Nothing) importedAliases
+      aliasMap = Map.union localAliasMap importedSimpleAliases
       -- Collect standalone type signatures into a map
       collectSig m decl = case decl of
         DeclTypeSig sig -> Map.insert sig.name sig.ty m

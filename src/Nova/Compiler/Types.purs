@@ -350,6 +350,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Map.fromFoldable" (mkScheme [k, v] (tArrow (tArray (tTuple [TyVar k, TyVar v])) (tMap (TyVar k) (TyVar v))))
   , Tuple "Map.toUnfoldable" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (tTuple [TyVar k, TyVar v]))))
   , Tuple "Map.delete" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
+  , Tuple "Map.mapMaybe" (mkScheme [k, a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tMap (TyVar k) (TyVar a)) (tMap (TyVar k) (TyVar b)))))
 
   -- Set functions
   , Tuple "Set.empty" (mkScheme [a] (tSet (TyVar a)))
@@ -435,6 +436,15 @@ builtinPrelude = Map.fromFoldable
   , Tuple "generalize" (mkScheme [] (tArrow tEnv (tArrow tType tScheme)))
   , Tuple "builtinPrelude" (mkScheme [] (tMap tString tScheme))
   , Tuple "singleSubst" (mkScheme [] (tArrow tTVar (tArrow tType tSubst)))
+
+  -- Module registry functions
+  , Tuple "lookupModule" (mkScheme [] (tArrow tModuleRegistry (tArrow tString (tMaybe tModuleExports))))
+  , Tuple "registerModule" (mkScheme [] (tArrow tModuleRegistry (tArrow tString (tArrow tModuleExports tModuleRegistry))))
+  , Tuple "emptyExports" (mkScheme [] tModuleExports)
+  , Tuple "mergeExportsToEnv" (mkScheme [] (tArrow tEnv (tArrow tModuleExports tEnv)))
+  , Tuple "mergeSelectedExports" (mkScheme [] (tArrow tEnv (tArrow tModuleExports (tArrow (tArray tString) tEnv))))
+  , Tuple "mergeTypeExport" (mkScheme [] (tArrow tEnv (tArrow tModuleExports (tArrow tString (tArrow (tArray tString) tEnv)))))
+
   -- Type helper functions (returns Type)
   , Tuple "tInt" (mkScheme [] tType)
   , Tuple "tString" (mkScheme [] tType)
@@ -679,6 +689,24 @@ tTConRecord = TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "
 
 tRecord :: Type
 tRecord = TyRecord { fields: Map.fromFoldable [Tuple "fields" (tMap tString tType), Tuple "row" (tMaybe tTVar)], row: Nothing }
+
+-- Module system types
+tTypeInfo :: Type
+tTypeInfo = TyRecord { fields: Map.fromFoldable [Tuple "arity" tInt, Tuple "constructors" (tArray tString)], row: Nothing }
+
+tTypeAliasInfo :: Type
+tTypeAliasInfo = TyRecord { fields: Map.fromFoldable [Tuple "params" (tArray tString), Tuple "body" tTypeExpr], row: Nothing }
+
+tModuleExports :: Type
+tModuleExports = TyRecord { fields: Map.fromFoldable
+  [ Tuple "types" (tMap tString tTypeInfo)
+  , Tuple "constructors" (tMap tString tScheme)
+  , Tuple "values" (tMap tString tScheme)
+  , Tuple "typeAliases" (tMap tString tTypeAliasInfo)
+  ], row: Nothing }
+
+tModuleRegistry :: Type
+tModuleRegistry = tMap tString tModuleExports
 
 tPattern :: Type
 tPattern = TyCon (mkTCon0 "Pattern")

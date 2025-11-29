@@ -1181,9 +1181,10 @@ end
 
   def check_module_with_registry(registry, env, decls) do
     
+      imported_aliases = collect_imported_aliases(registry, decls)
       env1 = process_imports(registry, env, decls)
-      env2 = process_non_functions(env1, decls)
-      env3 = add_function_placeholders(env2, decls)
+      env2 = process_non_functions_with_aliases(imported_aliases, env1, decls)
+      env3 = add_function_placeholders_with_aliases(imported_aliases, env2, decls)
       check_function_bodies(env3, decls)
   end
 
@@ -1231,16 +1232,32 @@ end
     end
   end
 
+  def collect_imported_aliases(registry, decls) do
+    
+      collect_from_import = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {acc, ({:decl_import, imp})} -> case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
+  :nothing -> acc
+  {:just, exports} -> Nova.Map.union(acc, exports.type_aliases)
+end
+        {acc, _} -> acc
+      end end end
+      Nova.Array.foldl(collect_from_import, Nova.Map.empty, decls)
+  end
+
   def extract_exports(decls) do
     
+      alias_map = collect_type_aliases(decls)
+      param_alias_map = collect_param_type_aliases(decls)
       add_constructor_placeholder = fn dt -> fn exp -> fn ctor -> 
+        type_var_pairs = Nova.Array.map_with_index(fn i -> fn v -> {:tuple, v, Nova.Compiler.Types.mk_tvar(i, v)} end end, dt.type_vars)
+        type_var_map = Nova.Map.from_foldable(type_var_pairs)
         result_type = if Nova.Array.null(dt.type_vars) do
           {:ty_con, Nova.Compiler.Types.mk_tcon(dt.name, [])}
         else
-          {:ty_con, Nova.Compiler.Types.mk_tcon(dt.name, Nova.Runtime.map(fn v -> {:ty_var, Nova.Compiler.Types.mk_tvar(0, v)} end, dt.type_vars))}
+          {:ty_con, Nova.Compiler.Types.mk_tcon(dt.name, Nova.Runtime.map(fn ({:tuple, _, tv}) -> {:ty_var, tv} end, type_var_pairs))}
         end
-        ctor_type = Nova.Array.foldr(fn _ -> fn t -> Nova.Compiler.Types.t_arrow(Nova.Compiler.Types.t_int(), t) end end, result_type, ctor.fields)
-        scheme = Nova.Compiler.Types.mk_scheme([], ctor_type)
+        ctor_type = build_constructor_type_with_aliases(alias_map, type_var_map, ctor.fields, result_type)
+        scheme = Nova.Compiler.Types.mk_scheme(Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs), ctor_type)
         %{exp | constructors: Nova.Map.insert(ctor.name, scheme, exp.constructors)} end end end
       collect_export = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {exp, ({:decl_data_type, dt})} -> 
@@ -1289,13 +1306,24 @@ end
   end
 
   def process_non_functions(env, decls) do
+    process_non_functions_with_aliases(Nova.Map.empty, env, decls)
+  end
+
+  def process_non_functions_with_aliases(imported_aliases, env, decls) do
     
-      alias_map = collect_type_aliases(decls)
-      param_alias_map = collect_param_type_aliases(decls)
+      local_alias_map = collect_type_aliases(decls)
+      local_param_alias_map = collect_param_type_aliases(decls)
+      imported_simple_aliases = Nova.Map.map_maybe(fn info -> if Nova.Array.null(info.params) do
+        {:just, type_expr_to_type(Nova.Map.empty, info.body)}
+      else
+        :nothing
+      end end, imported_aliases)
       process_type_alias = fn e -> fn decl -> case decl do
         {:decl_type_alias, ta} -> check_type_alias(e, ta)
         _ -> e
       end end end
+      param_alias_map = Nova.Map.union(local_param_alias_map, imported_aliases)
+      alias_map = Nova.Map.union(local_alias_map, imported_simple_aliases)
       env1 = Nova.Array.foldl(process_type_alias, env, decls)
       process_data_type = fn e -> fn decl -> case decl do
         {:decl_data_type, dt} -> check_data_type_with_aliases(alias_map, e, dt)
@@ -1306,13 +1334,24 @@ end
   end
 
   def add_function_placeholders(env, decls) do
+    add_function_placeholders_with_aliases(Nova.Map.empty, env, decls)
+  end
+
+  def add_function_placeholders_with_aliases(imported_aliases, env, decls) do
     
-      alias_map = collect_type_aliases(decls)
-      param_alias_map = collect_param_type_aliases(decls)
+      local_alias_map = collect_type_aliases(decls)
+      local_param_alias_map = collect_param_type_aliases(decls)
+      imported_simple_aliases = Nova.Map.map_maybe(fn info -> if Nova.Array.null(info.params) do
+        {:just, type_expr_to_type(Nova.Map.empty, info.body)}
+      else
+        :nothing
+      end end, imported_aliases)
       collect_sig = fn m -> fn decl -> case decl do
         {:decl_type_sig, sig} -> Nova.Map.insert(sig.name, sig.ty, m)
         _ -> m
       end end end
+      param_alias_map = Nova.Map.union(local_param_alias_map, imported_aliases)
+      alias_map = Nova.Map.union(local_alias_map, imported_simple_aliases)
       sig_map = Nova.Array.foldl(collect_sig, Nova.Map.empty, decls)
       add_placeholder = fn e -> fn decl -> case decl do
         {:decl_function, func} -> case func.type_signature do

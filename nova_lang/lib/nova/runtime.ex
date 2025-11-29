@@ -299,6 +299,15 @@ defmodule Nova.Map do
   def to_unfoldable(map) do
     Enum.map(map, fn {k, v} -> {:tuple, k, v} end)
   end
+  # Map.mapMaybe - filter and transform values
+  def map_maybe(f, map) do
+    Enum.reduce(map, %{}, fn {k, v}, acc ->
+      case f.(v) do
+        {:just, v2} -> Map.put(acc, k, v2)
+        :nothing -> acc
+      end
+    end)
+  end
 end
 
 defmodule Nova.Set do
