@@ -58,6 +58,25 @@ defmodule Nova do
   end
 
   @doc """
+  Compile a pre-parsed module AST to Elixir code.
+  """
+  def compile_module(mod, dep_decls \\ []) do
+    # Type check
+    all_decls = dep_decls ++ mod.declarations
+    env = Nova.Compiler.Types.empty_env()
+
+    case Nova.Compiler.TypeChecker.check_module(env, all_decls) do
+      {:left, err} ->
+        {:error, {:typecheck, err}}
+
+      {:right, _env} ->
+        # Generate Elixir code
+        elixir_code = Nova.Compiler.CodeGen.gen_module(mod)
+        {:ok, elixir_code}
+    end
+  end
+
+  @doc """
   Compile and write to output file.
   """
   def compile_to_file(input_path, output_path, opts \\ []) do

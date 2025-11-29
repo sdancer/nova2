@@ -334,6 +334,42 @@ defmodule Nova.MCPServer do
           },
           required: ["namespace"]
         }
+      },
+
+      # Compiler core operations
+      %{
+        name: "load_compiler_core",
+        description: "Load all 8 Nova compiler modules into namespaces (Ast, Types, Tokenizer, Parser, Unify, TypeChecker, Dependencies, CodeGen)",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "source_dir" => %{
+              type: "string",
+              description: "Path to the Nova compiler source directory (default: ../src/Nova/Compiler)"
+            }
+          }
+        }
+      },
+      %{
+        name: "compile_compiler",
+        description: "Compile all loaded compiler modules to Elixir and optionally write to output directory",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "output_dir" => %{
+              type: "string",
+              description: "Output directory for compiled .ex files (optional - if omitted, returns code without writing)"
+            }
+          }
+        }
+      },
+      %{
+        name: "validate_compiler",
+        description: "Type check all compiler modules and report any errors",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
       }
     ]
 
@@ -463,6 +499,16 @@ defmodule Nova.MCPServer do
 
       "compile_namespace" ->
         compile_namespace(svc, args["namespace"])
+
+      # Compiler core operations
+      "load_compiler_core" ->
+        load_compiler_core(svc, args["source_dir"])
+
+      "compile_compiler" ->
+        compile_compiler(args["output_dir"])
+
+      "validate_compiler" ->
+        validate_compiler(svc)
 
       _ ->
         {:error, "Unknown tool: #{name}"}
@@ -644,4 +690,158 @@ defmodule Nova.MCPServer do
     "{ #{fs} }"
   end
   defp format_type_expr(_), do: "?"
+
+  # ============================================================================
+  # Compiler Core Operations
+  # ============================================================================
+
+  @compiler_modules [
+    "Ast",
+    "Types",
+    "Tokenizer",
+    "Parser",
+    "Unify",
+    "TypeChecker",
+    "Dependencies",
+    "CodeGen"
+  ]
+
+  defp load_compiler_core(svc, source_dir) do
+    base_dir = source_dir || "../src/Nova/Compiler"
+
+    results = Enum.map(@compiler_modules, fn mod_name ->
+      path = Path.join(base_dir, "#{mod_name}.purs")
+      namespace = "Nova.Compiler.#{mod_name}"
+
+      case File.read(path) do
+        {:ok, source} ->
+          tokens = Nova.Compiler.Tokenizer.tokenize(source)
+
+          case Nova.Compiler.Parser.parse_module(tokens) do
+            {:right, {:tuple, mod, _rest}} ->
+              # Create namespace
+              Nova.NamespaceService.create_namespace(svc, namespace)
+
+              # Store the parsed module in the namespace metadata
+              # For now, we'll store it in an ETS table or process state
+              # Actually, let's store the source and parsed module
+              decl_count = length(mod.declarations)
+
+              # Store module AST for later compilation
+              :persistent_term.put({:nova_module, namespace}, mod)
+
+              {:ok, %{module: mod_name, namespace: namespace, declarations: decl_count}}
+
+            {:left, error} ->
+              {:error, %{module: mod_name, error: "Parse error: #{inspect(error)}"}}
+          end
+
+        {:error, reason} ->
+          {:error, %{module: mod_name, error: "File not found: #{reason}"}}
+      end
+    end)
+
+    successes = Enum.filter(results, fn {status, _} -> status == :ok end)
+    failures = Enum.filter(results, fn {status, _} -> status == :error end)
+
+    {:ok, %{
+      loaded: length(successes),
+      failed: length(failures),
+      modules: Enum.map(successes, fn {:ok, info} -> info end),
+      errors: Enum.map(failures, fn {:error, info} -> info end)
+    }}
+  end
+
+  defp compile_compiler(output_dir) do
+    # Collect all module declarations for dependency resolution
+    all_dep_decls = Enum.flat_map(@compiler_modules, fn mod_name ->
+      namespace = "Nova.Compiler.#{mod_name}"
+      case :persistent_term.get({:nova_module, namespace}, nil) do
+        nil -> []
+        mod -> mod.declarations
+      end
+    end)
+
+    results = Enum.map(@compiler_modules, fn mod_name ->
+      namespace = "Nova.Compiler.#{mod_name}"
+
+      case :persistent_term.get({:nova_module, namespace}, nil) do
+        nil ->
+          {:error, %{module: mod_name, error: "Module not loaded. Run load_compiler_core first."}}
+
+        mod ->
+          # Pass all other module declarations as dependencies
+          other_decls = Enum.flat_map(@compiler_modules, fn other_name ->
+            if other_name == mod_name do
+              []
+            else
+              other_ns = "Nova.Compiler.#{other_name}"
+              case :persistent_term.get({:nova_module, other_ns}, nil) do
+                nil -> []
+                other_mod -> other_mod.declarations
+              end
+            end
+          end)
+
+          case Nova.compile_module(mod, other_decls) do
+            {:ok, code} ->
+              lines = length(String.split(code, "\n"))
+
+              # Optionally write to file
+              if output_dir do
+                File.mkdir_p!(output_dir)
+                output_path = Path.join(output_dir, "#{mod_name}.ex")
+                File.write!(output_path, code)
+                {:ok, %{module: mod_name, lines: lines, path: output_path}}
+              else
+                {:ok, %{module: mod_name, lines: lines}}
+              end
+
+            {:error, reason} ->
+              {:error, %{module: mod_name, error: inspect(reason)}}
+          end
+      end
+    end)
+
+    successes = Enum.filter(results, fn {status, _} -> status == :ok end)
+    failures = Enum.filter(results, fn {status, _} -> status == :error end)
+
+    total_lines = Enum.reduce(successes, 0, fn {:ok, info}, acc -> acc + Map.get(info, :lines, 0) end)
+
+    {:ok, %{
+      compiled: length(successes),
+      failed: length(failures),
+      total_lines: total_lines,
+      output_dir: output_dir,
+      modules: Enum.map(successes, fn {:ok, info} -> info end),
+      errors: Enum.map(failures, fn {:error, info} -> info end)
+    }}
+  end
+
+  defp validate_compiler(svc) do
+    results = Enum.map(@compiler_modules, fn mod_name ->
+      namespace = "Nova.Compiler.#{mod_name}"
+
+      case Nova.NamespaceService.validate_namespace(svc, namespace) do
+        {:ok, _} ->
+          {:ok, %{module: mod_name, status: "valid"}}
+
+        {:error, {:type_errors, errors}} ->
+          {:error, %{module: mod_name, errors: errors}}
+
+        {:error, reason} ->
+          {:error, %{module: mod_name, error: inspect(reason)}}
+      end
+    end)
+
+    successes = Enum.filter(results, fn {status, _} -> status == :ok end)
+    failures = Enum.filter(results, fn {status, _} -> status == :error end)
+
+    {:ok, %{
+      valid: length(successes),
+      invalid: length(failures),
+      modules: Enum.map(successes, fn {:ok, info} -> info end),
+      errors: Enum.map(failures, fn {:error, info} -> info end)
+    }}
+  end
 end
