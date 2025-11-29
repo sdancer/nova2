@@ -233,8 +233,11 @@ collectLambdas bound e@(ExprLambda pats body) state =
       bound' = Set.union bound (Set.fromFoldable paramNames)
       -- Collect lambdas in the body first
       state' = collectLambdas bound' body state
-      -- Compute free vars (variables needed from enclosing scope, excluding lambda params)
-      freeVars = Set.toUnfoldable (collectFreeVars bound' body)
+      -- Compute free vars (variables needed from enclosing scope, excluding ONLY lambda params)
+      -- We use only paramNames here, not bound', because bound contains outer scope vars
+      -- that the lambda needs to capture in its closure
+      lambdaParams = Set.fromFoldable paramNames
+      freeVars = Set.toUnfoldable (collectFreeVars lambdaParams body)
       lambda = { id: state'.counter, expr: e, params: paramNames, freeVars: freeVars, body: body }
   in { counter: state'.counter + 1, lambdas: Array.snoc state'.lambdas lambda }
 collectLambdas bound (ExprApp f a) state =
@@ -556,6 +559,7 @@ genImports =
   "  (import \"runtime\" \"print\" (func $rt_print (param i32)))\n" <>
   "  (import \"runtime\" \"make_closure\" (func $rt_make_closure (param i32 i32) (result i32)))\n" <>
   "  (import \"runtime\" \"apply_closure\" (func $rt_apply_closure (param i32 i32) (result i32)))\n" <>
+  "  (import \"runtime\" \"closure_get_env\" (func $closure_get_env (param i32) (result i32)))\n" <>
   "  (import \"runtime\" \"alloc_tuple\" (func $alloc_tuple (param i32) (result i32)))\n" <>
   "  (import \"runtime\" \"tuple_get\" (func $tuple_get (param i32 i32) (result i32)))\n" <>
   "  (import \"runtime\" \"tuple_set\" (func $tuple_set (param i32 i32 i32)))"
@@ -870,8 +874,8 @@ genExpr ctx (ExprApp func arg) =
   -- Flatten nested applications to handle multi-arg functions
   let Tuple baseFunc allArgs = flattenApp (ExprApp func arg)
   in case baseFunc of
-    ExprVar name | Set.member name ctx.moduleFuncs ->
-      -- Known module function - check arity before calling directly
+    ExprVar name | Set.member name ctx.moduleFuncs && not (Map.member name ctx.locals) ->
+      -- Known module function NOT captured as local - check arity before calling directly
       case Map.lookup name ctx.funcArities of
         Just arity | length allArgs == arity ->
           -- Exact arity match - call directly
@@ -1119,9 +1123,25 @@ genLetBinds ctx binds body =
            PatVar name ->
              case Map.lookup name ctx'.locals of
                Just _ ->
-                 "(block (result i32)\n" <>
-                 "        (local.set " <> mangleName name <> " " <> valueCode <> ")\n" <>
-                 "        " <> restCode <> ")"
+                 -- Check if this is a self-referential lambda (closure that captures itself)
+                 let selfRefPatch = case bind.value of
+                       ExprLambda _ _ ->
+                         -- Find the lambda in ctx.lambdas
+                         case Array.find (\l -> refEqExpr l.expr bind.value) ctx.lambdas of
+                           Just lambda ->
+                             -- Check if name is in freeVars
+                             case Array.findIndex (_ == name) lambda.freeVars of
+                               Just idx ->
+                                 -- Generate backpatching: patch the env tuple with the closure itself
+                                 -- Closure layout: tuple[0]=funcIdx, tuple[1]=envPtr
+                                 -- So we patch: env[idx] = closure
+                                 "\n        (call $tuple_set (call $closure_get_env (local.get " <> mangleName name <> ")) (i32.const " <> show idx <> ") (local.get " <> mangleName name <> "))"
+                               Nothing -> ""
+                           Nothing -> ""
+                       _ -> ""
+                 in "(block (result i32)\n" <>
+                    "        (local.set " <> mangleName name <> " " <> valueCode <> ")" <> selfRefPatch <> "\n" <>
+                    "        " <> restCode <> ")"
                Nothing -> restCode
            _ ->
              -- Complex pattern - bind scrutinee to temp, then pattern match

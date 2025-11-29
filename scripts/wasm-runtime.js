@@ -200,6 +200,19 @@ class NovaRuntime {
           return arg;
         },
 
+        // Get the environment pointer from a closure
+        closure_get_env: (closureVal) => {
+          const tag = this.getTag(closureVal);
+          if (tag === NovaRuntime.TAG_HEAP) {
+            const id = this.unboxHeapPtr(closureVal);
+            const closure = this.closures.get(id);
+            if (closure && closure.envPtr !== undefined) {
+              return closure.envPtr;
+            }
+          }
+          return 0;
+        },
+
         // Tuple operations
         alloc_tuple: (size) => {
           const id = this.nextId++;
