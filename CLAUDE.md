@@ -77,3 +77,27 @@ After making changes to the PureScript source:
 
 - `test/` - PureScript tests (parser tests in `test/parser/`)
 - `nova_lang/test/` - Elixir tests for compiled output (namespace service, code generation)
+
+## MCP Interface (AI Agent Dev Environment)
+
+The Nova MCP server (`nova mcp`) exposes the compiler as a service for AI agents to programmatically write, validate, and compile Nova code. This is NOT an LSP - it's a development environment designed for AI agents.
+
+**Key Concepts:**
+- **Namespaces**: In-memory workspaces for organizing code (not tied to files)
+- **Declarations**: Functions, types, aliases added incrementally to namespaces
+- **Immediate feedback**: Type check after each change, get structured errors
+- **On-demand compilation**: Generate Elixir when ready
+
+**Workflow for AI agents:**
+1. Create a namespace: `create_namespace {name: "MyApp"}`
+2. Add declarations one at a time: `add_declaration {namespace: "MyApp", source: "add x y = x + y"}`
+3. Validate to check types: `validate_namespace {namespace: "MyApp"}`
+4. Fix any errors based on structured feedback
+5. Compile when ready: `compile_namespace {namespace: "MyApp"}`
+
+**Compiler core operations:**
+- `load_compiler_core` - Load all 8 compiler modules into namespaces
+- `compile_compiler` - Compile all modules with dependencies
+- `validate_compiler` - Type check all compiler modules
+
+**Available MCP tools:** create_namespace, delete_namespace, list_namespaces, add_declaration, update_declaration, remove_declaration, list_declarations, get_declaration, validate_namespace, get_type, get_diagnostics, get_completions, add_import, list_imports, load_file, compile_file, compile_namespace, load_compiler_core, compile_compiler, validate_compiler
