@@ -207,6 +207,21 @@ defmodule Nova.NamespaceService do
     GenServer.call(server, {:list_imports, namespace})
   end
 
+  @doc "Export all namespaces for session persistence"
+  def export_state(server) do
+    GenServer.call(server, :export_state)
+  end
+
+  @doc "Import namespaces from saved session data"
+  def import_state(server, session_data, merge \\ false) do
+    GenServer.call(server, {:import_state, session_data, merge})
+  end
+
+  @doc "Clear all namespaces"
+  def clear_all(server) do
+    GenServer.call(server, :clear_all)
+  end
+
   # ============================================================================
   # Server Callbacks
   # ============================================================================
@@ -901,9 +916,115 @@ defmodule Nova.NamespaceService do
     end
   end
 
+  def handle_call(:export_state, _from, state) do
+    # Export namespaces in a serializable format
+    # Only save source_text - can re-parse and re-validate on load
+    exported = Enum.map(state.namespaces, fn {ns_name, ns} ->
+      declarations = Enum.map(ns.declarations, fn {_decl_id, managed} ->
+        %{
+          name: managed.meta.name,
+          kind: Atom.to_string(managed.meta.kind),
+          source: managed.source_text
+        }
+      end)
+
+      %{
+        name: ns_name,
+        imports: ns.imports,
+        declarations: declarations
+      }
+    end)
+
+    {:reply, {:ok, exported}, state}
+  end
+
+  def handle_call({:import_state, session_data, merge}, _from, state) do
+    # Clear existing state unless merging
+    base_state = if merge, do: state, else: %State{}
+
+    # Rebuild namespaces from session data
+    result = Enum.reduce_while(session_data, {:ok, base_state}, fn ns_data, {:ok, acc_state} ->
+      ns_name = ns_data["name"] || ns_data[:name]
+      imports = ns_data["imports"] || ns_data[:imports] || []
+      declarations = ns_data["declarations"] || ns_data[:declarations] || []
+
+      # Create namespace
+      ns = %NamespaceState{name: ns_name, imports: imports}
+      acc_state = %{acc_state | namespaces: Map.put(acc_state.namespaces, ns_name, ns)}
+
+      # Add declarations
+      final_result = Enum.reduce_while(declarations, {:ok, acc_state}, fn decl_data, {:ok, inner_state} ->
+        source = decl_data["source"] || decl_data[:source]
+        case add_declaration_internal(inner_state, ns_name, source) do
+          {:ok, _decl_id, new_state} -> {:cont, {:ok, new_state}}
+          {:error, reason} -> {:halt, {:error, reason}}
+        end
+      end)
+
+      case final_result do
+        {:ok, new_state} -> {:cont, {:ok, new_state}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+
+    case result do
+      {:ok, new_state} ->
+        {:reply, {:ok, length(session_data)}, new_state}
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
+  end
+
+  def handle_call(:clear_all, _from, _state) do
+    {:reply, :ok, %State{}}
+  end
+
   # ============================================================================
   # Private Functions
   # ============================================================================
+
+  # Internal version of add_declaration that works with state directly
+  defp add_declaration_internal(state, namespace, source) do
+    case Map.get(state.namespaces, namespace) do
+      nil ->
+        {:error, :namespace_not_found}
+
+      ns ->
+        case parse_declaration(source) do
+          {:error, reason} ->
+            {:error, {:parse_error, reason}}
+
+          {:ok, decl, name, kind} ->
+            decl_id = make_decl_id(namespace, kind, name, state.global_counter)
+
+            meta = %DeclMetadata{
+              decl_id: decl_id,
+              namespace: namespace,
+              name: name,
+              kind: kind,
+              status: :fresh
+            }
+
+            managed = %ManagedDecl{
+              meta: meta,
+              decl: decl,
+              source_text: source
+            }
+
+            new_ns = %{ns |
+              declarations: Map.put(ns.declarations, decl_id, managed),
+              name_index: Map.put(ns.name_index, name, decl_id)
+            }
+
+            new_state = %{state |
+              namespaces: Map.put(state.namespaces, namespace, new_ns),
+              global_counter: state.global_counter + 1
+            }
+
+            {:ok, decl_id, new_state}
+        end
+    end
+  end
 
   defp make_decl_id(namespace, kind, name, counter) do
     kind_str = Atom.to_string(kind)

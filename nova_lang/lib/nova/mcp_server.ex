@@ -370,6 +370,83 @@ defmodule Nova.MCPServer do
           type: "object",
           properties: %{}
         }
+      },
+
+      # Session persistence
+      %{
+        name: "save_session",
+        description: "Save current session state (all namespaces and declarations) to disk",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "name" => %{
+              type: "string",
+              description: "Session name (used as filename)"
+            },
+            "description" => %{
+              type: "string",
+              description: "Optional description of the session"
+            },
+            "directory" => %{
+              type: "string",
+              description: "Directory to save session (default: .nova_sessions)"
+            }
+          },
+          required: ["name"]
+        }
+      },
+      %{
+        name: "load_session",
+        description: "Load a previously saved session, restoring all namespaces and declarations",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "name" => %{
+              type: "string",
+              description: "Session name to load"
+            },
+            "directory" => %{
+              type: "string",
+              description: "Directory containing sessions (default: .nova_sessions)"
+            },
+            "merge" => %{
+              type: "boolean",
+              description: "If true, merge with existing namespaces instead of replacing (default: false)"
+            }
+          },
+          required: ["name"]
+        }
+      },
+      %{
+        name: "list_sessions",
+        description: "List all saved sessions",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "directory" => %{
+              type: "string",
+              description: "Directory containing sessions (default: .nova_sessions)"
+            }
+          }
+        }
+      },
+      %{
+        name: "delete_session",
+        description: "Delete a saved session",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "name" => %{
+              type: "string",
+              description: "Session name to delete"
+            },
+            "directory" => %{
+              type: "string",
+              description: "Directory containing sessions (default: .nova_sessions)"
+            }
+          },
+          required: ["name"]
+        }
       }
     ]
 
@@ -509,6 +586,19 @@ defmodule Nova.MCPServer do
 
       "validate_compiler" ->
         validate_compiler(svc)
+
+      # Session persistence
+      "save_session" ->
+        save_session(svc, args["name"], args["description"], args["directory"])
+
+      "load_session" ->
+        load_session(svc, args["name"], args["directory"], args["merge"])
+
+      "list_sessions" ->
+        list_sessions(args["directory"])
+
+      "delete_session" ->
+        delete_session(args["name"], args["directory"])
 
       _ ->
         {:error, "Unknown tool: #{name}"}
@@ -843,5 +933,138 @@ defmodule Nova.MCPServer do
       modules: Enum.map(successes, fn {:ok, info} -> info end),
       errors: Enum.map(failures, fn {:error, info} -> info end)
     }}
+  end
+
+  # ============================================================================
+  # Session Persistence
+  # ============================================================================
+
+  @default_session_dir ".nova_sessions"
+
+  defp save_session(svc, name, description, directory) do
+    dir = directory || @default_session_dir
+    File.mkdir_p!(dir)
+
+    case Nova.NamespaceService.export_state(svc) do
+      {:ok, namespaces} ->
+        session = %{
+          version: 1,
+          name: name,
+          description: description,
+          created_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+          namespaces: namespaces
+        }
+
+        path = Path.join(dir, "#{name}.json")
+        case File.write(path, Jason.encode!(session, pretty: true)) do
+          :ok ->
+            total_decls = Enum.reduce(namespaces, 0, fn ns, acc ->
+              acc + length(ns.declarations)
+            end)
+            {:ok, %{
+              path: path,
+              namespaces: length(namespaces),
+              declarations: total_decls
+            }}
+          {:error, reason} ->
+            {:error, "Failed to write session file: #{reason}"}
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to export state: #{inspect(reason)}"}
+    end
+  end
+
+  defp load_session(svc, name, directory, merge) do
+    dir = directory || @default_session_dir
+    path = Path.join(dir, "#{name}.json")
+
+    case File.read(path) do
+      {:ok, content} ->
+        case Jason.decode(content) do
+          {:ok, session} ->
+            namespaces = session["namespaces"] || []
+
+            case Nova.NamespaceService.import_state(svc, namespaces, merge || false) do
+              {:ok, count} ->
+                total_decls = Enum.reduce(namespaces, 0, fn ns, acc ->
+                  acc + length(ns["declarations"] || [])
+                end)
+                {:ok, %{
+                  name: session["name"],
+                  description: session["description"],
+                  created_at: session["created_at"],
+                  namespaces_loaded: count,
+                  declarations_loaded: total_decls,
+                  merged: merge || false
+                }}
+
+              {:error, reason} ->
+                {:error, "Failed to import session: #{inspect(reason)}"}
+            end
+
+          {:error, reason} ->
+            {:error, "Failed to parse session file: #{inspect(reason)}"}
+        end
+
+      {:error, :enoent} ->
+        {:error, "Session '#{name}' not found"}
+
+      {:error, reason} ->
+        {:error, "Failed to read session file: #{reason}"}
+    end
+  end
+
+  defp list_sessions(directory) do
+    dir = directory || @default_session_dir
+
+    case File.ls(dir) do
+      {:ok, files} ->
+        sessions = files
+        |> Enum.filter(&String.ends_with?(&1, ".json"))
+        |> Enum.map(fn file ->
+          path = Path.join(dir, file)
+          case File.read(path) do
+            {:ok, content} ->
+              case Jason.decode(content) do
+                {:ok, session} ->
+                  %{
+                    name: session["name"],
+                    description: session["description"],
+                    created_at: session["created_at"],
+                    namespaces: length(session["namespaces"] || []),
+                    file: file
+                  }
+                _ -> nil
+              end
+            _ -> nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+
+        {:ok, sessions}
+
+      {:error, :enoent} ->
+        {:ok, []}
+
+      {:error, reason} ->
+        {:error, "Failed to list sessions: #{reason}"}
+    end
+  end
+
+  defp delete_session(name, directory) do
+    dir = directory || @default_session_dir
+    path = Path.join(dir, "#{name}.json")
+
+    case File.rm(path) do
+      :ok ->
+        {:ok, "Session '#{name}' deleted successfully"}
+
+      {:error, :enoent} ->
+        {:error, "Session '#{name}' not found"}
+
+      {:error, reason} ->
+        {:error, "Failed to delete session: #{reason}"}
+    end
   end
 end
