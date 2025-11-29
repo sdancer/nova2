@@ -511,6 +511,52 @@ defmodule Nova.MCPServer do
           type: "object",
           properties: %{}
         }
+      },
+
+      # Testing
+      %{
+        name: "run_tests",
+        description: "Run all test functions in a namespace. Tests are functions named test_* that return true for pass or false/error for fail.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "namespace" => %{
+              type: "string",
+              description: "The namespace to run tests in"
+            },
+            "pattern" => %{
+              type: "string",
+              description: "Optional pattern to filter tests (default: test_)"
+            }
+          },
+          required: ["namespace"]
+        }
+      },
+      %{
+        name: "assert",
+        description: "Evaluate an expression and check if it equals expected value. Returns pass/fail result.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "expression" => %{
+              type: "string",
+              description: "The expression to evaluate"
+            },
+            "expected" => %{
+              type: "string",
+              description: "The expected result (as a string representation)"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "Optional namespace context"
+            },
+            "description" => %{
+              type: "string",
+              description: "Optional description of what this assertion tests"
+            }
+          },
+          required: ["expression", "expected"]
+        }
       }
     ]
 
@@ -686,6 +732,13 @@ defmodule Nova.MCPServer do
 
       "list_checkpoints" ->
         {:ok, list_checkpoints(state)}
+
+      # Testing
+      "run_tests" ->
+        run_tests(svc, args["namespace"], args["pattern"])
+
+      "assert" ->
+        run_assert(svc, args["expression"], args["expected"], args["namespace"], args["description"])
 
       _ ->
         {:error, "Unknown tool: #{name}"}
@@ -1230,8 +1283,11 @@ defmodule Nova.MCPServer do
             end
             """
             {{:module, mod, _, _}, _} = Code.eval_string(module_code)
-            # Return binding for the function name
-            [{String.to_atom(func.name), Function.capture(mod, String.to_atom(func.name), length(func.parameters))}]
+            # Create curried wrapper for multi-arg functions
+            # Nova codegen generates calls like f.(a).(b), so we need curried bindings
+            arity = length(func.parameters)
+            curried = curry_function(mod, String.to_atom(func.name), arity)
+            [{String.to_atom(func.name), curried}]
           rescue
             _ -> []
           end
@@ -1239,6 +1295,14 @@ defmodule Nova.MCPServer do
       end
     end)
   end
+
+  # Create a curried version of a function
+  defp curry_function(mod, name, 0), do: apply(mod, name, [])
+  defp curry_function(mod, name, 1), do: fn a -> apply(mod, name, [a]) end
+  defp curry_function(mod, name, 2), do: fn a -> fn b -> apply(mod, name, [a, b]) end end
+  defp curry_function(mod, name, 3), do: fn a -> fn b -> fn c -> apply(mod, name, [a, b, c]) end end end
+  defp curry_function(mod, name, 4), do: fn a -> fn b -> fn c -> fn d -> apply(mod, name, [a, b, c, d]) end end end end
+  defp curry_function(mod, name, arity), do: Function.capture(mod, name, arity)
 
   defp format_eval_result(result) when is_binary(result), do: inspect(result)
   defp format_eval_result(result) when is_list(result), do: inspect(result, charlists: :as_lists)
@@ -1379,5 +1443,181 @@ defmodule Nova.MCPServer do
       undo_count: length(state.undo_stack),
       redo_count: length(state.redo_stack)
     }
+  end
+
+  # ============================================================================
+  # Testing
+  # ============================================================================
+
+  defp run_tests(svc, namespace, pattern) do
+    prefix = pattern || "test_"
+
+    case Nova.NamespaceService.list_declarations(svc, namespace) do
+      {:ok, decls} ->
+        # Find test functions
+        test_decls = Enum.filter(decls, fn d ->
+          d.kind == :function && String.starts_with?(d.name, prefix)
+        end)
+
+        if Enum.empty?(test_decls) do
+          {:ok, %{
+            namespace: namespace,
+            pattern: prefix,
+            message: "No tests found",
+            total: 0,
+            passed: 0,
+            failed: 0,
+            results: []
+          }}
+        else
+          # Run each test
+          results = Enum.map(test_decls, fn test_decl ->
+            run_single_test(svc, namespace, test_decl.name)
+          end)
+
+          passed = Enum.count(results, fn r -> r.status == :passed end)
+          failed = Enum.count(results, fn r -> r.status == :failed end)
+
+          {:ok, %{
+            namespace: namespace,
+            pattern: prefix,
+            total: length(results),
+            passed: passed,
+            failed: failed,
+            results: results
+          }}
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to list declarations: #{inspect(reason)}"}
+    end
+  end
+
+  defp run_single_test(svc, namespace, test_name) do
+    # Get the test declaration and evaluate its body expression directly
+    case Nova.NamespaceService.get_declaration(svc, namespace, test_name) do
+      {:ok, managed} ->
+        # Extract the body expression from the function
+        case managed.decl do
+          {:decl_function, func} ->
+            # Evaluate the function body directly with all namespace bindings
+            body = func.body
+            elixir_code = Nova.Compiler.CodeGen.gen_expr_ctx(
+              Nova.Compiler.CodeGen.empty_ctx(),
+              0,
+              body
+            )
+
+            # Get all declarations for bindings
+            context_decls = case Nova.NamespaceService.list_declarations(svc, namespace) do
+              {:ok, decls} ->
+                Enum.flat_map(decls, fn decl_info ->
+                  case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+                    {:ok, m} -> [m.decl]
+                    _ -> []
+                  end
+                end)
+              _ -> []
+            end
+
+            bindings = build_eval_bindings(context_decls)
+
+            try do
+              {result, _} = Code.eval_string(elixir_code, bindings, __ENV__)
+              case result do
+                true -> %{name: test_name, status: :passed, result: "true"}
+                false -> %{name: test_name, status: :failed, result: "false", error: "Test returned false"}
+                other -> %{name: test_name, status: :passed, result: inspect(other)}
+              end
+            rescue
+              e -> %{name: test_name, status: :failed, error: Exception.message(e)}
+            end
+
+          _ ->
+            %{name: test_name, status: :failed, error: "Not a function declaration"}
+        end
+
+      {:error, reason} ->
+        %{name: test_name, status: :failed, error: inspect(reason)}
+    end
+  end
+
+  defp run_assert(svc, expression, expected, namespace, description) do
+    case eval_expression_internal(svc, expression, namespace) do
+      {:ok, result, elixir_code} ->
+        result_str = format_eval_result(result)
+        # Compare string representations
+        passed = result_str == expected || inspect(result) == expected
+
+        if passed do
+          {:ok, %{
+            status: :passed,
+            expression: expression,
+            expected: expected,
+            actual: result_str,
+            description: description
+          }}
+        else
+          {:ok, %{
+            status: :failed,
+            expression: expression,
+            expected: expected,
+            actual: result_str,
+            elixir_code: elixir_code,
+            description: description
+          }}
+        end
+
+      {:error, reason} ->
+        {:ok, %{
+          status: :error,
+          expression: expression,
+          expected: expected,
+          error: reason,
+          description: description
+        }}
+    end
+  end
+
+  # Internal eval that returns raw result
+  defp eval_expression_internal(svc, expression, namespace) do
+    context_decls = if namespace do
+      case Nova.NamespaceService.list_declarations(svc, namespace) do
+        {:ok, decls} ->
+          Enum.flat_map(decls, fn decl_info ->
+            case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+              {:ok, managed} -> [managed.decl]
+              _ -> []
+            end
+          end)
+        _ -> []
+      end
+    else
+      []
+    end
+
+    tokens = Nova.Compiler.Tokenizer.tokenize(expression)
+
+    case Nova.Compiler.Parser.parse_expression(tokens) do
+      {:left, err} ->
+        {:error, "Parse error: #{inspect(err)}"}
+
+      {:right, {:tuple, expr, _rest}} ->
+        elixir_code = Nova.Compiler.CodeGen.gen_expr_ctx(
+          Nova.Compiler.CodeGen.empty_ctx(),
+          0,
+          expr
+        )
+
+        bindings = build_eval_bindings(context_decls)
+
+        try do
+          {result, _bindings} = Code.eval_string(elixir_code, bindings, __ENV__)
+          {:ok, result, elixir_code}
+        rescue
+          e ->
+            {:error, "Evaluation error: #{Exception.message(e)}"}
+        end
+    end
   end
 end
