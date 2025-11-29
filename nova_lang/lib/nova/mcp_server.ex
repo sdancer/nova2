@@ -447,6 +447,26 @@ defmodule Nova.MCPServer do
           },
           required: ["name"]
         }
+      },
+
+      # Evaluation
+      %{
+        name: "eval",
+        description: "Evaluate a Nova expression and return the result. Can use functions from loaded namespaces.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "expression" => %{
+              type: "string",
+              description: "The Nova expression to evaluate (e.g., '1 + 2', 'map (\\x -> x * 2) [1,2,3]')"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "Optional namespace context for accessing declarations"
+            }
+          },
+          required: ["expression"]
+        }
       }
     ]
 
@@ -599,6 +619,10 @@ defmodule Nova.MCPServer do
 
       "delete_session" ->
         delete_session(args["name"], args["directory"])
+
+      # Evaluation
+      "eval" ->
+        eval_expression(svc, args["expression"], args["namespace"])
 
       _ ->
         {:error, "Unknown tool: #{name}"}
@@ -1067,4 +1091,91 @@ defmodule Nova.MCPServer do
         {:error, "Failed to delete session: #{reason}"}
     end
   end
+
+  # ============================================================================
+  # Expression Evaluation
+  # ============================================================================
+
+  defp eval_expression(svc, expression, namespace) do
+    # Build context: collect functions from namespace if provided
+    context_decls = if namespace do
+      case Nova.NamespaceService.list_declarations(svc, namespace) do
+        {:ok, decls} ->
+          Enum.flat_map(decls, fn decl_info ->
+            case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+              {:ok, managed} -> [managed.decl]
+              _ -> []
+            end
+          end)
+        _ -> []
+      end
+    else
+      []
+    end
+
+    # Parse the expression
+    tokens = Nova.Compiler.Tokenizer.tokenize(expression)
+
+    case Nova.Compiler.Parser.parse_expression(tokens) do
+      {:left, err} ->
+        {:error, "Parse error: #{inspect(err)}"}
+
+      {:right, {:tuple, expr, _rest}} ->
+        # Generate Elixir code for the expression
+        elixir_code = Nova.Compiler.CodeGen.gen_expr_ctx(
+          Nova.Compiler.CodeGen.empty_ctx(),
+          0,
+          expr
+        )
+
+        # Build bindings from context declarations
+        bindings = build_eval_bindings(context_decls)
+
+        # Evaluate the generated code
+        try do
+          {result, _bindings} = Code.eval_string(elixir_code, bindings, __ENV__)
+          {:ok, %{
+            expression: expression,
+            elixir_code: elixir_code,
+            result: format_eval_result(result)
+          }}
+        rescue
+          e ->
+            {:error, "Evaluation error: #{Exception.message(e)}"}
+        catch
+          :error, reason ->
+            {:error, "Evaluation error: #{inspect(reason)}"}
+        end
+    end
+  end
+
+  defp build_eval_bindings(decls) do
+    # For each function declaration, compile and bind it
+    Enum.flat_map(decls, fn decl ->
+      case decl do
+        {:decl_function, func} ->
+          # Generate Elixir code for the function
+          ctx = Nova.Compiler.CodeGen.empty_ctx()
+          code = Nova.Compiler.CodeGen.gen_function(ctx, func)
+          try do
+            # Create a module with the function
+            module_code = """
+            defmodule NovaEvalTemp#{:erlang.unique_integer([:positive])} do
+              #{code}
+            end
+            """
+            {{:module, mod, _, _}, _} = Code.eval_string(module_code)
+            # Return binding for the function name
+            [{String.to_atom(func.name), Function.capture(mod, String.to_atom(func.name), length(func.parameters))}]
+          rescue
+            _ -> []
+          end
+        _ -> []
+      end
+    end)
+  end
+
+  defp format_eval_result(result) when is_binary(result), do: inspect(result)
+  defp format_eval_result(result) when is_list(result), do: inspect(result, charlists: :as_lists)
+  defp format_eval_result(result), do: inspect(result)
 end
