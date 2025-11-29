@@ -12,7 +12,7 @@ import Data.Map as Map
 import Data.Set as Set
 import Data.String as String
 import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo)
-import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, ImportItem(..), ImportSpec(..), ImportDeclaration)
+import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration)
 import Nova.Compiler.Unify (UnifyError, unify)
 
 -- | Type checking error
@@ -652,7 +652,24 @@ checkDecl env (DeclDataType dt) = Right (checkDataType env dt)
 
 checkDecl env (DeclTypeAlias ta) = Right (checkTypeAlias env ta)
 
+checkDecl env (DeclTypeClass tc) = Right (checkTypeClass env tc)
+
 checkDecl env _ = Right env
+
+-- | Process a type class declaration
+-- | Adds each method to the environment with its polymorphic type
+checkTypeClass :: Env -> TypeClass -> Env
+checkTypeClass env tc =
+  Array.foldl addMethod env tc.methods
+  where
+    addMethod e sig =
+      -- Convert the type expression to a Type, using class type vars
+      let varPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (e.counter + i) v)) tc.typeVars
+          varMap = Map.fromFoldable varPairs
+          methodType = typeExprToType varMap sig.ty
+          -- Create a scheme with the class type variables quantified
+          scheme = mkScheme (map snd varPairs) methodType
+      in extendEnv e sig.name scheme
 
 -- | Process a data type declaration
 -- | Adds the type constructor and all data constructors to the environment
@@ -1177,7 +1194,12 @@ processNonFunctionsWithAliases importedAliases env decls =
         DeclDataType dt -> checkDataTypeWithAliases aliasMap e dt
         _ -> e
       env2 = Array.foldl processDataType env1 decls
-  in env2
+      -- Phase 3: Process type classes (add methods to env)
+      processTypeClass e decl = case decl of
+        DeclTypeClass tc -> checkTypeClass e tc
+        _ -> e
+      env3 = Array.foldl processTypeClass env2 decls
+  in env3
 
 -- | Add placeholder types for all functions
 -- Uses type signature if available, otherwise creates a fresh type variable

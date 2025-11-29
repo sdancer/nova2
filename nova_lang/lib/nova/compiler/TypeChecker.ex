@@ -740,8 +740,23 @@ end
     {:right, check_type_alias(env, ta)}
   end
 
+  def check_decl(env, ({:decl_type_class, tc})) do
+    {:right, check_type_class(env, tc)}
+  end
+
   def check_decl(env, _) do
     {:right, env}
+  end
+
+  def check_type_class(env, tc) do
+    
+      add_method = fn e -> fn sig -> 
+        var_pairs = Nova.Array.map_with_index(fn i -> fn v -> {:tuple, v, Nova.Compiler.Types.mk_tvar((e.counter + i), v)} end end, tc.type_vars)
+        var_map = Nova.Map.from_foldable(var_pairs)
+        method_type = type_expr_to_type(var_map, sig.ty)
+        scheme = Nova.Compiler.Types.mk_scheme(Nova.Runtime.map((&Nova.Runtime.snd/1), var_pairs), method_type)
+        Nova.Compiler.Types.extend_env(e, sig.name, scheme) end end
+      Nova.Array.foldl(add_method, env, tc.methods)
   end
 
   def check_data_type(env, dt) do
@@ -1324,6 +1339,10 @@ end
         {:decl_type_alias, ta} -> check_type_alias(e, ta)
         _ -> e
       end end end
+      process_type_class = fn e -> fn decl -> case decl do
+        {:decl_type_class, tc} -> check_type_class(e, tc)
+        _ -> e
+      end end end
       param_alias_map = Nova.Map.union(local_param_alias_map, imported_aliases)
       alias_map = Nova.Map.union(local_alias_map, imported_simple_aliases)
       env1 = Nova.Array.foldl(process_type_alias, env, decls)
@@ -1332,7 +1351,8 @@ end
         _ -> e
       end end end
       env2 = Nova.Array.foldl(process_data_type, env1, decls)
-      env2
+      env3 = Nova.Array.foldl(process_type_class, env2, decls)
+      env3
   end
 
   def add_function_placeholders(env, decls) do
