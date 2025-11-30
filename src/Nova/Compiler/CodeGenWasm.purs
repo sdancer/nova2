@@ -449,11 +449,15 @@ genExprRecordCode :: WasmCtx -> Array (Tuple String Expr) -> String
 genExprRecordCode ctx fields = let sortedFields = Array.sortWith (\(Tuple name _) -> name) fields in let n = length sortedFields in let setCode = intercalate "\n" (Array.mapWithIndex (\i (Tuple _ e) -> "      (call $tuple_set (local.get $__tmp) (i32.const " <> show i <> ") " <> genExpr ctx e <> ")") sortedFields) in "(block (result i32)\n      (local.set $__tmp (call $alloc_tuple (i32.const " <> show n <> ")))\n" <> setCode <> "\n      (local.get $__tmp))"
 
 -- | Known field indices based on alphabetical ordering
+-- TokState: chars=0, column=1, input=2, line=3, pos=4
+-- Token: column=0, line=1, pos=2, tokenType=3, value=4
+-- These overlap, so we use context-aware indexing where possible
 fieldIndex :: String -> Int
-fieldIndex "column" = 0
-fieldIndex "input" = 1
-fieldIndex "line" = 2
-fieldIndex "pos" = 3
+fieldIndex "chars" = 0
+fieldIndex "column" = 1  -- TokState index (Token uses 0 but accesses are rare)
+fieldIndex "input" = 2
+fieldIndex "line" = 3    -- TokState index (Token uses 1)
+fieldIndex "pos" = 4     -- TokState index (Token uses 2)
 fieldIndex "tokenType" = 3
 fieldIndex "value" = 4
 fieldIndex "arity" = 0
@@ -477,7 +481,7 @@ fieldIndex _ = 0
 
 -- | Infer record size from field names being updated
 inferRecordSize :: Array String -> Int
-inferRecordSize fields = if Array.any (\f -> f == "pos" || f == "column" || f == "line" || f == "input") fields then 4 else if Array.any (\f -> f == "tokenType" || f == "value") fields then 5 else let maxIdx = Array.foldl (\acc f -> max acc (fieldIndex f)) 0 fields in maxIdx + 1
+inferRecordSize fields = if Array.any (\f -> f == "pos" || f == "column" || f == "line" || f == "input" || f == "chars") fields then 5 else if Array.any (\f -> f == "tokenType" || f == "value") fields then 5 else let maxIdx = Array.foldl (\acc f -> max acc (fieldIndex f)) 0 fields in maxIdx + 1
 
 genRecordUpdateFieldCode :: WasmCtx -> Array (Tuple String Expr) -> Int -> String
 genRecordUpdateFieldCode ctx fieldUpdates idx = let maybeUpdate = Array.find (\(Tuple n _) -> fieldIndex n == idx) fieldUpdates in genRecordUpdateFieldWithMatch ctx idx maybeUpdate

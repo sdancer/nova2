@@ -206,6 +206,16 @@ class NovaLinker {
         return rt.makeHeapPtr(newId);
       }, 1), 2),
 
+      Array_index: () => curry((arr) => curry((idx) => {
+        const id = rt.unboxHeapPtr(arr);
+        const a = rt.arrays.get(id) || [];
+        const i = rt.unboxInt(idx);
+        if (i >= 0 && i < a.length) {
+          return makeJust(a[i]);
+        }
+        return rt.makeCtor(0, 0); // Nothing
+      }, 1), 2),
+
       Array_drop: () => curry((n) => curry((arr) => {
         const id = rt.unboxHeapPtr(arr);
         const a = rt.arrays.get(id) || [];
@@ -435,6 +445,29 @@ class NovaLinker {
         rt.strings.set(id, str.slice(count));
         return rt.makeHeapPtr(id);
       }, 1), 2),
+
+      CU_toCharArray: () => curry((strVal) => {
+        const str = rt.getString(strVal);
+        const chars = [];
+        for (let i = 0; i < str.length; i++) {
+          chars.push(rt.makeInt(str.charCodeAt(i)));
+        }
+        const id = rt.nextId++;
+        rt.arrays.set(id, chars);
+        return rt.makeHeapPtr(id);
+      }, 1),
+
+      CU_fromCharArray: () => curry((arrVal) => {
+        const id = rt.unboxHeapPtr(arrVal);
+        const arr = rt.arrays.get(id) || [];
+        let str = '';
+        for (const charVal of arr) {
+          str += String.fromCharCode(rt.unboxInt(charVal));
+        }
+        const newId = rt.nextId++;
+        rt.strings.set(newId, str);
+        return rt.makeHeapPtr(newId);
+      }, 1),
 
       SCU_charAt: () => curry((idx) => curry((strVal) => {
         const str = rt.getString(strVal);
