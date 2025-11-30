@@ -1125,6 +1125,14 @@ end
     Nova.Runtime.append("Nova.Runtime.append(", Nova.Runtime.append(gen_expr_prime(ctx, 0, l), Nova.Runtime.append(", ", Nova.Runtime.append(gen_expr_prime(ctx, 0, r), ")"))))
   end
 
+  def gen_expr_prime(ctx, _, ({:expr_bin_op, "<<<", l, r})) do
+    Nova.Runtime.append("fn auto_c -> (", Nova.Runtime.append(gen_expr_prime(ctx, 0, l), Nova.Runtime.append(").((", Nova.Runtime.append(gen_expr_prime(ctx, 0, r), ").(auto_c)) end"))))
+  end
+
+  def gen_expr_prime(ctx, _, ({:expr_bin_op, ">>>", l, r})) do
+    Nova.Runtime.append("fn auto_c -> (", Nova.Runtime.append(gen_expr_prime(ctx, 0, r), Nova.Runtime.append(").((", Nova.Runtime.append(gen_expr_prime(ctx, 0, l), ").(auto_c)) end"))))
+  end
+
   def gen_expr_prime(ctx, _, ({:expr_bin_op, op, l, r})) do
     
       is_upper_case = fn s -> case Nova.String.char_at(0, s) do

@@ -987,6 +987,14 @@ genExpr' ctx _ (ExprBinOp "<>" l r) =
   -- Use runtime append for polymorphic semigroup (works for both strings and arrays)
   "Nova.Runtime.append(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
 
+genExpr' ctx _ (ExprBinOp "<<<" l r) =
+  -- Function composition (right-to-left): f <<< g = fn x -> f.(g.(x)) end
+  "fn auto_c -> (" <> genExpr' ctx 0 l <> ").((" <> genExpr' ctx 0 r <> ").(auto_c)) end"
+
+genExpr' ctx _ (ExprBinOp ">>>" l r) =
+  -- Function composition (left-to-right): f >>> g = fn x -> g.(f.(x)) end
+  "fn auto_c -> (" <> genExpr' ctx 0 r <> ").((" <> genExpr' ctx 0 l <> ").(auto_c)) end"
+
 genExpr' ctx _ (ExprBinOp op l r) =
   -- Check if this is a backtick function call (contains . or starts with uppercase)
   if String.contains (String.Pattern ".") op || isUpperCase (String.take 1 op)

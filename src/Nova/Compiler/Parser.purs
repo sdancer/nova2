@@ -264,6 +264,50 @@ parseQualifiedIdentifier tokens =
       Just c -> c >= 'A' && c <= 'Z'
       Nothing -> false
 
+-- | Parse qualified identifier for guard expressions
+-- | This is a simpler version that doesn't skip type signatures at column 1
+parseQualifiedIdentifierForGuard :: Array Token -> ParseResult Ast.Expr
+parseQualifiedIdentifierForGuard tokens =
+  let tokens' = skipNewlines tokens
+  in case parseSeparated parseIdentifierName (\t -> expectOperator t ".") tokens' of
+    Left err -> Left err
+    Right (Tuple parts rest) -> case Array.length parts of
+      0 -> failure "Expected identifier"
+      1 -> case Array.head parts of
+        Just name -> success (Ast.ExprVar name) rest
+        Nothing -> failure "Expected identifier"
+      _ ->
+        -- Multiple parts separated by dots
+        -- If first part starts with lowercase, it's record field access chain
+        -- If first part starts with uppercase, it's a qualified identifier
+        case Array.head parts of
+          Just first ->
+            if not (isUpperCase first)
+            then
+              -- Record field access: state.line.foo -> ((state).line).foo
+              let baseExpr = Ast.ExprVar first
+                  fields = Array.drop 1 parts
+              in success (Array.foldl Ast.ExprRecordAccess baseExpr fields) rest
+            else
+              -- Qualified identifier: Data.Array.head -> ExprQualified "Data.Array" "head"
+              let allButLast = Array.take (Array.length parts - 1) parts
+                  lastName = Array.last parts
+              in case lastName of
+                Just name -> success (Ast.ExprQualified (String.joinWith "." allButLast) name) rest
+                Nothing -> failure "Expected qualified identifier"
+          _ ->
+            -- Qualified identifier: Data.Array.head -> ExprQualified "Data.Array" "head"
+            let allButLast = Array.take (Array.length parts - 1) parts
+                lastName = Array.last parts
+            in case lastName of
+              Just name -> success (Ast.ExprQualified (String.joinWith "." allButLast) name) rest
+              Nothing -> failure "Expected qualified identifier"
+  where
+    isUpperCase :: String -> Boolean
+    isUpperCase s = case CU.charAt 0 s of
+      Just c -> c >= 'A' && c <= 'Z'
+      Nothing -> false
+
 -- ------------------------------------------------------------
 -- Type parsing
 -- ------------------------------------------------------------
@@ -2376,10 +2420,14 @@ parseGuardExprAtom tokens =
     Just tok ->
       if tok.tokenType == TokIdentifier
       then
-        -- Check for record field access: r.x.y
-        let rest = Array.drop 1 tokens'
-            baseExpr = Ast.ExprVar tok.value
-        in parseRecordAccessChain baseExpr rest
+        -- Use qualified identifier parsing to handle both Module.func and record.field
+        case parseQualifiedIdentifierForGuard tokens' of
+          Right result -> Right result
+          Left _ ->
+            -- Fallback to simple record access
+            let rest = Array.drop 1 tokens'
+                baseExpr = Ast.ExprVar tok.value
+            in parseRecordAccessChain baseExpr rest
       else if tok.tokenType == TokNumber
       then case Int.fromString tok.value of
         Just n -> success (Ast.ExprLit (Ast.LitInt n)) (Array.drop 1 tokens')

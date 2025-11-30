@@ -303,6 +303,49 @@ end
 end
   end
 
+  def parse_qualified_identifier_for_guard(tokens) do
+    
+      is_upper_case = fn s -> case Nova.String.char_at(0, s) do
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
+        :nothing -> false
+      end end
+      
+  tokens_prime = skip_newlines(tokens)
+  case parse_separated((&parse_identifier_name/1), fn t -> expect_operator(t, ".") end, tokens_prime) do
+  {:left, err} -> {:left, err}
+  {:right, ({:tuple, parts, rest})} -> case Nova.Array.length(parts) do
+      0 -> failure("Expected identifier")
+      1 -> case Nova.Array.head(parts) do
+          {:just, name} -> success(Nova.Compiler.Ast.expr_var(name), rest)
+          :nothing -> failure("Expected identifier")
+        end
+      _ -> case Nova.Array.head(parts) do
+          {:just, first} -> if not(is_upper_case.(first)) do
+              
+                base_expr = Nova.Compiler.Ast.expr_var(first)
+                fields = Nova.Array.drop(1, parts)
+                success(Nova.Array.foldl(fn a, b -> Nova.Compiler.Ast.expr_record_access(a, b) end, base_expr, fields), rest)
+            else
+              
+                all_but_last = Nova.Array.take((Nova.Array.length(parts) - 1), parts)
+                last_name = Nova.Array.last(parts)
+                case last_name do
+  {:just, name} -> success(Nova.Compiler.Ast.expr_qualified(Nova.String.join_with(".", all_but_last), name), rest)
+  :nothing -> failure("Expected qualified identifier")
+end
+            end
+          _ -> 
+              all_but_last = Nova.Array.take((Nova.Array.length(parts) - 1), parts)
+              last_name = Nova.Array.last(parts)
+              case last_name do
+  {:just, name} -> success(Nova.Compiler.Ast.expr_qualified(Nova.String.join_with(".", all_but_last), name), rest)
+  :nothing -> failure("Expected qualified identifier")
+end
+        end
+    end
+end
+  end
+
   def parse_type(tokens) do
     
       ts = skip_newlines(tokens)
@@ -3081,10 +3124,13 @@ end
       tokens_prime = skip_newlines(tokens)
       case Nova.Array.head(tokens_prime) do
   {:just, tok} -> if (tok.token_type == :tok_identifier) do
-      
-        rest = Nova.Array.drop(1, tokens_prime)
-        base_expr = Nova.Compiler.Ast.expr_var(tok.value)
-        parse_record_access_chain(base_expr, rest)
+      case parse_qualified_identifier_for_guard(tokens_prime) do
+        {:right, result} -> {:right, result}
+        {:left, _} -> 
+            rest = Nova.Array.drop(1, tokens_prime)
+            base_expr = Nova.Compiler.Ast.expr_var(tok.value)
+            parse_record_access_chain(base_expr, rest)
+      end
     else
       if (tok.token_type == :tok_number) do
         case Nova.String.to_int(tok.value) do

@@ -231,6 +231,8 @@ builtinPrelude = Map.fromFoldable
   -- Function operators
   , Tuple "$" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar b))))
   , Tuple "." (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
+  , Tuple "<<<" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
+  , Tuple ">>>" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (TyVar a) (TyVar c)))))
   -- Identity and const
   , Tuple "identity" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
   , Tuple "const" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
@@ -262,6 +264,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array.replicate" (mkScheme [a] (tArrow tInt (tArrow (TyVar a) (tArray (TyVar a)))))
   , Tuple "Array.zip" (mkScheme [a, b] (tArrow (tArray (TyVar a)) (tArrow (tArray (TyVar b)) (tArray (tTuple [TyVar a, TyVar b])))))
   , Tuple "Array.dropWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
+  , Tuple "Array.takeWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
   , Tuple "Array.span" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "init" (tArray (TyVar a)), Tuple "rest" (tArray (TyVar a))], row: Nothing }))))
   , Tuple "Array.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
   , Tuple "Array.range" (mkScheme [] (tArrow tInt (tArrow tInt (tArray tInt))))
@@ -272,6 +275,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array.partition" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "yes" (tArray (TyVar a)), Tuple "no" (tArray (TyVar a))], row: Nothing }))))
   , Tuple "Array.mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
   , Tuple "Array.nubByEq" (mkScheme [a] (tArrow (tArrow (TyVar a) (tArrow (TyVar a) tBool)) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
+  , Tuple "Array.nub" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
 
   -- Char comparison (needed for isAlpha, isDigit etc)
   , Tuple "charLt" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
