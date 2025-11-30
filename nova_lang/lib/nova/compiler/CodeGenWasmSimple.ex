@@ -1,0 +1,588 @@
+defmodule Nova.Compiler.CodeGenWasmSimple do
+  # import Prelude
+
+  # import Data.Array
+
+  # import Data.Array
+
+  # import Data.Maybe
+
+  # import Data.Tuple
+
+  # import Data.String
+
+  # import Data.Set
+
+  # import Data.Set
+
+  # import Data.Map
+
+  # import Data.Map
+
+  # import Data.Foldable
+
+  # import Data.Int
+
+  # import Data.Enum
+
+  # import Nova.Compiler.Ast
+
+  # @type lifted_lambda :: %{id: int(), expr: expr(), params: array()(string()), free_vars: array()(string()), body: expr()}
+
+  # @type wasm_ctx :: %{module_name: string(), module_funcs: set()(string()), func_arities: map()(string())(int()), locals: map()(string())(int()), local_count: int(), string_literals: array()(string()), string_table: map()(string())(%{offset: int(), len: int()}), data_constructors: map()(string())(%{tag: int(), arity: int()}), func_table: array()(string()), lambdas: array()(lifted_lambda()), lambda_counter: int(), func_wrapper_idx: map()(string())(int())}
+
+  def empty_ctx(mod_name) do
+    %{module_name: mod_name, module_funcs: Nova.Set.empty, func_arities: Nova.Map.empty, locals: Nova.Map.empty, local_count: 0, string_literals: [], string_table: Nova.Map.empty, data_constructors: prelude_constructors(), func_table: [], lambdas: [], lambda_counter: 0, func_wrapper_idx: Nova.Map.empty}
+  end
+
+  def prelude_constructors() do
+    Nova.Map.from_foldable([{:tuple, "Nothing", %{tag: 0, arity: 0}}, {:tuple, "Just", %{tag: 1, arity: 1}}, {:tuple, "Left", %{tag: 0, arity: 1}}, {:tuple, "Right", %{tag: 1, arity: 1}}, {:tuple, "Tuple", %{tag: 0, arity: 2}}, {:tuple, "Nil", %{tag: 0, arity: 0}}, {:tuple, "Cons", %{tag: 1, arity: 2}}, {:tuple, "TokKeyword", %{tag: 0, arity: 0}}, {:tuple, "TokIdentifier", %{tag: 1, arity: 0}}, {:tuple, "TokNumber", %{tag: 2, arity: 0}}, {:tuple, "TokString", %{tag: 3, arity: 0}}, {:tuple, "TokChar", %{tag: 4, arity: 0}}, {:tuple, "TokOperator", %{tag: 5, arity: 0}}, {:tuple, "TokDelimiter", %{tag: 6, arity: 0}}, {:tuple, "TokNewline", %{tag: 7, arity: 0}}, {:tuple, "TokUnrecognized", %{tag: 8, arity: 0}}])
+  end
+
+  def mangle_name(name) do
+    
+      escaped = Nova.String.replace_all(Nova.String.pattern("'"), Nova.String.replacement("_prime_"), name)
+      escaped2 = Nova.String.replace_all(Nova.String.pattern("."), Nova.String.replacement("_"), escaped)
+      Nova.Runtime.append("$", escaped2)
+  end
+
+  def collect_external_refs(({:expr_qualified, mod_name, name})) do
+    [{:tuple, mod_name, name}]
+  end
+
+  def collect_external_refs(({:expr_app, f, a})) do
+    Nova.Runtime.append(collect_external_refs(f), collect_external_refs(a))
+  end
+
+  def collect_external_refs(({:expr_lambda, _, body})) do
+    collect_external_refs(body)
+  end
+
+  def collect_external_refs(({:expr_let, binds, body})) do
+    Nova.Runtime.append(Nova.Array.concat_map(fn b -> collect_external_refs(b.value) end, binds), collect_external_refs(body))
+  end
+
+  def collect_external_refs(({:expr_if, c, t, e})) do
+    Nova.Runtime.append(collect_external_refs(c), Nova.Runtime.append(collect_external_refs(t), collect_external_refs(e)))
+  end
+
+  def collect_external_refs(({:expr_case, s, clauses})) do
+    Nova.Runtime.append(collect_external_refs(s), Nova.Array.concat_map(fn c -> collect_external_refs(c.body) end, clauses))
+  end
+
+  def collect_external_refs(({:expr_bin_op, _, l, r})) do
+    Nova.Runtime.append(collect_external_refs(l), collect_external_refs(r))
+  end
+
+  def collect_external_refs(({:expr_unary_op, _, e})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_list, es})) do
+    Nova.Array.concat_map((&collect_external_refs/1), es)
+  end
+
+  def collect_external_refs(({:expr_tuple, es})) do
+    Nova.Array.concat_map((&collect_external_refs/1), es)
+  end
+
+  def collect_external_refs(({:expr_record, fs})) do
+    Nova.Array.concat_map(fn ({:tuple, _, e}) -> collect_external_refs(e) end, fs)
+  end
+
+  def collect_external_refs(({:expr_record_access, e, _})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_record_update, e, fs})) do
+    Nova.Runtime.append(collect_external_refs(e), Nova.Array.concat_map(fn ({:tuple, _, ex}) -> collect_external_refs(ex) end, fs))
+  end
+
+  def collect_external_refs(({:expr_parens, e})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_do, stmts})) do
+    
+      collect_do_stmt_refs = fn auto_arg0 -> case auto_arg0 do
+        ({:do_expr, e}) -> collect_external_refs(e)
+        ({:do_bind, _, e}) -> collect_external_refs(e)
+        ({:do_let, binds}) -> Nova.Array.concat_map(fn b -> collect_external_refs(b.value) end, binds)
+      end end
+      Nova.Array.concat_map(collect_do_stmt_refs, stmts)
+  end
+
+  def collect_external_refs(({:expr_typed, e, _})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_section_left, e, _})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_section_right, _, e})) do
+    collect_external_refs(e)
+  end
+
+  def collect_external_refs(({:expr_var, name})) do
+    case Nova.String.index_of(Nova.String.pattern("."), name) do
+      {:just, idx} -> [{:tuple, Nova.String.take(idx, name), Nova.String.drop((idx + 1), name)}]
+      :nothing -> []
+    end
+  end
+
+  def collect_external_refs(_) do
+    []
+  end
+
+  def collect_decl_refs(({:decl_function, f})) do
+    collect_external_refs(f.body)
+  end
+
+  def collect_decl_refs(_) do
+    []
+  end
+
+  def collect_strings(({:expr_lit, ({:lit_string, s})})) do
+    [s]
+  end
+
+  def collect_strings(({:expr_app, f, a})) do
+    Nova.Runtime.append(collect_strings(f), collect_strings(a))
+  end
+
+  def collect_strings(({:expr_lambda, _, body})) do
+    collect_strings(body)
+  end
+
+  def collect_strings(({:expr_let, binds, body})) do
+    Nova.Runtime.append(Nova.Array.concat_map(fn b -> collect_strings(b.value) end, binds), collect_strings(body))
+  end
+
+  def collect_strings(({:expr_if, c, t, e})) do
+    Nova.Runtime.append(collect_strings(c), Nova.Runtime.append(collect_strings(t), collect_strings(e)))
+  end
+
+  def collect_strings(({:expr_case, s, clauses})) do
+    Nova.Runtime.append(collect_strings(s), Nova.Array.concat_map(fn c -> collect_strings(c.body) end, clauses))
+  end
+
+  def collect_strings(({:expr_bin_op, _, l, r})) do
+    Nova.Runtime.append(collect_strings(l), collect_strings(r))
+  end
+
+  def collect_strings(({:expr_unary_op, _, e})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(({:expr_list, es})) do
+    Nova.Array.concat_map((&collect_strings/1), es)
+  end
+
+  def collect_strings(({:expr_tuple, es})) do
+    Nova.Array.concat_map((&collect_strings/1), es)
+  end
+
+  def collect_strings(({:expr_record, fs})) do
+    Nova.Array.concat_map(fn ({:tuple, _, e}) -> collect_strings(e) end, fs)
+  end
+
+  def collect_strings(({:expr_record_access, e, _})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(({:expr_record_update, e, fs})) do
+    Nova.Runtime.append(collect_strings(e), Nova.Array.concat_map(fn ({:tuple, _, ex}) -> collect_strings(ex) end, fs))
+  end
+
+  def collect_strings(({:expr_parens, e})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(({:expr_do, stmts})) do
+    
+      collect_do_stmt = fn auto_arg0 -> case auto_arg0 do
+        ({:do_expr, e}) -> collect_strings(e)
+        ({:do_bind, _, e}) -> collect_strings(e)
+        ({:do_let, binds}) -> Nova.Array.concat_map(fn b -> collect_strings(b.value) end, binds)
+      end end
+      Nova.Array.concat_map(collect_do_stmt, stmts)
+  end
+
+  def collect_strings(({:expr_typed, e, _})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(({:expr_section_left, e, _})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(({:expr_section_right, _, e})) do
+    collect_strings(e)
+  end
+
+  def collect_strings(_) do
+    []
+  end
+
+  def collect_free_vars(bound, ({:expr_var, name})) do
+    if Nova.Set.member(name, bound) do
+      Nova.Set.empty
+    else
+      Nova.Set.singleton(name)
+    end
+  end
+
+  def collect_free_vars(bound, ({:expr_app, f, a})) do
+    Nova.Set.union(collect_free_vars(bound, f), collect_free_vars(bound, a))
+  end
+
+  def collect_free_vars(bound, ({:expr_lambda, pats, body})) do
+    
+      param_names = Nova.Set.from_foldable(Nova.Array.concat_map((&pattern_vars/1), pats))
+      bound_prime = Nova.Set.union(bound, param_names)
+      collect_free_vars(bound_prime, body)
+  end
+
+  def collect_free_vars(bound, ({:expr_let, binds, body})) do
+    
+      bind_names = Nova.Set.from_foldable(Nova.Array.concat_map(fn b -> pattern_vars(b.pattern) end, binds))
+      bind_free = Nova.Array.foldl(fn s -> fn b -> Nova.Set.union(s, collect_free_vars(bound, b.value)) end end, Nova.Set.empty, binds)
+      bound_prime = Nova.Set.union(bound, bind_names)
+      Nova.Set.union(bind_free, collect_free_vars(bound_prime, body))
+  end
+
+  def collect_free_vars(bound, ({:expr_if, c, t, e})) do
+    Nova.Set.union(collect_free_vars(bound, c), Nova.Set.union(collect_free_vars(bound, t), collect_free_vars(bound, e)))
+  end
+
+  def collect_free_vars(bound, ({:expr_case, s, clauses})) do
+    
+      scru_free = collect_free_vars(bound, s)
+      clause_free = Nova.Array.foldl(fn acc -> fn c -> 
+        pat_vars = Nova.Set.from_foldable(pattern_vars(c.pattern))
+        Nova.Set.union(acc, collect_free_vars(Nova.Set.union(bound, pat_vars), c.body)) end end, Nova.Set.empty, clauses)
+      Nova.Set.union(scru_free, clause_free)
+  end
+
+  def collect_free_vars(bound, ({:expr_bin_op, _, l, r})) do
+    Nova.Set.union(collect_free_vars(bound, l), collect_free_vars(bound, r))
+  end
+
+  def collect_free_vars(bound, ({:expr_unary_op, _, e})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(bound, ({:expr_list, es})) do
+    Nova.Array.foldl(fn s -> fn e -> Nova.Set.union(s, collect_free_vars(bound, e)) end end, Nova.Set.empty, es)
+  end
+
+  def collect_free_vars(bound, ({:expr_tuple, es})) do
+    Nova.Array.foldl(fn s -> fn e -> Nova.Set.union(s, collect_free_vars(bound, e)) end end, Nova.Set.empty, es)
+  end
+
+  def collect_free_vars(bound, ({:expr_record, fs})) do
+    Nova.Array.foldl(fn s -> fn ({:tuple, _, e}) -> Nova.Set.union(s, collect_free_vars(bound, e)) end end, Nova.Set.empty, fs)
+  end
+
+  def collect_free_vars(bound, ({:expr_record_access, e, _})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(bound, ({:expr_record_update, e, fs})) do
+    Nova.Set.union(collect_free_vars(bound, e), Nova.Array.foldl(fn s -> fn ({:tuple, _, ex}) -> Nova.Set.union(s, collect_free_vars(bound, ex)) end end, Nova.Set.empty, fs))
+  end
+
+  def collect_free_vars(bound, ({:expr_parens, e})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(bound, ({:expr_do, stmts})) do
+    collect_do_free_vars(bound, stmts)
+  end
+
+  def collect_free_vars(bound, ({:expr_typed, e, _})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(bound, ({:expr_section_left, e, _})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(bound, ({:expr_section_right, _, e})) do
+    collect_free_vars(bound, e)
+  end
+
+  def collect_free_vars(_, _) do
+    Nova.Set.empty
+  end
+
+  def collect_do_free_vars(b, arr) do
+    if Nova.Array.null(arr) do
+      Nova.Set.empty
+    else
+      collect_do_free_vars_helper(b, Nova.Array.uncons(arr))
+    end
+  end
+
+  def collect_do_free_vars_helper(_, :nothing) do
+    Nova.Set.empty
+  end
+
+  def collect_do_free_vars_helper(b, ({:just, %{head: {:do_expr, e}, tail: rest}})) do
+    Nova.Set.union(collect_free_vars(b, e), collect_do_free_vars(b, rest))
+  end
+
+  def collect_do_free_vars_helper(b, ({:just, %{head: {:do_bind, pat, e}, tail: rest}})) do
+    
+      pat_vars = Nova.Set.from_foldable(pattern_vars(pat))
+      Nova.Set.union(collect_free_vars(b, e), collect_do_free_vars(Nova.Set.union(b, pat_vars), rest))
+  end
+
+  def collect_do_free_vars_helper(b, ({:just, %{head: {:do_let, binds}, tail: rest}})) do
+    
+      b_prime = Nova.Set.union(b, Nova.Set.from_foldable(Nova.Array.concat_map(fn bn -> pattern_vars(bn.pattern) end, binds)))
+      Nova.Set.union(Nova.Array.foldl(fn s -> fn bn -> Nova.Set.union(s, collect_free_vars(b, bn.value)) end end, Nova.Set.empty, binds), collect_do_free_vars(b_prime, rest))
+  end
+
+  # @type lambda_collector :: %{counter: int(), lambdas: array()(lifted_lambda())}
+
+  def get_lambda_param_name(i, ({:pat_var, "_"})) do
+    Nova.Runtime.append("__w", Nova.Runtime.show(i))
+  end
+
+  def get_lambda_param_name(i, ({:pat_var, n})) do
+    n
+  end
+
+  def get_lambda_param_name(i, :pat_wildcard) do
+    Nova.Runtime.append("__w", Nova.Runtime.show(i))
+  end
+
+  def get_lambda_param_name(i, _) do
+    Nova.Runtime.append("__p", Nova.Runtime.show(i))
+  end
+
+  def collect_lambdas(bound, ({:expr_lambda, pats, body}), state) do
+    
+      param_names = Nova.Array.map_with_index((&get_lambda_param_name/2), pats)
+      bound_prime = Nova.Set.union(bound, Nova.Set.from_foldable(param_names))
+      lambda_params = Nova.Set.from_foldable(param_names)
+      state_prime = collect_lambdas(bound_prime, body, state)
+      free_vars = Nova.Set.to_unfoldable(collect_free_vars(lambda_params, body))
+      lambda = %{id: state_prime.counter, expr: Nova.Compiler.Ast.expr_lambda(pats, body), params: param_names, free_vars: free_vars, body: body}
+      %{counter: (state_prime.counter + 1), lambdas: Nova.Array.snoc(state_prime.lambdas, lambda)}
+  end
+
+  def collect_lambdas(bound, ({:expr_app, f, a}), state) do
+    collect_lambdas(bound, a, collect_lambdas(bound, f, state))
+  end
+
+  def collect_lambdas(bound, ({:expr_let, binds, body}), state) do
+    
+      bind_names = Nova.Set.from_foldable(Nova.Array.concat_map(fn b -> pattern_vars(b.pattern) end, binds))
+      state_prime = Nova.Array.foldl(fn s -> fn b -> collect_lambdas(bound, b.value, s) end end, state, binds)
+      bound_prime = Nova.Set.union(bound, bind_names)
+      collect_lambdas(bound_prime, body, state_prime)
+  end
+
+  def collect_lambdas(bound, ({:expr_if, c, t, e}), state) do
+    collect_lambdas(bound, e, collect_lambdas(bound, t, collect_lambdas(bound, c, state)))
+  end
+
+  def collect_lambdas(bound, ({:expr_case, s, clauses}), state) do
+    
+      state_prime = collect_lambdas(bound, s, state)
+      Nova.Array.foldl(fn st -> fn c -> 
+  pat_vars = Nova.Set.from_foldable(pattern_vars(c.pattern))
+  collect_lambdas(Nova.Set.union(bound, pat_vars), c.body, st) end end, state_prime, clauses)
+  end
+
+  def collect_lambdas(bound, ({:expr_bin_op, _, l, r}), state) do
+    collect_lambdas(bound, r, collect_lambdas(bound, l, state))
+  end
+
+  def collect_lambdas(bound, ({:expr_unary_op, _, e}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(bound, ({:expr_list, es}), state) do
+    Nova.Array.foldl(fn s -> fn e -> collect_lambdas(bound, e, s) end end, state, es)
+  end
+
+  def collect_lambdas(bound, ({:expr_tuple, es}), state) do
+    Nova.Array.foldl(fn s -> fn e -> collect_lambdas(bound, e, s) end end, state, es)
+  end
+
+  def collect_lambdas(bound, ({:expr_record, fs}), state) do
+    Nova.Array.foldl(fn s -> fn ({:tuple, _, e}) -> collect_lambdas(bound, e, s) end end, state, fs)
+  end
+
+  def collect_lambdas(bound, ({:expr_record_access, e, _}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(bound, ({:expr_record_update, e, fs}), state) do
+    
+      state_prime = collect_lambdas(bound, e, state)
+      Nova.Array.foldl(fn s -> fn ({:tuple, _, ex}) -> collect_lambdas(bound, ex, s) end end, state_prime, fs)
+  end
+
+  def collect_lambdas(bound, ({:expr_parens, e}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(bound, ({:expr_do, stmts}), state) do
+    
+      collect_do_lambdas = Nova.Runtime.fix3(fn collect_do_lambdas -> fn b -> fn arr -> fn st -> if Nova.Array.null(arr) do
+        st
+      else
+        case Nova.Array.uncons(arr) do
+          :nothing -> st
+          {:just, %{head: {:do_expr, e}, tail: rest}} -> collect_do_lambdas.(b).(rest).(collect_lambdas(b, e, st))
+          {:just, %{head: {:do_bind, pat, e}, tail: rest}} -> 
+              pat_vars = Nova.Set.from_foldable(pattern_vars(pat))
+              collect_do_lambdas.(Nova.Set.union(b, pat_vars)).(rest).(collect_lambdas(b, e, st))
+          {:just, %{head: {:do_let, binds}, tail: rest}} -> 
+              bind_names = Nova.Set.from_foldable(Nova.Array.concat_map(fn bn -> pattern_vars(bn.pattern) end, binds))
+              st_prime = Nova.Array.foldl(fn s -> fn bn -> collect_lambdas(b, bn.value, s) end end, st, binds)
+              b_prime = Nova.Set.union(b, bind_names)
+              collect_do_lambdas.(b_prime).(rest).(st_prime)
+        end
+      end  end end end end)
+      collect_do_lambdas.(bound).(stmts).(state)
+  end
+
+  def collect_lambdas(bound, ({:expr_typed, e, _}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(bound, ({:expr_section_left, e, _}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(bound, ({:expr_section_right, _, e}), state) do
+    collect_lambdas(bound, e, state)
+  end
+
+  def collect_lambdas(_, _, state) do
+    state
+  end
+
+  def collect_decl_lambdas(({:decl_function, f}), state) do
+    
+      param_names = Nova.Set.from_foldable(Nova.Array.concat_map((&pattern_vars/1), f.parameters))
+      collect_lambdas(param_names, f.body, state)
+  end
+
+  def collect_decl_lambdas(_, state) do
+    state
+  end
+
+  def add_locals_from_pattern(({:pat_var, name}), ctx) do
+    if Nova.Map.member(name, ctx.locals) do
+      ctx
+    else
+      %{ctx | locals: Nova.Map.insert(name, ctx.local_count, ctx.locals), local_count: (ctx.local_count + 1)}
+    end
+  end
+
+  def add_locals_from_pattern(:pat_wildcard, ctx) do
+    ctx
+  end
+
+  def add_locals_from_pattern(({:pat_lit, _}), ctx) do
+    ctx
+  end
+
+  def add_locals_from_pattern(({:pat_con, _, pats}), ctx) do
+    Nova.Runtime.foldr((&add_locals_from_pattern/2), ctx, pats)
+  end
+
+  def add_locals_from_pattern(({:pat_record, fields}), ctx) do
+    Nova.Runtime.foldr(fn ({:tuple, _, p}) -> fn c -> add_locals_from_pattern(p, c) end end, ctx, fields)
+  end
+
+  def add_locals_from_pattern(({:pat_list, pats}), ctx) do
+    Nova.Runtime.foldr((&add_locals_from_pattern/2), ctx, pats)
+  end
+
+  def add_locals_from_pattern(({:pat_cons, hd, tl}), ctx) do
+    add_locals_from_pattern(tl, add_locals_from_pattern(hd, ctx))
+  end
+
+  def add_locals_from_pattern(({:pat_as, name, pat}), ctx) do
+    
+      ctx_prime = add_locals_from_pattern(pat, ctx)
+      if Nova.Map.member(name, ctx_prime.locals) do
+  ctx_prime
+else
+  %{ctx_prime | locals: Nova.Map.insert(name, ctx_prime.local_count, ctx_prime.locals), local_count: (ctx_prime.local_count + 1)}
+end
+  end
+
+  def add_locals_from_pattern(({:pat_parens, p}), ctx) do
+    add_locals_from_pattern(p, ctx)
+  end
+
+  def pattern_vars(({:pat_var, name})) do
+    [name]
+  end
+
+  def pattern_vars(:pat_wildcard) do
+    []
+  end
+
+  def pattern_vars(({:pat_lit, _})) do
+    []
+  end
+
+  def pattern_vars(({:pat_con, _, pats})) do
+    Nova.Array.concat_map((&pattern_vars/1), pats)
+  end
+
+  def pattern_vars(({:pat_record, fields})) do
+    Nova.Array.concat_map(fn ({:tuple, _, p}) -> pattern_vars(p) end, fields)
+  end
+
+  def pattern_vars(({:pat_list, pats})) do
+    Nova.Array.concat_map((&pattern_vars/1), pats)
+  end
+
+  def pattern_vars(({:pat_cons, hd, tl})) do
+    Nova.Runtime.append(pattern_vars(hd), pattern_vars(tl))
+  end
+
+  def pattern_vars(({:pat_as, name, pat})) do
+    Nova.Runtime.append([name], pattern_vars(pat))
+  end
+
+  def pattern_vars(({:pat_parens, p})) do
+    pattern_vars(p)
+  end
+
+  # @type function_group :: %{name: string(), arity: int(), clauses: array()(function_declaration())}
+
+  def group_functions(funcs) do
+    
+      keys = Nova.Array.nub_by_eq(fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end, Nova.Runtime.map(fn f -> %{name: f.name, arity: Nova.Runtime.length(f.parameters)} end, funcs))
+      mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter(fn f -> ((f.name == k.name) and (Nova.Runtime.length(f.parameters) == k.arity)) end, funcs)} end
+      Nova.Runtime.map(mk_group, keys)
+  end
+
+  def collect_data_ctors(decls) do
+    
+      get_data = fn auto_arg0 -> case auto_arg0 do
+        ({:decl_data_type, d}) -> {:just, d}
+        _ -> :nothing
+      end end
+      
+  datas = Nova.Array.map_maybe(get_data, decls)
+  add_ctors = fn m -> fn d -> Nova.Runtime.foldr(fn ({:tuple, i, ctor}) -> fn acc -> Nova.Map.insert(ctor.name, %{tag: i, arity: Nova.Runtime.length(ctor.fields)}, acc) end end, m, Nova.Array.map_with_index(fn i -> fn c -> {:tuple, i, c} end end, d.constructors)) end end
+  Nova.Array.foldl(add_ctors, Nova.Map.empty, datas)
+  end
+
+  def gen_module_simple(m) do
+    Nova.Runtime.append("(module ;; ", Nova.Runtime.append(m.name, ")"))
+  end
+end

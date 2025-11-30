@@ -49,12 +49,12 @@ operators :: Array String
 operators =
   [ "==", "/=", "!=", "<=", ">=", "->", "<-", "::", "++"
   , "++=", ">>=", ">>", "<<", "&&", "||", "<>", ".."
-  , "+", "-", "*", "/", "<", ">", "=", "$", "`", ".", "|", "\\", "&", ":"
+  , "+", "-", "*", "/", "<", ">", "=", "$", "`", ".", "|", "\\", "&", ":", "@"
   ]
 
 -- | Single-char operator starters
 isOperatorChar :: Char -> Boolean
-isOperatorChar c = c `Array.elem` ['+', '-', '*', '/', '=', '<', '>', '!', ':', '.', '|', '\\', '&', '$', '`', '#']
+isOperatorChar c = c `Array.elem` ['+', '-', '*', '/', '=', '<', '>', '!', ':', '.', '|', '\\', '&', '$', '`', '#', '@']
 
 -- | Delimiter characters
 isDelimiter :: Char -> Boolean

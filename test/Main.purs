@@ -4,8 +4,18 @@ import Prelude
 
 import Effect (Effect)
 import Effect.Class.Console (log)
+import Test.Parser.ParserTest as ParserTest
+import Test.Parser.TestParenCase as TestParenCase
+import Test.Parser.TestAsPattern as TestAsPattern
 
 main :: Effect Unit
 main = do
-  log "🍝"
-  log "You should add some tests."
+  log "=== Running All Tests ==="
+  log ""
+  ParserTest.main
+  log ""
+  TestParenCase.main
+  log ""
+  TestAsPattern.main
+  log ""
+  log "=== All Tests Complete ==="

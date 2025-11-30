@@ -561,7 +561,7 @@ end, rest)
   end
 
   def parse_pattern(tokens) do
-    parse_any([(&parse_record_pattern/1), (&parse_wildcard_pattern/1), (&parse_cons_pattern/1), (&parse_constructor_pattern/1), (&parse_paren_pattern/1), (&parse_tuple_pattern/1), (&parse_list_pattern/1), (&parse_literal_pattern/1), (&parse_var_pattern/1)], tokens)
+    parse_any([(&parse_record_pattern/1), (&parse_wildcard_pattern/1), (&parse_cons_pattern/1), (&parse_constructor_pattern/1), (&parse_paren_pattern/1), (&parse_tuple_pattern/1), (&parse_list_pattern/1), (&parse_literal_pattern/1), (&parse_as_pattern/1), (&parse_var_pattern/1)], tokens)
   end
 
   def parse_var_pattern(tokens) do
@@ -574,6 +574,30 @@ end, rest)
       failure("Expected variable pattern")
     end
   :nothing -> failure("Expected variable pattern")
+end
+  end
+
+  def parse_as_pattern(tokens) do
+    
+      ts = skip_newlines(tokens)
+      case Nova.Array.head(ts) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value != "_")) do
+      case Nova.Array.head(Nova.Array.drop(1, ts)) do
+        {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "@")) do
+                  case parse_simple_pattern(Nova.Array.drop(2, ts)) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, pat, rest}} ->
+          success(Nova.Compiler.Ast.pat_as(t.value, pat), rest)
+      end
+          else
+            failure("Expected @ for as-pattern")
+          end
+        _ -> failure("Expected @ for as-pattern")
+      end
+    else
+      failure("Expected identifier for as-pattern")
+    end
+  :nothing -> failure("Expected identifier for as-pattern")
 end
   end
 
@@ -759,7 +783,7 @@ end
   end
 
   def parse_simple_pattern(tokens) do
-    parse_any([(&parse_literal_pattern/1), (&parse_record_pattern/1), (&parse_qualified_constructor_pattern_simple/1), (&parse_var_pattern/1), (&parse_paren_pattern/1), (&parse_tuple_pattern/1), (&parse_list_pattern/1)], tokens)
+    parse_any([(&parse_literal_pattern/1), (&parse_record_pattern/1), (&parse_qualified_constructor_pattern_simple/1), (&parse_as_pattern/1), (&parse_var_pattern/1), (&parse_paren_pattern/1), (&parse_tuple_pattern/1), (&parse_list_pattern/1)], tokens)
   end
 
   def parse_qualified_constructor_pattern_simple(tokens) do
@@ -1108,10 +1132,12 @@ end
           end
         _ -> false
       end end
-      case Nova.Array.head(tokens) do
+      
+  tokens_prime = skip_newlines(tokens)
+  case Nova.Array.head(tokens_prime) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-      case is_record_update.(Nova.Array.drop(1, tokens)) do
-        true ->      case parse_record_update_fields(Nova.Array.drop(1, tokens)) do
+      case is_record_update.(Nova.Array.drop(1, tokens_prime)) do
+        true ->      case parse_record_update_fields(Nova.Array.drop(1, tokens_prime)) do
        {:left, err} -> {:left, err}
        {:right, {:tuple, updates, rest}} ->
          case expect_delimiter(rest, "}") do
@@ -1747,6 +1773,14 @@ end
           end
         _ -> false
       end end
+      is_closing_delimiter = fn toks -> case Nova.Array.head(skip_newlines(toks)) do
+        {:just, t} -> if ((t.token_type == :tok_delimiter) and ((t.value == ")") or ((t.value == "]") or (t.value == "}")))) do
+            true
+          else
+            false
+          end
+        _ -> false
+      end end
       tokens_prime = skip_newlines(tokens)
 case Nova.Array.head(tokens_prime) do
   :nothing -> failure("No more tokens to parse")
@@ -1765,7 +1799,10 @@ case Nova.Array.head(tokens_prime) do
   [] -> success(%{pattern: pat, guard: guard, body: body}, drop_newlines(rest_prime_prime_prime))
   _ -> case has_more_guards.(remaining) do
       true -> success(%{pattern: pat, guard: guard, body: body}, Nova.Runtime.append(remaining, rest_prime_prime_prime))
-      false -> failure("Unexpected tokens after case-clause body")
+      false -> case is_closing_delimiter.(remaining) do
+          true -> success(%{pattern: pat, guard: guard, body: body}, Nova.Runtime.append(remaining, rest_prime_prime_prime))
+          false -> failure("Unexpected tokens after case-clause body")
+        end
     end
 end
           end
@@ -1871,13 +1908,13 @@ end
             rest = skip_newlines(Nova.Array.drop(1, tokens))
             case Nova.Array.head(rest) do
   {:just, t_prime} -> if (t_prime.column < indent) do
-      {:tuple, Nova.Array.reverse(acc), rest}
+      {:tuple, Nova.Array.reverse(acc), tokens}
     else
       if ((t_prime.column == indent) and clause_start(rest)) do
-        {:tuple, Nova.Array.reverse(acc), rest}
+        {:tuple, Nova.Array.reverse(acc), tokens}
       else
         if ((t_prime.token_type == :tok_operator) and ((t_prime.value == "|") and guard_start(rest))) do
-          {:tuple, Nova.Array.reverse(acc), rest}
+          {:tuple, Nova.Array.reverse(acc), tokens}
         else
           take_body(rest, Nova.Array.cons(t, acc), indent)
         end

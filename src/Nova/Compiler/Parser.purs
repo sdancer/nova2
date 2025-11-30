@@ -448,6 +448,7 @@ parsePattern tokens =
     , parseTuplePattern
     , parseListPattern
     , parseLiteralPattern
+    , parseAsPattern  -- Must come before parseVarPattern since x@(...) starts with identifier
     , parseVarPattern
     ]
     tokens
@@ -461,6 +462,26 @@ parseVarPattern tokens =
       then success (Ast.PatVar t.value) (Array.drop 1 ts)
       else failure "Expected variable pattern"
     Nothing -> failure "Expected variable pattern"
+
+-- | Parse as-pattern: name@pattern
+-- | Example: x@(Just y), e@(ExprLambda pats body)
+parseAsPattern :: Array Token -> ParseResult Ast.Pattern
+parseAsPattern tokens =
+  let ts = skipNewlines tokens
+  in case Array.head ts of
+    Just t ->
+      if t.tokenType == TokIdentifier && t.value /= "_"
+      then case Array.head (Array.drop 1 ts) of
+        Just t2 ->
+          if t2.tokenType == TokOperator && t2.value == "@"
+          then do
+            -- Parse the pattern after @
+            Tuple pat rest <- parseSimplePattern (Array.drop 2 ts)
+            success (Ast.PatAs t.value pat) rest
+          else failure "Expected @ for as-pattern"
+        _ -> failure "Expected @ for as-pattern"
+      else failure "Expected identifier for as-pattern"
+    Nothing -> failure "Expected identifier for as-pattern"
 
 parseWildcardPattern :: Array Token -> ParseResult Ast.Pattern
 parseWildcardPattern tokens =
@@ -585,6 +606,7 @@ parseSimplePattern tokens =
     [ parseLiteralPattern
     , parseRecordPattern  -- Added to handle { field, ... } patterns in constructor arguments
     , parseQualifiedConstructorPatternSimple  -- Must be before parseVarPattern to handle Ast.PatWildcard
+    , parseAsPattern  -- Must come before parseVarPattern since x@(...) starts with identifier
     , parseVarPattern
     , parseParenPattern  -- Must come before parseTuplePattern to handle (h : t)
     , parseTuplePattern
@@ -865,16 +887,19 @@ parseApplication tokens =
 
 -- | Parse record update syntax: expr { field = value, ... }
 -- | Returns the original expression unchanged if not followed by update syntax
+-- | Supports multiline: expr \n { field = value }
 maybeParseRecordUpdate :: Ast.Expr -> Array Token -> ParseResult Ast.Expr
 maybeParseRecordUpdate expr tokens =
-  case Array.head tokens of
+  -- Skip newlines to support multiline record updates
+  let tokens' = skipNewlines tokens
+  in case Array.head tokens' of
     Just t ->
       if t.tokenType == TokDelimiter && t.value == "{"
       then
         -- Check if this is a record update (uses =) or literal (uses :)
-        case isRecordUpdate (Array.drop 1 tokens) of
+        case isRecordUpdate (Array.drop 1 tokens') of
           true -> do
-            Tuple updates rest <- parseRecordUpdateFields (Array.drop 1 tokens)
+            Tuple updates rest <- parseRecordUpdateFields (Array.drop 1 tokens')
             Tuple _ rest' <- expectDelimiter rest "}"
             -- Recursively check for chained updates
             maybeParseRecordUpdate (Ast.ExprRecordUpdate expr updates) rest'
@@ -1330,7 +1355,10 @@ parseCaseClause tokens = do
         _ -> case hasMoreGuards remaining of
           -- Concatenate remaining guards with rest''' (tokens after the body)
           true -> success { pattern: pat, guard: guard, body: body } (remaining <> rest''')
-          false -> failure "Unexpected tokens after case-clause body"
+          -- Check if remaining starts with closing delimiter - return them as leftover
+          false -> case isClosingDelimiter remaining of
+            true -> success { pattern: pat, guard: guard, body: body } (remaining <> rest''')
+            false -> failure "Unexpected tokens after case-clause body"
   where
     -- Check if remaining tokens look like another guard (| guard -> ...)
     hasMoreGuards :: Array Token -> Boolean
@@ -1338,6 +1366,17 @@ parseCaseClause tokens = do
       case Array.head (skipNewlines toks) of
         Just t ->
           if t.tokenType == TokOperator && t.value == "|"
+          then true
+          else false
+        _ -> false
+
+    -- Check if remaining tokens start with a closing delimiter
+    -- These belong to an enclosing expression and should be returned
+    isClosingDelimiter :: Array Token -> Boolean
+    isClosingDelimiter toks =
+      case Array.head (skipNewlines toks) of
+        Just t ->
+          if t.tokenType == TokDelimiter && (t.value == ")" || t.value == "]" || t.value == "}")
           then true
           else false
         _ -> false
@@ -1428,12 +1467,14 @@ takeBody tokens acc indent =
         case Array.head rest of
           Just t' ->
             if t'.column < indent
-            then Tuple (Array.reverse acc) rest
+            -- Preserve newline tokens for proper line tracking in parent parsers
+            then Tuple (Array.reverse acc) tokens
             else if t'.column == indent && clauseStart rest
-            then Tuple (Array.reverse acc) rest
+            -- Preserve newline tokens for proper line tracking in parent parsers
+            then Tuple (Array.reverse acc) tokens
             -- Check for additional guard (| guard -> ...) - stop before it
             else if t'.tokenType == TokOperator && t'.value == "|" && guardStart rest
-            then Tuple (Array.reverse acc) rest
+            then Tuple (Array.reverse acc) tokens
             -- Continue collecting body tokens on next line (indented continuation)
             -- Include a newline token so nested case expressions can parse correctly
             else takeBody rest (Array.cons t acc) indent

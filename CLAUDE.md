@@ -78,6 +78,14 @@ After making changes to the PureScript source:
 - `test/` - PureScript tests (parser tests in `test/parser/`)
 - `nova_lang/test/` - Elixir tests for compiled output (namespace service, code generation)
 
+## Parser/Tokenizer Development Guidelines
+
+When fixing bugs in the Parser or Tokenizer:
+
+1. **Create a test first**: For each parser problem found, add a test case to `test/parser/` that reproduces the issue
+2. **Run full parser tests**: After any modification to Parser.purs or Tokenizer.purs, run `npx spago test` to ensure no regressions
+3. **Test the fix**: Verify the new test passes after the fix
+
 ## MCP Interface (AI Agent Dev Environment)
 
 The Nova MCP server (`nova mcp`) exposes the compiler as a service for AI agents to programmatically write, validate, and compile Nova code. This is NOT an LSP - it's a development environment designed for AI agents.
