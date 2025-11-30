@@ -716,7 +716,7 @@ parseDollarExpression tokens = do
 -- | x # f == f x
 parseHashExpression :: Array Token -> ParseResult Ast.Expr
 parseHashExpression tokens = do
-  Tuple left rest <- parseLogicalExpression tokens
+  Tuple left rest <- parseCompositionExpression tokens
   parseHashExpressionRest left rest
 
 parseHashExpressionRest :: Ast.Expr -> Array Token -> ParseResult Ast.Expr
@@ -727,11 +727,27 @@ parseHashExpressionRest left tokens =
       if t.tokenType == TokOperator && t.value == "#"
       then do
         let rest = skipNewlines (Array.drop 1 tokens')
-        Tuple right rest' <- parseLogicalExpression rest
+        Tuple right rest' <- parseCompositionExpression rest
         -- x # f becomes (f x)
         parseHashExpressionRest (Ast.ExprApp right left) rest'
       else success left tokens
     _ -> success left tokens
+
+-- | Parse composition operators (<<<, >>>, >>, etc.)
+-- | Right associative for >>> and >>, left associative for <<<
+parseCompositionExpression :: Array Token -> ParseResult Ast.Expr
+parseCompositionExpression tokens = do
+  Tuple left rest <- parseLogicalExpression tokens
+  case Array.head rest of
+    Just t ->
+      if t.tokenType == TokOperator && isCompositionOp t.value
+      then do
+        Tuple right rest' <- parseCompositionExpression (Array.drop 1 rest)
+        success (Ast.ExprBinOp t.value left right) rest'
+      else success left rest
+    _ -> success left rest
+  where
+    isCompositionOp op = op == "<<<" || op == ">>>" || op == ">>" || op == ">>="
 
 parseLogicalExpression :: Array Token -> ParseResult Ast.Expr
 parseLogicalExpression tokens = do
@@ -874,16 +890,33 @@ parseApplication tokens =
   case Array.head tokens of
     Just firstTok -> do
       Tuple fn rest <- parseTerm tokens
+      -- Check for record access: expr.field
+      Tuple fn' rest' <- maybeParseRecordAccess fn rest
       -- Check for record update: expr { field = value }
-      Tuple fn' rest' <- maybeParseRecordUpdate fn rest
-      let Tuple args rest'' = collectApplicationArgs rest' [] firstTok.column
+      Tuple fn'' rest'' <- maybeParseRecordUpdate fn' rest'
+      let Tuple args rest''' = collectApplicationArgs rest'' [] firstTok.column
       case Array.length args of
-        0 -> success fn' rest''
-        _ -> success (foldApp fn' args) rest''
+        0 -> success fn'' rest'''
+        _ -> success (foldApp fn'' args) rest'''
     Nothing -> failure "No tokens remaining"
   where
     foldApp :: Ast.Expr -> Array Ast.Expr -> Ast.Expr
     foldApp fn args = Array.foldl Ast.ExprApp fn args
+
+    -- Check for record field access: expr.field1.field2...
+    maybeParseRecordAccess :: Ast.Expr -> Array Token -> ParseResult Ast.Expr
+    maybeParseRecordAccess expr toks =
+      case Array.head toks of
+        Just t ->
+          if t.tokenType == TokOperator && t.value == "."
+          then case Array.head (Array.drop 1 toks) of
+            Just fld ->
+              if fld.tokenType == TokIdentifier
+              then maybeParseRecordAccess (Ast.ExprRecordAccess expr fld.value) (Array.drop 2 toks)
+              else success expr toks  -- Not a field name, return as-is
+            _ -> success expr toks  -- No field name after dot
+          else success expr toks  -- No dot, return as-is
+        _ -> success expr toks
 
 -- | Parse record update syntax: expr { field = value, ... }
 -- | Returns the original expression unchanged if not followed by update syntax
@@ -1163,12 +1196,65 @@ parseLetExpression tokens = do
   let tokens' = skipNewlines tokens
   Tuple _ rest <- expectKeyword tokens' "let"
   let rest' = skipNewlines rest
-  Tuple bindings rest'' <- parseMany parseBinding rest'
+  -- Use custom collector that handles type signatures
+  Tuple bindings rest'' <- collectLetBindings rest' []
   let rest''' = skipNewlines rest''
   Tuple _ rest4 <- expectKeyword rest''' "in"
   let rest5 = skipNewlines rest4
   Tuple body rest6 <- parseExpression rest5
   success (Ast.ExprLet bindings body) rest6
+  where
+    -- Collect let bindings, skipping type signatures
+    collectLetBindings :: Array Token -> Array Ast.LetBind -> ParseResult (Array Ast.LetBind)
+    collectLetBindings toks acc = do
+      let toks' = skipNewlines toks
+      case Array.head toks' of
+        Just t ->
+          -- Check for 'in' keyword - end of bindings
+          if t.tokenType == TokKeyword && t.value == "in"
+          then success acc toks'
+          -- Check for type signature (name ::) - skip it
+          else if isTypeSignatureLine toks'
+          then collectLetBindings (skipToNextLetLine toks') acc
+          -- Try to parse a binding
+          else case parseBinding toks' of
+            Right (Tuple bind rest) -> collectLetBindings rest (Array.snoc acc bind)
+            Left _ -> success acc toks'  -- Stop on parse failure, return what we have
+        _ -> success acc toks'
+
+    -- Check if the token stream starts with "name ::" (a type signature)
+    isTypeSignatureLine :: Array Token -> Boolean
+    isTypeSignatureLine toks =
+      case Array.head toks of
+        Just t1 ->
+          if t1.tokenType == TokIdentifier
+          then case Array.head (Array.drop 1 toks) of
+            Just t2 ->
+              if t2.tokenType == TokOperator && t2.value == "::"
+              then true
+              else false
+            _ -> false
+          else false
+        _ -> false
+
+    -- Skip tokens until we hit a newline followed by content at same or lower indent
+    skipToNextLetLine :: Array Token -> Array Token
+    skipToNextLetLine toks =
+      case Array.head toks of
+        Just t ->
+          if t.tokenType == TokNewline
+          then
+            let rest = Array.drop 1 toks
+            in case Array.head rest of
+              Just t' ->
+                if t'.tokenType == TokKeyword && t'.value == "in"
+                then rest  -- Stop before 'in'
+                else if t'.tokenType == TokNewline
+                then skipToNextLetLine rest
+                else rest  -- Return tokens starting at next line
+              _ -> rest
+          else skipToNextLetLine (Array.drop 1 toks)
+        _ -> toks
 
 parseBinding :: Array Token -> ParseResult Ast.LetBind
 parseBinding tokens = do
@@ -1474,6 +1560,9 @@ takeBody tokens acc indent =
             then Tuple (Array.reverse acc) tokens
             -- Check for additional guard (| guard -> ...) - stop before it
             else if t'.tokenType == TokOperator && t'.value == "|" && guardStart rest
+            then Tuple (Array.reverse acc) tokens
+            -- Check for 'where' keyword - always stop (belongs to enclosing function, not case body)
+            else if t'.tokenType == TokKeyword && t'.value == "where"
             then Tuple (Array.reverse acc) tokens
             -- Continue collecting body tokens on next line (indented continuation)
             -- Include a newline token so nested case expressions can parse correctly
@@ -2346,7 +2435,8 @@ maybeParseWhere tokens _ body = do
             rest = skipNewlines (Array.drop 1 tokens')
         in case Array.head rest of
           Just firstTok ->
-            if firstTok.column > whereCol
+            -- Allow bindings at same column as 'where' (common PureScript style)
+            if firstTok.column >= whereCol
             then do
               Tuple bindings rest' <- collectWhereBindings rest whereCol []
               success (Ast.ExprLet bindings body) rest'
@@ -2360,7 +2450,8 @@ collectWhereBindings tokens whereCol acc = do
   let tokens' = skipNewlines tokens
   case Array.head tokens' of
     Just t ->
-      if t.column > whereCol
+      -- Allow bindings at same column as 'where' (common PureScript style)
+      if t.column >= whereCol
       then do
         -- Check if this is a type signature (name ::) or a function definition (name params =)
         case isTypeSignatureLine tokens' of

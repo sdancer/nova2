@@ -50,6 +50,7 @@ const modules = [
   ['Unify', base + 'Unify.purs', [base + 'Types.purs']],
   ['TypeChecker', base + 'TypeChecker.purs', [base + 'Ast.purs', base + 'Types.purs', base + 'Unify.purs']],
   ['CodeGen', base + 'CodeGen.purs', [base + 'Ast.purs']],
+  ['CodeGenCoreErlang', base + 'CodeGenCoreErlang.purs', [base + 'Ast.purs']],
   ['CodeGenWasmSimple', base + 'CodeGenWasmSimple.purs', [base + 'Ast.purs']],
   ['Parser', base + 'Parser.purs', [base + 'Ast.purs', base + 'Tokenizer.purs']],
   ['Dependencies', base + 'Dependencies.purs', [base + 'Ast.purs']],

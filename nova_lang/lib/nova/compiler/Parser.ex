@@ -892,7 +892,7 @@ end
   end
 
   def parse_hash_expression(tokens) do
-      case parse_logical_expression(tokens) do
+      case parse_composition_expression(tokens) do
     {:left, err} -> {:left, err}
     {:right, {:tuple, left, rest}} ->
       parse_hash_expression_rest(left, rest)
@@ -905,7 +905,7 @@ end
       case Nova.Array.head(tokens_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "#")) do
             rest = skip_newlines(Nova.Array.drop(1, tokens_prime))
-   case parse_logical_expression(rest) do
+   case parse_composition_expression(rest) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
        parse_hash_expression_rest(Nova.Compiler.Ast.expr_app(right, left), rest_prime)
@@ -914,6 +914,27 @@ end
       success(left, tokens)
     end
   _ -> success(left, tokens)
+end
+  end
+
+  def parse_composition_expression(tokens) do
+    
+      is_composition_op = fn op -> ((op == "<<<") or ((op == ">>>") or ((op == ">>") or (op == ">>=")))) end
+      case parse_logical_expression(tokens) do
+  {:left, err} -> {:left, err}
+  {:right, {:tuple, left, rest}} ->
+    case Nova.Array.head(rest) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_composition_op.(t.value)) do
+         case parse_composition_expression(Nova.Array.drop(1, rest)) do
+     {:left, err} -> {:left, err}
+     {:right, {:tuple, right, rest_prime}} ->
+       success(Nova.Compiler.Ast.expr_bin_op(t.value, left, right), rest_prime)
+   end
+    else
+      success(left, rest)
+    end
+  _ -> success(left, rest)
+end
 end
   end
 
@@ -1097,18 +1118,37 @@ end
   def parse_application(tokens) do
     
       fold_app = fn fn_ -> fn args -> Nova.Array.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, fn_, args) end end
+      maybe_parse_record_access = Nova.Runtime.fix2(fn maybe_parse_record_access -> fn expr -> fn toks -> case Nova.Array.head(toks) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ".")) do
+            case Nova.Array.head(Nova.Array.drop(1, toks)) do
+              {:just, fld} -> if (fld.token_type == :tok_identifier) do
+                  maybe_parse_record_access.(Nova.Compiler.Ast.expr_record_access(expr, fld.value)).(Nova.Array.drop(2, toks))
+                else
+                  success(expr, toks)
+                end
+              _ -> success(expr, toks)
+            end
+          else
+            success(expr, toks)
+          end
+        _ -> success(expr, toks)
+      end  end end end)
       case Nova.Array.head(tokens) do
   {:just, first_tok} ->   case parse_term(tokens) do
     {:left, err} -> {:left, err}
     {:right, {:tuple, fn_, rest}} ->
-      case maybe_parse_record_update(fn_, rest) do
+      case maybe_parse_record_access.(fn_).(rest) do
         {:left, err} -> {:left, err}
         {:right, {:tuple, fn_prime, rest_prime}} ->
-                    {:tuple, args, rest_prime_prime} = collect_application_args(rest_prime, [], first_tok.column)
-          case Nova.Array.length(args) do
-  0 -> success(fn_prime, rest_prime_prime)
-  _ -> success(fold_app.(fn_prime).(args), rest_prime_prime)
+          case maybe_parse_record_update(fn_prime, rest_prime) do
+            {:left, err} -> {:left, err}
+            {:right, {:tuple, fn_prime_prime, rest_prime_prime}} ->
+                            {:tuple, args, rest_prime_prime_prime} = collect_application_args(rest_prime_prime, [], first_tok.column)
+              case Nova.Array.length(args) do
+  0 -> success(fn_prime_prime, rest_prime_prime_prime)
+  _ -> success(fold_app.(fn_prime_prime).(args), rest_prime_prime_prime)
 end
+          end
       end
   end
   :nothing -> failure("No tokens remaining")
@@ -1539,27 +1579,80 @@ end
   end
 
   def parse_let_expression(tokens) do
-        tokens_prime = skip_newlines(tokens)
-  case expect_keyword(tokens_prime, "let") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case parse_many((&parse_binding/1), rest_prime) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, bindings, rest_prime_prime}} ->
-                    rest_prime_prime_prime = skip_newlines(rest_prime_prime)
-          case expect_keyword(rest_prime_prime_prime, "in") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest4}} ->
-                            rest5 = skip_newlines(rest4)
-              case parse_expression(rest5) do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, body, rest6}} ->
-                  success(Nova.Compiler.Ast.expr_let(bindings, body), rest6)
-              end
+    
+      is_type_signature_line = fn toks -> case Nova.Array.head(toks) do
+        {:just, t1} -> if (t1.token_type == :tok_identifier) do
+            case Nova.Array.head(Nova.Array.drop(1, toks)) do
+              {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "::")) do
+                  true
+                else
+                  false
+                end
+              _ -> false
+            end
+          else
+            false
           end
+        _ -> false
+      end end
+      skip_to_next_let_line = Nova.Runtime.fix(fn skip_to_next_let_line -> fn toks -> case Nova.Array.head(toks) do
+        {:just, t} -> if (t.token_type == :tok_newline) do
+            
+              rest = Nova.Array.drop(1, toks)
+              case Nova.Array.head(rest) do
+  {:just, t_prime} -> if ((t_prime.token_type == :tok_keyword) and (t_prime.value == "in")) do
+      rest
+    else
+      if (t_prime.token_type == :tok_newline) do
+        skip_to_next_let_line.(rest)
+      else
+        rest
       end
-  end
+    end
+  _ -> rest
+end
+          else
+            skip_to_next_let_line.(Nova.Array.drop(1, toks))
+          end
+        _ -> toks
+      end  end end)
+      collect_let_bindings = Nova.Runtime.fix2(fn collect_let_bindings -> fn toks -> fn acc ->       toks_prime = skip_newlines(toks)
+   case Nova.Array.head(toks_prime) do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "in")) do
+      success(acc, toks_prime)
+    else
+      if is_type_signature_line.(toks_prime) do
+        collect_let_bindings.(skip_to_next_let_line.(toks_prime)).(acc)
+      else
+        case parse_binding(toks_prime) do
+          {:right, ({:tuple, bind, rest})} -> collect_let_bindings.(rest).(Nova.Array.snoc(acc, bind))
+          {:left, _} -> success(acc, toks_prime)
+        end
+      end
+    end
+  _ -> success(acc, toks_prime)
+end  end end end)
+      tokens_prime = skip_newlines(tokens)
+case expect_keyword(tokens_prime, "let") do
+  {:left, err} -> {:left, err}
+  {:right, {:tuple, _, rest}} ->
+        rest_prime = skip_newlines(rest)
+    case collect_let_bindings.(rest_prime).([]) do
+      {:left, err} -> {:left, err}
+      {:right, {:tuple, bindings, rest_prime_prime}} ->
+                rest_prime_prime_prime = skip_newlines(rest_prime_prime)
+        case expect_keyword(rest_prime_prime_prime, "in") do
+          {:left, err} -> {:left, err}
+          {:right, {:tuple, _, rest4}} ->
+                        rest5 = skip_newlines(rest4)
+            case parse_expression(rest5) do
+              {:left, err} -> {:left, err}
+              {:right, {:tuple, body, rest6}} ->
+                success(Nova.Compiler.Ast.expr_let(bindings, body), rest6)
+            end
+        end
+    end
+end
   end
 
   def parse_binding(tokens) do
@@ -1916,7 +2009,11 @@ end
         if ((t_prime.token_type == :tok_operator) and ((t_prime.value == "|") and guard_start(rest))) do
           {:tuple, Nova.Array.reverse(acc), tokens}
         else
-          take_body(rest, Nova.Array.cons(t, acc), indent)
+          if ((t_prime.token_type == :tok_keyword) and (t_prime.value == "where")) do
+            {:tuple, Nova.Array.reverse(acc), tokens}
+          else
+            take_body(rest, Nova.Array.cons(t, acc), indent)
+          end
         end
       end
     end
@@ -3067,7 +3164,7 @@ end
         where_col = t.column
         rest = skip_newlines(Nova.Array.drop(1, tokens_prime))
         case Nova.Array.head(rest) do
-  {:just, first_tok} -> if (first_tok.column > where_col) do
+  {:just, first_tok} -> if (first_tok.column >= where_col) do
          case collect_where_bindings(rest, where_col, []) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, bindings, rest_prime}} ->
@@ -3129,7 +3226,7 @@ end
       end  end end)
       tokens_prime = skip_newlines(tokens)
 case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (t.column > where_col) do
+  {:just, t} -> if (t.column >= where_col) do
          case is_type_signature_line.(tokens_prime) do
   true ->     rest = skip_to_next_line.(tokens_prime)
   collect_where_bindings(rest, where_col, acc)
