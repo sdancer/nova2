@@ -26,6 +26,7 @@ defmodule Nova.MCPServer do
 
   ### Code Intelligence
   - `get_completions` - Get code completions for a prefix
+  - `search_declarations` - Search for text within declaration source code
 
   ## Usage
 
@@ -274,6 +275,32 @@ defmodule Nova.MCPServer do
             }
           },
           required: ["namespace", "prefix"]
+        }
+      },
+      %{
+        name: "search_declarations",
+        description: "Search for text within declaration source code across namespaces. Returns matching declarations with context.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "query" => %{
+              type: "string",
+              description: "The text to search for (case-insensitive substring match)"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "Optional: limit search to a specific namespace"
+            },
+            "kind" => %{
+              type: "string",
+              description: "Optional: filter by declaration kind (function, data, newtype, type_alias, class, instance)"
+            },
+            "include_source" => %{
+              type: "boolean",
+              description: "Whether to include full source code in results (default: false, shows snippet)"
+            }
+          },
+          required: ["query"]
         }
       },
 
@@ -708,6 +735,9 @@ defmodule Nova.MCPServer do
           {:error, reason} -> {:error, format_error(reason)}
         end
 
+      "search_declarations" ->
+        search_declarations(svc, args["query"], args["namespace"], args["kind"], args["include_source"])
+
       # Imports
       "add_import" ->
         case Nova.NamespaceService.add_import(svc, args["namespace"], args["imported_namespace"]) do
@@ -812,6 +842,103 @@ defmodule Nova.MCPServer do
 
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason), do: inspect(reason)
+
+  # ============================================================================
+  # Search Declarations
+  # ============================================================================
+
+  defp search_declarations(svc, query, namespace, kind, include_source) do
+    include_source = include_source || false
+    query_lower = String.downcase(query)
+
+    # Get namespaces to search
+    namespaces = case namespace do
+      nil ->
+        {:ok, all} = Nova.NamespaceService.list_namespaces(svc)
+        all
+      ns -> [ns]
+    end
+
+    # Normalize kind filter
+    kind_filter = if kind do
+      String.to_atom(kind)
+    else
+      nil
+    end
+
+    # Search all declarations in each namespace
+    results = Enum.flat_map(namespaces, fn ns ->
+      case Nova.NamespaceService.list_declarations(svc, ns) do
+        {:ok, decls} ->
+          decls
+          |> Enum.filter(fn decl ->
+            # Apply kind filter if specified
+            kind_matches = kind_filter == nil or decl.kind == kind_filter
+
+            if kind_matches do
+              # Get full declaration to access source_text
+              case Nova.NamespaceService.get_declaration(svc, ns, decl.name) do
+                {:ok, full_decl} ->
+                  source = full_decl.source_text || ""
+                  String.contains?(String.downcase(source), query_lower)
+                _ -> false
+              end
+            else
+              false
+            end
+          end)
+          |> Enum.map(fn decl ->
+            # Get full declaration for source
+            {:ok, full_decl} = Nova.NamespaceService.get_declaration(svc, ns, decl.name)
+            source = full_decl.source_text || ""
+
+            # Create snippet showing context around match
+            snippet = if include_source do
+              source
+            else
+              create_search_snippet(source, query_lower)
+            end
+
+            %{
+              namespace: ns,
+              id: decl.decl_id,
+              name: decl.name,
+              kind: to_string(decl.kind),
+              snippet: snippet,
+              line_count: length(String.split(source, "\n"))
+            }
+          end)
+        {:error, _} -> []
+      end
+    end)
+
+    {:ok, %{
+      query: query,
+      total_matches: length(results),
+      results: results
+    }}
+  end
+
+  defp create_search_snippet(source, query_lower) do
+    lines = String.split(source, "\n")
+
+    # Find lines containing the query
+    matching_lines = lines
+    |> Enum.with_index(1)
+    |> Enum.filter(fn {line, _idx} ->
+      String.contains?(String.downcase(line), query_lower)
+    end)
+    |> Enum.take(3)  # Limit to first 3 matches
+
+    if Enum.empty?(matching_lines) do
+      # Shouldn't happen, but fallback to first few lines
+      lines |> Enum.take(3) |> Enum.join("\n")
+    else
+      matching_lines
+      |> Enum.map(fn {line, idx} -> "#{idx}: #{String.trim(line)}" end)
+      |> Enum.join("\n")
+    end
+  end
 
   defp format_type(nil), do: "unknown"
   defp format_type(type), do: pretty_type(type)
