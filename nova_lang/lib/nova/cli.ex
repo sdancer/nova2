@@ -8,8 +8,8 @@ defmodule Nova.CLI do
       {:compile, files, opts} ->
         compile_files(files, opts)
 
-      {:mcp, _opts} ->
-        start_mcp_server()
+      {:mcp, opts} ->
+        start_mcp_server(opts)
 
       {:help, _} ->
         print_help()
@@ -23,13 +23,16 @@ defmodule Nova.CLI do
     end
   end
 
-  defp start_mcp_server do
-    # Suppress Elixir logger output to stderr to keep MCP stdio clean
+  defp start_mcp_server(opts \\ %{}) do
+    port = Map.get(opts, :port, 9999)
+
+    # Suppress Elixir logger output to keep MCP protocol clean
     Logger.configure(level: :none)
 
     {:ok, _server} = ExMCP.Server.start_link(
       handler: Nova.MCPServer,
-      transport: Nova.MCPStdioTransport
+      transport: Nova.MCPTcpTransport,
+      port: port
     )
 
     # Keep the process alive
@@ -37,7 +40,7 @@ defmodule Nova.CLI do
   end
 
   defp parse_args(args) do
-    parse_args(args, %{output_dir: ".", files: [], deps: []})
+    parse_args(args, %{output_dir: ".", files: [], deps: [], port: 9999})
   end
 
   defp parse_args([], acc) do
@@ -48,7 +51,24 @@ defmodule Nova.CLI do
     end
   end
 
-  defp parse_args(["mcp" | _rest], acc), do: {:mcp, acc}
+  defp parse_args(["mcp" | rest], acc) do
+    parse_mcp_args(rest, acc)
+  end
+
+  defp parse_mcp_args([], acc), do: {:mcp, acc}
+  defp parse_mcp_args(["--port", port_str | rest], acc) do
+    case Integer.parse(port_str) do
+      {port, ""} -> parse_mcp_args(rest, %{acc | port: port})
+      _ -> {:error, "Invalid port number: #{port_str}"}
+    end
+  end
+  defp parse_mcp_args(["-p", port_str | rest], acc) do
+    parse_mcp_args(["--port", port_str | rest], acc)
+  end
+  defp parse_mcp_args([unknown | _], _acc) do
+    {:error, "Unknown mcp option: #{unknown}"}
+  end
+
   defp parse_args(["--help" | _], acc), do: {:help, acc}
   defp parse_args(["-h" | _], acc), do: {:help, acc}
   defp parse_args(["--version" | _], acc), do: {:version, acc}
@@ -143,11 +163,16 @@ defmodule Nova.CLI do
     Usage: nova [command] [options] <files...>
 
     Commands:
-      mcp                 Start MCP (Model Context Protocol) server
+      mcp [options]       Start MCP (Model Context Protocol) server over TCP
 
-    Options:
+    Compile Options:
       -o, --output DIR    Output directory (default: current directory)
       -d, --dep FILE      Add a dependency file (can be used multiple times)
+
+    MCP Options:
+      -p, --port PORT     TCP port to listen on (default: 9999)
+
+    General Options:
       -h, --help          Show this help message
       -v, --version       Show version
 
@@ -155,7 +180,8 @@ defmodule Nova.CLI do
       nova src/MyModule.purs
       nova -o lib/ src/*.purs
       nova -d src/Types.purs -d src/Ast.purs src/Parser.purs
-      nova mcp                              # Start MCP server
+      nova mcp                              # Start MCP server on port 9999
+      nova mcp --port 8080                  # Start MCP server on port 8080
     """)
   end
 end
