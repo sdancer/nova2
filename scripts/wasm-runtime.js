@@ -185,10 +185,12 @@ class NovaRuntime {
               const result = closure.func(arg);
               return result;
             }
-            if (closure && closure.funcIdx !== undefined) {
-              // This is a WASM function closure - would need indirect call
-              console.warn('WASM closure apply not yet supported');
-              return arg;
+            if (closure && closure.funcIdx !== undefined && this.wasmTable) {
+              // This is a WASM function closure - call via indirect call
+              const func = this.wasmTable.get(closure.funcIdx);
+              if (func) {
+                return func(closure.envPtr, arg);
+              }
             }
           }
           // If closureVal is itself a function (direct JS function), call it
@@ -275,6 +277,10 @@ class NovaRuntime {
   setMemory(mem) {
     this.memory = mem;
   }
+
+  setTable(table) {
+    this.wasmTable = table;
+  }
 }
 
 // Load and run a WAT file
@@ -291,6 +297,11 @@ async function loadWat(watPath) {
 
   if (instance.exports.memory) {
     runtime.setMemory(instance.exports.memory);
+  }
+
+  // Capture function table for indirect calls (closures)
+  if (instance.exports.__indirect_function_table) {
+    runtime.setTable(instance.exports.__indirect_function_table);
   }
 
   return { instance, runtime };

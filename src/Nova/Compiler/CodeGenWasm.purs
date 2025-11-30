@@ -16,12 +16,8 @@ import Data.Int as Int
 import Data.Enum (fromEnum)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr, DataType, DataConstructor)
 import Nova.Compiler.RefEq (refEqExpr)
-
-unsafeHead :: forall a. Array a -> a
-unsafeHead arr = fromMaybe (unsafeHead arr) (Array.head arr)
-
-unsafeTail :: forall a. Array a -> Array a
-unsafeTail arr = fromMaybe [] (Array.tail arr)
+import Nova.Compiler.CodeGenWasm.Types (WasmCtx, LiftedLambda, FunctionGroup, LambdaCollector, preludeConstructors, emptyCtx, groupFunctions, unsafeHead, unsafeTail)
+import Nova.Compiler.CodeGenWasm.Collect (patternVars, collectExternalRefs, collectDeclRefs, collectStrings, collectDeclStrings, collectFreeVars, collectLambdas, collectDeclLambdas, addLocalsFromPattern, collectDataCtors, buildStringTable, collectLocals)
 
 -- WebAssembly Text Format (WAT) Code Generation
 -- Generates runnable WASM with JS runtime imports
@@ -33,356 +29,12 @@ unsafeTail arr = fromMaybe [] (Array.tail arr)
 --   10 = Heap pointer (address in bits [31:2])
 --   11 = Constructor tag (ctor index in [15:2], arity in [31:16])
 
--- Lifted lambda info
-type LiftedLambda =
-  { id :: Int
-  , expr :: Expr                 -- the full ExprLambda (for reference equality matching)
-  , params :: Array String       -- lambda parameters
-  , freeVars :: Array String     -- captured variables from enclosing scope
-  , body :: Expr
-  }
-
--- Code generation context
-type WasmCtx =
-  { moduleName :: String
-  , moduleFuncs :: Set String
-  , funcArities :: Map String Int  -- function name -> arity
-  , locals :: Map String Int  -- var name -> local index
-  , localCount :: Int
-  , stringLiterals :: Array String
-  , stringTable :: Map String { offset :: Int, len :: Int }  -- string -> data segment location
-  , dataConstructors :: Map String { tag :: Int, arity :: Int }
-  , funcTable :: Array String  -- functions for indirect calls
-  , lambdas :: Array LiftedLambda  -- lifted lambdas
-  , lambdaCounter :: Int  -- for generating unique IDs
-  , funcWrapperIdx :: Map String Int  -- function name -> wrapper table index (for function-as-value)
-  }
-
-emptyCtx :: String -> WasmCtx
-emptyCtx modName =
-  { moduleName: modName
-  , moduleFuncs: Set.empty
-  , funcArities: Map.empty
-  , locals: Map.empty
-  , localCount: 0
-  , stringLiterals: []
-  , stringTable: Map.empty
-  , dataConstructors: preludeConstructors
-  , funcTable: []
-  , lambdas: []
-  , lambdaCounter: 0
-  , funcWrapperIdx: Map.empty
-  }
-
--- | Well-known Prelude constructors (with their tags and arities)
-preludeConstructors :: Map String { tag :: Int, arity :: Int }
-preludeConstructors = Map.fromFoldable
-  [ Tuple "Nothing" { tag: 0, arity: 0 }
-  , Tuple "Just" { tag: 1, arity: 1 }
-  , Tuple "Left" { tag: 0, arity: 1 }
-  , Tuple "Right" { tag: 1, arity: 1 }
-  , Tuple "Tuple" { tag: 0, arity: 2 }
-  , Tuple "Nil" { tag: 0, arity: 0 }
-  , Tuple "Cons" { tag: 1, arity: 2 }
-  -- TokenType constructors (from Tokenizer, imported by Parser)
-  , Tuple "TokKeyword" { tag: 0, arity: 0 }
-  , Tuple "TokIdentifier" { tag: 1, arity: 0 }
-  , Tuple "TokNumber" { tag: 2, arity: 0 }
-  , Tuple "TokString" { tag: 3, arity: 0 }
-  , Tuple "TokChar" { tag: 4, arity: 0 }
-  , Tuple "TokOperator" { tag: 5, arity: 0 }
-  , Tuple "TokDelimiter" { tag: 6, arity: 0 }
-  , Tuple "TokNewline" { tag: 7, arity: 0 }
-  , Tuple "TokUnrecognized" { tag: 8, arity: 0 }
-  ]
-
 -- | Mangle a name for WASM identifier
 mangleName :: String -> String
 mangleName name =
   let escaped = String.replaceAll (String.Pattern "'") (String.Replacement "_prime_") name
       escaped2 = String.replaceAll (String.Pattern ".") (String.Replacement "_") escaped
   in "$" <> escaped2
-
--- | Collect all external module references from expression
-collectExternalRefs :: Expr -> Array (Tuple String String)
-collectExternalRefs (ExprQualified modName name) = [Tuple modName name]
-collectExternalRefs (ExprApp f a) = collectExternalRefs f <> collectExternalRefs a
-collectExternalRefs (ExprLambda _ body) = collectExternalRefs body
-collectExternalRefs (ExprLet binds body) =
-  Array.concatMap (\b -> collectExternalRefs b.value) binds <> collectExternalRefs body
-collectExternalRefs (ExprIf c t e) = collectExternalRefs c <> collectExternalRefs t <> collectExternalRefs e
-collectExternalRefs (ExprCase s clauses) =
-  collectExternalRefs s <> Array.concatMap (\c -> collectExternalRefs c.body) clauses
-collectExternalRefs (ExprBinOp _ l r) = collectExternalRefs l <> collectExternalRefs r
-collectExternalRefs (ExprUnaryOp _ e) = collectExternalRefs e
-collectExternalRefs (ExprList es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprTuple es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectExternalRefs e) fs
-collectExternalRefs (ExprRecordAccess e _) = collectExternalRefs e
-collectExternalRefs (ExprRecordUpdate e fs) = collectExternalRefs e <> Array.concatMap (\(Tuple _ ex) -> collectExternalRefs ex) fs
-collectExternalRefs (ExprParens e) = collectExternalRefs e
-collectExternalRefs (ExprDo stmts) = Array.concatMap collectDoStmtRefs stmts
-  where
-    collectDoStmtRefs (DoExpr e) = collectExternalRefs e
-    collectDoStmtRefs (DoBind _ e) = collectExternalRefs e
-    collectDoStmtRefs (DoLet binds) = Array.concatMap (\b -> collectExternalRefs b.value) binds
-collectExternalRefs (ExprTyped e _) = collectExternalRefs e
-collectExternalRefs (ExprSectionLeft e _) = collectExternalRefs e
-collectExternalRefs (ExprSectionRight _ e) = collectExternalRefs e
-collectExternalRefs (ExprVar name) =
-  -- Handle qualified names like "Array.elem" in ExprVar (from backtick syntax)
-  case String.indexOf (StringPattern.Pattern ".") name of
-    Just idx -> [Tuple (String.take idx name) (String.drop (idx + 1) name)]
-    Nothing -> []
-collectExternalRefs _ = []
-
--- | Collect external refs from declaration
-collectDeclRefs :: Declaration -> Array (Tuple String String)
-collectDeclRefs (DeclFunction f) = collectExternalRefs f.body
-collectDeclRefs _ = []
-
--- | Collect all string literals from expression
-collectStrings :: Expr -> Array String
-collectStrings (ExprLit (LitString s)) = [s]
-collectStrings (ExprApp f a) = collectStrings f <> collectStrings a
-collectStrings (ExprLambda _ body) = collectStrings body
-collectStrings (ExprLet binds body) =
-  Array.concatMap (\b -> collectStrings b.value) binds <> collectStrings body
-collectStrings (ExprIf c t e) = collectStrings c <> collectStrings t <> collectStrings e
-collectStrings (ExprCase s clauses) =
-  collectStrings s <> Array.concatMap (\c -> collectStrings c.body) clauses
-collectStrings (ExprBinOp _ l r) = collectStrings l <> collectStrings r
-collectStrings (ExprUnaryOp _ e) = collectStrings e
-collectStrings (ExprList es) = Array.concatMap collectStrings es
-collectStrings (ExprTuple es) = Array.concatMap collectStrings es
-collectStrings (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectStrings e) fs
-collectStrings (ExprRecordAccess e _) = collectStrings e
-collectStrings (ExprRecordUpdate e fs) = collectStrings e <> Array.concatMap (\(Tuple _ ex) -> collectStrings ex) fs
-collectStrings (ExprParens e) = collectStrings e
-collectStrings (ExprDo stmts) = Array.concatMap collectDoStmt stmts
-  where
-    collectDoStmt (DoExpr e) = collectStrings e
-    collectDoStmt (DoBind _ e) = collectStrings e
-    collectDoStmt (DoLet binds) = Array.concatMap (\b -> collectStrings b.value) binds
-collectStrings (ExprTyped e _) = collectStrings e
-collectStrings (ExprSectionLeft e _) = collectStrings e
-collectStrings (ExprSectionRight _ e) = collectStrings e
-collectStrings _ = []
-
--- | Collect free variables from expression (variables not in bound set)
-collectFreeVars :: Set String -> Expr -> Set String
-collectFreeVars bound (ExprVar name) =
-  if Set.member name bound then Set.empty else Set.singleton name
-collectFreeVars bound (ExprApp f a) =
-  Set.union (collectFreeVars bound f) (collectFreeVars bound a)
-collectFreeVars bound (ExprLambda pats body) =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars pats)
-      bound' = Set.union bound paramNames
-  in collectFreeVars bound' body
-collectFreeVars bound (ExprLet binds body) =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
-      bound' = Set.union bound bindNames
-      bindFree = Array.foldl (\s b -> Set.union s (collectFreeVars bound b.value)) Set.empty binds
-  in Set.union bindFree (collectFreeVars bound' body)
-collectFreeVars bound (ExprIf c t e) =
-  Set.union (collectFreeVars bound c) (Set.union (collectFreeVars bound t) (collectFreeVars bound e))
-collectFreeVars bound (ExprCase s clauses) =
-  let scruFree = collectFreeVars bound s
-      clauseFree = Array.foldl (\acc c ->
-        let patVars = Set.fromFoldable (patternVars c.pattern)
-        in Set.union acc (collectFreeVars (Set.union bound patVars) c.body)) Set.empty clauses
-  in Set.union scruFree clauseFree
-collectFreeVars bound (ExprBinOp _ l r) =
-  Set.union (collectFreeVars bound l) (collectFreeVars bound r)
-collectFreeVars bound (ExprUnaryOp _ e) = collectFreeVars bound e
-collectFreeVars bound (ExprList es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprTuple es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprRecord fs) = Array.foldl (\s (Tuple _ e) -> Set.union s (collectFreeVars bound e)) Set.empty fs
-collectFreeVars bound (ExprRecordAccess e _) = collectFreeVars bound e
-collectFreeVars bound (ExprRecordUpdate e fs) =
-  Set.union (collectFreeVars bound e) (Array.foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty fs)
-collectFreeVars bound (ExprParens e) = collectFreeVars bound e
-collectFreeVars bound (ExprDo stmts) = collectDoFreeVars bound stmts
-collectFreeVars bound (ExprTyped e _) = collectFreeVars bound e
-collectFreeVars bound (ExprSectionLeft e _) = collectFreeVars bound e
-collectFreeVars bound (ExprSectionRight _ e) = collectFreeVars bound e
-collectFreeVars _ _ = Set.empty
-
-collectDoFreeVars :: Set.Set String -> Array DoStatement -> Set.Set String
-collectDoFreeVars _ arr | Array.null arr = Set.empty
-collectDoFreeVars b arr = collectDoFreeVarsHelper b (Array.uncons arr)
-
-collectDoFreeVarsHelper :: Set.Set String -> Maybe { head :: DoStatement, tail :: Array DoStatement } -> Set.Set String
-collectDoFreeVarsHelper _ Nothing = Set.empty
-collectDoFreeVarsHelper b (Just { head: DoExpr e, tail: rest }) = Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
-collectDoFreeVarsHelper b (Just { head: DoBind pat e, tail: rest }) = let patVars = Set.fromFoldable (patternVars pat) in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
-collectDoFreeVarsHelper b (Just { head: DoLet binds, tail: rest }) = let b' = Set.union b (Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)) in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds) (collectDoFreeVars b' rest)
-
--- | Collect lambdas from expression and assign unique IDs
--- Returns updated counter and list of lifted lambdas
-type LambdaCollector = { counter :: Int, lambdas :: Array LiftedLambda }
-
--- | Get parameter names from patterns, giving unique names to wildcards
-getLambdaParamName :: Int -> Pattern -> String
-getLambdaParamName i (PatVar "_") = "__w" <> show i  -- Unique names for underscore variables
-getLambdaParamName i (PatVar n) = n
-getLambdaParamName i PatWildcard = "__w" <> show i  -- Unique names for wildcards
-getLambdaParamName i _ = "__p" <> show i  -- Unique names for complex patterns
-
-collectLambdas :: Set String -> Expr -> LambdaCollector -> LambdaCollector
-collectLambdas bound (ExprLambda pats body) state =
-  let paramNames = Array.mapWithIndex getLambdaParamName pats
-      bound' = Set.union bound (Set.fromFoldable paramNames)
-      state' = collectLambdas bound' body state
-      lambdaParams = Set.fromFoldable paramNames
-      freeVars = Set.toUnfoldable (collectFreeVars lambdaParams body)
-      lambda = { id: state'.counter, expr: ExprLambda pats body, params: paramNames, freeVars: freeVars, body: body }
-  in { counter: state'.counter + 1, lambdas: Array.snoc state'.lambdas lambda }
-collectLambdas bound (ExprApp f a) state =
-  collectLambdas bound a (collectLambdas bound f state)
-collectLambdas bound (ExprLet binds body) state =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
-      bound' = Set.union bound bindNames
-      state' = Array.foldl (\s b -> collectLambdas bound b.value s) state binds
-  in collectLambdas bound' body state'
-collectLambdas bound (ExprIf c t e) state =
-  collectLambdas bound e (collectLambdas bound t (collectLambdas bound c state))
-collectLambdas bound (ExprCase s clauses) state =
-  let state' = collectLambdas bound s state
-  in Array.foldl (\st c ->
-       let patVars = Set.fromFoldable (patternVars c.pattern)
-       in collectLambdas (Set.union bound patVars) c.body st) state' clauses
-collectLambdas bound (ExprBinOp _ l r) state =
-  collectLambdas bound r (collectLambdas bound l state)
-collectLambdas bound (ExprUnaryOp _ e) state = collectLambdas bound e state
-collectLambdas bound (ExprList es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
-collectLambdas bound (ExprTuple es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
-collectLambdas bound (ExprRecord fs) state =
-  Array.foldl (\s (Tuple _ e) -> collectLambdas bound e s) state fs
-collectLambdas bound (ExprRecordAccess e _) state = collectLambdas bound e state
-collectLambdas bound (ExprRecordUpdate e fs) state =
-  let state' = collectLambdas bound e state
-  in Array.foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' fs
-collectLambdas bound (ExprParens e) state = collectLambdas bound e state
-collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound stmts state
-collectLambdas bound (ExprTyped e _) state = collectLambdas bound e state
-collectLambdas bound (ExprSectionLeft e _) state = collectLambdas bound e state
-collectLambdas bound (ExprSectionRight _ e) state = collectLambdas bound e state
-collectLambdas _ _ state = state
-
--- | Helper for collecting lambdas from do statements
-collectDoLambdas :: Set String -> Array DoStatement -> LambdaCollector -> LambdaCollector
-collectDoLambdas _ arr st | Array.null arr = st
-collectDoLambdas b arr st =
-  case Array.uncons arr of
-    Nothing -> st
-    Just { head: DoExpr e, tail: rest } ->
-      collectDoLambdas b rest (collectLambdas b e st)
-    Just { head: DoBind pat e, tail: rest } ->
-      let patVars = Set.fromFoldable (patternVars pat)
-      in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
-    Just { head: DoLet binds, tail: rest } ->
-      let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
-          b' = Set.union b bindNames
-          st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st binds
-      in collectDoLambdas b' rest st'
-
--- | Collect all lambdas from a declaration
-collectDeclLambdas :: Declaration -> LambdaCollector -> LambdaCollector
-collectDeclLambdas (DeclFunction f) state =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars f.parameters)
-  in collectLambdas paramNames f.body state
-collectDeclLambdas _ state = state
-
--- | Add locals from pattern
-addLocalsFromPattern :: Pattern -> WasmCtx -> WasmCtx
-addLocalsFromPattern (PatVar name) ctx =
-  if Map.member name ctx.locals
-  then ctx
-  else ctx { locals = Map.insert name ctx.localCount ctx.locals
-           , localCount = ctx.localCount + 1 }
-addLocalsFromPattern PatWildcard ctx = ctx
-addLocalsFromPattern (PatLit _) ctx = ctx
-addLocalsFromPattern (PatCon _ pats) ctx = foldr addLocalsFromPattern ctx pats
-addLocalsFromPattern (PatRecord fields) ctx = foldr (\(Tuple _ p) c -> addLocalsFromPattern p c) ctx fields
-addLocalsFromPattern (PatList pats) ctx = foldr addLocalsFromPattern ctx pats
-addLocalsFromPattern (PatCons hd tl) ctx = addLocalsFromPattern tl (addLocalsFromPattern hd ctx)
-addLocalsFromPattern (PatAs name pat) ctx =
-  let ctx' = addLocalsFromPattern pat ctx
-      newLocals = Map.insert name ctx'.localCount ctx'.locals
-      newCount = ctx'.localCount + 1
-  in if Map.member name ctx'.locals then ctx' else ctx' { locals = newLocals, localCount = newCount }
-addLocalsFromPattern (PatParens p) ctx = addLocalsFromPattern p ctx
-
--- | Collect pattern variable names
-patternVars :: Pattern -> Array String
-patternVars (PatVar name) = [name]
-patternVars PatWildcard = []
-patternVars (PatLit _) = []
-patternVars (PatCon _ pats) = Array.concatMap patternVars pats
-patternVars (PatRecord fields) = Array.concatMap (\(Tuple _ p) -> patternVars p) fields
-patternVars (PatList pats) = Array.concatMap patternVars pats
-patternVars (PatCons hd tl) = patternVars hd <> patternVars tl
-patternVars (PatAs name pat) = [name] <> patternVars pat
-patternVars (PatParens p) = patternVars p
-
--- | A group of function clauses with same name/arity
-type FunctionGroup =
-  { name :: String
-  , arity :: Int
-  , clauses :: Array FunctionDeclaration
-  }
-
--- | Group function declarations by name and arity
-groupFunctions :: Array FunctionDeclaration -> Array FunctionGroup
-groupFunctions funcs =
-  let keys = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
-               (map (\f -> { name: f.name, arity: length f.parameters }) funcs)
-      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && length f.parameters == k.arity) funcs }
-  in map mkGroup keys
-
--- | Helper for getData in collectDataCtors
-getDataDecl :: Declaration -> Maybe DataType
-getDataDecl (DeclDataType d) = Just d
-getDataDecl _ = Nothing
-
--- | Helper to add constructors
-addDataCtors :: Map String { tag :: Int, arity :: Int } -> DataType -> Map String { tag :: Int, arity :: Int }
-addDataCtors m d = let insertCtor = \acc tuple -> let i = fstTupleIntCtor tuple in let ctor = sndTupleIntCtor tuple in Map.insert ctor.name { tag: i, arity: length ctor.fields } acc in Array.foldl insertCtor m (Array.mapWithIndex Tuple d.constructors)
-
-fstTupleIntCtor :: Tuple Int DataConstructor -> Int
-fstTupleIntCtor (Tuple i _) = i
-
-sndTupleIntCtor :: Tuple Int DataConstructor -> DataConstructor
-sndTupleIntCtor (Tuple _ r) = r
-
--- | Collect data constructors from module
-collectDataCtors :: Array Declaration -> Map String { tag :: Int, arity :: Int }
-collectDataCtors decls =
-  let datas = Array.mapMaybe getDataDecl decls
-  in Array.foldl addDataCtors Map.empty datas
-
--- | Collect strings from declaration
-collectDeclStrings :: Declaration -> Array String
-collectDeclStrings (DeclFunction f) = collectStrings f.body
-collectDeclStrings _ = []
-
--- | Helper for building string table
-addStringEntry :: { table :: Map String { offset :: Int, len :: Int }, offset :: Int } -> String -> { table :: Map String { offset :: Int, len :: Int }, offset :: Int }
-addStringEntry acc s =
-  let slen = String.length s
-      newTable = Map.insert s { offset: acc.offset, len: slen } acc.table
-  in { table: newTable, offset: acc.offset + slen }
-
--- | Build string table from list of unique strings
--- Returns map from string -> { offset, len } and total size
-buildStringTable :: Array String -> { table :: Map String { offset :: Int, len :: Int }, totalSize :: Int }
-buildStringTable strs =
-  let initial = { table: Map.empty, offset: 1024 }
-      result = Array.foldl addStringEntry initial strs
-  in { table: result.table, totalSize: result.offset - 1024 }
 
 -- | Generate data segment for strings
 genDataSegment :: Array String -> Int -> String
@@ -395,7 +47,64 @@ escapeWasmString s = String.replaceAll (String.Pattern "\r") (String.Replacement
 
 -- | Generate module
 genModule :: Module -> String
-genModule m = let modName = m.name in let allFuncs = Array.mapMaybe getFuncDecl m.declarations in let grouped = groupFunctions allFuncs in let uniqueFuncs = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity) (map (\g -> { name: g.name, arity: g.arity }) grouped) in let exports = intercalate "\n  " (map genExport uniqueFuncs) in let ctors = collectDataCtors m.declarations in let allExternalRefs = Array.nub (Array.concatMap collectDeclRefs m.declarations) in let externalImports = genExternalImports allExternalRefs in let allStrings = Array.nub (Array.concatMap collectDeclStrings m.declarations) in let stringTableData = buildStringTable allStrings in let dataSegment = genDataSegment allStrings 1024 in let lambdaCollector = Array.foldl (\s d -> collectDeclLambdas d s) { counter: 0, lambdas: [] } m.declarations in let allLambdas = lambdaCollector.lambdas in let funcArityMap = Map.fromFoldable (map (\f -> Tuple f.name f.arity) uniqueFuncs) in let funcsNeedingWrappers = Array.filter (\f -> f.arity == 1) uniqueFuncs in let numLambdas = length allLambdas in let funcWrapperIdxMap = Map.fromFoldable (Array.mapWithIndex (\i f -> Tuple f.name (numLambdas + i)) funcsNeedingWrappers) in let ctx = (emptyCtx modName) { moduleFuncs = Set.fromFoldable (map (\f -> f.name) uniqueFuncs), funcArities = funcArityMap, dataConstructors = Map.union ctors preludeConstructors, stringTable = stringTableData.table, lambdas = allLambdas, funcWrapperIdx = funcWrapperIdxMap } in let funcDefs = intercalate "\n\n" (map (genFunctionGroup ctx) grouped) in let lambdaDefs = if Array.null allLambdas then "" else "\n\n  ;; Lifted lambdas\n" <> intercalate "\n\n" (map (genLiftedLambda ctx) allLambdas) in let wrapperDefs = if Array.null funcsNeedingWrappers then "" else "\n\n  ;; Function wrappers (for function-as-value)\n" <> intercalate "\n\n" (map genFunctionWrapper funcsNeedingWrappers) in let tableDecl = genFunctionTableWithWrappers allLambdas funcsNeedingWrappers in "(module\n" <> "  ;; Module: " <> m.name <> "\n\n" <> genImports <> "\n\n" <> externalImports <> "  (memory (export \"memory\") 1)\n" <> "  (global $heap_ptr (mut i32) (i32.const 1024))\n\n" <> tableDecl <> dataSegment <> "  ;; Runtime helpers\n" <> genRuntimeHelpers <> "\n\n" <> "  ;; Functions\n" <> funcDefs <> lambdaDefs <> wrapperDefs <> "\n\n" <> "  ;; Exports\n  " <> exports <> "\n" <> ")\n"
+genModule m =
+  let modName = m.name
+      allFuncs = Array.mapMaybe getFuncDecl m.declarations
+      grouped = groupFunctions allFuncs
+      uniqueFuncs = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity) (map (\g -> { name: g.name, arity: g.arity }) grouped)
+      exports = intercalate "\n  " (map genExport uniqueFuncs)
+      ctors = collectDataCtors m.declarations
+      allExternalRefs = Array.nub (Array.concatMap collectDeclRefs m.declarations)
+      externalImports = genExternalImports allExternalRefs
+      allStrings = Array.nub (Array.concatMap collectDeclStrings m.declarations)
+      stringTableData = buildStringTable allStrings
+      dataSegment = genDataSegment allStrings 1024
+      lambdaCollector = Array.foldl (\s d -> collectDeclLambdas d s) { counter: 0, lambdas: [] } m.declarations
+      allLambdas = lambdaCollector.lambdas
+      funcArityMap = Map.fromFoldable (map (\f -> Tuple f.name f.arity) uniqueFuncs)
+      -- Arity-1 functions still use simple wrappers
+      funcsNeedingWrappers = Array.filter (\f -> f.arity == 1) uniqueFuncs
+      -- Multi-arity functions (arity >= 2) need curry wrappers
+      funcsNeedingCurry = Array.filter (\f -> f.arity >= 2) uniqueFuncs
+      -- Collect all curry wrapper names for table indexing
+      allCurryNames = Array.concatMap genCurryWrapperNames funcsNeedingCurry
+      numLambdas = length allLambdas
+      numWrappers = length funcsNeedingWrappers
+      -- Build index maps: lambdas at 0..numLambdas-1, wrappers at numLambdas.., curry at numLambdas+numWrappers..
+      funcWrapperIdxMap = Map.fromFoldable (Array.mapWithIndex (\i f -> Tuple f.name (numLambdas + i)) funcsNeedingWrappers)
+      curryWrapperIdxMap = Map.fromFoldable (Array.mapWithIndex (\i name -> Tuple name (numLambdas + numWrappers + i)) allCurryNames)
+      ctx = (emptyCtx modName)
+        { moduleFuncs = Set.fromFoldable (map (\f -> f.name) uniqueFuncs)
+        , funcArities = funcArityMap
+        , dataConstructors = Map.union ctors preludeConstructors
+        , stringTable = stringTableData.table
+        , lambdas = allLambdas
+        , funcWrapperIdx = funcWrapperIdxMap
+        , curryWrapperIdx = curryWrapperIdxMap
+        }
+      funcDefs = intercalate "\n\n" (map (genFunctionGroup ctx) grouped)
+      lambdaDefs = if Array.null allLambdas then "" else "\n\n  ;; Lifted lambdas\n" <> intercalate "\n\n" (map (genLiftedLambda ctx) allLambdas)
+      wrapperDefs = if Array.null funcsNeedingWrappers then "" else "\n\n  ;; Function wrappers (for function-as-value)\n" <> intercalate "\n\n" (map genFunctionWrapper funcsNeedingWrappers)
+      curryDefs = if Array.null funcsNeedingCurry then "" else "\n\n  ;; Curry wrappers (for partial application)\n" <> intercalate "\n\n" (Array.concatMap (genCurryWrappers ctx) funcsNeedingCurry)
+      tableDecl = genFunctionTableWithWrappers allLambdas funcsNeedingWrappers allCurryNames
+  in "(module\n" <>
+     "  ;; Module: " <> m.name <> "\n\n" <>
+     genImports <> "\n\n" <>
+     externalImports <>
+     "  (memory (export \"memory\") 1)\n" <>
+     "  (global $heap_ptr (mut i32) (i32.const 1024))\n\n" <>
+     tableDecl <>
+     dataSegment <>
+     "  ;; Runtime helpers\n" <>
+     genRuntimeHelpers <> "\n\n" <>
+     "  ;; Functions\n" <>
+     funcDefs <>
+     lambdaDefs <>
+     wrapperDefs <>
+     curryDefs <>
+     "\n\n" <>
+     "  ;; Exports\n  " <> exports <> "\n" <>
+     ")\n"
 
 -- | Extract function from declaration for genModule
 getFuncDecl :: Declaration -> Maybe FunctionDeclaration
@@ -406,9 +115,75 @@ getFuncDecl _ = Nothing
 genFunctionTable :: Array LiftedLambda -> String
 genFunctionTable lambdas = let funcNames = map (\l -> mangleName ("__lambda_" <> show l.id)) lambdas in let funcList = intercalate " " funcNames in let n = max 1 (length lambdas) in "  ;; Function table for indirect calls\n" <> "  (type $closure_type (func (param i32 i32) (result i32)))\n" <> "  (table (export \"__indirect_function_table\") " <> show n <> " funcref)\n" <> (if length lambdas > 0 then "  (elem (i32.const 0) func " <> funcList <> ")\n\n" else "\n")
 
--- | Generate function table including function wrappers
-genFunctionTableWithWrappers :: Array LiftedLambda -> Array { name :: String, arity :: Int } -> String
-genFunctionTableWithWrappers lambdas wrappers = let lambdaNames = map (\l -> mangleName ("__lambda_" <> show l.id)) lambdas in let wrapperNames = map (\f -> mangleName ("__fn_wrap_" <> f.name)) wrappers in let allFuncNames = lambdaNames <> wrapperNames in let funcList = intercalate " " allFuncNames in let n = max 1 (length allFuncNames) in "  ;; Function table for indirect calls\n" <> "  (type $closure_type (func (param i32 i32) (result i32)))\n" <> "  (table (export \"__indirect_function_table\") " <> show n <> " funcref)\n" <> (if length allFuncNames > 0 then "  (elem (i32.const 0) func " <> funcList <> ")\n\n" else "\n")
+-- | Generate function table including function wrappers and curry wrappers
+genFunctionTableWithWrappers :: Array LiftedLambda -> Array { name :: String, arity :: Int } -> Array String -> String
+genFunctionTableWithWrappers lambdas wrappers curryNames =
+  let lambdaNames = map (\l -> mangleName ("__lambda_" <> show l.id)) lambdas
+      wrapperNames = map (\f -> mangleName ("__fn_wrap_" <> f.name)) wrappers
+      curryFuncNames = map mangleName curryNames
+      allFuncNames = lambdaNames <> wrapperNames <> curryFuncNames
+      funcList = intercalate " " allFuncNames
+      n = max 1 (length allFuncNames)
+  in "  ;; Function table for indirect calls\n" <>
+     "  (type $closure_type (func (param i32 i32) (result i32)))\n" <>
+     "  (table (export \"__indirect_function_table\") " <> show n <> " funcref)\n" <>
+     (if length allFuncNames > 0
+      then "  (elem (i32.const 0) func " <> funcList <> ")\n\n"
+      else "\n")
+
+-- | Generate curry wrapper names for a function (used for table indexing)
+-- For arity N, generates wrapper names: __curry0_f, __curry1_f, ..., __curry(N-1)_f
+genCurryWrapperNames :: { name :: String, arity :: Int } -> Array String
+genCurryWrapperNames f = if f.arity < 1 then [] else Array.range 0 (f.arity - 1) # map (\i -> "__curry" <> show i <> "_" <> f.name)
+
+-- | Generate curried wrapper functions for a function of any arity
+-- For arity N, generates N wrapper functions:
+--   __curry0_f(env, x0) - stores x0 in env, returns closure to __curry1_f
+--   __curry1_f(env, x1) - stores x1 in env, returns closure to __curry2_f
+--   ...
+--   __curry(N-1)_f(env, xN-1) - extracts all args from env, calls f(x0, x1, ..., xN-1)
+genCurryWrappers :: WasmCtx -> { name :: String, arity :: Int } -> Array String
+genCurryWrappers ctx f = if f.arity < 1 then [] else Array.range 0 (f.arity - 1) # map (\i -> genCurryWrapper ctx f.name f.arity i)
+
+-- | Generate a single curry wrapper for stage i of arity n function
+genCurryWrapper :: WasmCtx -> String -> Int -> Int -> String
+genCurryWrapper ctx name arity stage =
+  let isLast = stage == arity - 1
+  in if isLast
+     then genCurryWrapperFinal name arity stage
+     else genCurryWrapperPartial ctx name arity stage
+
+-- | Generate a partial curry wrapper that captures arg and returns next closure
+genCurryWrapperPartial :: WasmCtx -> String -> Int -> Int -> String
+genCurryWrapperPartial ctx name arity stage =
+  let wrapperName = "__curry" <> show stage <> "_" <> name
+      nextWrapperName = "__curry" <> show (stage + 1) <> "_" <> name
+      nextIdx = fromMaybe 0 (Map.lookup nextWrapperName ctx.curryWrapperIdx)
+      envSize = stage + 1  -- We need to store all args so far plus the new one
+  in "  (func " <> mangleName wrapperName <> " (param $__env i32) (param $__arg i32) (result i32)\n" <>
+     "    (local $__new_env i32)\n" <>
+     "    ;; Create new env with space for " <> show envSize <> " captured args\n" <>
+     "    (local.set $__new_env (call $alloc_tuple (i32.const " <> show envSize <> ")))\n" <>
+     -- Copy existing captures from old env
+     (if stage == 0
+      then ""
+      else intercalate "\n" (map (\i -> "    (call $tuple_set (local.get $__new_env) (i32.const " <> show i <> ") (call $tuple_get (local.get $__env) (i32.const " <> show i <> ")))") (Array.range 0 (stage - 1))) <> "\n") <>
+     "    ;; Store new arg at position " <> show stage <> "\n" <>
+     "    (call $tuple_set (local.get $__new_env) (i32.const " <> show stage <> ") (local.get $__arg))\n" <>
+     "    ;; Return closure to next curry stage\n" <>
+     "    (call $rt_make_closure (i32.const " <> show nextIdx <> ") (local.get $__new_env))\n" <>
+     "  )"
+
+-- | Generate the final curry wrapper that calls the actual function
+genCurryWrapperFinal :: String -> Int -> Int -> String
+genCurryWrapperFinal name arity stage =
+  let wrapperName = "__curry" <> show stage <> "_" <> name
+      actualFuncName = mangleName name
+      argExtract = Array.range 0 (stage - 1) # map (\i -> "(call $tuple_get (local.get $__env) (i32.const " <> show i <> "))")
+      allArgs = argExtract <> ["(local.get $__arg)"]
+  in "  (func " <> mangleName wrapperName <> " (param $__env i32) (param $__arg i32) (result i32)\n" <>
+     "    (call " <> actualFuncName <> " " <> intercalate " " allArgs <> ")\n" <>
+     "  )"
 
 -- | Generate a wrapper function for function-as-value (arity 1 only for now)
 -- Wrapper takes (env, arg) and calls the actual function with arg
@@ -526,32 +301,6 @@ getParamName :: Int -> Pattern -> String
 getParamName i (PatVar n) = n
 getParamName i _ = "p" <> show i
 
--- | Collect all locals needed in a function body
--- NOTE: We do NOT recurse into lambdas - they are lifted to separate functions
-collectLocals :: Expr -> Array String
-collectLocals (ExprLet binds body) =
-  Array.concatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds <> collectLocals body
-collectLocals (ExprLambda _ _) = []  -- Lambda params and body are handled in lifted function
-collectLocals (ExprCase _ clauses) =
-  Array.concatMap (\c -> patternVars c.pattern <> collectLocals c.body) clauses
-collectLocals (ExprIf c t e) = collectLocals c <> collectLocals t <> collectLocals e
-collectLocals (ExprApp f a) = collectLocals f <> collectLocals a
-collectLocals (ExprBinOp _ l r) = collectLocals l <> collectLocals r
-collectLocals (ExprUnaryOp _ e) = collectLocals e
-collectLocals (ExprList es) = Array.concatMap collectLocals es
-collectLocals (ExprTuple es) = Array.concatMap collectLocals es
-collectLocals (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectLocals e) fs
-collectLocals (ExprRecordAccess e _) = collectLocals e
-collectLocals (ExprRecordUpdate e fs) = collectLocals e <> Array.concatMap (\(Tuple _ ex) -> collectLocals ex) fs
-collectLocals (ExprParens e) = collectLocals e
-collectLocals (ExprDo stmts) = Array.concatMap collectDoStmt stmts
-  where
-    collectDoStmt (DoExpr e) = collectLocals e
-    collectDoStmt (DoBind p e) = patternVars p <> collectLocals e
-    collectDoStmt (DoLet binds) = Array.concatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds
-collectLocals (ExprTyped e _) = collectLocals e
-collectLocals _ = []
-
 -- | Generate simple function
 genFunction :: WasmCtx -> FunctionDeclaration -> String
 genFunction ctx func = let paramNames = Array.mapWithIndex getParamName func.parameters in let params = map (\n -> "(param " <> mangleName n <> " i32)") paramNames in let paramsStr = intercalate " " params in let paramLocals = Map.fromFoldable (Array.mapWithIndex (\i n -> Tuple n i) paramNames) in let bodyLocals = Array.nub (collectLocals func.body) in let argSlots = ["__arg0", "__arg1", "__arg2", "__arg3", "__arg4"] in let extraLocals = Array.nub (Array.filter (\n -> not (Array.elem n paramNames)) ("__tmp" : "__rec_base" : argSlots <> bodyLocals)) in let allLocals = Map.union paramLocals (Map.fromFoldable (Array.mapWithIndex (\i n -> Tuple n (i + length paramNames)) extraLocals)) in let localDecls = "\n    " <> intercalate " " (map (\n -> "(local " <> mangleName n <> " i32)") extraLocals) in let ctxWithParams = ctx { locals = allLocals, localCount = Map.size allLocals } in let bodyCode = genExpr ctxWithParams func.body in "  (func " <> mangleName func.name <> " " <> paramsStr <> " (result i32)" <> localDecls <> "\n" <> "    " <> bodyCode <> "\n" <> "  )"
@@ -634,7 +383,11 @@ genExprVarModuleFunc ctx name = genExprVarModuleFuncArity ctx name (Map.lookup n
 genExprVarModuleFuncArity :: WasmCtx -> String -> Maybe Int -> String
 genExprVarModuleFuncArity _ name (Just 0) = "(call " <> mangleName name <> ")"
 genExprVarModuleFuncArity ctx name (Just 1) = genExprVarArity1 (Map.lookup name ctx.funcWrapperIdx)
-genExprVarModuleFuncArity _ _ (Just _) = "(call $rt_make_closure (i32.const 0) (call $alloc_tuple (i32.const 0)))"
+genExprVarModuleFuncArity ctx name (Just arity) =
+  -- For arity >= 2, return closure to curry0 wrapper
+  let curry0Name = "__curry0_" <> name
+      curry0Idx = fromMaybe 0 (Map.lookup curry0Name ctx.curryWrapperIdx)
+  in "(call $rt_make_closure (i32.const " <> show curry0Idx <> ") (call $alloc_tuple (i32.const 0)))"
 genExprVarModuleFuncArity _ name Nothing = "(call " <> mangleName name <> ")"
 
 genExprVarArity1 :: Maybe Int -> String
@@ -745,7 +498,7 @@ genExpr _ (ExprLit lit) = genLiteral lit
 
 genExpr ctx (ExprApp func arg) = let Tuple baseFunc allArgs = flattenApp (ExprApp func arg) in genExprAppBaseFunc ctx baseFunc allArgs
 
-genExpr ctx (ExprLambda pats body) = genLambdaMatch ctx pats body (Array.find (\l -> refEqExpr l.expr (ExprLambda pats body)) ctx.lambdas)
+genExpr ctx expr@(ExprLambda pats body) = genLambdaMatch ctx pats body (Array.find (\l -> refEqExpr l.expr expr) ctx.lambdas)
 
 genExpr ctx (ExprLet binds body) =
   genLetBinds ctx binds body
