@@ -1,6 +1,7 @@
 module Nova.Compiler.Cst where
 
 import Prelude
+import Data.List (List)
 import Data.Maybe (Maybe)
 import Data.Either (Either)
 import Data.Tuple (Tuple)
@@ -76,8 +77,8 @@ derive instance eqToken :: Eq Token
 
 type SourceToken =
   { range :: SourceRange
-  , leadingComments :: Array String
-  , trailingComments :: Array String
+  , leadingComments :: List String
+  , trailingComments :: List String
   , value :: Token
   }
 
@@ -116,7 +117,7 @@ type Wrapped a =
 -- | Comma-separated list: a, b, c
 type Separated a =
   { head :: a
-  , tail :: Array (Tuple SourceToken a)  -- (comma, item)
+  , tail :: List (Tuple SourceToken a)  -- (comma, item)
   }
 
 -- | Labeled with separator: label :: value
@@ -145,10 +146,10 @@ data Type e
   | TypeInt SourceToken IntValue
   | TypeRow (Wrapped (Row e))
   | TypeRecord (Wrapped (Row e))
-  | TypeForall SourceToken (Array (TypeVarBinding e)) SourceToken (Type e)
+  | TypeForall SourceToken (List (TypeVarBinding e)) SourceToken (Type e)
   | TypeKinded (Type e) SourceToken (Type e)
-  | TypeApp (Type e) (Array (Type e))
-  | TypeOp (Type e) (Array (Tuple (QualifiedName Operator) (Type e)))
+  | TypeApp (Type e) (List (Type e))
+  | TypeOp (Type e) (List (Tuple (QualifiedName Operator) (Type e)))
   | TypeArrow (Type e) SourceToken (Type e)
   | TypeConstrained (Type e) SourceToken (Type e)
   | TypeParens (Wrapped (Type e))
@@ -177,12 +178,12 @@ type ModuleHeader e =
   , name :: Name ModuleName
   , exports :: Maybe (DelimitedNonEmpty (Export e))
   , where :: SourceToken
-  , imports :: Array (ImportDecl e)
+  , imports :: List (ImportDecl e)
   }
 
 type ModuleBody e =
-  { decls :: Array (Declaration e)
-  , trailingComments :: Array String
+  { decls :: List (Declaration e)
+  , trailingComments :: List String
   , end :: SourcePos
   }
 
@@ -207,7 +208,7 @@ data Declaration e
   = DeclData (DataHead e) (Maybe (Tuple SourceToken (Separated (DataCtor e))))
   | DeclType (DataHead e) SourceToken (Type e)
   | DeclNewtype (DataHead e) SourceToken (Name Proper) (Type e)
-  | DeclClass (ClassHead e) (Maybe (Tuple SourceToken (Array (Labeled (Name Ident) (Type e)))))
+  | DeclClass (ClassHead e) (Maybe (Tuple SourceToken (List (Labeled (Name Ident) (Type e)))))
   | DeclInstanceChain (Separated (Instance e))
   | DeclDerive SourceToken (Maybe SourceToken) (InstanceHead e)
   | DeclSignature (Labeled (Name Ident) (Type e))
@@ -219,29 +220,29 @@ data Declaration e
 type DataHead e =
   { keyword :: SourceToken
   , name :: Name Proper
-  , vars :: Array (TypeVarBinding e)
+  , vars :: List (TypeVarBinding e)
   }
 
 type DataCtor e =
   { name :: Name Proper
-  , fields :: Array (Type e)
+  , fields :: List (Type e)
   }
 
 type ClassHead e =
   { keyword :: SourceToken
-  , super :: Maybe (Tuple (Array (Type e)) SourceToken)
+  , super :: Maybe (Tuple (List (Type e)) SourceToken)
   , name :: Name Proper
-  , vars :: Array (TypeVarBinding e)
+  , vars :: List (TypeVarBinding e)
   , fundeps :: Maybe (Tuple SourceToken (Separated ClassFundep))
   }
 
 data ClassFundep
-  = FundepDetermined SourceToken (Array (Name Ident))
-  | FundepDetermines (Array (Name Ident)) SourceToken (Array (Name Ident))
+  = FundepDetermined SourceToken (List (Name Ident))
+  | FundepDetermines (List (Name Ident)) SourceToken (List (Name Ident))
 
 type Instance e =
   { head :: InstanceHead e
-  , body :: Maybe (Tuple SourceToken (Array (InstanceBinding e)))
+  , body :: Maybe (Tuple SourceToken (List (InstanceBinding e)))
   }
 
 data InstanceBinding e
@@ -251,9 +252,9 @@ data InstanceBinding e
 type InstanceHead e =
   { keyword :: SourceToken
   , name :: Maybe (Tuple (Name Ident) SourceToken)
-  , constraints :: Maybe (Tuple (Array (Type e)) SourceToken)
+  , constraints :: Maybe (Tuple (List (Type e)) SourceToken)
   , className :: QualifiedName Proper
-  , types :: Array (Type e)
+  , types :: List (Type e)
   }
 
 type ImportDecl e =
@@ -305,13 +306,13 @@ data Expr e
   | ExprRecord (Delimited (RecordLabeled (Expr e)))
   | ExprParens (Wrapped (Expr e))
   | ExprTyped (Expr e) SourceToken (Type e)
-  | ExprInfix (Expr e) (Array (Tuple (Wrapped (Expr e)) (Expr e)))
-  | ExprOp (Expr e) (Array (Tuple (QualifiedName Operator) (Expr e)))
+  | ExprInfix (Expr e) (List (Tuple (Wrapped (Expr e)) (Expr e)))
+  | ExprOp (Expr e) (List (Tuple (QualifiedName Operator) (Expr e)))
   | ExprOpName (QualifiedName Operator)
   | ExprNegate SourceToken (Expr e)
   | ExprRecordAccessor (RecordAccessor e)
   | ExprRecordUpdate (Expr e) (DelimitedNonEmpty (RecordUpdate e))
-  | ExprApp (Expr e) (Array (Expr e))
+  | ExprApp (Expr e) (List (Expr e))
   | ExprLambda (Lambda e)
   | ExprIf (IfThenElse e)
   | ExprCase (CaseOf e)
@@ -336,7 +337,7 @@ type RecordAccessor e =
 
 type Lambda e =
   { symbol :: SourceToken
-  , binders :: Array (Binder e)
+  , binders :: List (Binder e)
   , arrow :: SourceToken
   , body :: Expr e
   }
@@ -354,19 +355,19 @@ type CaseOf e =
   { keyword :: SourceToken
   , head :: Separated (Expr e)
   , of :: SourceToken
-  , branches :: Array (Tuple (Separated (Binder e)) (Guarded e))
+  , branches :: List (Tuple (Separated (Binder e)) (Guarded e))
   }
 
 type LetIn e =
   { keyword :: SourceToken
-  , bindings :: Array (LetBinding e)
+  , bindings :: List (LetBinding e)
   , in :: SourceToken
   , body :: Expr e
   }
 
 type Where e =
   { expr :: Expr e
-  , bindings :: Maybe (Tuple SourceToken (Array (LetBinding e)))
+  , bindings :: Maybe (Tuple SourceToken (List (LetBinding e)))
   }
 
 data LetBinding e
@@ -377,18 +378,18 @@ data LetBinding e
 
 type DoBlock e =
   { keyword :: SourceToken
-  , statements :: Array (DoStatement e)
+  , statements :: List (DoStatement e)
   }
 
 data DoStatement e
-  = DoLet SourceToken (Array (LetBinding e))
+  = DoLet SourceToken (List (LetBinding e))
   | DoDiscard (Expr e)
   | DoBind (Binder e) SourceToken (Expr e)
   | DoError e
 
 type AdoBlock e =
   { keyword :: SourceToken
-  , statements :: Array (DoStatement e)
+  , statements :: List (DoStatement e)
   , in :: SourceToken
   , result :: Expr e
   }
@@ -399,13 +400,13 @@ type AdoBlock e =
 
 type ValueBindingFields e =
   { name :: Name Ident
-  , binders :: Array (Binder e)
+  , binders :: List (Binder e)
   , guarded :: Guarded e
   }
 
 data Guarded e
   = Unconditional SourceToken (Where e)
-  | Guarded (Array (GuardedExpr e))
+  | Guarded (List (GuardedExpr e))
 
 type GuardedExpr e =
   { bar :: SourceToken
@@ -427,7 +428,7 @@ data Binder e
   = BinderWildcard SourceToken
   | BinderVar (Name Ident)
   | BinderNamed (Name Ident) SourceToken (Binder e)
-  | BinderConstructor (QualifiedName Proper) (Array (Binder e))
+  | BinderConstructor (QualifiedName Proper) (List (Binder e))
   | BinderBoolean SourceToken Boolean
   | BinderChar SourceToken Char
   | BinderString SourceToken String
@@ -437,7 +438,7 @@ data Binder e
   | BinderRecord (Delimited (RecordLabeled (Binder e)))
   | BinderParens (Wrapped (Binder e))
   | BinderTyped (Binder e) SourceToken (Type e)
-  | BinderOp (Binder e) (Array (Tuple (QualifiedName Operator) (Binder e)))
+  | BinderOp (Binder e) (List (Tuple (QualifiedName Operator) (Binder e)))
   | BinderError e
 
 -- ============================================================================
@@ -446,12 +447,12 @@ data Binder e
 
 -- | A recovered error contains the tokens that couldn't be parsed
 type RecoveredError =
-  { tokens :: Array SourceToken
+  { tokens :: List SourceToken
   , error :: String
   }
 
 -- | Parse result that supports partial success
 data ParseResult e a
   = ParseSucceeded a
-  | ParseSucceededWithErrors a (Array RecoveredError)
+  | ParseSucceededWithErrors a (List RecoveredError)
   | ParseFailed String

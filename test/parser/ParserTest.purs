@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Nova.Compiler.Tokenizer (tokenize)
 import Nova.Compiler.Parser as P
@@ -39,7 +40,7 @@ main = do
   testCase "Data type" "data Maybe a = Nothing | Just a" $ \result ->
     case result of
       Right (Tuple (Ast.DeclDataType d) _) ->
-        d.name == "Maybe" && Array.length d.constructors == 2
+        d.name == "Maybe" && List.length d.constructors == 2
       _ -> false
 
   -- Test 5: Type alias
@@ -52,13 +53,13 @@ main = do
   testCase "Simple function" "add x y = x + y" $ \result ->
     case result of
       Right (Tuple (Ast.DeclFunction f) _) ->
-        f.name == "add" && Array.length f.parameters == 2
+        f.name == "add" && List.length f.parameters == 2
       _ -> false
 
   -- Test 7: Lambda expression
   testExpr "Lambda" "\\x -> x + 1" $ \expr ->
     case expr of
-      Ast.ExprLambda params _ -> Array.length params == 1
+      Ast.ExprLambda params _ -> List.length params == 1
       _ -> false
 
   -- Test 8: If expression
@@ -70,7 +71,7 @@ main = do
   -- Test 9: Let expression
   testExpr "Let expression" "let x = 1 in x + 1" $ \expr ->
     case expr of
-      Ast.ExprLet bindings _ -> Array.length bindings == 1
+      Ast.ExprLet bindings _ -> List.length bindings == 1
       _ -> false
 
   -- Test 10: Function application
@@ -88,13 +89,13 @@ main = do
   -- Test 12: List literal
   testExpr "List literal" "[1, 2, 3]" $ \expr ->
     case expr of
-      Ast.ExprList elems -> Array.length elems == 3
+      Ast.ExprList elems -> List.length elems == 3
       _ -> false
 
   -- Test 13: Record literal
   testExpr "Record literal" "{ x: 1, y: 2 }" $ \expr ->
     case expr of
-      Ast.ExprRecord fields -> Array.length fields == 2
+      Ast.ExprRecord fields -> List.length fields == 2
       _ -> false
 
   -- Test 14: Qualified identifier
@@ -106,7 +107,7 @@ main = do
   -- Test 15: Case expression
   testExpr "Case expression" "case x of\n  Nothing -> 0\n  Just n -> n" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 2
+      Ast.ExprCase _ clauses -> List.length clauses == 2
       _ -> false
 
   -- Test 16: Type signature parsing
@@ -131,7 +132,7 @@ main = do
   -- Test 19: Record type
   testType "Record type" "{ name :: String, age :: Int }" $ \ty ->
     case ty of
-      Ast.TyExprRecord fields _ -> Array.length fields == 2
+      Ast.TyExprRecord fields _ -> List.length fields == 2
       _ -> false
 
   -- Test 20: Full module
@@ -142,7 +143,7 @@ import Prelude
 foo :: Int -> Int
 foo x = x + 1
 """ $ \m ->
-    m.name == "Test" && Array.length m.declarations >= 2
+    m.name == "Test" && List.length m.declarations >= 2
 
   log ""
   log "=== Tests Complete ==="

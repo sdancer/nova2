@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.Array as Array
+import Data.List (List(..), (:))
 import Nova.Compiler.Ast (Expr(..), Pattern(..), LetBind, CaseClause, Literal(..))
 import Nova.Compiler.Types (emptyEnv, Env, Type(..), Scheme, applySubst, mkScheme, freshVar, extendEnv, lookupEnv, tArrow, tInt, tString, composeSubst)
 import Nova.Compiler.TypeChecker (infer, TCError, instantiate, generalize)
@@ -27,14 +28,14 @@ main = do
   -- Case clauses
   let justClause :: CaseClause
       justClause =
-        { pattern: PatCon "Just" [PatVar "n"]
+        { pattern: PatCon "Just" (PatVar "n" : Nil)
         , body: ExprApp (ExprVar "Right") (ExprVar "n")
         , guard: Nothing
         }
 
   let nothingClause :: CaseClause
       nothingClause =
-        { pattern: PatCon "Nothing" []
+        { pattern: PatCon "Nothing" Nil
         , body: ExprApp (ExprVar "Right") (ExprVar "sub")
         , guard: Nothing
         }
@@ -42,10 +43,10 @@ main = do
   -- case Just 1 of ...
   let caseExpr = ExprCase
         (ExprApp (ExprVar "Just") (ExprLit (LitInt 1)))
-        [justClause, nothingClause]
+        (justClause : nothingClause : Nil)
 
   -- \sub k -> case ...
-  let lambdaExpr = ExprLambda [PatVar "sub", PatVar "k"] caseExpr
+  let lambdaExpr = ExprLambda (PatVar "sub" : PatVar "k" : Nil) caseExpr
 
   -- let helper = \sub k -> ... in helper 0 "k"
   let letBind :: LetBind
@@ -55,7 +56,7 @@ main = do
         (ExprApp (ExprVar "helper") (ExprLit (LitInt 0)))
         (ExprLit (LitString "k"))
 
-  let fullExpr = ExprLet [letBind] body
+  let fullExpr = ExprLet (letBind : Nil) body
 
   -- Now infer
   log "\n-- Full expression --"

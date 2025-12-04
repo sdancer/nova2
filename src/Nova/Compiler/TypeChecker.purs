@@ -8,11 +8,12 @@ import Data.Array ((:))
 import Data.Array as Array
 import Data.List (List(..))
 import Data.List as List
+import Data.Foldable (foldl)
 import Data.Map as Map
 import Data.Set as Set
 import Data.String as String
 import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo)
-import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration)
+import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl)
 import Nova.Compiler.Unify (UnifyError, unify)
 
 -- | Type checking error
@@ -26,24 +27,31 @@ instance showTCError :: Show TCError where
   show (UnboundVariable v) = "Unbound variable: " <> v
   show (NotImplemented s) = "Not implemented: " <> s
 
+-- | Map with index for Lists
+listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
+listMapWithIndex f = go 0
+  where
+  go _ Nil = Nil
+  go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)
+
+-- | Helper for instantiate - recursively substitutes fresh type variables
+instantiateGo :: Type -> Env -> List TVar -> Subst -> { ty :: Type, env :: Env }
+instantiateGo schemeTy e Nil sub = { ty: applySubst sub schemeTy, env: e }
+instantiateGo schemeTy e (Cons v rest) sub =
+  let Tuple fresh e' = freshVar e v.name
+      sub' = Map.insert v.id (TyVar fresh) sub
+  in instantiateGo schemeTy e' rest sub'
+
 -- | Instantiate a type scheme with fresh variables
 instantiate :: Env -> Scheme -> { ty :: Type, env :: Env }
-instantiate env scheme = go env scheme.vars Map.empty
-  where
-    go e [] sub = { ty: applySubst sub scheme.ty, env: e }
-    go e vars sub = case Array.uncons vars of
-      Nothing -> { ty: applySubst sub scheme.ty, env: e }
-      Just { head: v, tail: rest } ->
-        let Tuple fresh e' = freshVar e v.name
-            sub' = Map.insert v.id (TyVar fresh) sub
-        in go e' rest sub'
+instantiate env scheme = instantiateGo scheme.ty env (List.fromFoldable scheme.vars) Map.empty
 
 -- | Generalize a type to a scheme
 generalize :: Env -> Type -> Scheme
 generalize env ty =
   let envFree = freeTypeVarsEnv env
       tyFree = freeTypeVars ty
-      freeIds = Set.toUnfoldable (Set.difference tyFree envFree)
+      freeIds = Set.toUnfoldable (Set.difference tyFree envFree) :: Array Int
       vars = map (\i -> mkTVar i ("t" <> show i)) freeIds
   in mkScheme vars ty
 
@@ -111,7 +119,7 @@ infer env (ExprApp f arg) =
                   in Right { ty: applySubst s3 resultTy, sub, env: env3 }
 
 infer env (ExprLambda pats body) =
-  case Array.uncons pats of
+  case List.uncons pats of
     Nothing -> infer env body
     Just { head: pat, tail: restPats } ->
       let Tuple argTv env1 = freshVar env "a"
@@ -119,7 +127,7 @@ infer env (ExprLambda pats body) =
       in case inferPat env1 pat argTy of
         Left e -> Left e
         Right patRes ->
-          let innerExpr = if Array.null restPats then body else ExprLambda restPats body
+          let innerExpr = if List.null restPats then body else ExprLambda restPats body
           in case infer patRes.env innerExpr of
             Left e -> Left e
             Right bodyRes ->
@@ -221,11 +229,11 @@ infer env (ExprParens e) = infer env e
 
 infer env (ExprTyped e _) = infer env e
 
-infer env (ExprRecordUpdate rec updates) = inferRecordUpdate env rec updates
+infer env (ExprRecordUpdate rec updates) = inferRecordUpdate env rec (Array.fromFoldable updates)
 
 infer env (ExprUnaryOp op e) = inferUnaryOp env op e
 
-infer env (ExprDo stmts) = inferDo env stmts
+infer env (ExprDo stmts) = inferDo env (Array.fromFoldable stmts)
 
 infer _ _ = Left (NotImplemented "expression form")
 
@@ -235,7 +243,7 @@ inferRecordUpdate env rec updates = do
   -- Infer the base record type
   recRes <- infer env rec
   -- Infer each update field
-  updateRes <- inferFields recRes.env updates
+  updateRes <- inferFields recRes.env (List.fromFoldable updates)
   -- The result type is the record with updated fields
   -- For now, we just unify to ensure fields exist
   let Tuple rowVar env2 = freshVar updateRes.env "row"
@@ -322,47 +330,47 @@ inferDo env stmts = case Array.uncons stmts of
 -- | Infer types of multiple expressions
 type ManyResult = { tys :: Array Type, sub :: Subst, env :: Env }
 
-inferMany :: Env -> Array Expr -> Either TCError ManyResult
-inferMany env exprs = go env exprs [] emptySubst
-  where
-    go e [] acc sub = Right { tys: Array.reverse acc, sub, env: e }
-    go e es acc sub = case Array.uncons es of
-      Nothing -> Right { tys: Array.reverse acc, sub, env: e }
-      Just { head: expr, tail: rest } ->
-        case infer e expr of
-          Left err -> Left err
-          Right res -> go res.env rest (res.ty : acc) (composeSubst res.sub sub)
+-- | Helper for inferMany
+inferManyGo :: Env -> List Expr -> List Type -> Subst -> Either TCError ManyResult
+inferManyGo e Nil acc sub = Right { tys: Array.fromFoldable (List.reverse acc), sub, env: e }
+inferManyGo e (Cons expr rest) acc sub =
+  case infer e expr of
+    Left err -> Left err
+    Right res -> inferManyGo res.env rest (Cons res.ty acc) (composeSubst res.sub sub)
+
+inferMany :: Env -> List Expr -> Either TCError ManyResult
+inferMany env exprs = inferManyGo env exprs Nil emptySubst
 
 -- | Infer list element types
 type ElemsResult = { sub :: Subst, env :: Env }
 
-inferElems :: Env -> Type -> Array Expr -> Either TCError ElemsResult
-inferElems env elemTy elems = go env elemTy elems emptySubst
-  where
-    go e _ [] sub = Right { sub, env: e }
-    go e eTy es sub = case Array.uncons es of
-      Nothing -> Right { sub, env: e }
-      Just { head: expr, tail: rest } ->
-        case infer e expr of
-          Left err -> Left err
-          Right res ->
-            case unify (applySubst res.sub eTy) res.ty of
-              Left ue -> Left (UnifyErr ue)
-              Right s2 -> go res.env (applySubst s2 eTy) rest (composeSubst s2 (composeSubst res.sub sub))
+-- | Helper for inferElems
+inferElemsGo :: Env -> Type -> List Expr -> Subst -> Either TCError ElemsResult
+inferElemsGo e _ Nil sub = Right { sub, env: e }
+inferElemsGo e eTy (Cons expr rest) sub =
+  case infer e expr of
+    Left err -> Left err
+    Right res ->
+      case unify (applySubst res.sub eTy) res.ty of
+        Left ue -> Left (UnifyErr ue)
+        Right s2 -> inferElemsGo res.env (applySubst s2 eTy) rest (composeSubst s2 (composeSubst res.sub sub))
+
+inferElems :: Env -> Type -> List Expr -> Either TCError ElemsResult
+inferElems env elemTy elems = inferElemsGo env elemTy elems emptySubst
 
 -- | Infer record field types
-type FieldsResult = { tys :: Array (Tuple String Type), sub :: Subst, env :: Env }
+type FieldsResult = { tys :: List (Tuple String Type), sub :: Subst, env :: Env }
 
-inferFields :: Env -> Array (Tuple String Expr) -> Either TCError FieldsResult
-inferFields env fields = go env fields [] emptySubst
-  where
-    go e [] acc sub = Right { tys: Array.reverse acc, sub, env: e }
-    go e fs acc sub = case Array.uncons fs of
-      Nothing -> Right { tys: Array.reverse acc, sub, env: e }
-      Just { head: Tuple name expr, tail: rest } ->
-        case infer e expr of
-          Left err -> Left err
-          Right res -> go res.env rest (Tuple name res.ty : acc) (composeSubst res.sub sub)
+-- | Helper for inferFields
+inferFieldsGo :: Env -> List (Tuple String Expr) -> List (Tuple String Type) -> Subst -> Either TCError FieldsResult
+inferFieldsGo e Nil acc sub = Right { tys: List.reverse acc, sub, env: e }
+inferFieldsGo e (Cons (Tuple name expr) rest) acc sub =
+  case infer e expr of
+    Left err -> Left err
+    Right res -> inferFieldsGo res.env rest (Cons (Tuple name res.ty) acc) (composeSubst res.sub sub)
+
+inferFields :: Env -> List (Tuple String Expr) -> Either TCError FieldsResult
+inferFields env fields = inferFieldsGo env fields Nil emptySubst
 
 -- | Infer pattern type and extend environment
 type PatResult = { env :: Env, sub :: Subst }
@@ -383,11 +391,20 @@ inferPat env (PatLit lit) ty =
     Right s -> Right { env, sub: s }
 
 inferPat env (PatCon conName pats) ty =
-  case lookupEnv env conName of
-    Nothing -> Left (UnboundVariable conName)
+  -- Try both qualified and unqualified names for constructor lookup
+  let unqualifiedName = case String.lastIndexOf (String.Pattern ".") conName of
+        Just idx -> String.drop (idx + 1) conName
+        Nothing -> conName
+      tryLookup name = lookupEnv env name
+  in case tryLookup conName of
     Just scheme ->
       let r = instantiate env scheme
       in inferConPats r.env r.ty pats ty
+    Nothing -> case tryLookup unqualifiedName of
+      Just scheme ->
+        let r = instantiate env scheme
+        in inferConPats r.env r.ty pats ty
+      Nothing -> Left (UnboundVariable conName)
 
 inferPat env (PatParens p) ty = inferPat env p ty
 
@@ -408,29 +425,29 @@ inferPat env (PatAs name pat) ty = do
 inferPat _ _ _ = Left (NotImplemented "pattern form")
 
 -- | Infer record pattern: { x, y } or { x: pat1, y: pat2 }
-inferRecordPat :: Env -> Array (Tuple String Pattern) -> Type -> Either TCError PatResult
-inferRecordPat env fields ty = go env fields Map.empty emptySubst
-  where
-    go e [] fieldTypes sub = do
-      -- Build expected record type and unify
-      let Tuple rowVar e' = freshVar e "row"
-          expectedRec = TyRecord { fields: fieldTypes, row: Just rowVar }
-      case unify (applySubst sub ty) expectedRec of
-        Left ue -> Left (UnifyErr ue)
-        Right s -> Right { env: e', sub: composeSubst s sub }
-    go e fs fieldTypes sub = case Array.uncons fs of
-      Nothing -> go e [] fieldTypes sub
-      Just { head: Tuple label pat, tail: rest } -> do
-        -- Create fresh type for this field
-        let Tuple fieldVar e1 = freshVar e ("f_" <> label)
-            fieldTy = TyVar fieldVar
-        -- Infer the pattern with this field type
-        patRes <- inferPat e1 pat fieldTy
-        -- Continue with remaining fields
-        go patRes.env rest (Map.insert label (applySubst patRes.sub fieldTy) fieldTypes) (composeSubst patRes.sub sub)
+-- | Helper for inferRecordPat
+inferRecordPatGo :: Type -> Env -> List (Tuple String Pattern) -> Map.Map String Type -> Subst -> Either TCError PatResult
+inferRecordPatGo ty e Nil fieldTypes sub = do
+  -- Build expected record type and unify
+  let Tuple rowVar e' = freshVar e "row"
+      expectedRec = TyRecord { fields: fieldTypes, row: Just rowVar }
+  case unify (applySubst sub ty) expectedRec of
+    Left ue -> Left (UnifyErr ue)
+    Right s -> Right { env: e', sub: composeSubst s sub }
+inferRecordPatGo ty e (Cons (Tuple label pat) rest) fieldTypes sub = do
+    -- Create fresh type for this field
+    let Tuple fieldVar e1 = freshVar e ("f_" <> label)
+        fieldTy = TyVar fieldVar
+    -- Infer the pattern with this field type
+    patRes <- inferPat e1 pat fieldTy
+    -- Continue with remaining fields
+    inferRecordPatGo ty patRes.env rest (Map.insert label (applySubst patRes.sub fieldTy) fieldTypes) (composeSubst patRes.sub sub)
+
+inferRecordPat :: Env -> List (Tuple String Pattern) -> Type -> Either TCError PatResult
+inferRecordPat env fields ty = inferRecordPatGo ty env fields Map.empty emptySubst
 
 -- | Infer list pattern: [a, b, c]
-inferListPat :: Env -> Array Pattern -> Type -> Either TCError PatResult
+inferListPat :: Env -> List Pattern -> Type -> Either TCError PatResult
 inferListPat env pats ty = do
   -- Create fresh element type
   let Tuple elemVar env1 = freshVar env "elem"
@@ -443,12 +460,10 @@ inferListPat env pats ty = do
       let elemTy' = applySubst s1 elemTy
       goElems env1 pats elemTy' s1
   where
-    goElems e [] _ sub = Right { env: e, sub }
-    goElems e ps eTy sub = case Array.uncons ps of
-      Nothing -> Right { env: e, sub }
-      Just { head: p, tail: rest } -> do
-        patRes <- inferPat e p eTy
-        goElems patRes.env rest (applySubst patRes.sub eTy) (composeSubst patRes.sub sub)
+    goElems e Nil _ sub = Right { env: e, sub }
+    goElems e (Cons p rest) eTy sub = do
+      patRes <- inferPat e p eTy
+      goElems patRes.env rest (applySubst patRes.sub eTy) (composeSubst patRes.sub sub)
 
 -- | Infer cons pattern: (h : t)
 inferConsPat :: Env -> Pattern -> Pattern -> Type -> Either TCError PatResult
@@ -469,36 +484,36 @@ inferConsPat env hdPat tlPat ty = do
       Right { env: tlRes.env, sub: composeSubst tlRes.sub (composeSubst hdRes.sub s1) }
 
 -- | Infer constructor pattern arguments
-inferConPats :: Env -> Type -> Array Pattern -> Type -> Either TCError PatResult
-inferConPats env conTy pats resultTy = go env conTy pats emptySubst
-  where
-    go e ty [] sub =
-      case unify ty resultTy of
-        Left ue -> Left (UnifyErr ue)
-        Right s -> Right { env: e, sub: composeSubst s sub }
-    go e ty ps sub = case Array.uncons ps of
-      Nothing -> go e ty [] sub
-      Just { head: p, tail: rest } ->
-        case ty of
-          TyCon c | c.name == "Fun", Array.length c.args == 2 ->
-            case { a: Array.head c.args, b: Array.last c.args } of
-              { a: Just argTy, b: Just resTy } ->
-                case inferPat e p argTy of
-                  Left err -> Left err
-                  Right patRes -> go patRes.env resTy rest (composeSubst patRes.sub sub)
-              _ -> Left (NotImplemented "malformed function type")
-          _ -> Left (NotImplemented "expected function type in constructor")
+-- | Helper for inferConPats
+inferConPatsGo :: Type -> Env -> Type -> List Pattern -> Subst -> Either TCError PatResult
+inferConPatsGo resultTy e ty Nil sub =
+  case unify ty resultTy of
+    Left ue -> Left (UnifyErr ue)
+    Right s -> Right { env: e, sub: composeSubst s sub }
+inferConPatsGo resultTy e ty (Cons p rest) sub =
+  case ty of
+    TyCon c | c.name == "Fun", Array.length c.args == 2 ->
+      case { a: Array.head c.args, b: Array.last c.args } of
+        { a: Just argTy, b: Just resTy } ->
+          case inferPat e p argTy of
+            Left err -> Left err
+            Right patRes -> inferConPatsGo resultTy patRes.env resTy rest (composeSubst patRes.sub sub)
+        _ -> Left (NotImplemented "malformed function type")
+    _ -> Left (NotImplemented "expected function type in constructor")
+
+inferConPats :: Env -> Type -> List Pattern -> Type -> Either TCError PatResult
+inferConPats env conTy pats resultTy = inferConPatsGo resultTy env conTy pats emptySubst
 
 -- | Infer let bindings
-inferBinds :: Env -> Array LetBind -> Either TCError PatResult
+inferBinds :: Env -> List LetBind -> Either TCError PatResult
 inferBinds env binds =
   -- First pass: add all bindings with fresh type variables (for recursive refs)
   let envWithPlaceholders = addBindPlaceholders env binds
   -- Second pass: infer actual types
   in inferBindsPass2 envWithPlaceholders binds emptySubst
   where
-    addBindPlaceholders :: Env -> Array LetBind -> Env
-    addBindPlaceholders e bs = Array.foldl addOne e bs
+    addBindPlaceholders :: Env -> List LetBind -> Env
+    addBindPlaceholders e bs = foldl addOne e bs
 
     addOne :: Env -> LetBind -> Env
     addOne e bind = case bind.pattern of
@@ -507,14 +522,12 @@ inferBinds env binds =
         in extendEnv e' name (mkScheme [] (TyVar tv))
       _ -> e
 
-    inferBindsPass2 :: Env -> Array LetBind -> Subst -> Either TCError PatResult
-    inferBindsPass2 e [] sub = Right { env: e, sub }
-    inferBindsPass2 e bs sub = case Array.uncons bs of
-      Nothing -> Right { env: e, sub }
-      Just { head: bind, tail: rest } ->
-        case infer e bind.value of
-          Left err -> Left err
-          Right valRes ->
+    inferBindsPass2 :: Env -> List LetBind -> Subst -> Either TCError PatResult
+    inferBindsPass2 e Nil sub = Right { env: e, sub }
+    inferBindsPass2 e (Cons bind rest) sub =
+      case infer e bind.value of
+        Left err -> Left err
+        Right valRes ->
             case inferPat valRes.env bind.pattern valRes.ty of
               Left err -> Left err
               Right patRes ->
@@ -535,84 +548,84 @@ inferBinds env binds =
                         in patEnv { bindings = Map.union patEnv.bindings e.bindings }
                 in inferBindsPass2 env3 rest (composeSubst patRes.sub (composeSubst valRes.sub sub))
 
--- | Infer case clauses
-inferClauses :: Env -> Type -> Type -> Array CaseClause -> Subst -> Either TCError PatResult
-inferClauses env scrutTy resultTy clauses initSub = go env scrutTy resultTy clauses initSub
-  where
-    go e _ _ [] sub = Right { env: e, sub }
-    go e sTy rTy cs sub = case Array.uncons cs of
-      Nothing -> Right { env: e, sub }
-      Just { head: clause, tail: rest } ->
-        -- Apply accumulated substitution to scrutinee and result types
-        let sTy' = applySubst sub sTy
-            rTy' = applySubst sub rTy
-        in case inferPat e clause.pattern sTy' of
+-- | Convert an expression that's being used as a pattern to an actual Pattern
+exprToPattern :: Expr -> Pattern
+exprToPattern (ExprVar name) = PatVar name
+exprToPattern (ExprApp (ExprVar con) arg) = PatCon con (Cons (exprToPattern arg) Nil)
+exprToPattern (ExprApp (ExprApp (ExprVar con) arg1) arg2) = PatCon con (Cons (exprToPattern arg1) (Cons (exprToPattern arg2) Nil))
+exprToPattern (ExprLit lit) = PatLit lit
+exprToPattern (ExprParens e) = exprToPattern e
+exprToPattern _ = PatWildcard
+
+-- | Handle pattern guard expressions recursively
+inferGuardExpr :: Env -> Expr -> Either TCError { env :: Env, sub :: Subst }
+-- Handle && (composition of guards)
+inferGuardExpr e (ExprBinOp "&&" left right) =
+  case inferGuardExpr e left of
+    Left err -> Left err
+    Right leftRes ->
+      case inferGuardExpr leftRes.env right of
+        Left err -> Left err
+        Right rightRes ->
+          Right { env: rightRes.env, sub: composeSubst rightRes.sub leftRes.sub }
+-- Handle pattern guard: Pat <- Expr
+inferGuardExpr e (ExprBinOp "<-" patExpr valExpr) =
+  case infer e valExpr of
+    Left err -> Left err
+    Right valRes ->
+      -- Convert the pattern expression to a pattern and infer bindings
+      let pat = exprToPattern patExpr
+      in case inferPat valRes.env pat valRes.ty of
+        Left err -> Left err
+        Right patRes -> Right { env: patRes.env, sub: composeSubst patRes.sub valRes.sub }
+-- Handle comma-separated guards (treated like &&)
+inferGuardExpr e (ExprBinOp "," left right) =
+  inferGuardExpr e (ExprBinOp "&&" left right)
+-- Regular boolean expression
+inferGuardExpr e expr =
+  case infer e expr of
+    Left err -> Left err
+    Right res -> Right { env: res.env, sub: res.sub }
+
+-- | Infer a guard expression (if present)
+-- Pattern guards like `Pat <- Expr` need special handling to bind variables
+inferGuard :: Env -> Maybe Expr -> Either TCError { env :: Env, sub :: Subst }
+inferGuard e Nothing = Right { env: e, sub: emptySubst }
+inferGuard e (Just guardExpr) = inferGuardExpr e guardExpr
+
+-- | Helper for inferClauses
+inferClausesGo :: Type -> Type -> Env -> List CaseClause -> Subst -> Either TCError PatResult
+inferClausesGo _ _ e Nil sub = Right { env: e, sub }
+inferClausesGo sTy rTy e (Cons clause rest) sub =
+  -- Apply accumulated substitution to scrutinee and result types
+  let sTy' = applySubst sub sTy
+      rTy' = applySubst sub rTy
+    in case inferPat e clause.pattern sTy' of
+      Left err -> Left err
+      Right patRes ->
+        -- IMPORTANT: Apply pattern substitution to the environment
+        -- This ensures that pattern variables like 'n' in 'Just n' get their
+        -- types resolved from fresh type vars (a0) to concrete types (Int)
+        let patEnv = applySubstToEnv patRes.sub patRes.env
+        -- Check guard if present (guards should be Bool)
+        in case inferGuard patEnv clause.guard of
           Left err -> Left err
-          Right patRes ->
-            -- IMPORTANT: Apply pattern substitution to the environment
-            -- This ensures that pattern variables like 'n' in 'Just n' get their
-            -- types resolved from fresh type vars (a0) to concrete types (Int)
-            let patEnv = applySubstToEnv patRes.sub patRes.env
-            -- Check guard if present (guards should be Bool)
-            in case inferGuard patEnv clause.guard of
+          Right guardRes ->
+            case infer guardRes.env clause.body of
               Left err -> Left err
-              Right guardRes ->
-                case infer guardRes.env clause.body of
-                  Left err -> Left err
-                  Right bodyRes ->
-                    case unify (applySubst bodyRes.sub rTy') bodyRes.ty of
-                      Left ue -> Left (UnifyErr ue)
-                      Right s ->
-                        let newSub = composeSubst s (composeSubst bodyRes.sub (composeSubst guardRes.sub (composeSubst patRes.sub sub)))
-                            -- IMPORTANT: Update counter from bodyRes.env to avoid type variable ID collisions
-                            -- We keep original bindings but use the new counter
-                            e' = e { counter = bodyRes.env.counter }
-                        in go e' sTy rTy rest newSub
+              Right bodyRes ->
+                case unify (applySubst bodyRes.sub rTy') bodyRes.ty of
+                  Left ue -> Left (UnifyErr ue)
+                  Right s ->
+                    let newSub = composeSubst s (composeSubst bodyRes.sub (composeSubst guardRes.sub (composeSubst patRes.sub sub)))
+                        -- IMPORTANT: Update counter from bodyRes.env to avoid type variable ID collisions
+                        -- We keep original bindings but use the new counter
+                        e' = e { counter = bodyRes.env.counter }
+                    in inferClausesGo sTy rTy e' rest newSub
 
-    -- Infer a guard expression (if present)
-    -- Pattern guards like `Pat <- Expr` need special handling to bind variables
-    inferGuard :: Env -> Maybe Expr -> Either TCError { env :: Env, sub :: Subst }
-    inferGuard e Nothing = Right { env: e, sub: emptySubst }
-    inferGuard e (Just guardExpr) = inferGuardExpr e guardExpr
-
-    -- Handle pattern guard expressions recursively
-    inferGuardExpr :: Env -> Expr -> Either TCError { env :: Env, sub :: Subst }
-    -- Handle && (composition of guards)
-    inferGuardExpr e (ExprBinOp "&&" left right) =
-      case inferGuardExpr e left of
-        Left err -> Left err
-        Right leftRes ->
-          case inferGuardExpr leftRes.env right of
-            Left err -> Left err
-            Right rightRes ->
-              Right { env: rightRes.env, sub: composeSubst rightRes.sub leftRes.sub }
-    -- Handle pattern guard: Pat <- Expr
-    inferGuardExpr e (ExprBinOp "<-" patExpr valExpr) =
-      case infer e valExpr of
-        Left err -> Left err
-        Right valRes ->
-          -- Convert the pattern expression to a pattern and infer bindings
-          let pat = exprToPattern patExpr
-          in case inferPat valRes.env pat valRes.ty of
-            Left err -> Left err
-            Right patRes -> Right { env: patRes.env, sub: composeSubst patRes.sub valRes.sub }
-    -- Handle comma-separated guards (treated like &&)
-    inferGuardExpr e (ExprBinOp "," left right) =
-      inferGuardExpr e (ExprBinOp "&&" left right)
-    -- Regular boolean expression
-    inferGuardExpr e expr =
-      case infer e expr of
-        Left err -> Left err
-        Right res -> Right { env: res.env, sub: res.sub }
-
-    -- Convert an expression that's being used as a pattern to an actual Pattern
-    exprToPattern :: Expr -> Pattern
-    exprToPattern (ExprVar name) = PatVar name
-    exprToPattern (ExprApp (ExprVar con) arg) = PatCon con [exprToPattern arg]
-    exprToPattern (ExprApp (ExprApp (ExprVar con) arg1) arg2) = PatCon con [exprToPattern arg1, exprToPattern arg2]
-    exprToPattern (ExprLit lit) = PatLit lit
-    exprToPattern (ExprParens e) = exprToPattern e
-    exprToPattern _ = PatWildcard
+-- | Infer case clauses
+inferClauses :: Env -> Type -> Type -> List CaseClause -> Subst -> Either TCError PatResult
+inferClauses env scrutTy resultTy clauses initSub = inferClausesGo scrutTy resultTy env clauses initSub
 
 -- | Type check a function declaration
 -- For recursive functions, we first add a fresh type var for the function name
@@ -624,9 +637,9 @@ checkFunction env func =
       tempScheme = mkScheme [] funcTy
       envWithFunc = extendEnv env1 func.name tempScheme
       -- Build expression from parameters and body
-      expr = if Array.null func.parameters
-             then func.body
-             else ExprLambda func.parameters func.body
+      expr = case func.parameters of
+        Nil -> func.body
+        _ -> ExprLambda func.parameters func.body
   in case infer envWithFunc expr of
     Left e -> Left e
     Right res -> do
@@ -660,11 +673,11 @@ checkDecl env _ = Right env
 -- | Adds each method to the environment with its polymorphic type
 checkTypeClass :: Env -> TypeClass -> Env
 checkTypeClass env tc =
-  Array.foldl addMethod env tc.methods
+  Array.foldl addMethod env (Array.fromFoldable tc.methods)
   where
     addMethod e sig =
       -- Convert the type expression to a Type, using class type vars
-      let varPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (e.counter + i) v)) tc.typeVars
+      let varPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (e.counter + i) v)) (Array.fromFoldable tc.typeVars)
           varMap = Map.fromFoldable varPairs
           methodType = typeExprToType varMap sig.ty
           -- Create a scheme with the class type variables quantified
@@ -674,16 +687,20 @@ checkTypeClass env tc =
 -- | Process a data type declaration
 -- | Adds the type constructor and all data constructors to the environment
 checkDataType :: Env -> DataType -> Env
-checkDataType env dt = checkDataTypeWithAliases Map.empty env dt
+checkDataType env dt = checkDataTypeWithAllAliases Map.empty Map.empty env dt
 
 -- | Process a data type declaration with access to type aliases
 -- | aliasMap is Map String Type containing type alias expansions
 checkDataTypeWithAliases :: Map.Map String Type -> Env -> DataType -> Env
-checkDataTypeWithAliases aliasMap env dt =
+checkDataTypeWithAliases aliasMap env dt = checkDataTypeWithAllAliases aliasMap Map.empty env dt
+
+-- | Process a data type declaration with both simple and parameterized type aliases
+checkDataTypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Env -> DataType -> Env
+checkDataTypeWithAllAliases aliasMap paramAliasMap env dt =
   let -- Create type variables for the type parameters
-      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (env.counter + i) v)) dt.typeVars
+      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (env.counter + i) v)) (Array.fromFoldable dt.typeVars)
       typeVarMap = Map.fromFoldable typeVarPairs
-      newCounter = env.counter + Array.length dt.typeVars
+      newCounter = env.counter + List.length dt.typeVars
       env1 = env { counter = newCounter }
 
       -- The result type is the data type applied to its type variables
@@ -692,34 +709,69 @@ checkDataTypeWithAliases aliasMap env dt =
 
       -- Add each constructor to the environment
       addConstructor e con =
-        let conType = buildConstructorTypeWithAliases aliasMap typeVarMap con.fields resultType
+        let conType = buildConstructorTypeWithAllAliases aliasMap paramAliasMap typeVarMap con.fields resultType
             conScheme = mkScheme (map snd typeVarPairs) conType
         in extendEnv e con.name conScheme
-  in Array.foldl addConstructor env1 dt.constructors
+  in Array.foldl addConstructor env1 (Array.fromFoldable dt.constructors)
+
+-- | Process a newtype declaration with access to type aliases
+-- | Newtypes are like data types but with exactly one constructor and one wrapped field
+checkNewtypeWithAliases :: Map.Map String Type -> Env -> NewtypeDecl -> Env
+checkNewtypeWithAliases aliasMap env nt = checkNewtypeWithAllAliases aliasMap Map.empty env nt
+
+-- | Process a newtype declaration with both simple and parameterized type aliases
+checkNewtypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Env -> NewtypeDecl -> Env
+checkNewtypeWithAllAliases aliasMap paramAliasMap env nt =
+  let -- Create type variables for the type parameters
+      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (env.counter + i) v)) (Array.fromFoldable nt.typeVars)
+      typeVarMap = Map.fromFoldable typeVarPairs
+      newCounter = env.counter + List.length nt.typeVars
+      env1 = env { counter = newCounter }
+
+      -- The result type is the newtype applied to its type variables
+      typeArgs = map (\(Tuple _ tv) -> TyVar tv) typeVarPairs
+      resultType = TyCon (mkTCon nt.name typeArgs)
+
+      -- The constructor takes the wrapped type and returns the newtype
+      wrappedTy = typeExprToTypeWithAllAliases aliasMap paramAliasMap typeVarMap nt.wrappedType
+      conType = tArrow wrappedTy resultType
+      conScheme = mkScheme (map snd typeVarPairs) conType
+  in extendEnv env1 nt.constructor conScheme
 
 -- | Build the type for a data constructor
 -- | e.g., Just :: forall a. a -> Maybe a
 -- | e.g., Cons :: forall a. a -> List a -> List a
-buildConstructorType :: Map.Map String TVar -> Array DataField -> Type -> Type
-buildConstructorType varMap fields resultType = go fields
-  where
-    go [] = resultType
-    go fs = case Array.uncons fs of
-      Nothing -> resultType
-      Just { head: field, tail: rest } ->
-        let fieldTy = typeExprToType varMap field.ty
-        in tArrow fieldTy (go rest)
+-- | Helper for buildConstructorType
+buildConstructorTypeGo :: Map.Map String TVar -> Type -> List DataField -> Type
+buildConstructorTypeGo _ resultType Nil = resultType
+buildConstructorTypeGo varMap resultType (Cons field rest) =
+  let fieldTy = typeExprToType varMap field.ty
+  in tArrow fieldTy (buildConstructorTypeGo varMap resultType rest)
+
+buildConstructorType :: Map.Map String TVar -> List DataField -> Type -> Type
+buildConstructorType varMap fields resultType = buildConstructorTypeGo varMap resultType fields
 
 -- | Build constructor type with type alias lookup
-buildConstructorTypeWithAliases :: Map.Map String Type -> Map.Map String TVar -> Array DataField -> Type -> Type
-buildConstructorTypeWithAliases aliasMap varMap fields resultType = go fields
-  where
-    go [] = resultType
-    go fs = case Array.uncons fs of
-      Nothing -> resultType
-      Just { head: field, tail: rest } ->
-        let fieldTy = typeExprToTypeWithAliases aliasMap varMap field.ty
-        in tArrow fieldTy (go rest)
+-- | Helper for buildConstructorTypeWithAliases
+buildConstructorTypeWithAliasesGo :: Map.Map String Type -> Map.Map String TVar -> Type -> List DataField -> Type
+buildConstructorTypeWithAliasesGo _ _ resultType Nil = resultType
+buildConstructorTypeWithAliasesGo aliasMap varMap resultType (Cons field rest) =
+  let fieldTy = typeExprToTypeWithAliases aliasMap varMap field.ty
+  in tArrow fieldTy (buildConstructorTypeWithAliasesGo aliasMap varMap resultType rest)
+
+buildConstructorTypeWithAliases :: Map.Map String Type -> Map.Map String TVar -> List DataField -> Type -> Type
+buildConstructorTypeWithAliases aliasMap varMap fields resultType = buildConstructorTypeWithAliasesGo aliasMap varMap resultType fields
+
+-- | Build constructor type with both simple and parameterized type alias lookup
+-- | Helper for buildConstructorTypeWithAllAliases
+buildConstructorTypeWithAllAliasesGo :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Map.Map String TVar -> Type -> List DataField -> Type
+buildConstructorTypeWithAllAliasesGo _ _ _ resultType Nil = resultType
+buildConstructorTypeWithAllAliasesGo aliasMap paramAliasMap varMap resultType (Cons field rest) =
+  let fieldTy = typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap field.ty
+  in tArrow fieldTy (buildConstructorTypeWithAllAliasesGo aliasMap paramAliasMap varMap resultType rest)
+
+buildConstructorTypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Map.Map String TVar -> List DataField -> Type -> Type
+buildConstructorTypeWithAllAliases aliasMap paramAliasMap varMap fields resultType = buildConstructorTypeWithAllAliasesGo aliasMap paramAliasMap varMap resultType fields
 
 -- | Convert a TypeExpr to a Type, looking up type aliases from maps
 -- aliasMap: simple (non-parameterized) aliases like TokState = { ... }
@@ -780,13 +832,13 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprRecord fields 
   in TyRecord { fields: fieldMap, row }
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprForAll vars t) =
   -- Add forall-bound type variables to varMap
-  let varList = Array.mapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) vars
+  let varList = Array.mapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) (Array.fromFoldable vars)
       newVarMap = Map.union (Map.fromFoldable varList) varMap
   in typeExprToTypeWithAllAliases aliasMap paramAliasMap newVarMap t
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprConstrained _ t) = typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap t
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprParens t) = typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap t
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprTuple ts) =
-  tTuple (map (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap) ts)
+  tTuple (Array.fromFoldable (map (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap) ts))
 
 -- | Convert type expression to type, with access to env for resolving type aliases from imports
 typeExprToTypeWithEnv :: Env -> Map.Map String Type -> Map.Map String TypeAliasInfo -> Map.Map String TVar -> TypeExpr -> Type
@@ -847,7 +899,7 @@ typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprRecord fields may
         Nothing -> Nothing
   in TyRecord { fields: fieldMap, row }
 typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprForAll vars t) =
-  let varList = Array.mapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) vars
+  let varList = Array.mapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) (Array.fromFoldable vars)
       newVarMap = Map.union (Map.fromFoldable varList) varMap
   in typeExprToTypeWithEnv env aliasMap paramAliasMap newVarMap t
 typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprConstrained _ t) =
@@ -855,7 +907,7 @@ typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprConstrained _ t) 
 typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprParens t) =
   typeExprToTypeWithEnv env aliasMap paramAliasMap varMap t
 typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprTuple ts) =
-  tTuple (map (typeExprToTypeWithEnv env aliasMap paramAliasMap varMap) ts)
+  tTuple (Array.fromFoldable (map (typeExprToTypeWithEnv env aliasMap paramAliasMap varMap) ts))
 
 -- | Collect type application into constructor name and arguments
 -- | e.g., TyExprApp (TyExprApp (TyExprCon "Either") a) b -> ("Either", [a, b])
@@ -898,7 +950,7 @@ substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprRecord fields maybeR
   let fieldMap = Map.fromFoldable (map (\(Tuple l t) -> Tuple l (substituteTypeExpr aliasMap paramAliasMap paramSubst t)) fields)
   in TyRecord { fields: fieldMap, row: Nothing }
 substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprTuple ts) =
-  tTuple (map (substituteTypeExpr aliasMap paramAliasMap paramSubst) ts)
+  tTuple (Array.fromFoldable (map (substituteTypeExpr aliasMap paramAliasMap paramSubst) ts))
 substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprParens t) = substituteTypeExpr aliasMap paramAliasMap paramSubst t
 substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprForAll _ t) = substituteTypeExpr aliasMap paramAliasMap paramSubst t
 substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprConstrained _ t) = substituteTypeExpr aliasMap paramAliasMap paramSubst t
@@ -985,14 +1037,14 @@ typeExprToType varMap (TyExprRecord fields maybeRow) =
 typeExprToType varMap (TyExprForAll vars t) =
   -- Add forall-bound type variables to varMap
   -- Use negative IDs since these are quantified variables that will be instantiated later
-  let varList = Array.mapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) vars
+  let varList = listMapWithIndex (\i name -> Tuple name (mkTVar (-(i + 1)) name)) vars
       newVarMap = Map.union (Map.fromFoldable varList) varMap  -- New vars shadow old ones
   in typeExprToType newVarMap t
 typeExprToType varMap (TyExprConstrained _ t) = typeExprToType varMap t  -- Ignore constraints
 typeExprToType varMap (TyExprParens t) = typeExprToType varMap t
 typeExprToType varMap (TyExprTuple ts) =
   -- Use tTuple to normalize tuple names (Tuple for 2-tuples)
-  tTuple (map (typeExprToType varMap) ts)
+  tTuple (Array.fromFoldable (map (typeExprToType varMap) ts))
 
 -- | Process a type alias declaration
 checkTypeAlias :: Env -> TypeAlias -> Env
@@ -1046,12 +1098,12 @@ processImportDecl registry env imp =
         -- Import everything EXCEPT the listed items
         -- For now, just import everything (hiding not fully implemented)
         mergeExportsToEnv env exports
-      else if Array.null imp.items then
+      else if List.null imp.items then
         -- Empty import list - import everything
         mergeExportsToEnv env exports
       else
         -- Import only specified items
-        Array.foldl (importItem exports) env imp.items
+        foldl (importItem exports) env imp.items
 
 -- | Import a single item from module exports
 importItem :: ModuleExports -> Env -> ImportItem -> Env
@@ -1074,7 +1126,7 @@ importItem exports env item = case item of
             mergeTypeExport env exports typeName typeInfo.constructors
           ImportSome ctorNames ->
             -- Import specific constructors
-            mergeTypeExport env exports typeName ctorNames
+            mergeTypeExport env exports typeName (Array.fromFoldable ctorNames)
           ImportNone ->
             -- Import just the type, no constructors
             env
@@ -1100,15 +1152,15 @@ extractExports decls =
     collectExport :: ModuleExports -> Declaration -> ModuleExports
     collectExport exp (DeclDataType dt) =
       let -- Add the type
-          typeInfo = { arity: Array.length dt.typeVars
-                     , constructors: map _.name dt.constructors
+          typeInfo = { arity: List.length dt.typeVars
+                     , constructors: Array.fromFoldable (map _.name dt.constructors)
                      }
           exp1 = exp { types = Map.insert dt.name typeInfo exp.types }
           -- Add constructors (we need to compute their types)
           -- For now, just store the constructor names - actual schemes would need type checking
-      in Array.foldl (addConstructorPlaceholder dt) exp1 dt.constructors
+      in Array.foldl (addConstructorPlaceholder dt) exp1 (Array.fromFoldable dt.constructors)
     collectExport exp (DeclTypeAlias ta) =
-      exp { typeAliases = Map.insert ta.name { params: ta.typeVars, body: ta.ty } exp.typeAliases }
+      exp { typeAliases = Map.insert ta.name { params: Array.fromFoldable ta.typeVars, body: ta.ty } exp.typeAliases }
     collectExport exp (DeclFunction func) =
       -- Functions need their types inferred, so we can't add them pre-typecheck
       -- They would be added after type checking
@@ -1123,10 +1175,10 @@ extractExports decls =
     addConstructorPlaceholder dt exp ctor =
       -- Build proper constructor type using type aliases
       let -- Create type var map for the data type's type parameters
-          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) dt.typeVars
+          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) (Array.fromFoldable dt.typeVars)
           typeVarMap = Map.fromFoldable typeVarPairs
           -- Result type is the data type applied to its type vars
-          resultType = if Array.null dt.typeVars
+          resultType = if List.null dt.typeVars
                        then TyCon (mkTCon dt.name [])
                        else TyCon (mkTCon dt.name (map (\(Tuple _ tv) -> TyVar tv) typeVarPairs))
           -- Build constructor type: field1 -> field2 -> ... -> ResultType
@@ -1152,7 +1204,7 @@ collectTypeAliases decls = Array.foldl collect Map.empty decls
   where
     collect m decl = case decl of
       DeclTypeAlias ta ->
-        if Array.null ta.typeVars
+        if List.null ta.typeVars
         then Map.insert ta.name (typeExprToType Map.empty ta.ty) m
         else m  -- Skip parameterized aliases here
       _ -> m
@@ -1161,7 +1213,7 @@ collectTypeAliases decls = Array.foldl collect Map.empty decls
 collectParamTypeAliases :: Array Declaration -> Map.Map String TypeAliasInfo
 collectParamTypeAliases decls = Array.foldl collect Map.empty decls
   where
-    collect m (DeclTypeAlias ta) = Map.insert ta.name { params: ta.typeVars, body: ta.ty } m
+    collect m (DeclTypeAlias ta) = Map.insert ta.name { params: Array.fromFoldable ta.typeVars, body: ta.ty } m
     collect m _ = m
 
 -- | Process non-function declarations (data types, type aliases, imports, type sigs)
@@ -1189,9 +1241,10 @@ processNonFunctionsWithAliases importedAliases env decls =
         DeclTypeAlias ta -> checkTypeAlias e ta
         _ -> e
       env1 = Array.foldl processTypeAlias env decls
-      -- Phase 2: Process data types (with type aliases available)
+      -- Phase 2: Process data types and newtypes (with both simple and parameterized type aliases)
       processDataType e decl = case decl of
-        DeclDataType dt -> checkDataTypeWithAliases aliasMap e dt
+        DeclDataType dt -> checkDataTypeWithAllAliases aliasMap paramAliasMap e dt
+        DeclNewtype nt -> checkNewtypeWithAllAliases aliasMap paramAliasMap e nt
         _ -> e
       env2 = Array.foldl processDataType env1 decls
       -- Phase 3: Process type classes (add methods to env)
@@ -1249,19 +1302,22 @@ addFunctionPlaceholdersWithAliases importedAliases env decls =
         _ -> e
   in Array.foldl addPlaceholder env decls
 
+-- | Helper for checkFunctionBodies
+checkFunctionBodiesGo :: Env -> Array Declaration -> Either TCError Env
+checkFunctionBodiesGo e ds = case Array.uncons ds of
+  Nothing -> Right e
+  Just { head: DeclFunction func, tail: rest } ->
+    case checkFunction e func of
+      Left err -> Left err
+      Right r -> checkFunctionBodiesGo r.env rest
+  Just { head: _, tail: rest } -> checkFunctionBodiesGo e rest
+
 -- | Type check all function bodies
 -- Handles multi-clause functions by merging adjacent declarations with the same name
 checkFunctionBodies :: Env -> Array Declaration -> Either TCError Env
 checkFunctionBodies env decls =
   let mergedDecls = mergeMultiClauseFunctions decls
-      go e ds = case Array.uncons ds of
-        Nothing -> Right e
-        Just { head: DeclFunction func, tail: rest } ->
-          case checkFunction e func of
-            Left err -> Left err
-            Right r -> go r.env rest
-        Just { head: _, tail: rest } -> go e rest
-  in go env mergedDecls
+  in checkFunctionBodiesGo env mergedDecls
 
 -- | Merge adjacent function declarations with the same name into single functions
 -- Converts: f (Pat1) = body1; f (Pat2) = body2
@@ -1295,43 +1351,44 @@ mergeMultiClauseFunctions decls = goMerge decls []
     mergeClausesIntoOne :: Array FunctionDeclaration -> FunctionDeclaration
     mergeClausesIntoOne clauses =
       case Array.head clauses of
-        Nothing -> { name: "", parameters: [], body: ExprVar "error", guards: [], typeSignature: Nothing }
+        Nothing -> { name: "", parameters: Nil, body: ExprVar "error", guards: Nil, typeSignature: Nothing }
         Just first ->
           let name = first.name
               -- All clauses should have same number of parameters
-              numParams = Array.length first.parameters
+              numParams = List.length first.parameters
               -- Create fresh parameter names
-              paramNames = Array.mapWithIndex (\i _ -> "__arg" <> show i) first.parameters
+              paramNames = map (\i -> "__arg" <> show i) (List.range 0 (numParams - 1))
               paramPats = map PatVar paramNames
               paramVars = map ExprVar paramNames
               -- Build case clauses from each function clause
-              caseClauses = Array.mapMaybe (clauseToCaseClause paramVars) clauses
+              clausesList = List.fromFoldable clauses
+              caseClauses = List.mapMaybe (clauseToCaseClause paramVars) clausesList
               -- Build case expression or tuple case for multiple params
               caseExpr = case numParams of
                 0 -> first.body  -- No params, just use first body
-                1 -> case Array.head paramVars of
+                1 -> case List.head paramVars of
                   Just v -> ExprCase v caseClauses
                   Nothing -> first.body
-                _ -> ExprCase (ExprTuple paramVars) (Array.mapMaybe (clauseToTupleCase paramVars) clauses)
+                _ -> ExprCase (ExprTuple paramVars) (List.mapMaybe (clauseToTupleCase paramVars) clausesList)
           in { name
              , parameters: paramPats
              , body: caseExpr
-             , guards: []
+             , guards: Nil
              , typeSignature: first.typeSignature
              }
 
     -- Convert a function clause to a case clause (single parameter case)
-    clauseToCaseClause :: Array Expr -> FunctionDeclaration -> Maybe CaseClause
-    clauseToCaseClause _ func = case Array.head func.parameters of
+    clauseToCaseClause :: List Expr -> FunctionDeclaration -> Maybe CaseClause
+    clauseToCaseClause _ func = case List.head func.parameters of
       Nothing -> Nothing
       Just pat -> Just { pattern: pat, body: func.body, guard: Nothing }
 
     -- Convert a function clause to a case clause with tuple pattern (multi-param)
-    clauseToTupleCase :: Array Expr -> FunctionDeclaration -> Maybe CaseClause
+    clauseToTupleCase :: List Expr -> FunctionDeclaration -> Maybe CaseClause
     clauseToTupleCase _ func =
-      let n = Array.length func.parameters
+      let n = List.length func.parameters
           -- Use "Tuple" for 2 params, "Tuple3" for 3, etc. to match PureScript conventions
           tupName = if n == 2 then "Tuple" else "Tuple" <> show n
       in if n > 1
          then Just { pattern: PatCon tupName func.parameters, body: func.body, guard: Nothing }
-         else clauseToCaseClause [] func
+         else clauseToCaseClause Nil func

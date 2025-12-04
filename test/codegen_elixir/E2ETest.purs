@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.String as String
+import Data.List (List(..), (:))
 import Nova.Compiler.Ast (Module, Declaration(..), Expr(..), Literal(..), Pattern(..), DoStatement(..), LetBind)
 import Nova.Compiler.CodeGen (genModule)
 
@@ -20,21 +21,21 @@ main = do
   testElixir "arithmetic"
     { name: "Test.Arithmetic"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "add"
-            , parameters: [PatVar "x", PatVar "y"]
+            , parameters: PatVar "x" : PatVar "y" : Nil
             , body: ExprBinOp "+" (ExprVar "x") (ExprVar "y")
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprApp (ExprApp (ExprVar "add") (ExprLit (LitInt 2))) (ExprLit (LitInt 3))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.Arithmetic.main()"
     "5"
@@ -43,21 +44,21 @@ main = do
   testElixir "identity"
     { name: "Test.Identity"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "id"
-            , parameters: [PatVar "x"]
+            , parameters: PatVar "x" : Nil
             , body: ExprVar "x"
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprApp (ExprVar "id") (ExprLit (LitInt 42))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.Identity.main()"
     "42"
@@ -66,14 +67,14 @@ main = do
   testElixir "boolean_if"
     { name: "Test.Boolean"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprIf (ExprLit (LitBool true)) (ExprLit (LitInt 1)) (ExprLit (LitInt 0))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.Boolean.main()"
     "1"
@@ -82,14 +83,14 @@ main = do
   testElixir "list"
     { name: "Test.ListTest"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
-            , body: ExprList [ExprLit (LitInt 1), ExprLit (LitInt 2), ExprLit (LitInt 3)]
-            , guards: []
+            , parameters: Nil
+            , body: ExprList (ExprLit (LitInt 1) : ExprLit (LitInt 2) : ExprLit (LitInt 3) : Nil)
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.ListTest.main()"
     "[1, 2, 3]"
@@ -98,14 +99,14 @@ main = do
   testElixir "record"
     { name: "Test.RecordTest"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
-            , body: ExprRecord [Tuple "x" (ExprLit (LitInt 10)), Tuple "y" (ExprLit (LitInt 20))]
-            , guards: []
+            , parameters: Nil
+            , body: ExprRecord (Tuple "x" (ExprLit (LitInt 10)) : Tuple "y" (ExprLit (LitInt 20)) : Nil)
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.RecordTest.main()"
     "%{x: 10, y: 20}"
@@ -114,16 +115,16 @@ main = do
   testElixir "lambda"
     { name: "Test.LambdaTest"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprApp
-                (ExprLambda [PatVar "x"] (ExprBinOp "*" (ExprVar "x") (ExprLit (LitInt 2))))
+                (ExprLambda (PatVar "x" : Nil) (ExprBinOp "*" (ExprVar "x") (ExprLit (LitInt 2))))
                 (ExprLit (LitInt 21))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.LambdaTest.main()"
     "42"
@@ -132,17 +133,17 @@ main = do
   testElixir "comparison"
     { name: "Test.Compare"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprIf
                 (ExprBinOp ">" (ExprLit (LitInt 5)) (ExprLit (LitInt 3)))
                 (ExprLit (LitInt 1))
                 (ExprLit (LitInt 0))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.Compare.main()"
     "1"
@@ -151,14 +152,14 @@ main = do
   testElixir "boolean_and"
     { name: "Test.BoolAnd"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprBinOp "&&" (ExprLit (LitBool true)) (ExprLit (LitBool false))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.BoolAnd.main()"
     "false"
@@ -167,21 +168,21 @@ main = do
   testElixir "cons_pattern"
     { name: "Test.ConsPat"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "first"
-            , parameters: [PatCons (PatVar "h") (PatVar "t")]
+            , parameters: PatCons (PatVar "h") (PatVar "t") : Nil
             , body: ExprVar "h"
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
-            , body: ExprApp (ExprVar "first") (ExprList [ExprLit (LitInt 42), ExprLit (LitInt 1), ExprLit (LitInt 2)])
-            , guards: []
+            , parameters: Nil
+            , body: ExprApp (ExprVar "first") (ExprList (ExprLit (LitInt 42) : ExprLit (LitInt 1) : ExprLit (LitInt 2) : Nil))
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.ConsPat.main()"
     "42"
@@ -190,21 +191,21 @@ main = do
   testElixir "record_pattern"
     { name: "Test.RecPat"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "getX"
-            , parameters: [PatRecord [Tuple "x" (PatVar "x")]]
+            , parameters: PatRecord (Tuple "x" (PatVar "x") : Nil) : Nil
             , body: ExprVar "x"
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
-            , body: ExprApp (ExprVar "getX") (ExprRecord [Tuple "x" (ExprLit (LitInt 99)), Tuple "y" (ExprLit (LitInt 1))])
-            , guards: []
+            , parameters: Nil
+            , body: ExprApp (ExprVar "getX") (ExprRecord (Tuple "x" (ExprLit (LitInt 99)) : Tuple "y" (ExprLit (LitInt 1)) : Nil))
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.RecPat.main()"
     "99"
@@ -213,26 +214,27 @@ main = do
   testElixir "case_cons"
     { name: "Test.CaseCons"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "sumList"
-            , parameters: [PatVar "xs"]
+            , parameters: PatVar "xs" : Nil
             , body: ExprCase (ExprVar "xs")
-                [ { pattern: PatList [], guard: Nothing, body: ExprLit (LitInt 0) }
-                , { pattern: PatCons (PatVar "h") (PatVar "t"), guard: Nothing
+                ( { pattern: PatList Nil, guard: Nothing, body: ExprLit (LitInt 0) }
+                : { pattern: PatCons (PatVar "h") (PatVar "t"), guard: Nothing
                   , body: ExprBinOp "+" (ExprVar "h") (ExprApp (ExprVar "sumList") (ExprVar "t"))
                   }
-                ]
-            , guards: []
+                : Nil
+                )
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
-            , body: ExprApp (ExprVar "sumList") (ExprList [ExprLit (LitInt 1), ExprLit (LitInt 2), ExprLit (LitInt 3), ExprLit (LitInt 4), ExprLit (LitInt 5)])
-            , guards: []
+            , parameters: Nil
+            , body: ExprApp (ExprVar "sumList") (ExprList (ExprLit (LitInt 1) : ExprLit (LitInt 2) : ExprLit (LitInt 3) : ExprLit (LitInt 4) : ExprLit (LitInt 5) : Nil))
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.CaseCons.main()"
     "15"
@@ -241,24 +243,24 @@ main = do
   testElixir "factorial"
     { name: "Test.Factorial"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "fact"
-            , parameters: [PatVar "n"]
+            , parameters: PatVar "n" : Nil
             , body: ExprIf
                 (ExprBinOp "==" (ExprVar "n") (ExprLit (LitInt 0)))
                 (ExprLit (LitInt 1))
                 (ExprBinOp "*" (ExprVar "n") (ExprApp (ExprVar "fact") (ExprBinOp "-" (ExprVar "n") (ExprLit (LitInt 1)))))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        , DeclFunction
+        : DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprApp (ExprVar "fact") (ExprLit (LitInt 5))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.Factorial.main()"
     "120"
@@ -267,18 +269,18 @@ main = do
   testElixir "record_update"
     { name: "Test.RecUpdate"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprRecordAccess
                 (ExprRecordUpdate
-                  (ExprRecord [Tuple "x" (ExprLit (LitInt 1)), Tuple "y" (ExprLit (LitInt 2))])
-                  [Tuple "x" (ExprLit (LitInt 100))])
+                  (ExprRecord (Tuple "x" (ExprLit (LitInt 1)) : Tuple "y" (ExprLit (LitInt 2)) : Nil))
+                  (Tuple "x" (ExprLit (LitInt 100)) : Nil))
                 "x"
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.RecUpdate.main()"
     "100"
@@ -287,14 +289,14 @@ main = do
   testElixir "unary_neg"
     { name: "Test.UnaryNeg"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprUnaryOp "-" (ExprLit (LitInt 42))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.UnaryNeg.main()"
     "-42"
@@ -303,18 +305,19 @@ main = do
   testElixir "do_simple"
     { name: "Test.DoSimple"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprDo
-                [ DoExpr (ExprLit (LitInt 1))
-                , DoExpr (ExprLit (LitInt 2))
-                , DoExpr (ExprLit (LitInt 42))
-                ]
-            , guards: []
+                ( DoExpr (ExprLit (LitInt 1))
+                : DoExpr (ExprLit (LitInt 2))
+                : DoExpr (ExprLit (LitInt 42))
+                : Nil
+                )
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.DoSimple.main()"
     "42"
@@ -323,18 +326,19 @@ main = do
   testElixir "do_let"
     { name: "Test.DoLet"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprDo
-                [ DoLet [{ pattern: PatVar "x", value: ExprLit (LitInt 10), typeAnn: Nothing }]
-                , DoLet [{ pattern: PatVar "y", value: ExprLit (LitInt 20), typeAnn: Nothing }]
-                , DoExpr (ExprBinOp "+" (ExprVar "x") (ExprVar "y"))
-                ]
-            , guards: []
+                ( DoLet ({ pattern: PatVar "x", value: ExprLit (LitInt 10), typeAnn: Nothing } : Nil)
+                : DoLet ({ pattern: PatVar "y", value: ExprLit (LitInt 20), typeAnn: Nothing } : Nil)
+                : DoExpr (ExprBinOp "+" (ExprVar "x") (ExprVar "y"))
+                : Nil
+                )
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.DoLet.main()"
     "30"
@@ -343,14 +347,14 @@ main = do
   testElixir "string_concat"
     { name: "Test.StringConcat"
     , declarations:
-        [ DeclFunction
+        DeclFunction
             { name: "main"
-            , parameters: []
+            , parameters: Nil
             , body: ExprBinOp "<>" (ExprLit (LitString "Hello, ")) (ExprLit (LitString "World!"))
-            , guards: []
+            , guards: Nil
             , typeSignature: Nothing
             }
-        ]
+        : Nil
     }
     "Test.StringConcat.main()"
     "\"Hello, World!\""

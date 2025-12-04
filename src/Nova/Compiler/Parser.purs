@@ -2,6 +2,8 @@ module Nova.Compiler.Parser where
 
 import Prelude
 import Data.Array as Array
+import Data.List (List(..))
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
@@ -328,7 +330,7 @@ parseForallType tokens = do
   Tuple vars rest' <- parseMany parseIdentifierName rest
   Tuple _ rest'' <- expectOperator rest' "."
   Tuple ty rest''' <- parseType rest''
-  success (Ast.TyExprForAll vars ty) rest'''
+  success (Ast.TyExprForAll (List.fromFoldable vars) ty) rest'''
 
 parseFunctionType :: Array Token -> ParseResult Ast.TypeExpr
 parseFunctionType tokens = do
@@ -362,7 +364,7 @@ parseRecordType tokens =
       then do
         Tuple fields rest <- parseSeparated parseRecordField (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
         Tuple _ rest' <- expectDelimiter rest "}"
-        success (Ast.TyExprRecord fields Nothing) rest'
+        success (Ast.TyExprRecord (List.fromFoldable fields) Nothing) rest'
       else failure "Expected record type"
     Nothing -> failure "Expected record type"
 
@@ -400,7 +402,7 @@ parseTupleType tokens =
           1 -> case Array.head elements of
             Just e -> success e rest'
             Nothing -> failure "Expected type"
-          _ -> success (Ast.TyExprTuple elements) rest'
+          _ -> success (Ast.TyExprTuple (List.fromFoldable elements)) rest'
       else failure "Expected tuple type"
     Nothing -> failure "Expected tuple type"
 
@@ -549,8 +551,8 @@ parseConstructorPattern tokens = do
   if isCapital name then do
     Tuple args rest' <- parseMany parseSimplePattern rest
     case Array.length args of
-      0 -> success (Ast.PatCon name []) rest'
-      _ -> success (Ast.PatCon name args) rest'
+      0 -> success (Ast.PatCon name Nil) rest'
+      _ -> success (Ast.PatCon name (List.fromFoldable args)) rest'
   else
     failure "Expected constructor pattern"
   where
@@ -582,7 +584,7 @@ parseTuplePattern tokens =
       then do
         Tuple elements rest <- parseSeparated parsePattern (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
         Tuple _ rest' <- expectDelimiter rest ")"
-        success (Ast.PatRecord (Array.mapWithIndex (\i p -> Tuple (show i) p) elements)) rest'
+        success (Ast.PatRecord (List.fromFoldable (Array.mapWithIndex (\i p -> Tuple (show i) p) elements))) rest'
       else failure "Expected tuple pattern"
     Nothing -> failure "Expected tuple pattern"
 
@@ -596,11 +598,11 @@ parseListPattern tokens =
         case Array.head (Array.drop 1 ts) of
           Just t' ->
             if t'.tokenType == TokDelimiter && t'.value == "]"
-            then success (Ast.PatList []) (Array.drop 2 ts)
+            then success (Ast.PatList Nil) (Array.drop 2 ts)
             else do
               Tuple elements rest <- parseSeparated parsePattern (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
               Tuple _ rest' <- expectDelimiter rest "]"
-              success (Ast.PatList elements) rest'
+              success (Ast.PatList (List.fromFoldable elements)) rest'
           Nothing -> failure "Expected list pattern"
       else failure "Expected list pattern"
     Nothing -> failure "Expected list pattern"
@@ -614,7 +616,7 @@ parseRecordPattern tokens =
       then do
         Tuple fields rest <- parseSeparated parseRecordFieldPattern (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
         Tuple _ rest' <- expectDelimiter rest "}"
-        success (Ast.PatRecord fields) rest'
+        success (Ast.PatRecord (List.fromFoldable fields)) rest'
       else failure "Expected record pattern"
     Nothing -> failure "Expected record pattern"
 
@@ -672,14 +674,14 @@ parseQualifiedConstructorPatternSimple tokens =
           then do
             -- We have "Identifier." - parse full qualified name
             Tuple name rest <- parseQualifiedConstructorName ts
-            success (Ast.PatCon name []) rest
+            success (Ast.PatCon name Nil) rest
           else
             -- Unqualified constructor pattern (e.g., PatWildcard, Nothing, True)
             -- This handles nullary constructors used as function parameters
-            success (Ast.PatCon t.value []) (Array.drop 1 ts)
+            success (Ast.PatCon t.value Nil) (Array.drop 1 ts)
         Nothing ->
           -- Just the identifier at end of tokens - treat as nullary constructor
-          success (Ast.PatCon t.value []) (Array.drop 1 ts)
+          success (Ast.PatCon t.value Nil) (Array.drop 1 ts)
       else failure "Expected constructor pattern"
     Nothing -> failure "Expected constructor pattern"
   where
@@ -979,7 +981,7 @@ maybeParseRecordUpdate expr tokens =
             Tuple updates rest <- parseRecordUpdateFields (Array.drop 1 tokens')
             Tuple _ rest' <- expectDelimiter rest "}"
             -- Recursively check for chained updates
-            maybeParseRecordUpdate (Ast.ExprRecordUpdate expr updates) rest'
+            maybeParseRecordUpdate (Ast.ExprRecordUpdate expr (List.fromFoldable updates)) rest'
           false -> success expr tokens
       else success expr tokens
     _ -> success expr tokens
@@ -1178,7 +1180,7 @@ parseRecordLiteral tokens =
       then do
         Tuple fields rest <- parseSeparated parseRecordFieldExpr (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
         Tuple _ rest' <- expectDelimiter rest "}"
-        success (Ast.ExprRecord fields) rest'
+        success (Ast.ExprRecord (List.fromFoldable fields)) rest'
       else failure "Expected record literal"
     Nothing -> failure "Expected record literal"
 
@@ -1205,11 +1207,11 @@ parseListLiteral tokens =
         case Array.head (Array.drop 1 ts) of
           Just t' ->
             if t'.tokenType == TokDelimiter && t'.value == "]"
-            then success (Ast.ExprList []) (Array.drop 2 ts)
+            then success (Ast.ExprList Nil) (Array.drop 2 ts)
             else do
               Tuple elements rest <- parseSeparated parseExpression (\tok -> expectDelimiter tok ",") (Array.drop 1 ts)
               Tuple _ rest' <- expectDelimiter rest "]"
-              success (Ast.ExprList elements) rest'
+              success (Ast.ExprList (List.fromFoldable elements)) rest'
           Nothing -> failure "Expected list literal"
       else failure "Expected list literal"
     Nothing -> failure "Expected list literal"
@@ -1227,7 +1229,7 @@ parseTupleLiteral tokens =
           1 -> case Array.head elements of
             Just e -> success e rest'
             Nothing -> failure "Expected expression"
-          _ -> success (Ast.ExprTuple elements) rest'
+          _ -> success (Ast.ExprTuple (List.fromFoldable elements)) rest'
       else failure "Expected tuple literal"
     Nothing -> failure "Expected tuple literal"
 
@@ -1246,7 +1248,7 @@ parseLetExpression tokens = do
   Tuple _ rest4 <- expectKeyword rest''' "in"
   let rest5 = skipNewlines rest4
   Tuple body rest6 <- parseExpression rest5
-  success (Ast.ExprLet bindings body) rest6
+  success (Ast.ExprLet (List.fromFoldable bindings) body) rest6
   where
     -- Collect let bindings, skipping type signatures
     collectLetBindings :: Array Token -> Array Ast.LetBind -> ParseResult (Array Ast.LetBind)
@@ -1335,7 +1337,7 @@ parseFunctionStyleBinding tokens =
                   Left err -> Left err
                   Right (Tuple body rest''') ->
                     -- Convert to: name = \params -> body
-                    let lambda = Ast.ExprLambda params body
+                    let lambda = Ast.ExprLambda (List.fromFoldable params) body
                     in success { pattern: Ast.PatVar name, value: lambda, typeAnn: Nothing } rest'''
       else failure "Not a function binding"
     _ -> failure "Not a function binding"
@@ -1393,7 +1395,7 @@ parseCaseExpression tokens = do
     Nothing -> failure "Expected case clauses"
     Just firstTok -> do
       Tuple clauses rest5 <- parseCaseClausesAt rest4 firstTok.column []
-      success (Ast.ExprCase expr clauses) rest5
+      success (Ast.ExprCase expr (List.fromFoldable clauses)) rest5
 
 -- | Parse case clauses at a specific indentation level
 parseCaseClausesAt :: Array Token -> Int -> Array Ast.CaseClause -> ParseResult (Array Ast.CaseClause)
@@ -1679,11 +1681,11 @@ parseDoBlock tokens = do
   -- Determine the expected indent from the first statement
   let rest' = skipNewlines rest
   case Array.head rest' of
-    Nothing -> success (Ast.ExprDo []) rest'
+    Nothing -> success (Ast.ExprDo Nil) rest'
     Just firstTok -> do
       let indent = firstTok.column
       Tuple stmts rest'' <- parseDoStatementsAt rest' indent []
-      success (Ast.ExprDo stmts) rest''
+      success (Ast.ExprDo (List.fromFoldable stmts)) rest''
 
 -- | Parse do statements at a specific indentation level
 parseDoStatementsAt :: Array Token -> Int -> Array Ast.DoStatement -> ParseResult (Array Ast.DoStatement)
@@ -1722,7 +1724,7 @@ parseDoLet :: Array Token -> ParseResult Ast.DoStatement
 parseDoLet tokens = do
   Tuple _ rest <- expectKeyword tokens "let"
   Tuple bindings rest' <- parseMany parseBinding rest
-  success (Ast.DoLet bindings) rest'
+  success (Ast.DoLet (List.fromFoldable bindings)) rest'
 
 parseDoBind :: Array Token -> ParseResult Ast.DoStatement
 parseDoBind tokens = do
@@ -1746,7 +1748,7 @@ parseLambda tokens = do
   Tuple params rest' <- parseMany parseSimplePattern rest
   Tuple _ rest'' <- expectOperator rest' "->"
   Tuple body rest''' <- parseExpression rest''
-  success (Ast.ExprLambda params body) rest'''
+  success (Ast.ExprLambda (List.fromFoldable params) body) rest'''
 
 -- ------------------------------------------------------------
 -- Type signature
@@ -1758,7 +1760,7 @@ parseTypeSignature tokens = do
   Tuple name rest <- parseIdentifierName tokens'
   Tuple _ rest' <- expectOperator rest "::"
   Tuple ty rest'' <- parseType rest'
-  success { name: name, typeVars: [], constraints: [], ty: ty } rest''
+  success { name: name, typeVars: Nil, constraints: Nil, ty: ty } rest''
 
 -- ------------------------------------------------------------
 -- Declaration parsing
@@ -1788,7 +1790,7 @@ parseModuleHeader tokens = do
   Tuple _ rest <- expectKeyword tokens' "module"
   Tuple name rest' <- parseQualifiedIdentifierName rest
   Tuple _ rest'' <- expectKeyword rest' "where"
-  success (Ast.DeclModule { name: name, declarations: [] }) rest''
+  success (Ast.DeclModule { name: name, declarations: Nil }) rest''
 
 parseQualifiedIdentifierName :: Array Token -> ParseResult String
 parseQualifiedIdentifierName tokens =
@@ -1804,7 +1806,7 @@ parseImport tokens = do
   let Tuple alias rest'' = parseImportAlias rest'
   Tuple result rest''' <- parseImportSelectors rest''
   let Tuple items hiding = result
-  success (Ast.DeclImport { moduleName: modName, alias: alias, items: items, hiding: hiding }) (dropNewlines rest''')
+  success (Ast.DeclImport { moduleName: modName, alias: alias, items: List.fromFoldable items, hiding: hiding }) (dropNewlines rest''')
 
 parseImportAlias :: Array Token -> Tuple (Maybe String) (Array Token)
 parseImportAlias tokens =
@@ -1886,11 +1888,11 @@ parseImportSpec tokens =
       else do
         Tuple names rest <- parseSeparated parseIdentifierName (\tok -> expectDelimiter tok ",") tokens
         Tuple _ rest' <- expectDelimiter rest ")"
-        success (Ast.ImportSome names) rest'
+        success (Ast.ImportSome (List.fromFoldable names)) rest'
     _ -> do
       Tuple names rest <- parseSeparated parseIdentifierName (\tok -> expectDelimiter tok ",") tokens
       Tuple _ rest' <- expectDelimiter rest ")"
-      success (Ast.ImportSome names) rest'
+      success (Ast.ImportSome (List.fromFoldable names)) rest'
 
 parseForeignImportSimple :: Array Token -> ParseResult Ast.Declaration
 parseForeignImportSimple tokens = do
@@ -1973,7 +1975,7 @@ parseNewtypeDeclaration tokens = do
   Tuple wrappedTy rest7 <- parseTypeAtom rest6
   success (Ast.DeclNewtype
     { name: name
-    , typeVars: vars
+    , typeVars: List.fromFoldable vars
     , constructor: ctorName
     , wrappedType: wrappedTy
     }) rest7
@@ -1987,7 +1989,7 @@ parseDataDeclaration tokens = do
   Tuple _ rest4 <- expectOperator rest''' "="
   let rest5 = skipNewlines rest4
   Tuple ctors rest6 <- parseDataConstructors rest5
-  success (Ast.DeclDataType { name: name, typeVars: vars, constructors: ctors }) rest6
+  success (Ast.DeclDataType { name: name, typeVars: List.fromFoldable vars, constructors: List.fromFoldable ctors }) rest6
 
 parseDataConstructors :: Array Token -> ParseResult (Array Ast.DataConstructor)
 parseDataConstructors tokens =
@@ -2003,12 +2005,12 @@ parseDataConstructor tokens = do
       then do
         -- For record syntax, we do allow newlines inside braces
         Tuple fields rest' <- parseBracedRecordFields rest
-        success { name: name, fields: map fieldToDataField fields, isRecord: true } rest'
+        success { name: name, fields: List.fromFoldable (map fieldToDataField fields), isRecord: true } rest'
       else do
         -- Parse field types only until we hit a newline or pipe
         Tuple fieldTypes rest' <- parseDataFieldTypes rest
-        success { name: name, fields: map typeToDataField fieldTypes, isRecord: false } rest'
-    _ -> success { name: name, fields: [], isRecord: false } rest
+        success { name: name, fields: List.fromFoldable (map typeToDataField fieldTypes), isRecord: false } rest'
+    _ -> success { name: name, fields: Nil, isRecord: false } rest
   where
     fieldToDataField :: { label :: String, ty :: Ast.TypeExpr } -> Ast.DataField
     fieldToDataField f = { label: f.label, ty: f.ty }
@@ -2060,7 +2062,7 @@ parseTypeAlias tokens = do
   Tuple _ rest''' <- expectOperator rest'' "="
   let rest4 = skipNewlines rest'''
   Tuple aliased rest5 <- parseType rest4
-  success (Ast.DeclTypeAlias { name: name, typeVars: vars, ty: aliased }) rest5
+  success (Ast.DeclTypeAlias { name: name, typeVars: List.fromFoldable vars, ty: aliased }) rest5
 
 parseTypeClass :: Array Token -> ParseResult Ast.Declaration
 parseTypeClass tokens = do
@@ -2075,9 +2077,9 @@ parseTypeClass tokens = do
       if t.tokenType == TokKeyword && t.value == "where"
       then do
         Tuple methods rest6 <- parseMany parseTypeSignature (Array.drop 1 rest5)
-        success (Ast.DeclTypeClass { name: name, typeVars: vars, methods: methods, kind: kind }) rest6
-      else success (Ast.DeclTypeClass { name: name, typeVars: vars, methods: [], kind: kind }) rest5
-    _ -> success (Ast.DeclTypeClass { name: name, typeVars: vars, methods: [], kind: kind }) rest5
+        success (Ast.DeclTypeClass { name: name, typeVars: List.fromFoldable vars, methods: List.fromFoldable methods, kind: kind }) rest6
+      else success (Ast.DeclTypeClass { name: name, typeVars: List.fromFoldable vars, methods: Nil, kind: kind }) rest5
+    _ -> success (Ast.DeclTypeClass { name: name, typeVars: List.fromFoldable vars, methods: Nil, kind: kind }) rest5
 
 skipSuperclassConstraints :: Array Token -> Tuple (Array Token) (Array Token)
 skipSuperclassConstraints tokens =
@@ -2126,7 +2128,7 @@ parseTypeClassInstance tokens = do
                 success (Ast.DeclTypeClassInstance
                   { className: className
                   , ty: ty
-                  , methods: methods
+                  , methods: List.fromFoldable methods
                   , derived: derived
                   }) rest5
               Left _ ->
@@ -2135,7 +2137,7 @@ parseTypeClassInstance tokens = do
                   success (Ast.DeclTypeClassInstance
                     { className: className
                     , ty: ty
-                    , methods: []
+                    , methods: Nil
                     , derived: derived
                     }) rest'''
                 else
@@ -2156,7 +2158,7 @@ parseTypeClassInstance tokens = do
           success (Ast.DeclTypeClassInstance
             { className: className
             , ty: ty
-            , methods: methods
+            , methods: List.fromFoldable methods
             , derived: isDerived
             }) rest5
         Left _ ->
@@ -2164,7 +2166,7 @@ parseTypeClassInstance tokens = do
             success (Ast.DeclTypeClassInstance
               { className: className
               , ty: ty
-              , methods: []
+              , methods: Nil
               , derived: isDerived
               }) rest'''
           else
@@ -2210,7 +2212,7 @@ parseFunctionWithTypeSignature tokens = do
                 , parameters: fun.parameters
                 , body: fun.body
                 , guards: fun.guards
-                , typeSignature: Just { name: name, typeVars: [], constraints: [], ty: ty }
+                , typeSignature: Just { name: name, typeVars: Nil, constraints: Nil, ty: ty }
                 }) rest''
             else
               failure "Function name mismatch"
@@ -2261,7 +2263,7 @@ parseFunctionDeclarationRaw tokens = do
           Just firstTok -> do
             Tuple body rest4 <- parseExpression rest'''
             Tuple body' rest5 <- maybeParseWhere rest4 firstTok.column body
-            success { name: name, parameters: params, body: body', guards: [], typeSignature: Nothing } rest5
+            success { name: name, parameters: List.fromFoldable params, body: body', guards: Nil, typeSignature: Nothing } rest5
           Nothing -> failure "Expected expression"
     _ -> do
       -- Simple function with =
@@ -2270,7 +2272,7 @@ parseFunctionDeclarationRaw tokens = do
         Just firstTok -> do
           Tuple body rest4 <- parseExpression rest'''
           Tuple body' rest5 <- maybeParseWhere rest4 firstTok.column body
-          success { name: name, parameters: params, body: body', guards: [], typeSignature: Nothing } rest5
+          success { name: name, parameters: List.fromFoldable params, body: body', guards: Nil, typeSignature: Nothing } rest5
         Nothing -> failure "Expected expression"
 
 -- | Parse a function with guards
@@ -2280,7 +2282,7 @@ parseGuardedFunction name params tokens = do
   -- The body will be a placeholder since we use guards
   -- We use ExprVar "undefined" as a sentinel - CodeGen should check guards first
   let body = Ast.ExprVar "__guarded__"
-  success { name: name, parameters: params, body: body, guards: guards, typeSignature: Nothing } rest
+  success { name: name, parameters: List.fromFoldable params, body: body, guards: List.fromFoldable guards, typeSignature: Nothing } rest
 
 -- | Parse multiple guarded expressions
 parseGuardedExprs :: Array Token -> ParseResult (Array Ast.GuardedExpr)
@@ -2304,7 +2306,7 @@ parseOneGuardedExpr tokens = do
   Tuple clauses rest <- parseGuardClauses tokens []
   Tuple _ rest' <- expectOperator rest "="
   Tuple body rest'' <- parseExpression rest'
-  success { guards: clauses, body: body } rest''
+  success { guards: List.fromFoldable clauses, body: body } rest''
 
 -- | Parse guard clauses separated by commas
 parseGuardClauses :: Array Token -> Array Ast.GuardClause -> ParseResult (Array Ast.GuardClause)
@@ -2487,7 +2489,7 @@ maybeParseWhere tokens _ body = do
             if firstTok.column >= whereCol
             then do
               Tuple bindings rest' <- collectWhereBindings rest whereCol []
-              success (Ast.ExprLet bindings body) rest'
+              success (Ast.ExprLet (List.fromFoldable bindings) body) rest'
             else success body tokens'
           _ -> success body tokens'
       else success body tokens
@@ -2510,7 +2512,7 @@ collectWhereBindings tokens whereCol acc = do
           false -> do
             -- Where bindings are local function definitions
             Tuple fun rest <- parseFunctionDeclarationRaw tokens'
-            let binding = { pattern: Ast.PatVar fun.name, value: wrapLambda fun.parameters fun.body, typeAnn: Nothing }
+            let binding = { pattern: Ast.PatVar fun.name, value: wrapLambda (Array.fromFoldable fun.parameters) fun.body, typeAnn: Nothing }
             collectWhereBindings rest whereCol (Array.snoc acc binding)
       else success acc tokens'
     _ -> success acc tokens'
@@ -2518,7 +2520,7 @@ collectWhereBindings tokens whereCol acc = do
     wrapLambda :: Array Ast.Pattern -> Ast.Expr -> Ast.Expr
     wrapLambda params body = case Array.length params of
       0 -> body
-      _ -> Ast.ExprLambda params body
+      _ -> Ast.ExprLambda (List.fromFoldable params) body
 
     -- Check if the token stream starts with "name ::" (a type signature)
     isTypeSignatureLine :: Array Token -> Boolean
@@ -2586,6 +2588,6 @@ parseModule tokens = do
       Tuple decls rest' <- parseDeclarations rest
       let rest'' = skipNewlines rest'
       case Array.length rest'' of
-        0 -> success { name: m.name, declarations: decls } []
+        0 -> success { name: m.name, declarations: List.fromFoldable decls } []
         _ -> failure "Unexpected tokens after module"
     _ -> failure "Expected module declaration"

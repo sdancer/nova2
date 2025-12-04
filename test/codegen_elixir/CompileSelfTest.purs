@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Data.String as String
 import Data.Traversable (traverse)
 import Node.Encoding (Encoding(..))
@@ -44,7 +45,7 @@ parseFile path = do
   let tokens = tokenize content
   case parseModule tokens of
     Left _ -> pure []
-    Right (Tuple m _) -> pure m.declarations
+    Right (Tuple m _) -> pure (Array.fromFoldable m.declarations)
 
 compileFile :: String -> String -> Array String -> Effect Unit
 compileFile name path deps = do
@@ -57,9 +58,10 @@ compileFile name path deps = do
   case parseModule tokens of
     Left parseErr -> log $ "  Parse error: " <> parseErr
     Right (Tuple mod _) -> do
-      log $ "  Parsed " <> show (Array.length mod.declarations) <> " declarations"
+      let modDecls = Array.fromFoldable mod.declarations
+      log $ "  Parsed " <> show (Array.length modDecls) <> " declarations"
       -- Combine dep declarations with main for type checking
-      let allDecls = depDecls <> mod.declarations
+      let allDecls = depDecls <> modDecls
       case checkModule emptyEnv allDecls of
         Left tcErr -> log $ "  Type error: " <> show tcErr
         Right _env -> do

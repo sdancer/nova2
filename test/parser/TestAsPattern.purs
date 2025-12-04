@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Nova.Compiler.Tokenizer (tokenize)
 import Nova.Compiler.Parser as P
 import Nova.Compiler.Ast as Ast
@@ -21,7 +22,7 @@ main = do
   -- Test 1: Simple as-pattern in case
   testExpr "As-pattern in case" "case x of y@(Just z) -> y" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 1
+      Ast.ExprCase _ clauses -> List.length clauses == 1
       _ -> false
 
   -- Test 2: As-pattern in function parameter
@@ -39,7 +40,7 @@ main = do
   -- Test 4: Multiple params with as-pattern
   testDecl "Multiple params with as-pattern" "baz ctx e@(Just x) = x" $ \decl ->
     case decl of
-      Ast.DeclFunction f -> f.name == "baz" && Array.length f.parameters == 2
+      Ast.DeclFunction f -> f.name == "baz" && List.length f.parameters == 2
       _ -> false
 
   log ""

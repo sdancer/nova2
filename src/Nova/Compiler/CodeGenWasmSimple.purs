@@ -11,7 +11,9 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Foldable (foldr)
+import Data.Foldable (foldr, foldl)
+import Data.List (List(..))
+import Data.List as List
 import Data.Int as Int
 import Data.Enum (fromEnum)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..))
@@ -96,29 +98,31 @@ mangleName name =
       escaped2 = String.replaceAll (String.Pattern ".") (String.Replacement "_") escaped
   in "$" <> escaped2
 
+-- | Helper for collectExternalRefs - handles do statements
+collectDoStmtRefs :: DoStatement -> Array (Tuple String String)
+collectDoStmtRefs (DoExpr e) = collectExternalRefs e
+collectDoStmtRefs (DoBind _ e) = collectExternalRefs e
+collectDoStmtRefs (DoLet binds) = listConcatMap (\b -> collectExternalRefs b.value) binds
+
 -- | Collect all external module references from expression
 collectExternalRefs :: Expr -> Array (Tuple String String)
 collectExternalRefs (ExprQualified modName name) = [Tuple modName name]
 collectExternalRefs (ExprApp f a) = collectExternalRefs f <> collectExternalRefs a
 collectExternalRefs (ExprLambda _ body) = collectExternalRefs body
 collectExternalRefs (ExprLet binds body) =
-  Array.concatMap (\b -> collectExternalRefs b.value) binds <> collectExternalRefs body
+  listConcatMap (\b -> collectExternalRefs b.value) binds <> collectExternalRefs body
 collectExternalRefs (ExprIf c t e) = collectExternalRefs c <> collectExternalRefs t <> collectExternalRefs e
 collectExternalRefs (ExprCase s clauses) =
-  collectExternalRefs s <> Array.concatMap (\c -> collectExternalRefs c.body) clauses
+  collectExternalRefs s <> listConcatMap (\c -> collectExternalRefs c.body) clauses
 collectExternalRefs (ExprBinOp _ l r) = collectExternalRefs l <> collectExternalRefs r
 collectExternalRefs (ExprUnaryOp _ e) = collectExternalRefs e
-collectExternalRefs (ExprList es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprTuple es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectExternalRefs e) fs
+collectExternalRefs (ExprList es) = listConcatMap collectExternalRefs es
+collectExternalRefs (ExprTuple es) = listConcatMap collectExternalRefs es
+collectExternalRefs (ExprRecord fs) = listConcatMap (\(Tuple _ e) -> collectExternalRefs e) fs
 collectExternalRefs (ExprRecordAccess e _) = collectExternalRefs e
-collectExternalRefs (ExprRecordUpdate e fs) = collectExternalRefs e <> Array.concatMap (\(Tuple _ ex) -> collectExternalRefs ex) fs
+collectExternalRefs (ExprRecordUpdate e fs) = collectExternalRefs e <> listConcatMap (\(Tuple _ ex) -> collectExternalRefs ex) fs
 collectExternalRefs (ExprParens e) = collectExternalRefs e
-collectExternalRefs (ExprDo stmts) = Array.concatMap collectDoStmtRefs stmts
-  where
-    collectDoStmtRefs (DoExpr e) = collectExternalRefs e
-    collectDoStmtRefs (DoBind _ e) = collectExternalRefs e
-    collectDoStmtRefs (DoLet binds) = Array.concatMap (\b -> collectExternalRefs b.value) binds
+collectExternalRefs (ExprDo stmts) = listConcatMapDo collectDoStmtRefs stmts
 collectExternalRefs (ExprTyped e _) = collectExternalRefs e
 collectExternalRefs (ExprSectionLeft e _) = collectExternalRefs e
 collectExternalRefs (ExprSectionRight _ e) = collectExternalRefs e
@@ -140,27 +144,31 @@ collectStrings (ExprLit (LitString s)) = [s]
 collectStrings (ExprApp f a) = collectStrings f <> collectStrings a
 collectStrings (ExprLambda _ body) = collectStrings body
 collectStrings (ExprLet binds body) =
-  Array.concatMap (\b -> collectStrings b.value) binds <> collectStrings body
+  listConcatMap (\b -> collectStrings b.value) binds <> collectStrings body
 collectStrings (ExprIf c t e) = collectStrings c <> collectStrings t <> collectStrings e
 collectStrings (ExprCase s clauses) =
-  collectStrings s <> Array.concatMap (\c -> collectStrings c.body) clauses
+  collectStrings s <> listConcatMap (\c -> collectStrings c.body) clauses
 collectStrings (ExprBinOp _ l r) = collectStrings l <> collectStrings r
 collectStrings (ExprUnaryOp _ e) = collectStrings e
-collectStrings (ExprList es) = Array.concatMap collectStrings es
-collectStrings (ExprTuple es) = Array.concatMap collectStrings es
-collectStrings (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectStrings e) fs
+collectStrings (ExprList es) = listConcatMap collectStrings es
+collectStrings (ExprTuple es) = listConcatMap collectStrings es
+collectStrings (ExprRecord fs) = listConcatMap (\(Tuple _ e) -> collectStrings e) fs
 collectStrings (ExprRecordAccess e _) = collectStrings e
-collectStrings (ExprRecordUpdate e fs) = collectStrings e <> Array.concatMap (\(Tuple _ ex) -> collectStrings ex) fs
+collectStrings (ExprRecordUpdate e fs) = collectStrings e <> listConcatMap (\(Tuple _ ex) -> collectStrings ex) fs
 collectStrings (ExprParens e) = collectStrings e
-collectStrings (ExprDo stmts) = Array.concatMap collectDoStmt stmts
+collectStrings (ExprDo stmts) = listConcatMapDo collectDoStmt stmts
   where
     collectDoStmt (DoExpr e) = collectStrings e
     collectDoStmt (DoBind _ e) = collectStrings e
-    collectDoStmt (DoLet binds) = Array.concatMap (\b -> collectStrings b.value) binds
+    collectDoStmt (DoLet binds) = listConcatMap (\b -> collectStrings b.value) binds
 collectStrings (ExprTyped e _) = collectStrings e
 collectStrings (ExprSectionLeft e _) = collectStrings e
 collectStrings (ExprSectionRight _ e) = collectStrings e
 collectStrings _ = []
+
+-- | Helper: concatMap for List of DoStatement returning Array
+listConcatMapDo :: forall b. (DoStatement -> Array b) -> List DoStatement -> Array b
+listConcatMapDo f lst = foldl (\acc x -> acc <> f x) [] lst
 
 -- | Collect free variables from expression (variables not in bound set)
 collectFreeVars :: Set String -> Expr -> Set String
@@ -169,31 +177,31 @@ collectFreeVars bound (ExprVar name) =
 collectFreeVars bound (ExprApp f a) =
   Set.union (collectFreeVars bound f) (collectFreeVars bound a)
 collectFreeVars bound (ExprLambda pats body) =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars pats)
+  let paramNames = Set.fromFoldable (listConcatMap patternVars pats)
       bound' = Set.union bound paramNames
   in collectFreeVars bound' body
 collectFreeVars bound (ExprLet binds body) =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
+  let bindNames = Set.fromFoldable (listConcatMap (\b -> patternVars b.pattern) binds)
       bound' = Set.union bound bindNames
-      bindFree = Array.foldl (\s b -> Set.union s (collectFreeVars bound b.value)) Set.empty binds
+      bindFree = foldl (\s b -> Set.union s (collectFreeVars bound b.value)) Set.empty binds
   in Set.union bindFree (collectFreeVars bound' body)
 collectFreeVars bound (ExprIf c t e) =
   Set.union (collectFreeVars bound c) (Set.union (collectFreeVars bound t) (collectFreeVars bound e))
 collectFreeVars bound (ExprCase s clauses) =
   let scruFree = collectFreeVars bound s
-      clauseFree = Array.foldl (\acc c ->
+      clauseFree = foldl (\acc c ->
         let patVars = Set.fromFoldable (patternVars c.pattern)
         in Set.union acc (collectFreeVars (Set.union bound patVars) c.body)) Set.empty clauses
   in Set.union scruFree clauseFree
 collectFreeVars bound (ExprBinOp _ l r) =
   Set.union (collectFreeVars bound l) (collectFreeVars bound r)
 collectFreeVars bound (ExprUnaryOp _ e) = collectFreeVars bound e
-collectFreeVars bound (ExprList es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprTuple es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprRecord fs) = Array.foldl (\s (Tuple _ e) -> Set.union s (collectFreeVars bound e)) Set.empty fs
+collectFreeVars bound (ExprList es) = foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
+collectFreeVars bound (ExprTuple es) = foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
+collectFreeVars bound (ExprRecord fs) = foldl (\s (Tuple _ e) -> Set.union s (collectFreeVars bound e)) Set.empty fs
 collectFreeVars bound (ExprRecordAccess e _) = collectFreeVars bound e
 collectFreeVars bound (ExprRecordUpdate e fs) =
-  Set.union (collectFreeVars bound e) (Array.foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty fs)
+  Set.union (collectFreeVars bound e) (foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty fs)
 collectFreeVars bound (ExprParens e) = collectFreeVars bound e
 collectFreeVars bound (ExprDo stmts) = collectDoFreeVars bound stmts
 collectFreeVars bound (ExprTyped e _) = collectFreeVars bound e
@@ -201,17 +209,11 @@ collectFreeVars bound (ExprSectionLeft e _) = collectFreeVars bound e
 collectFreeVars bound (ExprSectionRight _ e) = collectFreeVars bound e
 collectFreeVars _ _ = Set.empty
 
-collectDoFreeVars :: Set.Set String -> Array DoStatement -> Set.Set String
-collectDoFreeVars b arr =
-  if Array.null arr
-  then Set.empty
-  else collectDoFreeVarsHelper b (Array.uncons arr)
-
-collectDoFreeVarsHelper :: Set.Set String -> Maybe { head :: DoStatement, tail :: Array DoStatement } -> Set.Set String
-collectDoFreeVarsHelper _ Nothing = Set.empty
-collectDoFreeVarsHelper b (Just { head: DoExpr e, tail: rest }) = Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
-collectDoFreeVarsHelper b (Just { head: DoBind pat e, tail: rest }) = let patVars = Set.fromFoldable (patternVars pat) in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
-collectDoFreeVarsHelper b (Just { head: DoLet binds, tail: rest }) = let b' = Set.union b (Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)) in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds) (collectDoFreeVars b' rest)
+collectDoFreeVars :: Set.Set String -> List DoStatement -> Set.Set String
+collectDoFreeVars _ Nil = Set.empty
+collectDoFreeVars b (Cons (DoExpr e) rest) = Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
+collectDoFreeVars b (Cons (DoBind pat e) rest) = let patVars = Set.fromFoldable (patternVars pat) in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
+collectDoFreeVars b (Cons (DoLet binds) rest) = let b' = Set.union b (Set.fromFoldable (listConcatMap (\bn -> patternVars bn.pattern) binds)) in Set.union (foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds) (collectDoFreeVars b' rest)
 
 -- | Collect lambdas from expression and assign unique IDs
 -- Returns updated counter and list of lifted lambdas
@@ -226,7 +228,7 @@ getLambdaParamName i _ = "__p" <> show i  -- Unique names for complex patterns
 
 collectLambdas :: Set String -> Expr -> LambdaCollector -> LambdaCollector
 collectLambdas bound (ExprLambda pats body) state =
-  let paramNames = Array.mapWithIndex getLambdaParamName pats
+  let paramNames = Array.mapWithIndex getLambdaParamName (Array.fromFoldable pats)
       bound' = Set.union bound (Set.fromFoldable paramNames)
       state' = collectLambdas bound' body state
       lambdaParams = Set.fromFoldable paramNames
@@ -236,48 +238,47 @@ collectLambdas bound (ExprLambda pats body) state =
 collectLambdas bound (ExprApp f a) state =
   collectLambdas bound a (collectLambdas bound f state)
 collectLambdas bound (ExprLet binds body) state =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
+  let bindsArr = Array.fromFoldable binds
+      bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) bindsArr)
       bound' = Set.union bound bindNames
-      state' = Array.foldl (\s b -> collectLambdas bound b.value s) state binds
+      state' = Array.foldl (\s b -> collectLambdas bound b.value s) state bindsArr
   in collectLambdas bound' body state'
 collectLambdas bound (ExprIf c t e) state =
   collectLambdas bound e (collectLambdas bound t (collectLambdas bound c state))
 collectLambdas bound (ExprCase s clauses) state =
   let state' = collectLambdas bound s state
-  in Array.foldl (\st c ->
+  in foldl (\st c ->
        let patVars = Set.fromFoldable (patternVars c.pattern)
        in collectLambdas (Set.union bound patVars) c.body st) state' clauses
 collectLambdas bound (ExprBinOp _ l r) state =
   collectLambdas bound r (collectLambdas bound l state)
 collectLambdas bound (ExprUnaryOp _ e) state = collectLambdas bound e state
 collectLambdas bound (ExprList es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
+  foldl (\s e -> collectLambdas bound e s) state es
 collectLambdas bound (ExprTuple es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
+  foldl (\s e -> collectLambdas bound e s) state es
 collectLambdas bound (ExprRecord fs) state =
-  Array.foldl (\s (Tuple _ e) -> collectLambdas bound e s) state fs
+  foldl (\s (Tuple _ e) -> collectLambdas bound e s) state fs
 collectLambdas bound (ExprRecordAccess e _) state = collectLambdas bound e state
 collectLambdas bound (ExprRecordUpdate e fs) state =
   let state' = collectLambdas bound e state
-  in Array.foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' fs
+  in foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' fs
 collectLambdas bound (ExprParens e) state = collectLambdas bound e state
 collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound stmts state
   where
-    collectDoLambdas b arr st =
-      if Array.null arr
-      then st
-      else case Array.uncons arr of
-      Nothing -> st
-      Just { head: DoExpr e, tail: rest } ->
-        collectDoLambdas b rest (collectLambdas b e st)
-      Just { head: DoBind pat e, tail: rest } ->
-        let patVars = Set.fromFoldable (patternVars pat)
-        in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
-      Just { head: DoLet binds, tail: rest } ->
-        let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
-            b' = Set.union b bindNames
-            st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st binds
-        in collectDoLambdas b' rest st'
+    collectDoLambdas :: Set String -> List DoStatement -> LambdaCollector -> LambdaCollector
+    collectDoLambdas _ Nil st = st
+    collectDoLambdas b (Cons (DoExpr e) rest) st =
+      collectDoLambdas b rest (collectLambdas b e st)
+    collectDoLambdas b (Cons (DoBind pat e) rest) st =
+      let patVars = Set.fromFoldable (patternVars pat)
+      in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
+    collectDoLambdas b (Cons (DoLet binds) rest) st =
+      let bindsArr = Array.fromFoldable binds
+          bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) bindsArr)
+          b' = Set.union b bindNames
+          st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st bindsArr
+      in collectDoLambdas b' rest st'
 collectLambdas bound (ExprTyped e _) state = collectLambdas bound e state
 collectLambdas bound (ExprSectionLeft e _) state = collectLambdas bound e state
 collectLambdas bound (ExprSectionRight _ e) state = collectLambdas bound e state
@@ -286,7 +287,7 @@ collectLambdas _ _ state = state
 -- | Collect all lambdas from a declaration
 collectDeclLambdas :: Declaration -> LambdaCollector -> LambdaCollector
 collectDeclLambdas (DeclFunction f) state =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars f.parameters)
+  let paramNames = Set.fromFoldable (listConcatMap patternVars f.parameters)
   in collectLambdas paramNames f.body state
 collectDeclLambdas _ state = state
 
@@ -316,12 +317,16 @@ patternVars :: Pattern -> Array String
 patternVars (PatVar name) = [name]
 patternVars PatWildcard = []
 patternVars (PatLit _) = []
-patternVars (PatCon _ pats) = Array.concatMap patternVars pats
-patternVars (PatRecord fields) = Array.concatMap (\(Tuple _ p) -> patternVars p) fields
-patternVars (PatList pats) = Array.concatMap patternVars pats
+patternVars (PatCon _ pats) = listConcatMap patternVars pats
+patternVars (PatRecord fields) = listConcatMap (\(Tuple _ p) -> patternVars p) fields
+patternVars (PatList pats) = listConcatMap patternVars pats
 patternVars (PatCons hd tl) = patternVars hd <> patternVars tl
 patternVars (PatAs name pat) = [name] <> patternVars pat
 patternVars (PatParens p) = patternVars p
+
+-- | Helper: concatMap for List returning Array
+listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
 
 -- | A group of function clauses with same name/arity
 type FunctionGroup =
@@ -334,8 +339,8 @@ type FunctionGroup =
 groupFunctions :: Array FunctionDeclaration -> Array FunctionGroup
 groupFunctions funcs =
   let keys = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
-               (map (\f -> { name: f.name, arity: length f.parameters }) funcs)
-      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && length f.parameters == k.arity) funcs }
+               (map (\f -> { name: f.name, arity: List.length f.parameters }) funcs)
+      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && List.length f.parameters == k.arity) funcs }
   in map mkGroup keys
 
 -- | Collect data constructors from module
@@ -343,8 +348,8 @@ collectDataCtors :: Array Declaration -> Map String { tag :: Int, arity :: Int }
 collectDataCtors decls =
   let datas = Array.mapMaybe getData decls
       addCtors m d = foldr (\(Tuple i ctor) acc ->
-        Map.insert ctor.name { tag: i, arity: length ctor.fields } acc) m
-        (Array.mapWithIndex (\i c -> Tuple i c) d.constructors)
+        Map.insert ctor.name { tag: i, arity: List.length ctor.fields } acc) m
+        (Array.mapWithIndex (\i c -> Tuple i c) (Array.fromFoldable d.constructors))
   in Array.foldl addCtors Map.empty datas
   where
     getData (DeclDataType d) = Just d

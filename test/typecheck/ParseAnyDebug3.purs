@@ -180,6 +180,6 @@ testCode src = do
   case P.parseModule tokens of
     Left err -> log $ "  Parse error: " <> err
     Right (Tuple m _) -> do
-      case checkModule emptyEnv m.declarations of
+      case checkModule emptyEnv (Array.fromFoldable m.declarations) of
         Left err -> log $ "  FAIL: " <> show err
         Right _ -> log $ "  OK"

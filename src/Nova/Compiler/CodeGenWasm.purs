@@ -11,7 +11,9 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Foldable (foldr)
+import Data.Foldable (foldr, foldl)
+import Data.List (List(..))
+import Data.List as List
 import Data.Int as Int
 import Data.Enum (fromEnum)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..))
@@ -103,23 +105,23 @@ collectExternalRefs (ExprQualified modName name) = [Tuple modName name]
 collectExternalRefs (ExprApp f a) = collectExternalRefs f <> collectExternalRefs a
 collectExternalRefs (ExprLambda _ body) = collectExternalRefs body
 collectExternalRefs (ExprLet binds body) =
-  Array.concatMap (\b -> collectExternalRefs b.value) binds <> collectExternalRefs body
+  Array.concatMap (\b -> collectExternalRefs b.value) (Array.fromFoldable binds) <> collectExternalRefs body
 collectExternalRefs (ExprIf c t e) = collectExternalRefs c <> collectExternalRefs t <> collectExternalRefs e
 collectExternalRefs (ExprCase s clauses) =
-  collectExternalRefs s <> Array.concatMap (\c -> collectExternalRefs c.body) clauses
+  collectExternalRefs s <> Array.concatMap (\c -> collectExternalRefs c.body) (Array.fromFoldable clauses)
 collectExternalRefs (ExprBinOp _ l r) = collectExternalRefs l <> collectExternalRefs r
 collectExternalRefs (ExprUnaryOp _ e) = collectExternalRefs e
-collectExternalRefs (ExprList es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprTuple es) = Array.concatMap collectExternalRefs es
-collectExternalRefs (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectExternalRefs e) fs
+collectExternalRefs (ExprList es) = Array.concatMap collectExternalRefs (Array.fromFoldable es)
+collectExternalRefs (ExprTuple es) = Array.concatMap collectExternalRefs (Array.fromFoldable es)
+collectExternalRefs (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectExternalRefs e) (Array.fromFoldable fs)
 collectExternalRefs (ExprRecordAccess e _) = collectExternalRefs e
-collectExternalRefs (ExprRecordUpdate e fs) = collectExternalRefs e <> Array.concatMap (\(Tuple _ ex) -> collectExternalRefs ex) fs
+collectExternalRefs (ExprRecordUpdate e fs) = collectExternalRefs e <> Array.concatMap (\(Tuple _ ex) -> collectExternalRefs ex) (Array.fromFoldable fs)
 collectExternalRefs (ExprParens e) = collectExternalRefs e
-collectExternalRefs (ExprDo stmts) = Array.concatMap collectDoStmtRefs stmts
+collectExternalRefs (ExprDo stmts) = Array.concatMap collectDoStmtRefs (Array.fromFoldable stmts)
   where
     collectDoStmtRefs (DoExpr e) = collectExternalRefs e
     collectDoStmtRefs (DoBind _ e) = collectExternalRefs e
-    collectDoStmtRefs (DoLet binds) = Array.concatMap (\b -> collectExternalRefs b.value) binds
+    collectDoStmtRefs (DoLet binds) = Array.concatMap (\b -> collectExternalRefs b.value) (Array.fromFoldable binds)
 collectExternalRefs (ExprTyped e _) = collectExternalRefs e
 collectExternalRefs (ExprSectionLeft e _) = collectExternalRefs e
 collectExternalRefs (ExprSectionRight _ e) = collectExternalRefs e
@@ -141,23 +143,23 @@ collectStrings (ExprLit (LitString s)) = [s]
 collectStrings (ExprApp f a) = collectStrings f <> collectStrings a
 collectStrings (ExprLambda _ body) = collectStrings body
 collectStrings (ExprLet binds body) =
-  Array.concatMap (\b -> collectStrings b.value) binds <> collectStrings body
+  listConcatMap (\b -> collectStrings b.value) binds <> collectStrings body
 collectStrings (ExprIf c t e) = collectStrings c <> collectStrings t <> collectStrings e
 collectStrings (ExprCase s clauses) =
-  collectStrings s <> Array.concatMap (\c -> collectStrings c.body) clauses
+  collectStrings s <> listConcatMap (\c -> collectStrings c.body) clauses
 collectStrings (ExprBinOp _ l r) = collectStrings l <> collectStrings r
 collectStrings (ExprUnaryOp _ e) = collectStrings e
-collectStrings (ExprList es) = Array.concatMap collectStrings es
-collectStrings (ExprTuple es) = Array.concatMap collectStrings es
-collectStrings (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectStrings e) fs
+collectStrings (ExprList es) = listConcatMap collectStrings es
+collectStrings (ExprTuple es) = listConcatMap collectStrings es
+collectStrings (ExprRecord fs) = listConcatMap (\(Tuple _ e) -> collectStrings e) fs
 collectStrings (ExprRecordAccess e _) = collectStrings e
-collectStrings (ExprRecordUpdate e fs) = collectStrings e <> Array.concatMap (\(Tuple _ ex) -> collectStrings ex) fs
+collectStrings (ExprRecordUpdate e fs) = collectStrings e <> listConcatMap (\(Tuple _ ex) -> collectStrings ex) fs
 collectStrings (ExprParens e) = collectStrings e
-collectStrings (ExprDo stmts) = Array.concatMap collectDoStmt stmts
+collectStrings (ExprDo stmts) = listConcatMap collectDoStmt stmts
   where
     collectDoStmt (DoExpr e) = collectStrings e
     collectDoStmt (DoBind _ e) = collectStrings e
-    collectDoStmt (DoLet binds) = Array.concatMap (\b -> collectStrings b.value) binds
+    collectDoStmt (DoLet binds) = listConcatMap (\b -> collectStrings b.value) binds
 collectStrings (ExprTyped e _) = collectStrings e
 collectStrings (ExprSectionLeft e _) = collectStrings e
 collectStrings (ExprSectionRight _ e) = collectStrings e
@@ -170,13 +172,14 @@ collectFreeVars bound (ExprVar name) =
 collectFreeVars bound (ExprApp f a) =
   Set.union (collectFreeVars bound f) (collectFreeVars bound a)
 collectFreeVars bound (ExprLambda pats body) =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars pats)
+  let paramNames = Set.fromFoldable (Array.concatMap patternVars (Array.fromFoldable pats))
       bound' = Set.union bound paramNames
   in collectFreeVars bound' body
 collectFreeVars bound (ExprLet binds body) =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
+  let bindsArr = Array.fromFoldable binds
+      bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) bindsArr)
       bound' = Set.union bound bindNames
-      bindFree = Array.foldl (\s b -> Set.union s (collectFreeVars bound b.value)) Set.empty binds
+      bindFree = Array.foldl (\s b -> Set.union s (collectFreeVars bound b.value)) Set.empty bindsArr
   in Set.union bindFree (collectFreeVars bound' body)
 collectFreeVars bound (ExprIf c t e) =
   Set.union (collectFreeVars bound c) (Set.union (collectFreeVars bound t) (collectFreeVars bound e))
@@ -184,19 +187,19 @@ collectFreeVars bound (ExprCase s clauses) =
   let scruFree = collectFreeVars bound s
       clauseFree = Array.foldl (\acc c ->
         let patVars = Set.fromFoldable (patternVars c.pattern)
-        in Set.union acc (collectFreeVars (Set.union bound patVars) c.body)) Set.empty clauses
+        in Set.union acc (collectFreeVars (Set.union bound patVars) c.body)) Set.empty (Array.fromFoldable clauses)
   in Set.union scruFree clauseFree
 collectFreeVars bound (ExprBinOp _ l r) =
   Set.union (collectFreeVars bound l) (collectFreeVars bound r)
 collectFreeVars bound (ExprUnaryOp _ e) = collectFreeVars bound e
-collectFreeVars bound (ExprList es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprTuple es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty es
-collectFreeVars bound (ExprRecord fs) = Array.foldl (\s (Tuple _ e) -> Set.union s (collectFreeVars bound e)) Set.empty fs
+collectFreeVars bound (ExprList es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty (Array.fromFoldable es)
+collectFreeVars bound (ExprTuple es) = Array.foldl (\s e -> Set.union s (collectFreeVars bound e)) Set.empty (Array.fromFoldable es)
+collectFreeVars bound (ExprRecord fs) = Array.foldl (\s (Tuple _ e) -> Set.union s (collectFreeVars bound e)) Set.empty (Array.fromFoldable fs)
 collectFreeVars bound (ExprRecordAccess e _) = collectFreeVars bound e
 collectFreeVars bound (ExprRecordUpdate e fs) =
-  Set.union (collectFreeVars bound e) (Array.foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty fs)
+  Set.union (collectFreeVars bound e) (Array.foldl (\s (Tuple _ ex) -> Set.union s (collectFreeVars bound ex)) Set.empty (Array.fromFoldable fs))
 collectFreeVars bound (ExprParens e) = collectFreeVars bound e
-collectFreeVars bound (ExprDo stmts) = collectDoFreeVars bound stmts
+collectFreeVars bound (ExprDo stmts) = collectDoFreeVars bound (Array.fromFoldable stmts)
 collectFreeVars bound (ExprTyped e _) = collectFreeVars bound e
 collectFreeVars bound (ExprSectionLeft e _) = collectFreeVars bound e
 collectFreeVars bound (ExprSectionRight _ e) = collectFreeVars bound e
@@ -210,7 +213,7 @@ collectDoFreeVarsHelper :: Set.Set String -> Maybe { head :: DoStatement, tail :
 collectDoFreeVarsHelper _ Nothing = Set.empty
 collectDoFreeVarsHelper b (Just { head: DoExpr e, tail: rest }) = Set.union (collectFreeVars b e) (collectDoFreeVars b rest)
 collectDoFreeVarsHelper b (Just { head: DoBind pat e, tail: rest }) = let patVars = Set.fromFoldable (patternVars pat) in Set.union (collectFreeVars b e) (collectDoFreeVars (Set.union b patVars) rest)
-collectDoFreeVarsHelper b (Just { head: DoLet binds, tail: rest }) = let b' = Set.union b (Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)) in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty binds) (collectDoFreeVars b' rest)
+collectDoFreeVarsHelper b (Just { head: DoLet binds, tail: rest }) = let b' = Set.union b (Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) (Array.fromFoldable binds))) in Set.union (Array.foldl (\s bn -> Set.union s (collectFreeVars b bn.value)) Set.empty (Array.fromFoldable binds)) (collectDoFreeVars b' rest)
 
 -- | Collect lambdas from expression and assign unique IDs
 -- Returns updated counter and list of lifted lambdas
@@ -225,7 +228,7 @@ getLambdaParamName i _ = "__p" <> show i  -- Unique names for complex patterns
 
 collectLambdas :: Set String -> Expr -> LambdaCollector -> LambdaCollector
 collectLambdas bound (ExprLambda pats body) state =
-  let paramNames = Array.mapWithIndex getLambdaParamName pats
+  let paramNames = Array.mapWithIndex getLambdaParamName (Array.fromFoldable pats)
       bound' = Set.union bound (Set.fromFoldable paramNames)
       state' = collectLambdas bound' body state
       lambdaParams = Set.fromFoldable paramNames
@@ -235,9 +238,10 @@ collectLambdas bound (ExprLambda pats body) state =
 collectLambdas bound (ExprApp f a) state =
   collectLambdas bound a (collectLambdas bound f state)
 collectLambdas bound (ExprLet binds body) state =
-  let bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) binds)
+  let bindsArr = Array.fromFoldable binds
+      bindNames = Set.fromFoldable (Array.concatMap (\b -> patternVars b.pattern) bindsArr)
       bound' = Set.union bound bindNames
-      state' = Array.foldl (\s b -> collectLambdas bound b.value s) state binds
+      state' = Array.foldl (\s b -> collectLambdas bound b.value s) state bindsArr
   in collectLambdas bound' body state'
 collectLambdas bound (ExprIf c t e) state =
   collectLambdas bound e (collectLambdas bound t (collectLambdas bound c state))
@@ -245,22 +249,22 @@ collectLambdas bound (ExprCase s clauses) state =
   let state' = collectLambdas bound s state
   in Array.foldl (\st c ->
        let patVars = Set.fromFoldable (patternVars c.pattern)
-       in collectLambdas (Set.union bound patVars) c.body st) state' clauses
+       in collectLambdas (Set.union bound patVars) c.body st) state' (Array.fromFoldable clauses)
 collectLambdas bound (ExprBinOp _ l r) state =
   collectLambdas bound r (collectLambdas bound l state)
 collectLambdas bound (ExprUnaryOp _ e) state = collectLambdas bound e state
 collectLambdas bound (ExprList es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
+  Array.foldl (\s e -> collectLambdas bound e s) state (Array.fromFoldable es)
 collectLambdas bound (ExprTuple es) state =
-  Array.foldl (\s e -> collectLambdas bound e s) state es
+  Array.foldl (\s e -> collectLambdas bound e s) state (Array.fromFoldable es)
 collectLambdas bound (ExprRecord fs) state =
-  Array.foldl (\s (Tuple _ e) -> collectLambdas bound e s) state fs
+  Array.foldl (\s (Tuple _ e) -> collectLambdas bound e s) state (Array.fromFoldable fs)
 collectLambdas bound (ExprRecordAccess e _) state = collectLambdas bound e state
 collectLambdas bound (ExprRecordUpdate e fs) state =
   let state' = collectLambdas bound e state
-  in Array.foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' fs
+  in Array.foldl (\s (Tuple _ ex) -> collectLambdas bound ex s) state' (Array.fromFoldable fs)
 collectLambdas bound (ExprParens e) state = collectLambdas bound e state
-collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound stmts state
+collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound (Array.fromFoldable stmts) state
   where
     collectDoLambdas _ arr st | Array.null arr = st
     collectDoLambdas b arr st = case Array.uncons arr of
@@ -271,9 +275,10 @@ collectLambdas bound (ExprDo stmts) state = collectDoLambdas bound stmts state
         let patVars = Set.fromFoldable (patternVars pat)
         in collectDoLambdas (Set.union b patVars) rest (collectLambdas b e st)
       Just { head: DoLet binds, tail: rest } ->
-        let bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) binds)
+        let bindsArr = Array.fromFoldable binds
+            bindNames = Set.fromFoldable (Array.concatMap (\bn -> patternVars bn.pattern) bindsArr)
             b' = Set.union b bindNames
-            st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st binds
+            st' = Array.foldl (\s bn -> collectLambdas b bn.value s) st bindsArr
         in collectDoLambdas b' rest st'
 collectLambdas bound (ExprTyped e _) state = collectLambdas bound e state
 collectLambdas bound (ExprSectionLeft e _) state = collectLambdas bound e state
@@ -283,7 +288,7 @@ collectLambdas _ _ state = state
 -- | Collect all lambdas from a declaration
 collectDeclLambdas :: Declaration -> LambdaCollector -> LambdaCollector
 collectDeclLambdas (DeclFunction f) state =
-  let paramNames = Set.fromFoldable (Array.concatMap patternVars f.parameters)
+  let paramNames = Set.fromFoldable (Array.concatMap patternVars (Array.fromFoldable f.parameters))
   in collectLambdas paramNames f.body state
 collectDeclLambdas _ state = state
 
@@ -313,12 +318,16 @@ patternVars :: Pattern -> Array String
 patternVars (PatVar name) = [name]
 patternVars PatWildcard = []
 patternVars (PatLit _) = []
-patternVars (PatCon _ pats) = Array.concatMap patternVars pats
-patternVars (PatRecord fields) = Array.concatMap (\(Tuple _ p) -> patternVars p) fields
-patternVars (PatList pats) = Array.concatMap patternVars pats
+patternVars (PatCon _ pats) = listConcatMap patternVars pats
+patternVars (PatRecord fields) = listConcatMap (\(Tuple _ p) -> patternVars p) fields
+patternVars (PatList pats) = listConcatMap patternVars pats
 patternVars (PatCons hd tl) = patternVars hd <> patternVars tl
 patternVars (PatAs name pat) = [name] <> patternVars pat
 patternVars (PatParens p) = patternVars p
+
+-- | Helper: concatMap for List returning Array
+listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
 
 -- | A group of function clauses with same name/arity
 type FunctionGroup =
@@ -331,8 +340,8 @@ type FunctionGroup =
 groupFunctions :: Array FunctionDeclaration -> Array FunctionGroup
 groupFunctions funcs =
   let keys = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
-               (map (\f -> { name: f.name, arity: length f.parameters }) funcs)
-      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && length f.parameters == k.arity) funcs }
+               (map (\f -> { name: f.name, arity: List.length f.parameters }) funcs)
+      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && List.length f.parameters == k.arity) funcs }
   in map mkGroup keys
 
 -- | Collect data constructors from module
@@ -340,8 +349,8 @@ collectDataCtors :: Array Declaration -> Map String { tag :: Int, arity :: Int }
 collectDataCtors decls =
   let datas = Array.mapMaybe getData decls
       addCtors m d = foldr (\(Tuple i ctor) acc ->
-        Map.insert ctor.name { tag: i, arity: length ctor.fields } acc) m
-        (Array.mapWithIndex Tuple d.constructors)
+        Map.insert ctor.name { tag: i, arity: List.length ctor.fields } acc) m
+        (Array.mapWithIndex Tuple (Array.fromFoldable d.constructors))
   in Array.foldl addCtors Map.empty datas
   where
     getData (DeclDataType d) = Just d
@@ -384,21 +393,22 @@ genDataSegment strs baseOffset =
 genModule :: Module -> String
 genModule m =
   let modName = m.name
-      allFuncs = Array.mapMaybe getFunc m.declarations
+      decls = Array.fromFoldable m.declarations
+      allFuncs = Array.mapMaybe getFunc decls
       grouped = groupFunctions allFuncs
       uniqueFuncs = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
                       (map (\g -> { name: g.name, arity: g.arity }) grouped)
       exports = intercalate "\n  " (map genExport uniqueFuncs)
-      ctors = collectDataCtors m.declarations
+      ctors = collectDataCtors decls
       -- Collect all external module references
-      allExternalRefs = Array.nub (Array.concatMap collectDeclRefs m.declarations)
+      allExternalRefs = Array.nub (Array.concatMap collectDeclRefs decls)
       externalImports = genExternalImports allExternalRefs
       -- Collect all string literals and build table
-      allStrings = Array.nub (Array.concatMap collectDeclStrings m.declarations)
+      allStrings = Array.nub (Array.concatMap collectDeclStrings decls)
       stringTableData = buildStringTable allStrings
       dataSegment = genDataSegment allStrings 1024
       -- Collect all lambdas for lifting
-      lambdaCollector = Array.foldl (\s d -> collectDeclLambdas d s) { counter: 0, lambdas: [] } m.declarations
+      lambdaCollector = Array.foldl (\s d -> collectDeclLambdas d s) { counter: 0, lambdas: [] } decls
       allLambdas = lambdaCollector.lambdas
       -- Build function arity map
       funcArityMap = Map.fromFoldable (map (\f -> Tuple f.name f.arity) uniqueFuncs)
@@ -626,7 +636,7 @@ genFunctionGroup ctx group =
   case Array.uncons group.clauses of
     Nothing -> ""
     Just { head: first, tail: [] } ->
-      if hasComplexPattern first.parameters
+      if hasComplexPattern (Array.fromFoldable first.parameters)
       then genMergedFunction ctx group
       else genFunction ctx first
     Just _ ->
@@ -641,32 +651,32 @@ getParamName i _ = "p" <> show i
 -- NOTE: We do NOT recurse into lambdas - they are lifted to separate functions
 collectLocals :: Expr -> Array String
 collectLocals (ExprLet binds body) =
-  Array.concatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds <> collectLocals body
+  listConcatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds <> collectLocals body
 collectLocals (ExprLambda _ _) = []  -- Lambda params and body are handled in lifted function
 collectLocals (ExprCase _ clauses) =
-  Array.concatMap (\c -> patternVars c.pattern <> collectLocals c.body) clauses
+  listConcatMap (\c -> patternVars c.pattern <> collectLocals c.body) clauses
 collectLocals (ExprIf c t e) = collectLocals c <> collectLocals t <> collectLocals e
 collectLocals (ExprApp f a) = collectLocals f <> collectLocals a
 collectLocals (ExprBinOp _ l r) = collectLocals l <> collectLocals r
 collectLocals (ExprUnaryOp _ e) = collectLocals e
-collectLocals (ExprList es) = Array.concatMap collectLocals es
-collectLocals (ExprTuple es) = Array.concatMap collectLocals es
-collectLocals (ExprRecord fs) = Array.concatMap (\(Tuple _ e) -> collectLocals e) fs
+collectLocals (ExprList es) = listConcatMap collectLocals es
+collectLocals (ExprTuple es) = listConcatMap collectLocals es
+collectLocals (ExprRecord fs) = listConcatMap (\(Tuple _ e) -> collectLocals e) fs
 collectLocals (ExprRecordAccess e _) = collectLocals e
-collectLocals (ExprRecordUpdate e fs) = collectLocals e <> Array.concatMap (\(Tuple _ ex) -> collectLocals ex) fs
+collectLocals (ExprRecordUpdate e fs) = collectLocals e <> listConcatMap (\(Tuple _ ex) -> collectLocals ex) fs
 collectLocals (ExprParens e) = collectLocals e
-collectLocals (ExprDo stmts) = Array.concatMap collectDoStmt stmts
+collectLocals (ExprDo stmts) = listConcatMap collectDoStmt stmts
   where
     collectDoStmt (DoExpr e) = collectLocals e
     collectDoStmt (DoBind p e) = patternVars p <> collectLocals e
-    collectDoStmt (DoLet binds) = Array.concatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds
+    collectDoStmt (DoLet binds) = listConcatMap (\b -> patternVars b.pattern <> collectLocals b.value) binds
 collectLocals (ExprTyped e _) = collectLocals e
 collectLocals _ = []
 
 -- | Generate simple function
 genFunction :: WasmCtx -> FunctionDeclaration -> String
 genFunction ctx func =
-  let paramNames = Array.mapWithIndex getParamName func.parameters
+  let paramNames = Array.mapWithIndex getParamName (Array.fromFoldable func.parameters)
       params = map (\n -> "(param " <> mangleName n <> " i32)") paramNames
       paramsStr = intercalate " " params
       paramLocals = Map.fromFoldable (Array.mapWithIndex (\i n -> Tuple n i) paramNames)
@@ -692,7 +702,7 @@ genMergedFunction ctx group =
       paramLocals = Map.fromFoldable (Array.mapWithIndex (\i n -> Tuple n i) paramNames)
       -- Collect all locals from all clauses
       clauseLocals = Array.concatMap (\c ->
-        Array.concatMap patternVars c.parameters <> collectLocals c.body) group.clauses
+        listConcatMap patternVars c.parameters <> collectLocals c.body) group.clauses
       -- Always include __tmp for tuple allocation, __rec_base for record updates, and __argN for constructor args
       argSlots = ["__arg0", "__arg1", "__arg2", "__arg3", "__arg4"]
       extraLocals = Array.nub (Array.filter (\n -> not (Array.elem n paramNames)) ("__tmp" : "__rec_base" : argSlots <> clauseLocals))
@@ -711,9 +721,9 @@ genPatternMatch ctx paramNames clauses =
   case Array.uncons clauses of
     Nothing -> "(unreachable)"
     Just { head: clause, tail: rest } ->
-      let bindCode = genPatternBindings ctx paramNames clause.parameters
+      let bindCode = genPatternBindings ctx paramNames (Array.fromFoldable clause.parameters)
           bodyCode = genExpr ctx clause.body
-          testCode = genPatternTest ctx paramNames clause.parameters
+          testCode = genPatternTest ctx paramNames (Array.fromFoldable clause.parameters)
           fallback = genPatternMatch ctx paramNames rest
       in if Array.null rest
          then bindCode <> bodyCode
@@ -784,10 +794,15 @@ genSinglePatternBinding _ _ PatWildcard = []
 genSinglePatternBinding _ _ (PatLit _) = []
 genSinglePatternBinding ctx param (PatCon _ subPats) =
   -- Constructor fields are stored in tuple starting at index 1 (index 0 is tag)
-  Array.concatMap (\(Tuple i p) ->
+  listConcatMap (\(Tuple i p) ->
     let fieldExpr = "(call $tuple_get (local.get " <> mangleName param <> ") (i32.const " <> show (i + 1) <> "))"
     in genPatternFieldBinding ctx fieldExpr p)
-    (Array.mapWithIndex Tuple subPats)
+    (listMapWithIndex Tuple subPats)
+  where
+    listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
+    listMapWithIndex f = go 0
+      where go _ Nil = Nil
+            go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)
 genSinglePatternBinding ctx param (PatAs name p) =
   (case Map.lookup name ctx.locals of
     Just _ -> ["(local.set " <> mangleName name <> " (local.get " <> mangleName param <> "))"]
@@ -925,14 +940,14 @@ genExpr ctx e@(ExprLambda pats body) =
               "\n        (call $rt_make_closure (i32.const " <> show tableIdx <> ") (local.get $__tmp)))"
     Nothing ->
       -- Fallback: inline the body (for nested lambdas not yet tracked)
-      let vars = Array.concatMap patternVars pats
+      let vars = listConcatMap patternVars pats
           ctx' = foldr (\n c ->
             if Map.member n c.locals then c
             else c { locals = Map.insert n c.localCount c.locals, localCount = c.localCount + 1 }) ctx vars
       in genExpr ctx' body
 
 genExpr ctx (ExprLet binds body) =
-  genLetBinds ctx binds body
+  genLetBinds ctx (Array.fromFoldable binds) body
 
 genExpr ctx (ExprIf cond thenE elseE) =
   "(if (result i32) (call $unbox_bool " <> genExpr ctx cond <> ")\n" <>
@@ -955,9 +970,10 @@ genExpr ctx (ExprUnaryOp _ e) = genExpr ctx e
 
 genExpr ctx (ExprList elems) =
   -- Create an actual Array (not a linked list) for Array.elem to work
-  let n = length elems
+  let n = List.length elems
+      elemsArr = Array.fromFoldable elems
       pushAll = intercalate "\n" $ Array.mapWithIndex (\i e ->
-        "      (drop (call $rt_array_push (local.get $__tmp) " <> genExpr ctx e <> "))") elems
+        "      (drop (call $rt_array_push (local.get $__tmp) " <> genExpr ctx e <> "))") elemsArr
   in if n == 0
      then "(call $rt_make_array (i32.const 0))"
      else "(block (result i32)\n" <>
@@ -966,18 +982,19 @@ genExpr ctx (ExprList elems) =
           "\n      (local.get $__tmp))"
 
 genExpr ctx (ExprTuple elems) =
-  let n = length elems
+  let elemsArr = Array.fromFoldable elems
+      n = Array.length elemsArr
   in if n == 0
      then "(call $make_unit)"
      else "(block (result i32)\n" <>
           "      (local.set $__tmp (call $alloc_tuple (i32.const " <> show n <> ")))\n" <>
           intercalate "\n" (Array.mapWithIndex (\i e ->
-            "      (call $tuple_set (local.get $__tmp) (i32.const " <> show i <> ") " <> genExpr ctx e <> ")") elems) <>
+            "      (call $tuple_set (local.get $__tmp) (i32.const " <> show i <> ") " <> genExpr ctx e <> ")") elemsArr) <>
           "\n      (local.get $__tmp))"
 
 genExpr ctx (ExprRecord fields) =
   -- Sort fields alphabetically for consistent access
-  let sortedFields = Array.sortWith (\(Tuple name _) -> name) fields
+  let sortedFields = Array.sortWith (\(Tuple name _) -> name) (Array.fromFoldable fields)
       n = length sortedFields
   in "(block (result i32)\n" <>
      "      (local.set $__tmp (call $alloc_tuple (i32.const " <> show n <> ")))\n" <>
@@ -1035,7 +1052,8 @@ genExpr ctx (ExprRecordAccess expr field) =
 genExpr ctx (ExprRecordUpdate baseExpr fieldUpdates) =
   -- Record update: create new tuple, copy all fields from original, overwrite updated ones
   -- We need to know the record size - infer from fields being updated
-  let updateFieldNames = map (\(Tuple name _) -> name) fieldUpdates
+  let fieldUpdatesArr = Array.fromFoldable fieldUpdates
+      updateFieldNames = map (\(Tuple name _) -> name) fieldUpdatesArr
       -- Determine record size based on known record types
       recordSize = inferRecordSize updateFieldNames
       baseCode = genExpr ctx baseExpr
@@ -1045,7 +1063,7 @@ genExpr ctx (ExprRecordUpdate baseExpr fieldUpdates) =
      "      (local.set $__tmp (call $alloc_tuple (i32.const " <> show recordSize <> ")))\n" <>
      -- For each field position, either copy from base or use update value
      intercalate "\n" (map (\idx ->
-       let maybeUpdate = Array.find (\(Tuple n _) -> fieldIndex n == idx) fieldUpdates
+       let maybeUpdate = Array.find (\(Tuple n _) -> fieldIndex n == idx) fieldUpdatesArr
        in case maybeUpdate of
             Just (Tuple _ updateExpr) ->
               "      (call $tuple_set (local.get $__tmp) (i32.const " <> show idx <> ") " <> genExpr ctx updateExpr <> ")"
@@ -1077,7 +1095,7 @@ genExpr ctx (ExprRecordUpdate baseExpr fieldUpdates) =
 
 genExpr ctx (ExprParens e) = genExpr ctx e
 
-genExpr ctx (ExprDo stmts) = genDoStmts ctx stmts
+genExpr ctx (ExprDo stmts) = genDoStmts ctx (Array.fromFoldable stmts)
 
 genExpr ctx (ExprTyped e _) = genExpr ctx e
 
@@ -1163,11 +1181,16 @@ genPatBindInner ctx expr (PatCon name subPats) =
   -- 2. Extract each sub-pattern from fields 1, 2, etc.
   case Map.lookup name ctx.dataConstructors of
     Just { arity } | arity > 0 ->
-      let subBindings = Array.mapWithIndex (\i subPat ->
+      let subBindings = listMapWithIndexArr (\i subPat ->
             let subExpr = "(call $tuple_get " <> expr <> " (i32.const " <> show (i + 1) <> "))"
             in genPatBindInner ctx subExpr subPat) subPats
       in intercalate "\n        " (Array.filter (_ /= "") subBindings)
     _ -> ""
+  where
+    listMapWithIndexArr :: forall a b. (Int -> a -> b) -> List a -> Array b
+    listMapWithIndexArr f lst = Array.fromFoldable (go 0 lst)
+      where go _ Nil = Nil
+            go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)
 genPatBindInner ctx expr (PatParens p) = genPatBindInner ctx expr p
 genPatBindInner ctx expr (PatAs name p) =
   let nameBinding = case Map.lookup name ctx.locals of
@@ -1180,14 +1203,14 @@ genPatBindInner ctx expr (PatAs name p) =
 genPatBindInner _ _ _ = ""
 
 -- | Generate case expression
-genCaseExpr :: WasmCtx -> Expr -> Array CaseClause -> String
+genCaseExpr :: WasmCtx -> Expr -> List CaseClause -> String
 genCaseExpr ctx scrutinee clauses =
   let scrutCode = genExpr ctx scrutinee
   in genCaseClauses ctx scrutCode clauses
 
-genCaseClauses :: WasmCtx -> String -> Array CaseClause -> String
+genCaseClauses :: WasmCtx -> String -> List CaseClause -> String
 genCaseClauses ctx scrutCode clauses =
-  case Array.uncons clauses of
+  case List.uncons clauses of
     Nothing -> "(unreachable)"
     Just { head: clause, tail: rest } ->
       let vars = patternVars clause.pattern
@@ -1232,23 +1255,28 @@ genCaseClauses ctx scrutCode clauses =
                      -- Generate bindings for sub-patterns
                      -- For non-nullary ctor, field 0 is ctor tag, fields 1+ are arguments
                      bindings = if arity == 0 then ""
-                       else intercalate "\n        " (Array.mapWithIndex (genPatternBinding ctx' scrutCode) subPats)
+                       else intercalate "\n        " (listMapWithIndexArr' (genPatternBinding ctx' scrutCode) subPats)
                      bodyWithBindings = if bindings == "" then guardedBody
                        else "(block (result i32)\n        " <> bindings <> "\n        " <> guardedBody <> ")"
                  in "(if (result i32) " <> check <> "\n" <>
                     "        (then " <> bodyWithBindings <> ")\n" <>
                     "        (else " <> fallback <> "))"
                Nothing ->
-                 if Array.null rest then guardedBody
+                 if List.null rest then guardedBody
                  else "(if (result i32) (i32.const 1)\n" <>
                       "        (then " <> guardedBody <> ")\n" <>
                       "        (else " <> fallback <> "))"
            _ ->
-             if Array.null rest
+             if List.null rest
              then guardedBody
              else "(if (result i32) (i32.const 1)\n" <>
                   "        (then " <> guardedBody <> ")\n" <>
                   "        (else " <> fallback <> "))"
+  where
+    listMapWithIndexArr' :: forall a b. (Int -> a -> b) -> List a -> Array b
+    listMapWithIndexArr' f lst = Array.fromFoldable (go 0 lst)
+      where go _ Nil = Nil
+            go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)
 
 -- | Generate binary operator
 genBinOp :: WasmCtx -> String -> Expr -> Expr -> String
@@ -1314,7 +1342,7 @@ genDoStmts ctx stmts =
           "        (drop " <> genExpr ctx e <> ")\n" <>
           "        " <> genDoStmts ctx rest <> ")"
         DoLet binds ->
-          genLetBinds ctx binds (ExprDo rest)
+          genLetBinds ctx (Array.fromFoldable binds) (ExprDo (List.fromFoldable rest))
         DoBind pat e ->
           let vars = patternVars pat
               ctx' = foldr (\n c ->
@@ -1363,11 +1391,12 @@ genDoStmts ctx stmts =
                  -- Tuple pattern: extract fields from the tuple
                  -- The expr result is Right (Tuple ...), we extract field 1 (the tuple)
                  -- then extract each field from that tuple
-                 let extractBindings = intercalate "\n" $
+                 let patsArr = Array.fromFoldable pats
+                     extractBindings = intercalate "\n" $
                        Array.mapWithIndex (\idx p -> case p of
                          PatVar pname ->
                            "            (local.set " <> mangleName pname <> " (call $tuple_get (local.get $__rec_base) (i32.const " <> show (idx + 1) <> ")))"
-                         _ -> "") pats
+                         _ -> "") patsArr
                  in "(block (result i32)\n" <>
                     "        (local.set $__tmp " <> exprCode <> ")\n" <>
                     "        ;; Check if Nothing (tag 3, ctor 0) OR Left (tag 2, tuple[0] ctor 0)\n" <>

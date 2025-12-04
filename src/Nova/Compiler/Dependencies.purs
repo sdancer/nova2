@@ -3,6 +3,7 @@ module Nova.Compiler.Dependencies where
 import Prelude
 
 import Data.Array as Array
+import Data.List (List(..), (:))
 import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
@@ -62,7 +63,7 @@ getDependencies decl = case decl of
     Set.empty  -- Infix declarations don't have dependencies
 
 -- | Get dependencies from a data constructor
-getConstructorDeps :: { name :: String, fields :: Array { label :: String, ty :: TypeExpr }, isRecord :: Boolean } -> Set String
+getConstructorDeps :: { name :: String, fields :: List { label :: String, ty :: TypeExpr }, isRecord :: Boolean } -> Set String
 getConstructorDeps c = foldl (\acc f -> Set.union acc (getTypeExprDeps f.ty)) Set.empty c.fields
 
 -- | Get dependencies from a type expression
@@ -114,7 +115,7 @@ getExprDeps expr = case expr of
   ExprSectionRight _ e -> getExprDeps e  -- Right section like (+ 1)
 
 -- | Get dependencies from let bindings
-getLetBindsDeps :: Array LetBind -> Set String
+getLetBindsDeps :: List LetBind -> Set String
 getLetBindsDeps binds = foldl (\acc b -> Set.union acc (getExprDeps b.value)) Set.empty binds
 
 -- | Get dependencies from a case clause
@@ -128,11 +129,11 @@ getCaseClauseDeps clause =
   in Set.difference (Set.union bodyDeps guardDeps) boundNames
 
 -- | Get dependencies from do statements
-getDoStatementsDeps :: Array DoStatement -> Set String
+getDoStatementsDeps :: List DoStatement -> Set String
 getDoStatementsDeps stmts =
-  let go remaining bound = case Array.uncons remaining of
-        Nothing -> Set.empty
-        Just { head: stmt, tail: rest } ->
+  let go remaining bound = case remaining of
+        Nil -> Set.empty
+        (stmt : rest) ->
           case stmt of
             DoLet binds ->
               let deps = getLetBindsDeps binds

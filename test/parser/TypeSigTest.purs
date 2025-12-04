@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile)
@@ -25,7 +26,7 @@ main = do
     Right (Tuple m rest) -> do
       log $ "✓ parseModule succeeded"
       log $ "  Module: " <> m.name
-      log $ "  Declarations: " <> show (Array.length m.declarations)
+      log $ "  Declarations: " <> show (List.length m.declarations)
       log $ "  Remaining tokens: " <> show (Array.length rest)
     Left err -> do
       log $ "✗ parseModule failed: " <> err

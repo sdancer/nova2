@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Array as Array
 import Nova.Compiler.Tokenizer (tokenize)
 import Nova.Compiler.Parser as P
 import Nova.Compiler.Ast (Declaration(..), Expr(..))
@@ -203,6 +204,6 @@ testCode src = do
   case P.parseModule tokens of
     Left err -> log $ "  Parse error: " <> err
     Right (Tuple m _) -> do
-      case checkModule emptyEnv m.declarations of
+      case checkModule emptyEnv (Array.fromFoldable m.declarations) of
         Left err -> log $ "  FAIL: " <> show err
         Right _ -> log $ "  OK"

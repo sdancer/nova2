@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Nova.Compiler.Tokenizer (tokenize)
 import Nova.Compiler.Parser as P
 import Nova.Compiler.Ast as Ast
@@ -21,19 +22,19 @@ main = do
   -- Test 1: Simple case without parens (baseline - should work)
   testExpr "Case without parens" "case x of\n  Just _ -> 1\n  Nothing -> 0" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 2
+      Ast.ExprCase _ clauses -> List.length clauses == 2
       _ -> false
 
   -- Test 2: Single-line case in parens (should work)
   testExpr "Single-line paren case" "(case x of Just _ -> 1)" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 1
+      Ast.ExprCase _ clauses -> List.length clauses == 1
       _ -> false
 
   -- Test 3: Multiline case in parens (the failing case)
   testExpr "Multiline paren case" "(case x of\n  Just _ -> 1\n  Nothing -> 0)" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 2
+      Ast.ExprCase _ clauses -> List.length clauses == 2
       _ -> false
 
   -- Test 4: Paren case followed by operator (real-world use case)
@@ -45,7 +46,7 @@ main = do
   -- Test 5: Nested parens with case
   testExpr "Nested parens case" "((case x of\n  Just _ -> 1\n  Nothing -> 0))" $ \expr ->
     case expr of
-      Ast.ExprCase _ clauses -> Array.length clauses == 2
+      Ast.ExprCase _ clauses -> List.length clauses == 2
       _ -> false
 
   log ""

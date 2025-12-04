@@ -11,6 +11,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 
 main :: Effect Unit
 main = do
@@ -20,6 +21,6 @@ main = do
   case parseDeclarations tokens of
     Left err -> log $ "Parse error: " <> err
     Right (Tuple decls _) -> do
-      let mod = { name: "Test", declarations: decls }
+      let mod = { name: "Test", declarations: List.fromFoldable decls }
       let code = genModule mod
       log code

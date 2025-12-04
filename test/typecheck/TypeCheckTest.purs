@@ -8,6 +8,7 @@ import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..))
 import Nova.Compiler.Types (emptyEnv, tInt, tBool, tArrow)
 import Nova.Compiler.TypeChecker (infer, TCError)
 import Data.Maybe (Maybe(..))
+import Data.List (List(..), (:))
 
 main :: Effect Unit
 main = do
@@ -21,8 +22,8 @@ main = do
 
   -- Test lambda inference
   log "\n-- Lambda tests --"
-  testExpr "identity lambda" (ExprLambda [PatVar "x"] (ExprVar "x"))
-  testExpr "const lambda" (ExprLambda [PatVar "x", PatVar "y"] (ExprVar "x"))
+  testExpr "identity lambda" (ExprLambda (PatVar "x" : Nil) (ExprVar "x"))
+  testExpr "const lambda" (ExprLambda (PatVar "x" : PatVar "y" : Nil) (ExprVar "x"))
 
   -- Test if expression
   log "\n-- If expression tests --"
@@ -32,7 +33,7 @@ main = do
   -- Test let expression
   log "\n-- Let expression tests --"
   testExpr "let x = 1 in x"
-    (ExprLet [{ pattern: PatVar "x", value: ExprLit (LitInt 1), typeAnn: Nothing }] (ExprVar "x"))
+    (ExprLet ({ pattern: PatVar "x", value: ExprLit (LitInt 1), typeAnn: Nothing } : Nil) (ExprVar "x"))
 
   log "\n=== All tests completed ==="
 

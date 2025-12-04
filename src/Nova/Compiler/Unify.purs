@@ -50,25 +50,17 @@ unify (TyCon c1) (TyCon c2)
 unify (TyRecord r1) (TyRecord r2) = unifyRecords r1 r2
 unify t1 t2 = Left (TypeMismatch t1 t2)
 
+-- | Helper for unifyMany - unify a single pair of types with accumulating substitution
+unifyStep :: Subst -> Tuple Type Type -> Either UnifyError Subst
+unifyStep sub (Tuple t1 t2) = do
+  s <- unify (applySubst sub t1) (applySubst sub t2)
+  pure (composeSubst s sub)
+
 -- | Unify two lists of types pairwise
 unifyMany :: Array Type -> Array Type -> Either UnifyError Subst
-unifyMany ts1 ts2 = foldM step emptySubst (zip ts1 ts2)
-  where
-    step :: Subst -> Tuple Type Type -> Either UnifyError Subst
-    step sub (Tuple t1 t2) = do
-      s <- unify (applySubst sub t1) (applySubst sub t2)
-      pure (composeSubst s sub)
+unifyMany ts1 ts2 = foldM unifyStep emptySubst (zip ts1 ts2)
 
--- | Unify record types
-unifyRecords :: { fields :: Map.Map String Type, row :: _ }
-             -> { fields :: Map.Map String Type, row :: _ }
-             -> Either UnifyError Subst
-unifyRecords r1 r2 =
-  -- Get common keys and unify their types
-  let keys1 = Map.keys r1.fields
-  in foldM (unifyField r1.fields r2.fields) emptySubst keys1
-
--- | Helper to unify a single field
+-- | Helper to unify a single field (must be defined before unifyRecords)
 unifyField :: Map.Map String Type -> Map.Map String Type -> Subst -> String -> Either UnifyError Subst
 unifyField fields1 fields2 sub k =
   case Tuple (Map.lookup k fields1) (Map.lookup k fields2) of
@@ -77,3 +69,12 @@ unifyField fields1 fields2 sub k =
         Left err -> Left err
         Right s -> Right (composeSubst s sub)
     _ -> Right sub -- field not in both, handle with row polymorphism later
+
+-- | Unify record types
+unifyRecords :: { fields :: Map.Map String Type, row :: Maybe TVar }
+             -> { fields :: Map.Map String Type, row :: Maybe TVar }
+             -> Either UnifyError Subst
+unifyRecords r1 r2 =
+  -- Get common keys and unify their types
+  let keys1 = Map.keys r1.fields
+  in foldM (unifyField r1.fields r2.fields) emptySubst keys1

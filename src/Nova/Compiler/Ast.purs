@@ -1,6 +1,7 @@
 module Nova.Compiler.Ast where
 
 import Prelude
+import Data.List (List)
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
 import Data.Set (Set)
@@ -46,7 +47,7 @@ type ManagedDecl =
   { meta :: DeclMetadata
   , decl :: Declaration
   , sourceText :: String          -- Original source for re-parsing
-  , errors :: Array String        -- Cached type errors
+  , errors :: List String        -- Cached type errors
   }
 
 -- | Generate a DeclId from components
@@ -107,7 +108,7 @@ typeExprToString _ = "complex"
 -- | Module definition
 type Module =
   { name :: String
-  , declarations :: Array Declaration
+  , declarations :: List Declaration
   }
 
 -- | All possible declarations
@@ -128,16 +129,16 @@ data Declaration
 -- | Function declaration
 type FunctionDeclaration =
   { name :: String
-  , parameters :: Array Pattern
+  , parameters :: List Pattern
   , body :: Expr
-  , guards :: Array GuardedExpr
+  , guards :: List GuardedExpr
   , typeSignature :: Maybe TypeSignature
   }
 
 -- | A guarded expression (for pattern guards)
 -- | e.g., `| cond = expr` or `| Pat <- expr, cond = expr`
 type GuardedExpr =
-  { guards :: Array GuardClause
+  { guards :: List GuardClause
   , body :: Expr
   }
 
@@ -155,23 +156,23 @@ type TypeDeclaration =
 -- | Type signature (standalone)
 type TypeSignature =
   { name :: String
-  , typeVars :: Array String
-  , constraints :: Array Constraint
+  , typeVars :: List String
+  , constraints :: List Constraint
   , ty :: TypeExpr
   }
 
 -- | Type class definition
 type TypeClass =
   { name :: String
-  , typeVars :: Array String
-  , methods :: Array TypeSignature
+  , typeVars :: List String
+  , methods :: List TypeSignature
   , kind :: Maybe String
   }
 
 -- | Type alias
 type TypeAlias =
   { name :: String
-  , typeVars :: Array String
+  , typeVars :: List String
   , ty :: TypeExpr
   }
 
@@ -179,21 +180,21 @@ type TypeAlias =
 type TypeClassInstance =
   { className :: String
   , ty :: TypeExpr
-  , methods :: Array FunctionDeclaration
+  , methods :: List FunctionDeclaration
   , derived :: Boolean
   }
 
 -- | Algebraic data type
 type DataType =
   { name :: String
-  , typeVars :: Array String
-  , constructors :: Array DataConstructor
+  , typeVars :: List String
+  , constructors :: List DataConstructor
   }
 
 -- | Data constructor
 type DataConstructor =
   { name :: String
-  , fields :: Array DataField
+  , fields :: List DataField
   , isRecord :: Boolean
   }
 
@@ -207,7 +208,7 @@ type DataField =
 type ImportDeclaration =
   { moduleName :: String
   , alias :: Maybe String
-  , items :: Array ImportItem
+  , items :: List ImportItem
   , hiding :: Boolean
   }
 
@@ -218,7 +219,7 @@ data ImportItem
 
 data ImportSpec
   = ImportAll
-  | ImportSome (Array String)
+  | ImportSome (List String)
   | ImportNone
 
 -- | Foreign import
@@ -246,7 +247,7 @@ data Associativity
 -- | Newtype declaration (like data but with exactly one constructor and one field)
 type NewtypeDecl =
   { name :: String
-  , typeVars :: Array String
+  , typeVars :: List String
   , constructor :: String
   , wrappedType :: TypeExpr
   }
@@ -254,7 +255,7 @@ type NewtypeDecl =
 -- | Constraint in type signature
 type Constraint =
   { className :: String
-  , types :: Array TypeExpr
+  , types :: List TypeExpr
   }
 
 -- | Type expressions (in source, before type checking)
@@ -263,20 +264,20 @@ data TypeExpr
   | TyExprVar String
   | TyExprApp TypeExpr TypeExpr
   | TyExprArrow TypeExpr TypeExpr
-  | TyExprRecord (Array (Tuple String TypeExpr)) (Maybe String)
-  | TyExprForAll (Array String) TypeExpr
-  | TyExprConstrained (Array Constraint) TypeExpr
+  | TyExprRecord (List (Tuple String TypeExpr)) (Maybe String)
+  | TyExprForAll (List String) TypeExpr
+  | TyExprConstrained (List Constraint) TypeExpr
   | TyExprParens TypeExpr
-  | TyExprTuple (Array TypeExpr)
+  | TyExprTuple (List TypeExpr)
 
 -- | Patterns for matching
 data Pattern
   = PatVar String
   | PatWildcard
   | PatLit Literal
-  | PatCon String (Array Pattern)
-  | PatRecord (Array (Tuple String Pattern))
-  | PatList (Array Pattern)
+  | PatCon String (List Pattern)
+  | PatRecord (List (Tuple String Pattern))
+  | PatList (List Pattern)
   | PatCons Pattern Pattern
   | PatAs String Pattern
   | PatParens Pattern
@@ -287,18 +288,18 @@ data Expr
   | ExprQualified String String  -- namespace.name
   | ExprLit Literal
   | ExprApp Expr Expr
-  | ExprLambda (Array Pattern) Expr
-  | ExprLet (Array LetBind) Expr
+  | ExprLambda (List Pattern) Expr
+  | ExprLet (List LetBind) Expr
   | ExprIf Expr Expr Expr
-  | ExprCase Expr (Array CaseClause)
-  | ExprDo (Array DoStatement)
+  | ExprCase Expr (List CaseClause)
+  | ExprDo (List DoStatement)
   | ExprBinOp String Expr Expr
   | ExprUnaryOp String Expr
-  | ExprList (Array Expr)
-  | ExprTuple (Array Expr)
-  | ExprRecord (Array (Tuple String Expr))
+  | ExprList (List Expr)
+  | ExprTuple (List Expr)
+  | ExprRecord (List (Tuple String Expr))
   | ExprRecordAccess Expr String
-  | ExprRecordUpdate Expr (Array (Tuple String Expr))
+  | ExprRecordUpdate Expr (List (Tuple String Expr))
   | ExprTyped Expr TypeExpr
   | ExprParens Expr
   | ExprSection String              -- record accessor section like (.field) or bare operator like (+)
@@ -329,6 +330,6 @@ type CaseClause =
 
 -- | Do statement
 data DoStatement
-  = DoLet (Array LetBind)
+  = DoLet (List LetBind)
   | DoBind Pattern Expr
   | DoExpr Expr

@@ -122,7 +122,7 @@ compilePipeline source = do
     Left parseErr -> Left $ "Parse error: " <> parseErr
     Right (Tuple mod _rest) -> do
       -- Type check
-      case checkModule emptyEnv mod.declarations of
+      case checkModule emptyEnv (Array.fromFoldable mod.declarations) of
         Left tcErr -> Left $ "Type error: " <> show tcErr
         Right _env -> do
           -- Generate Elixir

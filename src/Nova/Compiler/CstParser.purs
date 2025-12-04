@@ -2,6 +2,9 @@ module Nova.Compiler.CstParser where
 
 import Prelude
 import Data.Array as Array
+import Data.List (List(..), (:))
+import Data.List as List
+import Data.String as String
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
@@ -12,7 +15,7 @@ import Nova.Compiler.Cst as Cst
 -- Parser Type
 -- ============================================================================
 
-type TokenStream = Array Cst.SourceToken
+type TokenStream = List Cst.SourceToken
 
 type ParseResult a = Either String (Tuple a TokenStream)
 
@@ -66,9 +69,9 @@ fail msg = Parser \_ -> Left msg
 
 -- | Get current position for error messages
 getPosition :: Parser Cst.SourcePos
-getPosition = Parser \ts -> case Array.head ts of
-  Just tok -> Right (Tuple tok.range.start ts)
-  Nothing -> Right (Tuple { line: 0, column: 0 } ts)
+getPosition = Parser \ts -> case ts of
+  (tok : _) -> Right (Tuple tok.range.start ts)
+  Nil -> Right (Tuple { line: 0, column: 0 } ts)
 
 -- ============================================================================
 -- Token Matchers
@@ -76,12 +79,12 @@ getPosition = Parser \ts -> case Array.head ts of
 
 -- | Match any token satisfying a predicate
 satisfy :: (Cst.Token -> Boolean) -> Parser Cst.SourceToken
-satisfy pred = Parser \ts -> case Array.uncons ts of
-  Just { head: tok, tail: rest } ->
+satisfy pred = Parser \ts -> case ts of
+  (tok : rest) ->
     if pred tok.value
     then Right (Tuple tok rest)
     else Left "Token did not match predicate"
-  Nothing -> Left "Unexpected end of input"
+  Nil -> Left "Unexpected end of input"
 
 -- | Match exact token
 token :: Cst.Token -> Parser Cst.SourceToken
@@ -89,11 +92,11 @@ token expected = satisfy (_ == expected)
 
 -- | Match and extract from token
 expectMap :: forall a. (Cst.Token -> Maybe a) -> Parser (Tuple Cst.SourceToken a)
-expectMap f = Parser \ts -> case Array.uncons ts of
-  Just { head: tok, tail: rest } -> case f tok.value of
+expectMap f = Parser \ts -> case ts of
+  (tok : rest) -> case f tok.value of
     Just a -> Right (Tuple (Tuple tok a) rest)
     Nothing -> Left "Token did not match"
-  Nothing -> Left "Unexpected end of input"
+  Nil -> Left "Unexpected end of input"
 
 -- | Specific token matchers
 tokLeftParen :: Parser Cst.SourceToken
@@ -123,6 +126,12 @@ tokPipe = token Cst.TokPipe
 tokDot :: Parser Cst.SourceToken
 tokDot = token Cst.TokDot
 
+tokDoubleDot :: Parser Cst.SourceToken
+tokDoubleDot = satisfy isDoubleDot
+  where
+    isDoubleDot (Cst.TokOperator _ "..") = true
+    isDoubleDot _ = false
+
 tokComma :: Parser Cst.SourceToken
 tokComma = token Cst.TokComma
 
@@ -137,6 +146,13 @@ tokLeftArrow = token Cst.TokLeftArrow
 
 tokDoubleColon :: Parser Cst.SourceToken
 tokDoubleColon = token Cst.TokDoubleColon
+
+-- | Single colon used in record literals: { foo: 1 }
+tokColon :: Parser Cst.SourceToken
+tokColon = satisfy isColon
+  where
+    isColon (Cst.TokOperator _ ":") = true
+    isColon _ = false
 
 tokRightFatArrow :: Parser Cst.SourceToken
 tokRightFatArrow = token Cst.TokRightFatArrow
@@ -163,23 +179,43 @@ tokLayoutEnd = satisfy isLayoutEnd
     isLayoutEnd (Cst.TokLayoutEnd _) = true
     isLayoutEnd _ = false
 
--- | Match lowercase name (identifier)
+-- | Match lowercase name (identifier), excluding keywords
 tokLowerName :: Parser (Cst.Name Cst.Ident)
 tokLowerName = do
   Tuple tok name <- expectMap extractLower
   pure { token: tok, name: Cst.Ident name }
   where
-    extractLower (Cst.TokLowerName Nothing name) = Just name
+    extractLower (Cst.TokLowerName Nothing name) =
+      if isKeyword name then Nothing else Just name
     extractLower _ = Nothing
 
--- | Match qualified lowercase name
+    isKeyword s = List.elem s reservedKeywords
+
+    reservedKeywords :: List String
+    reservedKeywords =
+      "module" : "where" : "import" : "data" : "type" : "newtype"
+      : "class" : "instance" : "derive" : "foreign" : "infixl" : "infixr" : "infix"
+      : "if" : "then" : "else" : "case" : "of" : "let" : "in" : "do" : "ado"
+      : "forall" : "as" : "hiding" : "true" : "false" : Nil
+
+-- | Match qualified lowercase name, excluding keywords
 tokQualifiedLowerName :: Parser (Cst.QualifiedName Cst.Ident)
 tokQualifiedLowerName = do
   Tuple tok (Tuple mod name) <- expectMap extractQualLower
   pure { token: tok, module: mod, name: Cst.Ident name }
   where
-    extractQualLower (Cst.TokLowerName mod name) = Just (Tuple (map Cst.ModuleName mod) name)
+    extractQualLower (Cst.TokLowerName mod name) =
+      if isKeyword name then Nothing else Just (Tuple (map Cst.ModuleName mod) name)
     extractQualLower _ = Nothing
+
+    isKeyword s = List.elem s reservedKeywords
+
+    reservedKeywords :: List String
+    reservedKeywords =
+      "module" : "where" : "import" : "data" : "type" : "newtype"
+      : "class" : "instance" : "derive" : "foreign" : "infixl" : "infixr" : "infix"
+      : "if" : "then" : "else" : "case" : "of" : "let" : "in" : "do" : "ado"
+      : "forall" : "as" : "hiding" : "true" : "false" : Nil
 
 -- | Match uppercase name (constructor/type)
 tokUpperName :: Parser (Cst.Name Cst.Proper)
@@ -252,19 +288,19 @@ optional :: forall a. Parser a -> Parser (Maybe a)
 optional p = (Just <$> p) <|> pure Nothing
 
 -- | Many (zero or more)
-many :: forall a. Parser a -> Parser (Array a)
-many p = Parser \ts -> go ts []
+many :: forall a. Parser a -> Parser (List a)
+many p = Parser \ts -> go ts Nil
   where
     go tokens acc = case runParser p tokens of
-      Right (Tuple a rest) -> go rest (Array.snoc acc a)
+      Right (Tuple a rest) -> go rest (acc <> (a : Nil))
       Left _ -> Right (Tuple acc tokens)
 
 -- | Some (one or more)
-some :: forall a. Parser a -> Parser (Array a)
+some :: forall a. Parser a -> Parser (List a)
 some p = do
   first <- p
   rest <- many p
-  pure (Array.cons first rest)
+  pure (first : rest)
 
 -- | Separated by (one or more items separated by sep)
 separated :: forall a. Parser a -> Parser Cst.SourceToken -> Parser (Cst.Separated a)
@@ -293,7 +329,7 @@ delimited :: forall a. Parser Cst.SourceToken -> Parser a -> Parser Cst.SourceTo
 delimited open p sep close = wrapped open (optionalSeparated p sep) close
 
 -- | Layout block (between LayoutStart and LayoutEnd)
-layoutBlock :: forall a. Parser a -> Parser (Array a)
+layoutBlock :: forall a. Parser a -> Parser (List a)
 layoutBlock p = do
   _ <- tokLayoutStart
   items <- layoutItems p
@@ -301,17 +337,17 @@ layoutBlock p = do
   pure items
   where
     dummyToken = { range: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } }
-                 , leadingComments: []
-                 , trailingComments: []
+                 , leadingComments: Nil
+                 , trailingComments: Nil
                  , value: Cst.TokLayoutEnd 0
                  }
 
 -- | Items in a layout block (separated by LayoutSep)
-layoutItems :: forall a. Parser a -> Parser (Array a)
+layoutItems :: forall a. Parser a -> Parser (List a)
 layoutItems p = do
   first <- p
   rest <- many (tokLayoutSep *> p)
-  pure (Array.cons first rest)
+  pure (first : rest)
 
 -- ============================================================================
 -- Type Parsers
@@ -350,7 +386,7 @@ parseType3 :: Parser (Cst.Type Void)
 parseType3 = Control.Lazy.defer \_ -> do
   head <- parseTypeAtom
   args <- many parseTypeAtom
-  if Array.null args
+  if List.null args
     then pure head
     else pure (Cst.TypeApp head args)
 
@@ -401,10 +437,12 @@ parseRowLabel = Control.Lazy.defer \_ -> do
 
 parseLabel :: Parser (Cst.Name Cst.Label)
 parseLabel = do
-  name <- tokLowerName
-  pure { token: name.token, name: Cst.Label (unwrapIdent name.name) }
+  Tuple tok name <- expectMap extractLabel
+  pure { token: tok, name: Cst.Label name }
   where
-    unwrapIdent (Cst.Ident s) = s
+    -- Labels can be any lowercase name including keywords (like "hiding", "module", etc.)
+    extractLabel (Cst.TokLowerName Nothing name) = Just name
+    extractLabel _ = Nothing
 
 -- ============================================================================
 -- Expression Parsers (Precedence-based)
@@ -434,7 +472,7 @@ parseExpr2 = Control.Lazy.defer \_ -> do
     op <- tokOperator
     e2 <- parseExpr3
     pure (Tuple op e2))
-  if Array.null ops
+  if List.null ops
     then pure e
     else pure (Cst.ExprOp e ops)
 
@@ -455,19 +493,33 @@ parseExpr4 :: Parser (Cst.Expr Void)
 parseExpr4 = Control.Lazy.defer \_ -> do
   head <- parseExpr5
   args <- many parseExpr5
-  if Array.null args
+  if List.null args
     then pure head
     else pure (Cst.ExprApp head args)
 
--- | Expr5: Control structures and atoms
+-- | Expr5: Control structures and atoms with postfix accessors
 parseExpr5 :: Parser (Cst.Expr Void)
-parseExpr5 = Control.Lazy.defer \_ ->
-  parseIf
-  <|> parseLet
-  <|> parseLambda
-  <|> parseCase
-  <|> parseDo
-  <|> parseExprAtom
+parseExpr5 = Control.Lazy.defer \_ -> do
+  e <- parseIf
+       <|> parseLet
+       <|> parseLambda
+       <|> parseCase
+       <|> parseDo
+       <|> parseExprAtom
+  -- Handle postfix record accessor: e.field.subfield
+  parseRecordAccessor e
+
+-- | Parse record accessor chain after an expression
+parseRecordAccessor :: Cst.Expr Void -> Parser (Cst.Expr Void)
+parseRecordAccessor e = Control.Lazy.defer \_ -> do
+  access <- optional (do
+    dot <- tokDot
+    first <- parseLabel
+    rest <- many (tokDot *> parseLabel)
+    pure { dot, path: { head: first, tail: map (\l -> Tuple dot l) rest } })
+  case access of
+    Just { dot, path } -> pure (Cst.ExprRecordAccessor { expr: e, dot, path })
+    Nothing -> pure e
 
 -- | If-then-else
 parseIf :: Parser (Cst.Expr Void)
@@ -510,8 +562,40 @@ parseCase = Control.Lazy.defer \_ -> do
 parseCaseBranch :: Parser (Tuple (Cst.Separated (Cst.Binder Void)) (Cst.Guarded Void))
 parseCaseBranch = Control.Lazy.defer \_ -> do
   pats <- separated parseBinder tokComma
-  guarded <- parseGuarded
+  guarded <- parseGuardedArrow  -- Case branches use -> not =
   pure (Tuple pats guarded)
+
+-- | Guarded expression for case branches (uses -> instead of =)
+parseGuardedArrow :: Parser (Cst.Guarded Void)
+parseGuardedArrow = Control.Lazy.defer \_ -> parseUnconditionalArrow <|> parseGuardedExprsArrow
+
+parseUnconditionalArrow :: Parser (Cst.Guarded Void)
+parseUnconditionalArrow = Control.Lazy.defer \_ -> do
+  arrow <- tokRightArrow
+  expr <- parseExpr
+  -- Optional where clause
+  whereClause <- optional (do
+    wh <- tokKeyword "where"
+    bindings <- layoutBlock parseLetBinding
+    pure (Tuple wh bindings))
+  pure (Cst.Unconditional arrow { expr, bindings: whereClause })
+
+parseGuardedExprsArrow :: Parser (Cst.Guarded Void)
+parseGuardedExprsArrow = Control.Lazy.defer \_ -> do
+  guards <- some parseGuardedExprArrow
+  pure (Cst.Guarded guards)
+
+parseGuardedExprArrow :: Parser (Cst.GuardedExpr Void)
+parseGuardedExprArrow = Control.Lazy.defer \_ -> do
+  bar <- tokPipe
+  patterns <- separated parsePatternGuard tokComma
+  sep <- tokRightArrow
+  expr <- parseExpr
+  whereClause <- optional (do
+    wh <- tokKeyword "where"
+    bindings <- layoutBlock parseLetBinding
+    pure (Tuple wh bindings))
+  pure { bar, patterns, separator: sep, "where": { expr, bindings: whereClause } }
 
 -- | Do block
 parseDo :: Parser (Cst.Expr Void)
@@ -546,6 +630,7 @@ parseDoDiscard = Control.Lazy.defer \_ -> Cst.DoDiscard <$> parseExpr
 parseLetBinding :: Parser (Cst.LetBinding Void)
 parseLetBinding = Control.Lazy.defer \_ ->
   parseLetSig
+  <|> parseLetPattern  -- Pattern bindings like `Tuple a b = expr`
   <|> parseLetName
 
 parseLetSig :: Parser (Cst.LetBinding Void)
@@ -554,6 +639,19 @@ parseLetSig = Control.Lazy.defer \_ -> do
   dc <- tokDoubleColon
   ty <- parseType
   pure (Cst.LetBindingSignature { label: name, separator: dc, value: ty })
+
+parseLetPattern :: Parser (Cst.LetBinding Void)
+parseLetPattern = Control.Lazy.defer \_ -> do
+  -- Pattern binding: pattern = expr
+  -- Must start with a constructor pattern (uppercase) to distinguish from name binding
+  pat <- parseBinderCon  -- Constructor pattern like `Tuple a b` or `Just x`
+  eq <- tokEquals
+  expr <- parseExpr
+  whereClause <- optional (do
+    wh <- tokKeyword "where"
+    bindings <- layoutBlock parseLetBinding
+    pure (Tuple wh bindings))
+  pure (Cst.LetBindingPattern pat eq { expr, bindings: whereClause })
 
 parseLetName :: Parser (Cst.LetBinding Void)
 parseLetName = Control.Lazy.defer \_ -> do
@@ -674,7 +772,7 @@ parseRecordField = Control.Lazy.defer \_ -> parseRecordFieldFull <|> parseRecord
 parseRecordFieldFull :: Parser (Cst.RecordLabeled (Cst.Expr Void))
 parseRecordFieldFull = Control.Lazy.defer \_ -> do
   label <- parseLabel
-  sep <- tokDoubleColon <|> tokEquals  -- Allow both : and =
+  sep <- tokColon <|> tokEquals  -- Single colon (:) or equals (=) for record fields
   value <- parseExpr
   pure (Cst.RecordField label sep value)
 
@@ -701,7 +799,7 @@ parseBinder1 = Control.Lazy.defer \_ -> do
     op <- tokOperator
     b2 <- parseBinder2
     pure (Tuple op b2))
-  if Array.null ops
+  if List.null ops
     then pure b
     else pure (Cst.BinderOp b ops)
 
@@ -816,7 +914,7 @@ parseBinderRecordField = Control.Lazy.defer \_ -> parseBinderRecordFull <|> pars
 parseBinderRecordFull :: Parser (Cst.RecordLabeled (Cst.Binder Void))
 parseBinderRecordFull = Control.Lazy.defer \_ -> do
   label <- parseLabel
-  sep <- tokDoubleColon <|> tokEquals
+  sep <- tokColon <|> tokEquals  -- Single colon (:) for record patterns
   value <- parseBinder
   pure (Cst.RecordField label sep value)
 
@@ -835,9 +933,49 @@ parseBinderParens = Control.Lazy.defer \_ -> do
 -- | Parse a complete module
 parseModule :: Parser (Cst.Module Void)
 parseModule = do
-  header <- parseModuleHeader
-  body <- parseModuleBody
+  kw <- tokKeyword "module"
+  name <- parseModuleName
+  exports <- optional parseExports
+  whereKw <- tokKeyword "where"
+  -- Layout start for module body
+  _ <- tokLayoutStart
+  -- Parse imports first (as many as there are)
+  imports <- parseModuleImports
+  -- Parse declarations
+  decls <- parseModuleDecls
+  -- Layout end
+  _ <- optional tokLayoutEnd
+  let header = { keyword: kw, name, exports, where: whereKw, imports }
+  let body = { decls, trailingComments: Nil, end: { line: 0, column: 0 } }
   pure { header, body }
+
+-- | Parse imports at the start of module body
+parseModuleImports :: Parser (List (Cst.ImportDecl Void))
+parseModuleImports = go Nil
+  where
+    go acc = tryImport acc <|> pure acc
+    tryImport acc = do
+      imp <- parseImport
+      -- After an import, we might have a separator or we're done with imports
+      sep <- optional tokLayoutSep
+      case sep of
+        Just _ -> go (acc <> (imp : Nil))
+        Nothing -> pure (acc <> (imp : Nil))
+
+-- | Parse declarations after imports
+parseModuleDecls :: Parser (List (Cst.Declaration Void))
+parseModuleDecls = do
+  -- Consume layout separator before first declaration (if any)
+  _ <- optional tokLayoutSep
+  go Nil
+  where
+    go acc = tryDecl acc <|> pure acc
+    tryDecl acc = do
+      decl <- parseDeclaration
+      sep <- optional tokLayoutSep
+      case sep of
+        Just _ -> go (acc <> (decl : Nil))
+        Nothing -> pure (acc <> (decl : Nil))
 
 parseModuleHeader :: Parser (Cst.ModuleHeader Void)
 parseModuleHeader = do
@@ -845,15 +983,19 @@ parseModuleHeader = do
   name <- parseModuleName
   exports <- optional parseExports
   whereKw <- tokKeyword "where"
-  imports <- many parseImport
-  pure { keyword: kw, name, exports, where: whereKw, imports }
+  pure { keyword: kw, name, exports, where: whereKw, imports: Nil }
 
 parseModuleName :: Parser (Cst.Name Cst.ModuleName)
 parseModuleName = do
-  name <- tokUpperName
-  pure { token: name.token, name: Cst.ModuleName (unwrapProper name.name) }
+  Tuple tok name <- expectMap extractModuleName
+  pure { token: tok, name }
   where
-    unwrapProper (Cst.Proper s) = s
+    extractModuleName = case _ of
+      Cst.TokUpperName (Just prefix) proper ->
+        Just (Cst.ModuleName (prefix <> "." <> proper))
+      Cst.TokUpperName Nothing proper ->
+        Just (Cst.ModuleName proper)
+      _ -> Nothing
 
 parseExports :: Parser (Cst.DelimitedNonEmpty (Cst.Export Void))
 parseExports = do
@@ -889,10 +1031,9 @@ parseDataMembers = parseDataAll <|> parseDataEnumerated
 parseDataAll :: Parser Cst.DataMembers
 parseDataAll = do
   _ <- tokLeftParen
-  dot <- tokDot
-  _ <- tokDot
+  dotdot <- tokDoubleDot
   _ <- tokRightParen
-  pure (Cst.DataAll dot)
+  pure (Cst.DataAll dotdot)
 
 parseDataEnumerated :: Parser Cst.DataMembers
 parseDataEnumerated = do
@@ -915,9 +1056,18 @@ parseImport = do
 
 parseImportItem :: Parser (Cst.Import Void)
 parseImportItem =
-  parseImportValue
+  parseImportOp
+  <|> parseImportValue
   <|> parseImportType
   <|> parseImportClass
+
+-- | Parse operator import: (op)
+parseImportOp :: Parser (Cst.Import Void)
+parseImportOp = do
+  _ <- tokLeftParen
+  op <- parseOpName
+  _ <- tokRightParen
+  pure (Cst.ImportOp op)
 
 parseImportValue :: Parser (Cst.Import Void)
 parseImportValue = Cst.ImportValue <$> tokLowerName
@@ -936,8 +1086,8 @@ parseImportClass = do
 
 parseModuleBody :: Parser (Cst.ModuleBody Void)
 parseModuleBody = do
-  decls <- many parseDeclaration
-  pure { decls, trailingComments: [], end: { line: 0, column: 0 } }
+  decls <- layoutBlock parseDeclaration
+  pure { decls, trailingComments: Nil, end: { line: 0, column: 0 } }
 
 -- | Parse a declaration
 parseDeclaration :: Parser (Cst.Declaration Void)
@@ -946,6 +1096,7 @@ parseDeclaration =
   <|> parseDeclType
   <|> parseDeclNewtype
   <|> parseDeclClass
+  <|> parseDeclDerive
   <|> parseDeclInstance
   <|> parseDeclForeign
   <|> parseDeclFixity
@@ -1035,7 +1186,7 @@ parseDeclInstance = do
                      , types
                      }
   let inst = { head: instanceHead, body }
-  pure (Cst.DeclInstanceChain { head: inst, tail: [] })
+  pure (Cst.DeclInstanceChain { head: inst, tail: Nil })
 
 parseInstanceBinding :: Parser (Cst.InstanceBinding Void)
 parseInstanceBinding = parseInstanceSig <|> parseInstanceName
@@ -1053,6 +1204,26 @@ parseInstanceName = do
   binders <- many parseBinder
   guarded <- parseGuarded
   pure (Cst.InstanceBindingName { name, binders, guarded })
+
+parseDeclDerive :: Parser (Cst.Declaration Void)
+parseDeclDerive = do
+  deriveKw <- tokKeyword "derive"
+  newtypeKw <- optional (tokKeyword "newtype")
+  instanceKw <- tokKeyword "instance"
+  name <- optional (do
+    n <- tokLowerName
+    dc <- tokDoubleColon
+    pure (Tuple n dc))
+  -- TODO: constraints
+  className <- tokQualifiedUpperName
+  types <- many parseTypeAtom
+  let instanceHead = { keyword: instanceKw
+                     , name
+                     , constraints: Nothing
+                     , className
+                     , types
+                     }
+  pure (Cst.DeclDerive deriveKw newtypeKw instanceHead)
 
 parseDeclForeign :: Parser (Cst.Declaration Void)
 parseDeclForeign = do

@@ -1,6 +1,8 @@
 defmodule Nova.Compiler.Ast do
   # import Prelude
 
+  # import Data.List
+
   # import Data.Maybe
 
   # import Data.Tuple
@@ -25,11 +27,15 @@ defmodule Nova.Compiler.Ast do
   def kind_instance(), do: :kind_instance
   def kind_foreign_import(), do: :kind_foreign_import
 
-  # @type managed_decl :: %{meta: decl_metadata(), decl: declaration(), source_text: string(), errors: array()(string())}
+  # @type managed_decl :: %{meta: decl_metadata(), decl: declaration(), source_text: string(), errors: list()(string())}
+
+
 
   def make_decl_id(namespace, kind, name, version) do
-    Nova.Runtime.append(namespace, Nova.Runtime.append(":", Nova.Runtime.append(kind_to_string(kind), Nova.Runtime.append(":", Nova.Runtime.append(name, Nova.Runtime.append(":", Nova.Runtime.show(version)))))))
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(namespace, ":"), kind_to_string(kind)), ":"), name), ":"), Nova.Runtime.show(version))
   end
+
+
 
   def kind_to_string(:kind_function) do
     "function"
@@ -54,6 +60,8 @@ defmodule Nova.Compiler.Ast do
   def kind_to_string(:kind_foreign_import) do
     "foreign"
   end
+
+
 
   def get_decl_kind(({:decl_function, _})) do
     :kind_function
@@ -103,6 +111,8 @@ defmodule Nova.Compiler.Ast do
     :kind_function
   end
 
+
+
   def get_decl_name(({:decl_function, f})) do
     f.name
   end
@@ -124,7 +134,7 @@ defmodule Nova.Compiler.Ast do
   end
 
   def get_decl_name(({:decl_type_class_instance, i})) do
-    Nova.Runtime.append(i.class_name, Nova.Runtime.append("_", type_expr_to_string(i.ty)))
+    Nova.Runtime.append(Nova.Runtime.append(i.class_name, "_"), type_expr_to_string(i.ty))
   end
 
   def get_decl_name(({:decl_foreign_import, f})) do
@@ -151,6 +161,8 @@ defmodule Nova.Compiler.Ast do
     inf.operator
   end
 
+
+
   def type_expr_to_string(({:ty_expr_con, s})) do
     s
   end
@@ -160,14 +172,14 @@ defmodule Nova.Compiler.Ast do
   end
 
   def type_expr_to_string(({:ty_expr_app, t1, t2})) do
-    Nova.Runtime.append(type_expr_to_string(t1), Nova.Runtime.append("_", type_expr_to_string(t2)))
+    Nova.Runtime.append(Nova.Runtime.append(type_expr_to_string(t1), "_"), type_expr_to_string(t2))
   end
 
   def type_expr_to_string(_) do
     "complex"
   end
 
-  # @type module :: %{name: string(), declarations: array()(declaration())}
+  # @type module :: %{name: string(), declarations: list()(declaration())}
 
   # Data type: Declaration
   def decl_module(arg0), do: {:decl_module, arg0}
@@ -183,9 +195,9 @@ defmodule Nova.Compiler.Ast do
   def decl_type_sig(arg0), do: {:decl_type_sig, arg0}
   def decl_infix(arg0), do: {:decl_infix, arg0}
 
-  # @type function_declaration :: %{name: string(), parameters: array()(pattern()), body: expr(), guards: array()(guarded_expr()), type_signature: maybe()(type_signature())}
+  # @type function_declaration :: %{name: string(), parameters: list()(pattern()), body: expr(), guards: list()(guarded_expr()), type_signature: maybe()(type_signature())}
 
-  # @type guarded_expr :: %{guards: array()(guard_clause()), body: expr()}
+  # @type guarded_expr :: %{guards: list()(guard_clause()), body: expr()}
 
   # Data type: GuardClause
   def guard_expr(arg0), do: {:guard_expr, arg0}
@@ -193,21 +205,21 @@ defmodule Nova.Compiler.Ast do
 
   # @type type_declaration :: %{name: string(), type_signature: type_expr()}
 
-  # @type type_signature :: %{name: string(), type_vars: array()(string()), constraints: array()(constraint()), ty: type_expr()}
+  # @type type_signature :: %{name: string(), type_vars: list()(string()), constraints: list()(constraint()), ty: type_expr()}
 
-  # @type type_class :: %{name: string(), type_vars: array()(string()), methods: array()(type_signature()), kind: maybe()(string())}
+  # @type type_class :: %{name: string(), type_vars: list()(string()), methods: list()(type_signature()), kind: maybe()(string())}
 
-  # @type type_alias :: %{name: string(), type_vars: array()(string()), ty: type_expr()}
+  # @type type_alias :: %{name: string(), type_vars: list()(string()), ty: type_expr()}
 
-  # @type type_class_instance :: %{class_name: string(), ty: type_expr(), methods: array()(function_declaration()), derived: boolean()}
+  # @type type_class_instance :: %{class_name: string(), ty: type_expr(), methods: list()(function_declaration()), derived: boolean()}
 
-  # @type data_type :: %{name: string(), type_vars: array()(string()), constructors: array()(data_constructor())}
+  # @type data_type :: %{name: string(), type_vars: list()(string()), constructors: list()(data_constructor())}
 
-  # @type data_constructor :: %{name: string(), fields: array()(data_field()), is_record: boolean()}
+  # @type data_constructor :: %{name: string(), fields: list()(data_field()), is_record: boolean()}
 
   # @type data_field :: %{label: string(), ty: type_expr()}
 
-  # @type import_declaration :: %{module_name: string(), alias_: maybe()(string()), items: array()(import_item()), hiding: boolean()}
+  # @type import_declaration :: %{module_name: string(), alias_: maybe()(string()), items: list()(import_item()), hiding: boolean()}
 
   # Data type: ImportItem
   def import_value(arg0), do: {:import_value, arg0}
@@ -227,9 +239,9 @@ defmodule Nova.Compiler.Ast do
   def assoc_right(), do: :assoc_right
   def assoc_none(), do: :assoc_none
 
-  # @type newtype_decl :: %{name: string(), type_vars: array()(string()), constructor: string(), wrapped_type: type_expr()}
+  # @type newtype_decl :: %{name: string(), type_vars: list()(string()), constructor: string(), wrapped_type: type_expr()}
 
-  # @type constraint :: %{class_name: string(), types: array()(type_expr())}
+  # @type constraint :: %{class_name: string(), types: list()(type_expr())}
 
   # Data type: TypeExpr
   def ty_expr_con(arg0), do: {:ty_expr_con, arg0}

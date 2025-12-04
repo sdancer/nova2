@@ -3,6 +3,8 @@ module Nova.Compiler.CodeGen where
 import Prelude
 import Data.Array (intercalate, length, (:))
 import Data.Array as Array
+import Data.List (List(..))
+import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.String as String
@@ -101,16 +103,16 @@ usedVarsInClause cl =
   in Set.union guardVars bodyVars
 
 -- | Helper: free vars in do statements
-freeVarsDo :: Array DoStatement -> Set String -> Set String
-freeVarsDo stmts bound = case Array.uncons stmts of
-  Nothing -> Set.empty
-  Just { head: DoExpr e, tail: rest } ->
+freeVarsDo :: List DoStatement -> Set String -> Set String
+freeVarsDo stmts bound = case stmts of
+  Nil -> Set.empty
+  Cons (DoExpr e) rest ->
     Set.union (Set.difference (freeVarsExpr e) bound) (freeVarsDo rest bound)
-  Just { head: DoBind pat e, tail: rest } ->
+  Cons (DoBind pat e) rest ->
     let exprVars = Set.difference (freeVarsExpr e) bound
         newBound = Set.union bound (patternVars pat)
     in Set.union exprVars (freeVarsDo rest newBound)
-  Just { head: DoLet binds, tail: rest } ->
+  Cons (DoLet binds) rest ->
     let bindPatVars = foldr (\b s -> Set.union (patternVars b.pattern) s) Set.empty binds
         bindVars = foldr (\b s -> Set.union (Set.difference (freeVarsExpr b.value) bound) s) Set.empty binds
         newBound = Set.union bound bindPatVars
@@ -140,7 +142,7 @@ collectModuleFuncs decls = foldr go Set.empty decls
 collectFuncArities :: Array Declaration -> Array { name :: String, arity :: Int }
 collectFuncArities decls = Array.mapMaybe go decls
   where
-    go (DeclFunction func) = Just { name: func.name, arity: length func.parameters }
+    go (DeclFunction func) = Just { name: func.name, arity: List.length func.parameters }
     go _ = Nothing
 
 -- | Look up the arity of a function
@@ -150,11 +152,12 @@ lookupArity name ctx = map _.arity (Array.find (\f -> f.name == name) ctx.funcAr
 -- | Generate Elixir code from a module
 genModule :: Module -> String
 genModule mod =
-  let ctx = emptyCtx { moduleFuncs = collectModuleFuncs mod.declarations
-                     , funcArities = collectFuncArities mod.declarations
+  let decls = Array.fromFoldable mod.declarations
+      ctx = emptyCtx { moduleFuncs = collectModuleFuncs decls
+                     , funcArities = collectFuncArities decls
                      }
   in "defmodule " <> elixirModuleName mod.name <> " do\n" <>
-     intercalate "\n\n" (map (genDeclaration ctx) mod.declarations) <>
+     intercalate "\n\n" (map (genDeclaration ctx) decls) <>
      "\nend\n"
 
 -- | Convert module name to Elixir format
@@ -200,8 +203,8 @@ genFunction ctx func =
     Nothing ->
       let -- Add parameters to locals
           ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
-          params = intercalate ", " (map genPattern func.parameters)
-      in if Array.null func.guards
+          params = intercalate ", " (Array.fromFoldable (map genPattern func.parameters))
+      in if List.null func.guards
          then
            let body = genExprCtx ctxWithParams 2 func.body
            in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
@@ -210,7 +213,7 @@ genFunction ctx func =
          else
            -- Generate guarded function
            -- Check if first guard has pattern guards - needs special handling
-           let bodyCode = genGuardedFunctionBody ctxWithParams 2 func.guards
+           let bodyCode = genGuardedFunctionBody ctxWithParams 2 (Array.fromFoldable func.guards)
            in "  def " <> snakeCase func.name <> "(" <> params <> ") do\n" <>
               bodyCode <> "\n" <>
               "  end"
@@ -220,7 +223,7 @@ genFunction ctx func =
 -- | generate a wrapper that passes through arguments
 handlePointFreeAlias :: GenCtx -> FunctionDeclaration -> Maybe String
 handlePointFreeAlias ctx func =
-  if not (Array.null func.parameters) then Nothing
+  if not (List.null func.parameters) then Nothing
   else case func.body of
     ExprVar refName ->
       case lookupArity refName ctx of
@@ -269,8 +272,8 @@ genGuardedFunctionBody ctx indent guards =
   case Array.uncons guards of
     Nothing -> ind indent <> "nil"  -- No guards, shouldn't happen
     Just { head: firstGuard, tail: restGuards } ->
-      let patGuards = Array.filter isPatGuard firstGuard.guards
-          exprGuards = Array.filter (\g -> not (isPatGuard g)) firstGuard.guards
+      let patGuards = Array.filter isPatGuard (Array.fromFoldable firstGuard.guards)
+          exprGuards = Array.filter (\g -> not (isPatGuard g)) (Array.fromFoldable firstGuard.guards)
       in if Array.null patGuards
          then
            -- No pattern guards in first clause, use simple cond for all
@@ -286,8 +289,8 @@ genGuardedFunctionBody ctx indent guards =
 -- | Generate a pattern guard as a case expression with fallthrough to remaining guards
 genPatternGuardCase :: GenCtx -> Int -> GuardedExpr -> Array GuardedExpr -> String
 genPatternGuardCase ctx indent firstGuard restGuards =
-  let patGuards = Array.filter isPatGuard firstGuard.guards
-      exprGuards = Array.filter (\g -> not (isPatGuard g)) firstGuard.guards
+  let patGuards = Array.filter isPatGuard (Array.fromFoldable firstGuard.guards)
+      exprGuards = Array.filter (\g -> not (isPatGuard g)) (Array.fromFoldable firstGuard.guards)
       -- Build the case statement(s) for pattern guards
       -- For now, handle the common case of a single pattern guard
   in case patGuards of
@@ -365,7 +368,7 @@ genGuardClausesSimple ctx clauses =
 -- | Generate a guarded expression clause for cond (no pattern guards)
 genGuardedExprForCond :: GenCtx -> Int -> GuardedExpr -> String
 genGuardedExprForCond ctx indent ge =
-  let exprGuards = ge.guards
+  let exprGuards = Array.fromFoldable ge.guards
       bodyExpr = genExprCtx ctx 0 ge.body
       guardExpr = genGuardClauses ctx exprGuards
   in ind indent <> guardExpr <> " ->\n" <> ind (indent + 1) <> bodyExpr
@@ -374,8 +377,8 @@ genGuardedExprForCond ctx indent ge =
 -- | Pattern guards need special handling - they become nested case expressions
 genGuardedExpr :: GenCtx -> Int -> GuardedExpr -> String
 genGuardedExpr ctx indent ge =
-  let patGuards = Array.filter isPatGuard ge.guards
-      exprGuards = Array.filter (\g -> not (isPatGuard g)) ge.guards
+  let patGuards = Array.filter isPatGuard (Array.fromFoldable ge.guards)
+      exprGuards = Array.filter (\g -> not (isPatGuard g)) (Array.fromFoldable ge.guards)
       bodyExpr = genExprCtx ctx 0 ge.body
       indentStr = repeatStr indent " "
   in if Array.null patGuards
@@ -430,15 +433,15 @@ genPattern (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
-  in if Array.null pats
+  in if List.null pats
      then ":" <> snakeCase conName
-     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (map genPattern pats) <> "}"
+     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "}"
 genPattern (PatRecord fields) =
-  "%{" <> intercalate ", " (map genFieldPattern fields) <> "}"
+  "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
   where
     genFieldPattern (Tuple label pat) = snakeCase label <> ": " <> genPattern pat
 genPattern (PatList pats) =
-  "[" <> intercalate ", " (map genPattern pats) <> "]"
+  "[" <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "]"
 genPattern (PatCons head tail) =
   "[" <> genPattern head <> " | " <> genPattern tail <> "]"
 genPattern (PatAs name pat) =
@@ -462,15 +465,15 @@ genPatternWithUsed used (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
-  in if Array.null pats
+  in if List.null pats
      then ":" <> snakeCase conName
-     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (map (genPatternWithUsed used) pats) <> "}"
+     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "}"
 genPatternWithUsed used (PatRecord fields) =
-  "%{" <> intercalate ", " (map genFieldPattern fields) <> "}"
+  "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
   where
     genFieldPattern (Tuple label pat) = snakeCase label <> ": " <> genPatternWithUsed used pat
 genPatternWithUsed used (PatList pats) =
-  "[" <> intercalate ", " (map (genPatternWithUsed used) pats) <> "]"
+  "[" <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "]"
 genPatternWithUsed used (PatCons head tail) =
   "[" <> genPatternWithUsed used head <> " | " <> genPatternWithUsed used tail <> "]"
 genPatternWithUsed used (PatAs name pat) =
@@ -943,18 +946,18 @@ genExpr' ctx indent (ExprLambda pats body) =
   let ctxWithParams = foldr addLocalsFromPattern ctx pats
   in genCurriedLambda ctxWithParams indent pats body
   where
-    genCurriedLambda :: GenCtx -> Int -> Array Pattern -> Expr -> String
-    genCurriedLambda c i ps b = case Array.uncons ps of
+    genCurriedLambda :: GenCtx -> Int -> List Pattern -> Expr -> String
+    genCurriedLambda c i ps b = case List.uncons ps of
       Nothing -> genExpr' c i b  -- No params, just body
       Just { head: p, tail: rest } ->
-        if Array.null rest
+        if List.null rest
         then "fn " <> genPattern p <> " -> " <> genExpr' c i b <> " end"
         else "fn " <> genPattern p <> " -> " <> genCurriedLambda c i rest b <> " end"
 
 genExpr' ctx indent (ExprLet binds body) =
   let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
       -- First group consecutive bindings by name (for multi-clause functions in where)
-      groupedBinds = groupBindsByName binds
+      groupedBinds = groupBindsByName (Array.fromFoldable binds)
       -- Then sort groups by dependencies
       sortedGroups = sortGroupsByDependencies groupedBinds
       -- Generate code for each group
@@ -970,14 +973,14 @@ genExpr' ctx indent (ExprIf cond then_ else_) =
 
 genExpr' ctx indent (ExprCase scrutinee clauses) =
   -- Group consecutive wildcard-guarded clauses together for cond expression
-  let groupedClauses = groupWildcardGuardedClauses clauses
+  let groupedClauses = groupWildcardGuardedClauses (Array.fromFoldable clauses)
   in "case " <> genExpr' ctx indent scrutinee <> " do\n" <>
      intercalate "\n" (map (genCaseClauseGroup ctx (indent + 1)) groupedClauses) <> "\n" <>
      ind indent <> "end"
 
 genExpr' ctx indent (ExprDo stmts) =
   -- Do notation becomes a series of binds/flatMaps
-  genDoStmtsCtx ctx indent stmts
+  genDoStmtsCtx ctx indent (Array.fromFoldable stmts)
 
 genExpr' ctx _ (ExprBinOp ":" l r) =
   -- Cons operator needs special list syntax in Elixir
@@ -1024,13 +1027,13 @@ genExpr' ctx _ (ExprUnaryOp op e) =
   genUnaryOp op <> genExpr' ctx 0 e
 
 genExpr' ctx _ (ExprList elems) =
-  "[" <> intercalate ", " (map (genExpr' ctx 0) elems) <> "]"
+  "[" <> intercalate ", " (Array.fromFoldable (map (genExpr' ctx 0) elems)) <> "]"
 
 genExpr' ctx _ (ExprTuple elems) =
-  "{" <> intercalate ", " (map (genExpr' ctx 0) elems) <> "}"
+  "{" <> intercalate ", " (Array.fromFoldable (map (genExpr' ctx 0) elems)) <> "}"
 
 genExpr' ctx _ (ExprRecord fields) =
-  "%{" <> intercalate ", " (map genRecordField fields) <> "}"
+  "%{" <> intercalate ", " (Array.fromFoldable (map genRecordField fields)) <> "}"
   where
     genRecordField (Tuple label expr) = snakeCase label <> ": " <> genExpr' ctx 0 expr
 
@@ -1054,7 +1057,7 @@ genExpr' ctx _ (ExprRecordAccess rec field) =
 
 genExpr' ctx _ (ExprRecordUpdate rec fields) =
   "%{" <> genExpr' ctx 0 rec <> " | " <>
-  intercalate ", " (map genUpdateField fields) <> "}"
+  intercalate ", " (Array.fromFoldable (map genUpdateField fields)) <> "}"
   where
     genUpdateField (Tuple label expr) = snakeCase label <> ": " <> genExpr' ctx 0 expr
 
@@ -1097,34 +1100,34 @@ containsVar name (ExprVar v) = v == name
 containsVar name (ExprApp f a) = containsVar name f || containsVar name a
 containsVar name (ExprLambda _ body) = containsVar name body
 containsVar name (ExprLet binds body) =
-  Array.any (\b -> containsVar name b.value) binds || containsVar name body
+  List.any (\b -> containsVar name b.value) binds || containsVar name body
 containsVar name (ExprIf c t e) = containsVar name c || containsVar name t || containsVar name e
 containsVar name (ExprCase scrut clauses) =
-  containsVar name scrut || Array.any (\cl -> containsVar name cl.body || containsVarInMaybeExpr name cl.guard) clauses
+  containsVar name scrut || List.any (\cl -> containsVar name cl.body || containsVarInMaybeExpr name cl.guard) clauses
   where
     containsVarInMaybeExpr :: String -> Maybe Expr -> Boolean
     containsVarInMaybeExpr n Nothing = false
     containsVarInMaybeExpr n (Just e) = containsVar n e
-containsVar name (ExprDo stmts) = Array.any (containsVarInDoStmt name) stmts
+containsVar name (ExprDo stmts) = List.any (containsVarInDoStmt name) stmts
 containsVar name (ExprBinOp _ l r) = containsVar name l || containsVar name r
 containsVar name (ExprUnaryOp _ e) = containsVar name e
-containsVar name (ExprList es) = Array.any (containsVar name) es
-containsVar name (ExprTuple es) = Array.any (containsVar name) es
-containsVar name (ExprRecord fs) = Array.any (\(Tuple _ e) -> containsVar name e) fs
+containsVar name (ExprList es) = List.any (containsVar name) es
+containsVar name (ExprTuple es) = List.any (containsVar name) es
+containsVar name (ExprRecord fs) = List.any (\(Tuple _ e) -> containsVar name e) fs
 containsVar name (ExprRecordAccess e _) = containsVar name e
-containsVar name (ExprRecordUpdate e fs) = containsVar name e || Array.any (\(Tuple _ ex) -> containsVar name ex) fs
+containsVar name (ExprRecordUpdate e fs) = containsVar name e || List.any (\(Tuple _ ex) -> containsVar name ex) fs
 containsVar name (ExprTyped e _) = containsVar name e
 containsVar name (ExprParens e) = containsVar name e
 containsVar _ _ = false
 
 containsVarInDoStmt :: String -> DoStatement -> Boolean
-containsVarInDoStmt name (DoLet binds) = Array.any (\b -> containsVar name b.value) binds
+containsVarInDoStmt name (DoLet binds) = List.any (\b -> containsVar name b.value) binds
 containsVarInDoStmt name (DoBind _ e) = containsVar name e
 containsVarInDoStmt name (DoExpr e) = containsVar name e
 
 -- | Get the arity of a lambda expression
 lambdaArity :: Expr -> Int
-lambdaArity (ExprLambda pats _) = length pats
+lambdaArity (ExprLambda pats _) = List.length pats
 lambdaArity _ = 0
 
 -- | Get the name bound by a let binding (if it's a simple variable pattern)
@@ -1204,20 +1207,20 @@ getUsedVars :: Expr -> Array String
 getUsedVars (ExprVar n) = [n]
 getUsedVars (ExprApp f a) = getUsedVars f <> getUsedVars a
 getUsedVars (ExprLambda _ body) = getUsedVars body
-getUsedVars (ExprLet binds body) = Array.concatMap (\b -> getUsedVars b.value) binds <> getUsedVars body
+getUsedVars (ExprLet binds body) = listConcatMap (\b -> getUsedVars b.value) binds <> getUsedVars body
 getUsedVars (ExprIf c t e) = getUsedVars c <> getUsedVars t <> getUsedVars e
-getUsedVars (ExprCase scrut clauses) = getUsedVars scrut <> Array.concatMap (\cl -> getUsedVars cl.body) clauses
+getUsedVars (ExprCase scrut clauses) = getUsedVars scrut <> listConcatMap (\cl -> getUsedVars cl.body) clauses
 getUsedVars (ExprBinOp _ l r) = getUsedVars l <> getUsedVars r
-getUsedVars (ExprList elems) = Array.concatMap getUsedVars elems
-getUsedVars (ExprRecord fields) = Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprList elems) = listConcatMap getUsedVars elems
+getUsedVars (ExprRecord fields) = listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
 getUsedVars (ExprRecordAccess rec _) = getUsedVars rec
-getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> Array.concatMap (\(Tuple _ v) -> getUsedVars v) fields
-getUsedVars (ExprDo stmts) = Array.concatMap getUsedVarsStmt stmts
+getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprDo stmts) = listConcatMapArray getUsedVarsStmt stmts
   where
-    getUsedVarsStmt (DoLet binds) = Array.concatMap (\b -> getUsedVars b.value) binds
+    getUsedVarsStmt (DoLet binds) = listConcatMap (\b -> getUsedVars b.value) binds
     getUsedVarsStmt (DoBind _ e) = getUsedVars e
     getUsedVarsStmt (DoExpr e) = getUsedVars e
-getUsedVars (ExprTuple elems) = Array.concatMap getUsedVars elems
+getUsedVars (ExprTuple elems) = listConcatMap getUsedVars elems
 getUsedVars (ExprTyped e _) = getUsedVars e
 getUsedVars (ExprParens e) = getUsedVars e
 getUsedVars (ExprSection _) = []  -- operator section like (+ 1), no vars
@@ -1226,6 +1229,14 @@ getUsedVars (ExprSectionRight _ e) = getUsedVars e  -- right section like (+ 1)
 getUsedVars (ExprQualified _ _) = []  -- Qualified names are external
 getUsedVars (ExprUnaryOp _ e) = getUsedVars e
 getUsedVars _ = []
+
+-- | Helper: concatMap for List returning Array
+listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
+
+-- | Helper: concatMap for Array containing DoStatement
+listConcatMapArray :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMapArray f lst = foldl (\acc x -> acc <> f x) [] lst
 
 -- | Generate code for a group of bindings (possibly multiple pattern clauses)
 genBindingGroup :: GenCtx -> Int -> Array LetBind -> String
@@ -1251,7 +1262,7 @@ genBindingGroup ctx indent binds = case binds of
 -- | Extract pattern and body from a lambda binding
 extractLambdaClause :: LetBind -> Maybe { patterns :: Array Pattern, body :: Expr }
 extractLambdaClause bind = case bind.value of
-  ExprLambda pats body -> Just { patterns: pats, body }
+  ExprLambda pats body -> Just { patterns: Array.fromFoldable pats, body }
   _ -> Nothing
 
 -- | Generate a merged function with multiple clauses as a case expression
@@ -1367,8 +1378,8 @@ genLetBindCtx ctx indent bind =
             _ -> "Nova.Runtime.fix5"
           -- Generate curried lambda: fn a -> fn b -> ... body ... end end
           ctxWithParams = foldr addLocalsFromPattern ctx pats
-          curriedLambdaHeader = intercalate " " (map (\p -> "fn " <> genPattern p <> " ->") pats)
-          curriedLambdaEnds = intercalate "" (map (\_ -> " end") pats)
+          curriedLambdaHeader = intercalate " " (Array.fromFoldable (map (\p -> "fn " <> genPattern p <> " ->") pats))
+          curriedLambdaEnds = intercalate "" (Array.fromFoldable (map (\_ -> " end") pats))
           bodyCode = genExpr' ctxWithParams indent body
       in ind indent <> snakeCase name <> " = " <> fixFn <> "(fn " <> snakeCase name <> " -> " <> curriedLambdaHeader <> " " <> bodyCode <> " " <> curriedLambdaEnds <> " end)"
     -- Non-recursive binding: normal generation
@@ -1459,7 +1470,7 @@ exprToPattern (ExprApp f arg) =
 exprToPattern (ExprLit l) = genLiteral l
 exprToPattern (ExprRecord fields) = "%" <> genRecordFields fields
   where
-    genRecordFields fs = "{" <> intercalate ", " (map (\(Tuple k v) -> snakeCase k <> ": " <> exprToPattern v) fs) <> "}"
+    genRecordFields fs = "{" <> intercalate ", " (Array.fromFoldable (map (\(Tuple k v) -> snakeCase k <> ": " <> exprToPattern v) fs)) <> "}"
 exprToPattern (ExprParens e) = exprToPattern e
 exprToPattern _ = "_"
 
@@ -1677,7 +1688,7 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
            else indStr <> genExpr' ctx 0 e <> "\n" <> genDoStmtsCtx ctx indent rest
       DoLet binds ->
         let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
-        in intercalate "\n" (map (genLetBindCtx ctx indent) binds) <> "\n" <> genDoStmtsCtx ctxWithBinds indent rest
+        in intercalate "\n" (Array.fromFoldable (map (genLetBindCtx ctx indent) binds)) <> "\n" <> genDoStmtsCtx ctxWithBinds indent rest
       DoBind pat e ->
         -- Monadic bind: detect monad type from expression
         -- Maybe monad: peek, peekAt, charAt, Array.head, Array.find, etc.
@@ -1688,7 +1699,7 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
             indStr = repeatStr indent " "
             -- Check if pattern is a Tuple destructuring - common for parser results
             patStr = case pat of
-              PatCon "Tuple" [p1, p2] -> "{:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}"
+              PatCon "Tuple" (Cons p1 (Cons p2 Nil)) -> "{:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}"
               _ -> genPattern pat
         in if monadType == 0
            then
@@ -1754,7 +1765,7 @@ detectMonadType expr = go expr
 genDataType :: DataType -> String
 genDataType dt =
   "  # Data type: " <> dt.name <> "\n" <>
-  intercalate "\n" (map genConstructor dt.constructors)
+  intercalate "\n" (Array.fromFoldable (map genConstructor dt.constructors))
   where
     genConstructor :: DataConstructor -> String
     genConstructor con =
@@ -1763,8 +1774,8 @@ genDataType dt =
       else genTupleConstructor con
 
     genTupleConstructor con =
-      let arity = length con.fields
-          params = Array.mapWithIndex (\i _ -> "arg" <> show i) con.fields
+      let arity = List.length con.fields
+          params = Array.mapWithIndex (\i _ -> "arg" <> show i) (Array.fromFoldable con.fields)
           args = intercalate ", " params
           body = if arity == 0
                  then ":" <> snakeCase con.name
@@ -1772,9 +1783,10 @@ genDataType dt =
       in "  def " <> snakeCase con.name <> "(" <> args <> "), do: " <> body
 
     genRecordConstructor con =
-      let params = map (\f -> snakeCase f.label) con.fields
+      let fieldsArr = Array.fromFoldable con.fields
+          params = map (\f -> snakeCase f.label) fieldsArr
           args = intercalate ", " params
-          fields = intercalate ", " (map (\f -> snakeCase f.label <> ": " <> snakeCase f.label) con.fields)
+          fields = intercalate ", " (map (\f -> snakeCase f.label <> ": " <> snakeCase f.label) fieldsArr)
       in "  def " <> snakeCase con.name <> "(" <> args <> "), do: %{__type__: :" <> snakeCase con.name <> ", " <> fields <> "}"
 
 -- | Generate newtype (single constructor wrapping a type)
@@ -1786,7 +1798,7 @@ genNewtype nt =
 -- | Generate type class declaration (just a comment in Elixir)
 genTypeClass :: TypeClass -> String
 genTypeClass tc =
-  "  # Type class: " <> tc.name <> " " <> intercalate " " tc.typeVars
+  "  # Type class: " <> tc.name <> " " <> intercalate " " (Array.fromFoldable tc.typeVars)
 
 -- | Generate type class instance
 -- For derived instances, we just emit a comment because Elixir's
@@ -1818,11 +1830,11 @@ genTypeExpr (TyExprVar name) = snakeCase name
 genTypeExpr (TyExprApp f arg) = genTypeExpr f <> "(" <> genTypeExpr arg <> ")"
 genTypeExpr (TyExprArrow a b) = "(" <> genTypeExpr a <> " -> " <> genTypeExpr b <> ")"
 genTypeExpr (TyExprRecord fields _) =
-  "%{" <> intercalate ", " (map (\(Tuple l t) -> snakeCase l <> ": " <> genTypeExpr t) fields) <> "}"
+  "%{" <> intercalate ", " (Array.fromFoldable (map (\(Tuple l t) -> snakeCase l <> ": " <> genTypeExpr t) fields)) <> "}"
 genTypeExpr (TyExprForAll _ t) = genTypeExpr t
 genTypeExpr (TyExprConstrained _ t) = genTypeExpr t
 genTypeExpr (TyExprParens t) = "(" <> genTypeExpr t <> ")"
-genTypeExpr (TyExprTuple ts) = "{" <> intercalate ", " (map genTypeExpr ts) <> "}"
+genTypeExpr (TyExprTuple ts) = "{" <> intercalate ", " (Array.fromFoldable (map genTypeExpr ts)) <> "}"
 
 -- | Binary operator mapping
 genBinOp :: String -> String

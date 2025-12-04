@@ -3,6 +3,8 @@ module Nova.Compiler.CodeGenCoreErlang where
 import Prelude
 import Data.Array (intercalate, length, (:))
 import Data.Array as Array
+import Data.List (List(..))
+import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
 import Data.Tuple (Tuple(..))
 import Data.String as String
@@ -102,7 +104,7 @@ freeVarsInExprFor candidates bound expr = case expr of
     let patBound = foldr addPatternVars bound pats
     in freeVarsInExprFor candidates patBound body
   ExprLet binds body ->
-    let bindNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) binds)
+    let bindNames = Set.fromFoldable (List.mapMaybe (\b -> getPatternVarName b.pattern) binds)
         newBound = Set.union bound bindNames
         bindVars = foldr (\b s -> Set.union s (freeVarsInExprFor candidates newBound b.value)) Set.empty binds
     in Set.union bindVars (freeVarsInExprFor candidates newBound body)
@@ -207,9 +209,9 @@ genModule :: Module -> String
 genModule m =
   let modName = translateModuleName m.name
       -- Collect all function declarations
-      allFuncs = Array.mapMaybe getFunc m.declarations
+      allFuncs = Array.mapMaybe getFunc (Array.fromFoldable m.declarations)
       -- Collect all imports
-      allImports = Array.concatMap getImports m.declarations
+      allImports = Array.concatMap getImports (Array.fromFoldable m.declarations)
       importMap = Map.fromFoldable allImports
       -- Group functions by name/arity
       grouped = groupFunctions allFuncs
@@ -223,7 +225,7 @@ genModule m =
       -- Generate function definitions (merging multiple clauses)
       funcDefs = intercalate "\n\n" (map (genFunctionGroup ctx) grouped)
       -- Generate data type comments
-      dtComments = intercalate "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) m.declarations)
+      dtComments = intercalate "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) (Array.fromFoldable m.declarations))
   in "module " <> atom modName <> " [" <> exports <> "]\n" <>
      "  attributes []\n" <>
      dtComments <> (if dtComments == "" then "" else "\n\n") <>
@@ -231,7 +233,7 @@ genModule m =
   where
     getFunc (DeclFunction f) = Just f
     getFunc _ = Nothing
-    getImports (DeclImport imp) = importItemsToTuples imp.moduleName imp.items
+    getImports (DeclImport imp) = importItemsToTuples imp.moduleName (Array.fromFoldable imp.items)
     getImports _ = []
     genDeclNonFunc ctx (DeclDataType dt) = Just (genDataType ctx dt)
     genDeclNonFunc _ _ = Nothing
@@ -255,9 +257,9 @@ groupFunctions :: Array FunctionDeclaration -> Array FunctionGroup
 groupFunctions funcs =
   let -- Get all unique name/arity pairs
       keys = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
-               (map (\f -> { name: f.name, arity: length f.parameters }) funcs)
+               (map (\f -> { name: f.name, arity: List.length f.parameters }) funcs)
       -- Group clauses for each key
-      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && length f.parameters == k.arity) funcs }
+      mkGroup k = { name: k.name, arity: k.arity, clauses: Array.filter (\f -> f.name == k.name && List.length f.parameters == k.arity) funcs }
   in map mkGroup keys
 
 -- | Generate a function group (may have multiple clauses)
@@ -275,8 +277,8 @@ genFunctionGroup ctx group =
       genMergedFunction ctx group
 
 -- | Check if parameters contain complex patterns (not just variables)
-hasComplexPattern :: Array Pattern -> Boolean
-hasComplexPattern pats = Array.any isComplex pats
+hasComplexPattern :: List Pattern -> Boolean
+hasComplexPattern pats = List.any isComplex pats
   where
     isComplex (PatVar _) = false
     isComplex PatWildcard = false
@@ -306,13 +308,13 @@ genMergedFunction ctx group =
 -- | Generate a function clause as a case clause
 genFunctionClauseAsCase :: CoreCtx -> Array String -> FunctionDeclaration -> String
 genFunctionClauseAsCase ctx _paramNames func =
-  let patsResult = genPatsWithCounter func.parameters 0
+  let patsResult = genPatsWithCounter (Array.fromFoldable func.parameters) 0
       patTuple = "{" <> intercalate ", " patsResult.strs <> "}"
       ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
       -- Check if function has guards
-      body = if Array.null func.guards
+      body = if List.null func.guards
              then genExpr ctxWithParams func.body
-             else genGuardedExprs ctxWithParams func.guards
+             else genGuardedExprs ctxWithParams (Array.fromFoldable func.guards)
   in "      <" <> patTuple <> "> when 'true' ->\n        " <> body
 
 -- | Translate module name (e.g., "Test.SumTest" -> "test_sum_test")
@@ -331,14 +333,14 @@ translateModuleName name =
 -- | Generate function definition
 genFunction :: CoreCtx -> FunctionDeclaration -> String
 genFunction ctx func =
-  let params = map genPattern func.parameters
+  let params = Array.fromFoldable (map genPattern func.parameters)
       paramsStr = intercalate ", " params
-      arity = length func.parameters
+      arity = List.length func.parameters
       ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
       -- Check if function has guards (body is __guarded__ placeholder)
-      body = if Array.null func.guards
+      body = if List.null func.guards
              then genExpr ctxWithParams func.body
-             else genGuardedExprs ctxWithParams func.guards
+             else genGuardedExprs ctxWithParams (Array.fromFoldable func.guards)
   in atom func.name <> "/" <> show arity <> " =\n" <>
      "  fun (" <> paramsStr <> ") ->\n" <>
      "    " <> body
@@ -354,7 +356,7 @@ genGuardedExprs ctx guards =
 -- | Generate one guarded expression with fallback to rest
 genOneGuardedExpr :: CoreCtx -> GuardedExpr -> Array GuardedExpr -> String
 genOneGuardedExpr ctx guardedExpr rest =
-  case Array.uncons guardedExpr.guards of
+  case List.uncons guardedExpr.guards of
     Nothing ->
       -- No guard clauses, just use body (shouldn't happen)
       genExpr ctx guardedExpr.body
@@ -362,9 +364,9 @@ genOneGuardedExpr ctx guardedExpr rest =
       case clause of
         GuardExpr expr ->
           -- Boolean guard: case expr of true -> body; _ -> try next
-          let fallback = if Array.null rest && Array.null moreClauses
+          let fallback = if Array.null rest && List.null moreClauses
                          then atom "error_no_matching_guard"
-                         else if Array.null moreClauses
+                         else if List.null moreClauses
                               then genGuardedExprs ctx rest
                               else genOneGuardedExpr ctx { guards: moreClauses, body: guardedExpr.body } rest
           in "case " <> genExpr ctx expr <> " of\n" <>
@@ -374,7 +376,7 @@ genOneGuardedExpr ctx guardedExpr rest =
         GuardPat pat bindExpr ->
           -- Pattern guard: case bindExpr of pat -> body; _ -> try next
           let ctxWithBind = addLocalsFromPattern pat ctx
-              innerBody = if Array.null moreClauses
+              innerBody = if List.null moreClauses
                           then genExpr ctxWithBind guardedExpr.body
                           else genOneGuardedExpr ctxWithBind { guards: moreClauses, body: guardedExpr.body } rest
               fallback = if Array.null rest
@@ -389,7 +391,7 @@ genOneGuardedExpr ctx guardedExpr rest =
 genDataType :: CoreCtx -> DataType -> String
 genDataType _ dt =
   "% Data type: " <> dt.name <> "\n" <>
-  "% Constructors: " <> intercalate ", " (map _.name dt.constructors)
+  "% Constructors: " <> intercalate ", " (Array.fromFoldable (map _.name dt.constructors))
 
 -- | Generate pattern (wrapper that hides counter)
 genPattern :: Pattern -> String
@@ -407,9 +409,9 @@ genPatternWithCounter (PatCon name pats) n =
   let baseName = case String.lastIndexOf (String.Pattern ".") name of
         Nothing -> name
         Just idx -> String.drop (idx + 1) name
-  in if Array.null pats
+  in if List.null pats
      then { str: atom (toSnakeCase baseName), counter: n }
-     else let result = genPatsWithCounter pats n
+     else let result = genPatsWithCounter (Array.fromFoldable pats) n
           in { str: "{" <> atom (toSnakeCase baseName) <> ", " <> intercalate ", " result.strs <> "}", counter: result.counter }
 genPatternWithCounter (PatRecord fields) n =
   let result = foldl genFieldPat { strs: [], counter: n } fields
@@ -419,7 +421,7 @@ genPatternWithCounter (PatRecord fields) n =
       let r = genPatternWithCounter pat acc.counter
       in { strs: acc.strs <> [atom (toSnakeCase label) <> ":=" <> r.str], counter: r.counter }
 genPatternWithCounter (PatList pats) n =
-  let result = genPatsWithCounter pats n
+  let result = genPatsWithCounter (Array.fromFoldable pats) n
   in { str: "[" <> intercalate ", " result.strs <> "]", counter: result.counter }
 genPatternWithCounter (PatCons hd tl) n =
   let r1 = genPatternWithCounter hd n
@@ -566,11 +568,11 @@ genExpr ctx (ExprApp f arg) =
 
 genExpr ctx (ExprLambda pats body) =
   -- Generate curried lambdas: \x y -> e becomes fun(x) -> fun(y) -> e end end
-  case Array.uncons pats of
+  case List.uncons pats of
     Nothing -> genExpr ctx body  -- No params, just the body
     Just { head: pat, tail: restPats } ->
       -- Check if this is the last param or if there are more
-      if Array.null restPats
+      if List.null restPats
       then
         -- Single param - generate one fun
         if hasComplexPatternSingle pat
@@ -606,7 +608,7 @@ genExpr ctx (ExprLambda pats body) =
           in "fun (" <> patResult.str <> ") ->\n      " <> innerLambda
 
 genExpr ctx (ExprLet binds body) =
-  genLetBindsWithBody ctx binds body
+  genLetBindsWithBody ctx (Array.fromFoldable binds) body
 
 genExpr ctx (ExprIf cond thenE elseE) =
   "case " <> genExpr ctx cond <> " of\n" <>
@@ -663,11 +665,11 @@ genExpr ctx (ExprList elems) =
   genCoreList ctx elems
 
 genExpr ctx (ExprTuple elems) =
-  "{" <> intercalate ", " (map (genExpr ctx) elems) <> "}"
+  "{" <> intercalate ", " (Array.fromFoldable (map (genExpr ctx) elems)) <> "}"
 
 genExpr ctx (ExprRecord fields) =
   -- Records as maps: ~{'key'=>Val}~
-  "~{" <> intercalate "," (map genField fields) <> "}~"
+  "~{" <> intercalate "," (Array.fromFoldable (map genField fields)) <> "}~"
   where
     genField (Tuple label expr) = atom (toSnakeCase label) <> "=>" <> genExpr ctx expr
 
@@ -681,14 +683,14 @@ genExpr ctx (ExprRecordAccess expr field) =
       "call 'maps':'get'(" <> atom (toSnakeCase field) <> ", " <> genExpr ctx expr <> ")"
 
 genExpr ctx (ExprRecordUpdate expr fields) =
-  let updates = intercalate "," (map genFieldUpdate fields)
+  let updates = intercalate "," (Array.fromFoldable (map genFieldUpdate fields))
   in "call 'maps':'merge'(" <> genExpr ctx expr <> ", ~{" <> updates <> "}~)"
   where
     genFieldUpdate (Tuple label val) = atom (toSnakeCase label) <> "=>" <> genExpr ctx val
 
 genExpr ctx (ExprParens e) = genExpr ctx e
 
-genExpr ctx (ExprDo stmts) = genDoStmts ctx stmts
+genExpr ctx (ExprDo stmts) = genDoStmts ctx (Array.fromFoldable stmts)
 
 genExpr ctx (ExprTyped e _) = genExpr ctx e
 
@@ -708,10 +710,10 @@ genExprLetrec ctx expr = case expr of
     -- Generate uncurried lambda: fun (X, Y, Z) -> body end
     if hasComplexPattern pats
     then
-      let arity = length pats
+      let arity = List.length pats
           paramNames = Array.range 0 (arity - 1) # map (\i -> "_L" <> show i)
           paramsStr = intercalate ", " paramNames
-          patResult = genPatsWithCounter pats 0
+          patResult = genPatsWithCounter (Array.fromFoldable pats) 0
           patTuple = "{" <> intercalate ", " patResult.strs <> "}"
           ctxWithParams = foldr addLocalsFromPattern ctx pats
           bodyCode = genExpr ctxWithParams body
@@ -720,7 +722,7 @@ genExprLetrec ctx expr = case expr of
          "        <" <> patTuple <> "> when 'true' -> " <> bodyCode <> "\n" <>
          "      end"
     else
-      let patResult = genPatsWithCounter pats 0
+      let patResult = genPatsWithCounter (Array.fromFoldable pats) 0
           ctxWithParams = foldr addLocalsFromPattern ctx pats
       in "fun (" <> intercalate ", " patResult.strs <> ") ->\n      " <> genExpr ctxWithParams body
   _ -> genExpr ctx expr
@@ -733,17 +735,17 @@ exprContainsVar name expr = case expr of
   ExprLit _ -> false
   ExprApp f a -> exprContainsVar name f || exprContainsVar name a
   ExprLambda _ body -> exprContainsVar name body
-  ExprLet binds body -> Array.any (\b -> exprContainsVar name b.value) binds || exprContainsVar name body
+  ExprLet binds body -> List.any (\b -> exprContainsVar name b.value) binds || exprContainsVar name body
   ExprIf c t e -> exprContainsVar name c || exprContainsVar name t || exprContainsVar name e
-  ExprCase scrut clauses -> exprContainsVar name scrut || Array.any (\cl -> exprContainsVar name cl.body) clauses
-  ExprDo stmts -> Array.any (doStmtContainsVar name) stmts
+  ExprCase scrut clauses -> exprContainsVar name scrut || List.any (\cl -> exprContainsVar name cl.body) clauses
+  ExprDo stmts -> List.any (doStmtContainsVar name) stmts
   ExprBinOp _ l r -> exprContainsVar name l || exprContainsVar name r
   ExprUnaryOp _ e -> exprContainsVar name e
-  ExprList elems -> Array.any (exprContainsVar name) elems
-  ExprTuple elems -> Array.any (exprContainsVar name) elems
-  ExprRecord fields -> Array.any (\(Tuple _ e) -> exprContainsVar name e) fields
+  ExprList elems -> List.any (exprContainsVar name) elems
+  ExprTuple elems -> List.any (exprContainsVar name) elems
+  ExprRecord fields -> List.any (\(Tuple _ e) -> exprContainsVar name e) fields
   ExprRecordAccess e _ -> exprContainsVar name e
-  ExprRecordUpdate e updates -> exprContainsVar name e || Array.any (\(Tuple _ e') -> exprContainsVar name e') updates
+  ExprRecordUpdate e updates -> exprContainsVar name e || List.any (\(Tuple _ e') -> exprContainsVar name e') updates
   ExprTyped e _ -> exprContainsVar name e
   ExprParens e -> exprContainsVar name e
   ExprSection _ -> false
@@ -752,7 +754,7 @@ exprContainsVar name expr = case expr of
 
 doStmtContainsVar :: String -> DoStatement -> Boolean
 doStmtContainsVar name stmt = case stmt of
-  DoLet binds -> Array.any (\b -> exprContainsVar name b.value) binds
+  DoLet binds -> List.any (\b -> exprContainsVar name b.value) binds
   DoBind _ e -> exprContainsVar name e
   DoExpr e -> exprContainsVar name e
 
@@ -769,7 +771,7 @@ isRecursiveBind bind = case getPatternVarName bind.pattern of
 
 -- | Get arity from lambda expression
 getLambdaArity :: Expr -> Int
-getLambdaArity (ExprLambda pats _) = length pats
+getLambdaArity (ExprLambda pats _) = List.length pats
 getLambdaArity (ExprParens e) = getLambdaArity e
 getLambdaArity _ = 0
 
@@ -910,7 +912,7 @@ genLetBindsWithBody ctx binds body =
     genLetrecClauseAsCase ctx' _paramNames bind =
       case bind.value of
         ExprLambda pats body ->
-          let patsResult = genPatsWithCounter pats 0
+          let patsResult = genPatsWithCounter (Array.fromFoldable pats) 0
               patTuple = "{" <> intercalate ", " patsResult.strs <> "}"
               ctxWithParams = foldr addLocalsFromPattern ctx' pats
               bodyStr = genExpr ctxWithParams body
@@ -985,8 +987,8 @@ isWildcardPattern PatWildcard = true
 isWildcardPattern _ = false
 
 -- | Generate case clauses with proper fallback for guarded patterns
-genCaseClausesWithFallback :: CoreCtx -> String -> Array CaseClause -> String
-genCaseClausesWithFallback ctx scrutExpr clauses = case Array.uncons clauses of
+genCaseClausesWithFallback :: CoreCtx -> String -> List CaseClause -> String
+genCaseClausesWithFallback ctx scrutExpr clauses = case List.uncons clauses of
   Nothing -> "      <_> when 'true' -> primop 'match_fail'({'case_clause', 'no_clause'})"
   Just { head: clause, tail: rest } ->
     -- If this is a guarded wildcard, chain with rest as fallback
@@ -998,24 +1000,24 @@ genCaseClausesWithFallback ctx scrutExpr clauses = case Array.uncons clauses of
       let { samePattern, different } = splitSamePatternClauses clause.pattern rest
           -- Build fallback chain from all clauses with same pattern (after current) + the different ones
           ctxWithVars = addLocalsFromPattern clause.pattern ctx
-          fallback = if Array.null samePattern && (Array.null different || isNothing clause.guard)
+          fallback = if List.null samePattern && (List.null different || isNothing clause.guard)
                      then Nothing
                      else Just (genFallbackForSamePattern ctxWithVars scrutExpr samePattern different)
       in genCaseClause ctx clause fallback <>
          -- Only continue with clauses that have DIFFERENT patterns
-         (if Array.null different then "" else "\n" <> genCaseClausesWithFallback ctx scrutExpr different)
+         (if List.null different then "" else "\n" <> genCaseClausesWithFallback ctx scrutExpr different)
 
 -- | Split clauses into those with the same pattern (must have guards) and those with different patterns
-splitSamePatternClauses :: Pattern -> Array CaseClause -> { samePattern :: Array CaseClause, different :: Array CaseClause }
+splitSamePatternClauses :: Pattern -> List CaseClause -> { samePattern :: List CaseClause, different :: List CaseClause }
 splitSamePatternClauses pat clauses =
   let isSameGuarded c = genPattern c.pattern == genPattern pat && isJust c.guard
-      samePattern = Array.takeWhile isSameGuarded clauses
-      different = Array.drop (Array.length samePattern) clauses
+      samePattern = List.takeWhile isSameGuarded clauses
+      different = List.drop (List.length samePattern) clauses
   in { samePattern, different }
 
 -- | Generate fallback for clauses with the same pattern, then try different patterns
-genFallbackForSamePattern :: CoreCtx -> String -> Array CaseClause -> Array CaseClause -> String
-genFallbackForSamePattern ctx scrutExpr samePattern different = case Array.uncons samePattern of
+genFallbackForSamePattern :: CoreCtx -> String -> List CaseClause -> List CaseClause -> String
+genFallbackForSamePattern ctx scrutExpr samePattern different = case List.uncons samePattern of
   Nothing ->
     -- No more same-pattern clauses, try different patterns
     genFallbackForDifferent ctx scrutExpr different
@@ -1032,8 +1034,8 @@ genFallbackForSamePattern ctx scrutExpr samePattern different = case Array.uncon
        "          end"
 
 -- | Generate fallback that tries remaining clauses with different patterns
-genFallbackForDifferent :: CoreCtx -> String -> Array CaseClause -> String
-genFallbackForDifferent ctx scrutExpr clauses = case Array.uncons clauses of
+genFallbackForDifferent :: CoreCtx -> String -> List CaseClause -> String
+genFallbackForDifferent ctx scrutExpr clauses = case List.uncons clauses of
   Nothing -> "primop 'match_fail'({'case_clause', 'no_match'})"
   Just { head: clause, tail: rest } ->
     if isWildcardPattern clause.pattern
@@ -1056,7 +1058,7 @@ genFallbackForDifferent ctx scrutExpr clauses = case Array.uncons clauses of
       "          end"
 
 -- | Generate a guarded wildcard clause with fallback to remaining clauses
-genGuardedWildcardClause :: CoreCtx -> String -> CaseClause -> Array CaseClause -> String
+genGuardedWildcardClause :: CoreCtx -> String -> CaseClause -> List CaseClause -> String
 genGuardedWildcardClause ctx scrutExpr clause rest =
   let pat = genPattern clause.pattern
       ctxWithVars = addLocalsFromPattern clause.pattern ctx
@@ -1065,7 +1067,7 @@ genGuardedWildcardClause ctx scrutExpr clause rest =
         Nothing -> "'true'"  -- shouldn't happen
       body = genExpr ctxWithVars clause.body
       -- Fallback: try remaining clauses (wildcards can match anything, so all are "different")
-      fallback = if Array.null rest
+      fallback = if List.null rest
                  then "primop 'match_fail'({'case_clause', 'guard_failed'})"
                  else genFallbackForDifferent ctxWithVars scrutExpr rest
   in "      <" <> pat <> "> when 'true' ->\n" <>
@@ -1115,7 +1117,7 @@ genDoStmts ctx stmts = case Array.uncons stmts of
        "      <{'_just', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n" <>
        "      <{'_right', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n      end"
   Just { head: DoLet binds, tail: rest } ->
-    genDoLetWithBody ctx binds rest
+    genDoLetWithBody ctx (Array.fromFoldable binds) (Array.fromFoldable rest)
 
 -- | Generate DoLet with proper complex pattern handling
 genDoLetWithBody :: CoreCtx -> Array LetBind -> Array DoStatement -> String
@@ -1216,13 +1218,13 @@ toSnakeCase s =
 -- | Generate Core Erlang list
 -- For small lists, use flat [e1, e2, ...] syntax which is valid Core Erlang
 -- For large lists or those with cons patterns, use nested cons
-genCoreList :: CoreCtx -> Array Expr -> String
+genCoreList :: CoreCtx -> List Expr -> String
 genCoreList ctx elems =
-  if Array.length elems <= 50
-  then "[" <> intercalate ", " (map (genExpr ctx) elems) <> "]"
-  else case Array.uncons elems of
+  if List.length elems <= 50
+  then "[" <> intercalate ", " (map (genExpr ctx) (List.toUnfoldable elems :: Array Expr)) <> "]"
+  else case List.uncons elems of
     Nothing -> "[]"
-    Just { head: h, tail: [] } -> "[" <> genExpr ctx h <> "]"
+    Just { head: h, tail: Nil } -> "[" <> genExpr ctx h <> "]"
     Just { head: h, tail: t } -> "[" <> genExpr ctx h <> "|" <> genCoreList ctx t <> "]"
 
 -- | Collect arguments from curried application

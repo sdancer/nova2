@@ -30,22 +30,23 @@ main = do
   case P.parseModule tokens of
     Left parseErr -> log $ "Parse error: " <> parseErr
     Right (Tuple m _) -> do
-      log $ "Parsed " <> show (Array.length m.declarations) <> " declarations"
+      let decls = Array.fromFoldable m.declarations
+      log $ "Parsed " <> show (Array.length decls) <> " declarations"
 
       -- List all function declarations
       log "\n-- Function declarations found: --"
-      listFunctions m.declarations
+      listFunctions decls
 
       -- Try to check the first function
       log "\n-- Checking individual functions: --"
-      checkFunctionsIndividually emptyEnv m.declarations
+      checkFunctionsIndividually emptyEnv decls
 
       -- Now try the module-level check step by step
       log "\n-- Module-level check step by step: --"
-      let env1 = processNonFunctions emptyEnv m.declarations
+      let env1 = processNonFunctions emptyEnv decls
       log $ "  Pass 1 (non-functions): OK"
 
-      let env2 = addFunctionPlaceholders env1 m.declarations
+      let env2 = addFunctionPlaceholders env1 decls
       log $ "  Pass 2 (placeholders): OK"
 
       -- Check what's in the env now
@@ -54,7 +55,7 @@ main = do
 
       -- Try pass 3 - check each function with the enriched env
       log "\n-- Pass 3 (check function bodies with enriched env): --"
-      checkFunctionsWithEnv env2 m.declarations
+      checkFunctionsWithEnv env2 decls
 
 listFunctions :: Array Declaration -> Effect Unit
 listFunctions decls = do
@@ -623,6 +624,6 @@ testCode src = do
   case P.parseModule tokens of
     Left err -> log $ "    Parse error: " <> err
     Right (Tuple m _) -> do
-      case checkModule emptyEnv m.declarations of
+      case checkModule emptyEnv (Array.fromFoldable m.declarations) of
         Left err -> log $ "    FAIL: " <> show err
         Right _ -> log $ "    OK"

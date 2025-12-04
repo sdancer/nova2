@@ -8,6 +8,7 @@ import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.Array as Array
 import Data.Set as Set
+import Data.List (List(..), (:))
 import Nova.Compiler.Ast (Expr(..), Pattern(..), LetBind, CaseClause, Literal(..))
 import Nova.Compiler.Types (emptyEnv, Env, Type(..), Scheme, applySubst, mkScheme, freshVar, extendEnv, lookupEnv, tArrow, tInt, tString, freeTypeVars, freeTypeVarsEnv)
 import Nova.Compiler.TypeChecker (infer, TCError, generalize)
@@ -21,23 +22,23 @@ main = do
   -- Build the AST manually
   let justClause :: CaseClause
       justClause =
-        { pattern: PatCon "Just" [PatVar "n"]
+        { pattern: PatCon "Just" (PatVar "n" : Nil)
         , body: ExprApp (ExprVar "Right") (ExprVar "n")
         , guard: Nothing
         }
 
   let nothingClause :: CaseClause
       nothingClause =
-        { pattern: PatCon "Nothing" []
+        { pattern: PatCon "Nothing" Nil
         , body: ExprApp (ExprVar "Right") (ExprVar "sub")
         , guard: Nothing
         }
 
   let caseExpr = ExprCase
         (ExprApp (ExprVar "Just") (ExprLit (LitInt 1)))
-        [justClause, nothingClause]
+        (justClause : nothingClause : Nil)
 
-  let lambdaExpr = ExprLambda [PatVar "sub", PatVar "k"] caseExpr
+  let lambdaExpr = ExprLambda (PatVar "sub" : PatVar "k" : Nil) caseExpr
 
   -- Step 1: Create placeholder for helper
   let Tuple helperTv env1 = freshVar env0 "let_helper"

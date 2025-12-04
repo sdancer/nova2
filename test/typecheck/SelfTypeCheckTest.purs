@@ -50,7 +50,7 @@ parseFile path = do
     Left parseErr -> do
       log $ "Parse error in " <> path <> ": " <> parseErr
       pure []
-    Right (Tuple m _) -> pure m.declarations
+    Right (Tuple m _) -> pure (Array.fromFoldable m.declarations)
 
 -- | Load multiple module dependencies into an environment
 loadModules :: Array String -> Effect Env
@@ -71,7 +71,7 @@ testFileWithDeps name path deps = do
   case P.parseModule tokens of
     Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
     Right (Tuple m _) -> do
-      let decls = m.declarations
+      let decls = Array.fromFoldable m.declarations
       let total = Array.length decls
 
       -- Type check with the dependency env
@@ -133,7 +133,7 @@ testFile name path = do
     Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
     Right (Tuple m _) -> do
       -- Count declarations
-      let decls = m.declarations
+      let decls = Array.fromFoldable m.declarations
       let total = Array.length decls
 
       -- Try to type check the whole module (handles forward refs)

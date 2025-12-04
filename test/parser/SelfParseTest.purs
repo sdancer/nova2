@@ -6,6 +6,7 @@ import Effect.Console (log)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Array as Array
+import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse_)
 import Node.Encoding (Encoding(..))
@@ -38,11 +39,11 @@ testFile name path = do
       if Array.length restNoNewlines == 0 then do
         log $ "✓ " <> name
         log $ "  Module: " <> m.name
-        log $ "  Declarations: " <> show (Array.length m.declarations)
+        log $ "  Declarations: " <> show (List.length m.declarations)
       else do
         log $ "✗ " <> name <> " (leftover tokens)"
         log $ "  Module: " <> m.name
-        log $ "  Declarations: " <> show (Array.length m.declarations)
+        log $ "  Declarations: " <> show (List.length m.declarations)
         log $ "  Remaining tokens: " <> show (Array.length restNoNewlines)
         showTokens "  First remaining:" (Array.take 10 restNoNewlines)
     Left err -> do

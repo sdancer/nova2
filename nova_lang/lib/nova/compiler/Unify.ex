@@ -23,23 +23,29 @@ defmodule Nova.Compiler.Unify do
   def arity_mismatch(arg0, arg1, arg2), do: {:arity_mismatch, arg0, arg1, arg2}
   def record_field_mismatch(arg0), do: {:record_field_mismatch, arg0}
 
-  # instance Show show()(unify_error())
+  # instance Show unify_error()
+
+
 
   def show_type(({:ty_var, v})) do
-    Nova.Runtime.append(v.name, Nova.Runtime.append("[", Nova.Runtime.append(Nova.Runtime.show(v.id), "]")))
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(v.name, "["), Nova.Runtime.show(v.id)), "]")
   end
 
   def show_type(({:ty_con, tc})) do
-    Nova.Runtime.append(tc.name, Nova.Runtime.append("(", Nova.Runtime.append(Nova.Runtime.show(Nova.Runtime.length(tc.args)), " args)")))
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), Nova.Runtime.show((Nova.Runtime.length(tc.args)))), " args)")
   end
 
   def show_type(({:ty_record, r})) do
     "{record}"
   end
 
+
+
   def occurs(v, t) do
-    Nova.Set.member(v.id, Nova.Compiler.Types.free_type_vars(t))
+    Nova.Set.member(v.id, (Nova.Compiler.Types.free_type_vars(t)))
   end
+
+
 
   def bind_var(v, t) do
     case t do
@@ -48,12 +54,14 @@ defmodule Nova.Compiler.Unify do
       _ ->
         cond do
           (occurs(v, t)) ->
-            {:left, {:occurs_check, v, t}}
+            {:left, ({:occurs_check, v, t})}
           (true) ->
-            {:right, Nova.Compiler.Types.single_subst(v, t)}
+            {:right, (Nova.Compiler.Types.single_subst(v, t))}
         end
     end
   end
+
+
 
   def unify(({:ty_var, v}), t) do
     bind_var(v, t)
@@ -66,9 +74,9 @@ defmodule Nova.Compiler.Unify do
   def unify(({:ty_con, c1}), ({:ty_con, c2})) do
     cond do
       ((c1.name != c2.name)) ->
-        {:left, {:type_mismatch, {:ty_con, c1}, {:ty_con, c2}}}
+        {:left, ({:type_mismatch, ({:ty_con, c1}), ({:ty_con, c2})})}
       ((Nova.Runtime.length(c1.args) != Nova.Runtime.length(c2.args))) ->
-        {:left, {:arity_mismatch, c1.name, Nova.Runtime.length(c1.args), Nova.Runtime.length(c2.args)}}
+        {:left, ({:arity_mismatch, c1.name, (Nova.Runtime.length(c1.args)), (Nova.Runtime.length(c2.args))})}
       (true) ->
         unify_many(c1.args, c2.args)
     end
@@ -79,32 +87,42 @@ defmodule Nova.Compiler.Unify do
   end
 
   def unify(t1, t2) do
-    {:left, {:type_mismatch, t1, t2}}
+    {:left, ({:type_mismatch, t1, t2})}
   end
 
-  def unify_many(ts1, ts2) do
-    
-      step = fn sub -> fn ({:tuple, t1, t2}) ->    case unify(Nova.Compiler.Types.apply_subst(sub, t1), Nova.Compiler.Types.apply_subst(sub, t2)) do
-     {:left, err} -> {:left, err}
-     {:right, s} ->
-       Nova.Runtime.pure(Nova.Compiler.Types.compose_subst(s, sub))
-   end end end
-      Nova.Runtime.fold_m(step, Nova.Compiler.Types.empty_subst(), Nova.Runtime.zip(ts1, ts2))
+
+
+  def unify_step(sub, ({:tuple, t1, t2})) do
+      case unify((Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))) do
+    {:left, err} -> {:left, err}
+    {:right, s} ->
+      Nova.Runtime.pure((Nova.Compiler.Types.compose_subst(s, sub)))
   end
+  end
+
+
+
+  def unify_many(ts1, ts2) do
+    Nova.Runtime.fold_m((&unify_step/2), Nova.Compiler.Types.empty_subst(), (Nova.Runtime.zip(ts1, ts2)))
+  end
+
+
+
+  def unify_field(fields1, fields2, sub, k) do
+    case {:tuple, (Nova.Map.lookup(k, fields1)), (Nova.Map.lookup(k, fields2))} do
+      {:tuple, ({:just, t1}), ({:just, t2})} -> case unify((Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))) do
+          {:left, err} -> {:left, err}
+          {:right, s} -> {:right, (Nova.Compiler.Types.compose_subst(s, sub))}
+        end
+      _ -> {:right, sub}
+    end
+  end
+
+
 
   def unify_records(r1, r2) do
     
       keys1 = Nova.Map.keys(r1.fields)
-      Nova.Runtime.fold_m(fn auto_p0 -> fn auto_p1 -> unify_field(r1.fields, r2.fields, auto_p0, auto_p1) end end, Nova.Compiler.Types.empty_subst(), keys1)
-  end
-
-  def unify_field(fields1, fields2, sub, k) do
-    case {:tuple, Nova.Map.lookup(k, fields1), Nova.Map.lookup(k, fields2)} do
-      {:tuple, ({:just, t1}), ({:just, t2})} -> case unify(Nova.Compiler.Types.apply_subst(sub, t1), Nova.Compiler.Types.apply_subst(sub, t2)) do
-          {:left, err} -> {:left, err}
-          {:right, s} -> {:right, Nova.Compiler.Types.compose_subst(s, sub)}
-        end
-      _ -> {:right, sub}
-    end
+      Nova.Runtime.fold_m((fn auto_p0 -> fn auto_p1 -> unify_field(r1.fields, r2.fields, auto_p0, auto_p1) end end), Nova.Compiler.Types.empty_subst(), keys1)
   end
 end

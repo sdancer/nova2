@@ -1,7 +1,7 @@
 module Nova.Compiler.RefEq where
 
 import Prelude
-import Data.Array (length)
+import Data.List (length)
 import Nova.Compiler.Ast (Expr(..))
 
 -- Reference equality for expressions

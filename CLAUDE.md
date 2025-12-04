@@ -109,3 +109,12 @@ The Nova MCP server (`nova mcp`) exposes the compiler as a service for AI agents
 - `validate_compiler` - Type check all compiler modules
 
 **Available MCP tools:** create_namespace, delete_namespace, list_namespaces, add_declaration, update_declaration, remove_declaration, list_declarations, get_declaration, validate_namespace, get_type, get_diagnostics, get_completions, add_import, list_imports, load_file, compile_file, compile_namespace, load_compiler_core, compile_compiler, validate_compiler
+
+## Backlog & Known Issues
+
+See `BACKLOG.md` for:
+- Self-hosting issues that have been resolved (forward references, type annotations, parser fixes)
+- Outstanding issues (parameterized type alias expansion for CstToAst/CstPipeline)
+- Future enhancements
+
+**Priority:** Continue work on parameterized type alias expansion in CstToAst.purs to complete self-hosting.

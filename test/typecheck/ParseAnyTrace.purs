@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.Array as Array
+import Data.List (List(..), (:))
 import Nova.Compiler.Ast (Expr(..), Pattern(..), Literal(..), CaseClause)
 import Nova.Compiler.Types (emptyEnv, Env, Type(..), applySubst, mkScheme, freshVar, extendEnv, lookupEnv, tArrow, tInt, tString, tMaybe, tEither, freeTypeVars)
 import Nova.Compiler.TypeChecker (infer, TCError, instantiate)
@@ -28,10 +29,10 @@ main = do
   -- Build: case f n of ...
   let fnApp = ExprApp (ExprVar "f") (ExprVar "n")
   let rightClause :: CaseClause
-      rightClause = { pattern: PatCon "Right" [PatVar "r"], body: ExprApp (ExprVar "Right") (ExprVar "r"), guard: Nothing }
+      rightClause = { pattern: PatCon "Right" (PatVar "r" : Nil), body: ExprApp (ExprVar "Right") (ExprVar "r"), guard: Nothing }
   let leftClause :: CaseClause
-      leftClause = { pattern: PatCon "Left" [PatWildcard], body: ExprApp (ExprVar "Left") (ExprLit (LitString "fail")), guard: Nothing }
-  let caseExpr = ExprCase fnApp [rightClause, leftClause]
+      leftClause = { pattern: PatCon "Left" (PatWildcard : Nil), body: ExprApp (ExprVar "Left") (ExprLit (LitString "fail")), guard: Nothing }
+  let caseExpr = ExprCase fnApp (rightClause : leftClause : Nil)
 
   log "Inferring: case f n of Right r -> Right r; Left _ -> Left \"fail\""
   case infer env2 caseExpr of
@@ -47,10 +48,10 @@ main = do
 
   -- Build outer case
   let nothingClause :: CaseClause
-      nothingClause = { pattern: PatCon "Nothing" [], body: ExprApp (ExprVar "Left") (ExprLit (LitString "None")), guard: Nothing }
+      nothingClause = { pattern: PatCon "Nothing" Nil, body: ExprApp (ExprVar "Left") (ExprLit (LitString "None")), guard: Nothing }
   let justClause :: CaseClause
-      justClause = { pattern: PatCon "Just" [PatVar "n"], body: caseExpr, guard: Nothing }
-  let outerCase = ExprCase (ExprVar "mx") [nothingClause, justClause]
+      justClause = { pattern: PatCon "Just" (PatVar "n" : Nil), body: caseExpr, guard: Nothing }
+  let outerCase = ExprCase (ExprVar "mx") (nothingClause : justClause : Nil)
 
   log "Inferring: case mx of Nothing -> Left \"None\"; Just n -> case f n of ..."
   case infer env3 outerCase of
@@ -62,13 +63,13 @@ main = do
   log "\n-- Q1b: Without f, Just n as scrutinee --"
   let fnAppJust = ExprApp (ExprVar "Just") (ExprVar "n")
   let justClause2 :: CaseClause
-      justClause2 = { pattern: PatCon "Just" [PatVar "r"], body: ExprApp (ExprVar "Right") (ExprVar "r"), guard: Nothing }
+      justClause2 = { pattern: PatCon "Just" (PatVar "r" : Nil), body: ExprApp (ExprVar "Right") (ExprVar "r"), guard: Nothing }
   let nothingClause2 :: CaseClause
-      nothingClause2 = { pattern: PatCon "Nothing" [], body: ExprApp (ExprVar "Left") (ExprLit (LitString "fail")), guard: Nothing }
-  let innerCase2 = ExprCase fnAppJust [justClause2, nothingClause2]
+      nothingClause2 = { pattern: PatCon "Nothing" Nil, body: ExprApp (ExprVar "Left") (ExprLit (LitString "fail")), guard: Nothing }
+  let innerCase2 = ExprCase fnAppJust (justClause2 : nothingClause2 : Nil)
   let justClauseOuter :: CaseClause
-      justClauseOuter = { pattern: PatCon "Just" [PatVar "n"], body: innerCase2, guard: Nothing }
-  let outerCase2 = ExprCase (ExprVar "mx") [nothingClause, justClauseOuter]
+      justClauseOuter = { pattern: PatCon "Just" (PatVar "n" : Nil), body: innerCase2, guard: Nothing }
+  let outerCase2 = ExprCase (ExprVar "mx") (nothingClause : justClauseOuter : Nil)
 
   log "Inferring: case mx of Nothing -> ...; Just n -> case Just n of ..."
   case infer env3 outerCase2 of
