@@ -750,6 +750,14 @@ defmodule Nova.MCPServer do
           type: "object",
           properties: %{}
         }
+      },
+      %{
+        name: "reload",
+        description: "Reload the MCP server's Elixir source code. Useful after making changes to the server.",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
       }
     ]
 
@@ -1071,6 +1079,17 @@ defmodule Nova.MCPServer do
         end)
         {:ok, sandboxes}
 
+      "reload" ->
+        # Recompile the MCP server's Elixir source code
+        case IEx.Helpers.recompile() do
+          :ok ->
+            {:ok, %{message: "Recompiled successfully", status: "ok"}}
+          {:error, _} ->
+            {:ok, %{message: "Recompilation had errors (check server logs)", status: "error"}}
+          :noop ->
+            {:ok, %{message: "No changes detected", status: "noop"}}
+        end
+
       _ ->
         {:error, "Unknown tool: #{name}"}
     end
@@ -1270,28 +1289,44 @@ defmodule Nova.MCPServer do
   end
 
   defp compile_namespace(svc, namespace) do
-    case Nova.NamespaceService.list_declarations(svc, namespace) do
-      {:ok, decls} ->
-        # Build a module AST from the declarations
-        declarations = Enum.flat_map(decls, fn decl_info ->
-          case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
-            {:ok, managed_decl} -> [managed_decl.decl]
-            _ -> []
-          end
-        end)
+    # First check if we have a pre-loaded module from load_compiler_core
+    case :persistent_term.get({:nova_module, namespace}, nil) do
+      nil ->
+        # Fall back to namespace service declarations
+        case Nova.NamespaceService.list_declarations(svc, namespace) do
+          {:ok, decls} ->
+            # Build a module AST from the declarations
+            declarations = Enum.flat_map(decls, fn decl_info ->
+              case Nova.NamespaceService.get_declaration(svc, namespace, decl_info.name) do
+                {:ok, managed_decl} -> [managed_decl.decl]
+                _ -> []
+              end
+            end)
 
-        mod = %{name: namespace, declarations: declarations}
+            mod = %{name: namespace, declarations: declarations}
+            code = Nova.Compiler.CodeGen.gen_module(mod)
+
+            {:ok, %{
+              namespace: namespace,
+              elixir_code: code,
+              lines: length(String.split(code, "\n")),
+              declarations: length(decls)
+            }}
+
+          {:error, reason} ->
+            {:error, format_error(reason)}
+        end
+
+      mod ->
+        # Use the pre-loaded module AST directly
         code = Nova.Compiler.CodeGen.gen_module(mod)
 
         {:ok, %{
           namespace: namespace,
           elixir_code: code,
           lines: length(String.split(code, "\n")),
-          declarations: length(decls)
+          declarations: length(mod.declarations)
         }}
-
-      {:error, reason} ->
-        {:error, format_error(reason)}
     end
   end
 
@@ -1311,11 +1346,13 @@ defmodule Nova.MCPServer do
             "#{ctor.name} #{fields}"
           end
         end) |> Enum.join(" | ")
-        type_vars = if Enum.empty?(dt.typeVars), do: "", else: " " <> Enum.join(dt.typeVars, " ")
+        tvars = Map.get(dt, :type_vars) || Map.get(dt, :typeVars) || []
+        type_vars = if Enum.empty?(tvars), do: "", else: " " <> Enum.join(tvars, " ")
         "data #{dt.name}#{type_vars} = #{ctors}"
 
       {:decl_type_alias, ta} ->
-        type_vars = if Enum.empty?(ta.typeVars), do: "", else: " " <> Enum.join(ta.typeVars, " ")
+        tvars = Map.get(ta, :type_vars) || Map.get(ta, :typeVars) || []
+        type_vars = if Enum.empty?(tvars), do: "", else: " " <> Enum.join(tvars, " ")
         "type #{ta.name}#{type_vars} = #{format_type_expr(ta.ty)}"
 
       {:decl_type_sig, sig} ->

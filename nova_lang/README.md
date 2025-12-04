@@ -1,21 +1,42 @@
 # Nova
 
-**TODO: Add description**
+A PureScript-like language that compiles to Elixir/BEAM.
 
-## Installation
+## MCP Server
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `nova` to your list of dependencies in `mix.exs`:
+Start the MCP server for AI-assisted development:
 
-```elixir
-def deps do
-  [
-    {:nova, "~> 0.1.0"}
-  ]
-end
+```bash
+mix run --no-halt -e 'Nova.MCPMultiServer.start_link(port: 9999)'
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/nova>.
+### Sandbox Execution
 
+The MCP server provides sandboxed BEAM subprocesses for safe code execution:
+
+```
+# Load compiler modules
+load_compiler_core {source_dir: "/path/to/src/Nova/Compiler"}
+
+# Start isolated sandbox
+sandbox_start  →  {sandbox_id: "abc123"}
+
+# Load runtime (required for library functions)
+sandbox_eval {sandbox_id: "abc123", code: "Code.require_file(\"lib/nova/runtime.ex\")"}
+
+# Load compiled modules into sandbox
+sandbox_load {sandbox_id: "abc123", namespace: "Nova.Compiler.Tokenizer"}
+sandbox_load {sandbox_id: "abc123", namespace: "Nova.Compiler.Parser"}
+sandbox_load {sandbox_id: "abc123", namespace: "Nova.Compiler.CodeGen"}
+
+# Execute code safely
+sandbox_eval {sandbox_id: "abc123", code: "Nova.Compiler.Tokenizer.tokenize(\"x + 1\")"}
+
+# Call functions directly
+sandbox_call {sandbox_id: "abc123", module: "Nova.Compiler.CodeGen", function: "gen_module", args: [mod]}
+
+# Cleanup
+sandbox_stop {sandbox_id: "abc123"}
+```
+
+Sandboxes run in separate OS processes, isolating them from the main MCP server.
