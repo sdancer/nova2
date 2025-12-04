@@ -374,8 +374,19 @@ defmodule Nova.Sandbox do
       # Start distribution with a unique name
       id = :crypto.strong_rand_bytes(4) |> Base.encode16(case: :lower)
       node_name = :"nova_mcp_#{id}@127.0.0.1"
-      {:ok, _} = Node.start(node_name)
-      Node.set_cookie(:nova_sandbox_cookie)
+
+      # Make sure epmd is running
+      System.cmd("epmd", ["-daemon"], stderr_to_stdout: true)
+
+      case Node.start(node_name) do
+        {:ok, _} ->
+          Node.set_cookie(:nova_sandbox_cookie)
+          :ok
+        {:error, reason} ->
+          # Log but continue - distribution might already be running
+          IO.puts(:stderr, "Warning: Could not start distribution: #{inspect(reason)}")
+          :ok
+      end
     end
     :ok
   end

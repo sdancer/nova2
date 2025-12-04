@@ -196,7 +196,8 @@ defmodule Nova.MCPConnection do
       namespace_service: svc,
       undo_stack: [],
       redo_stack: [],
-      max_history: 50
+      max_history: 50,
+      sandboxes: %{}
     }
 
     state = %__MODULE__{
@@ -257,7 +258,41 @@ defmodule Nova.MCPConnection do
 
       case Jason.decode(normalized) do
         {:ok, request} ->
-          {response, new_handler_state} = process_request(request, state.handler_state)
+          # Extract request id for error responses
+          request_id = Map.get(request, "id")
+
+          # Wrap in try/catch to handle exceptions gracefully
+          {response, new_handler_state} = try do
+            process_request(request, state.handler_state)
+          rescue
+            e ->
+              error_msg = Exception.message(e)
+              IO.puts(:stderr, "[MCP ERROR] #{inspect(e.__struct__)}: #{error_msg}")
+              IO.puts(:stderr, "[MCP ERROR] #{Exception.format_stacktrace(__STACKTRACE__)}")
+
+              error_response = %{
+                "jsonrpc" => "2.0",
+                "id" => request_id,
+                "error" => %{
+                  "code" => -32603,
+                  "message" => "Internal error: #{error_msg}"
+                }
+              }
+              {error_response, state.handler_state}
+          catch
+            kind, reason ->
+              IO.puts(:stderr, "[MCP ERROR] #{kind}: #{inspect(reason)}")
+
+              error_response = %{
+                "jsonrpc" => "2.0",
+                "id" => request_id,
+                "error" => %{
+                  "code" => -32603,
+                  "message" => "Internal error: #{inspect({kind, reason})}"
+                }
+              }
+              {error_response, state.handler_state}
+          end
 
           if response do
             json = Jason.encode!(response)
