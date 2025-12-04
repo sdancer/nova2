@@ -969,3 +969,88 @@ mergeTypeExport env exports typeName ctorNames =
       case Map.lookup ctorName exports.constructors of
         Just scheme -> extendEnv e ctorName scheme
         Nothing -> e
+
+-- ============================================================================
+-- Pretty Printing Types (PureScript syntax)
+-- ============================================================================
+
+-- | Pretty-print a type in PureScript syntax
+showType :: Type -> String
+showType (TyVar v) = v.name
+showType (TyCon c) = showTyCon c
+showType (TyRecord r) = showRecord r
+
+-- | Pretty-print a type constructor
+showTyCon :: TCon -> String
+showTyCon c = case c.name of
+  -- Function type: a -> b
+  "Fun" -> case c.args of
+    [arg, ret] -> showTypeArg arg <> " -> " <> showType ret
+    _ -> c.name <> " " <> String.joinWith " " (map showTypeArg c.args)
+  -- Array type: Array a
+  "Array" -> case c.args of
+    [elem] -> "Array " <> showTypeArg elem
+    _ -> "Array"
+  -- List type: List a
+  "List" -> case c.args of
+    [elem] -> "List " <> showTypeArg elem
+    _ -> "List"
+  -- Maybe type: Maybe a
+  "Maybe" -> case c.args of
+    [elem] -> "Maybe " <> showTypeArg elem
+    _ -> "Maybe"
+  -- Either type: Either a b
+  "Either" -> case c.args of
+    [l, r] -> "Either " <> showTypeArg l <> " " <> showTypeArg r
+    _ -> "Either"
+  -- Map type: Map k v
+  "Map" -> case c.args of
+    [k, v] -> "Map " <> showTypeArg k <> " " <> showTypeArg v
+    _ -> "Map"
+  -- Set type: Set a
+  "Set" -> case c.args of
+    [elem] -> "Set " <> showTypeArg elem
+    _ -> "Set"
+  -- Tuple types: Tuple a b or (a, b, c)
+  "Tuple" -> case c.args of
+    [] -> "Unit"
+    [_] -> "Tuple " <> String.joinWith " " (map showTypeArg c.args)
+    _ -> "(" <> String.joinWith ", " (map showType c.args) <> ")"
+  -- Multi-element tuples
+  name | String.take 5 name == "Tuple" ->
+    "(" <> String.joinWith ", " (map showType c.args) <> ")"
+  -- No-arg type constructor
+  _ | Array.null c.args -> c.name
+  -- Type constructor with args
+  _ -> c.name <> " " <> String.joinWith " " (map showTypeArg c.args)
+
+-- | Pretty-print a type as an argument (wrap complex types in parens)
+showTypeArg :: Type -> String
+showTypeArg ty = case ty of
+  TyVar v -> v.name
+  TyCon c -> case c.name of
+    -- Function types need parens when used as arguments
+    "Fun" -> "(" <> showType ty <> ")"
+    -- Type constructors with arguments need parens
+    _ | not (Array.null c.args) -> "(" <> showType ty <> ")"
+    -- Simple type constructors don't need parens
+    _ -> c.name
+  TyRecord r -> showRecord r
+
+-- | Pretty-print a record type
+showRecord :: Record -> String
+showRecord r =
+  let fields = Map.toUnfoldable r.fields :: Array (Tuple String Type)
+      fieldStrs = map (\(Tuple name ty) -> name <> " :: " <> showType ty) fields
+      inner = String.joinWith ", " fieldStrs
+  in case r.row of
+    Nothing -> "{ " <> inner <> " }"
+    Just rv -> "{ " <> inner <> " | " <> rv.name <> " }"
+
+-- | Pretty-print a type scheme
+showScheme :: Scheme -> String
+showScheme s =
+  let tyStr = showType s.ty
+  in if Array.null s.vars
+     then tyStr
+     else "forall " <> String.joinWith " " (map _.name s.vars) <> ". " <> tyStr

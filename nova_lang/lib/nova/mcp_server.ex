@@ -942,73 +942,9 @@ defmodule Nova.MCPServer do
   end
 
   defp format_type(nil), do: "unknown"
-  defp format_type(type), do: pretty_type(type)
-
-  # Pretty-print types in human-readable format
-  defp pretty_type({:ty_var, v}), do: v.name
-
-  defp pretty_type({:ty_con, %{name: "Fun", args: [arg, ret]}}) do
-    arg_str = case arg do
-      {:ty_con, %{name: "Fun", args: _}} -> "(#{pretty_type(arg)})"
-      _ -> pretty_type(arg)
-    end
-    "#{arg_str} -> #{pretty_type(ret)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Array", args: [elem]}}) do
-    "Array #{pretty_type_arg(elem)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "List", args: [elem]}}) do
-    "List #{pretty_type_arg(elem)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Maybe", args: [elem]}}) do
-    "Maybe #{pretty_type_arg(elem)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Either", args: [l, r]}}) do
-    "Either #{pretty_type_arg(l)} #{pretty_type_arg(r)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Map", args: [k, v]}}) do
-    "Map #{pretty_type_arg(k)} #{pretty_type_arg(v)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Set", args: [elem]}}) do
-    "Set #{pretty_type_arg(elem)}"
-  end
-
-  defp pretty_type({:ty_con, %{name: "Tuple", args: elems}}) do
-    inner = Enum.map_join(elems, ", ", &pretty_type/1)
-    "(#{inner})"
-  end
-
-  defp pretty_type({:ty_con, %{name: name, args: []}}) do
-    name
-  end
-
-  defp pretty_type({:ty_con, %{name: name, args: args}}) do
-    args_str = Enum.map_join(args, " ", &pretty_type_arg/1)
-    "#{name} #{args_str}"
-  end
-
-  defp pretty_type({:ty_record, %{fields: fields, row: row}}) do
-    fields_str = fields
-      |> Nova.Map.to_unfoldable()
-      |> Enum.map_join(", ", fn {:tuple, name, ty} -> "#{name} :: #{pretty_type(ty)}" end)
-    case row do
-      :nothing -> "{ #{fields_str} }"
-      {:just, r} -> "{ #{fields_str} | #{r} }"
-    end
-  end
-
-  defp pretty_type(other), do: inspect(other)
-
-  # Wrap complex types in parens when used as arguments
-  defp pretty_type_arg({:ty_con, %{name: "Fun", args: _}} = ty), do: "(#{pretty_type(ty)})"
-  defp pretty_type_arg({:ty_con, %{name: _, args: args}} = ty) when length(args) > 0, do: "(#{pretty_type(ty)})"
-  defp pretty_type_arg(ty), do: pretty_type(ty)
+  # Handle both schemes (with vars) and bare types
+  defp format_type(%{vars: _, ty: _} = scheme), do: Nova.Compiler.Types.show_scheme(scheme)
+  defp format_type(type), do: Nova.Compiler.Types.show_type(type)
 
   # File operations
 

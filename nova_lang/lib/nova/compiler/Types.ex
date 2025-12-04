@@ -453,4 +453,98 @@ defmodule Nova.Compiler.Types do
       end end end
       Nova.Array.foldl(add_ctor, env, ctor_names)
   end
+
+  def show_type(({:ty_var, v})) do
+    v.name
+  end
+
+  def show_type(({:ty_con, c})) do
+    show_ty_con(c)
+  end
+
+  def show_type(({:ty_record, r})) do
+    show_record(r)
+  end
+
+  def show_ty_con(c) do
+    case c.name do
+      "Fun" -> case c.args do
+          [arg, ret] -> Nova.Runtime.append(show_type_arg(arg), Nova.Runtime.append(" -> ", show_type(ret)))
+          _ -> Nova.Runtime.append(c.name, Nova.Runtime.append(" ", Nova.String.join_with(" ", Nova.Runtime.map((&show_type_arg/1), c.args))))
+        end
+      "Array" -> case c.args do
+          [elem] -> Nova.Runtime.append("Array ", show_type_arg(elem))
+          _ -> "Array"
+        end
+      "List" -> case c.args do
+          [elem] -> Nova.Runtime.append("List ", show_type_arg(elem))
+          _ -> "List"
+        end
+      "Maybe" -> case c.args do
+          [elem] -> Nova.Runtime.append("Maybe ", show_type_arg(elem))
+          _ -> "Maybe"
+        end
+      "Either" -> case c.args do
+          [l, r] -> Nova.Runtime.append("Either ", Nova.Runtime.append(show_type_arg(l), Nova.Runtime.append(" ", show_type_arg(r))))
+          _ -> "Either"
+        end
+      "Map" -> case c.args do
+          [k, v] -> Nova.Runtime.append("Map ", Nova.Runtime.append(show_type_arg(k), Nova.Runtime.append(" ", show_type_arg(v))))
+          _ -> "Map"
+        end
+      "Set" -> case c.args do
+          [elem] -> Nova.Runtime.append("Set ", show_type_arg(elem))
+          _ -> "Set"
+        end
+      "Tuple" -> case c.args do
+          [] -> "Unit"
+          [_] -> Nova.Runtime.append("Tuple ", Nova.String.join_with(" ", Nova.Runtime.map((&show_type_arg/1), c.args)))
+          _ -> Nova.Runtime.append("(", Nova.Runtime.append(Nova.String.join_with(", ", Nova.Runtime.map((&show_type/1), c.args)), ")"))
+        end
+      name ->
+        cond do
+          (Nova.String.take(5, name) == "Tuple") -> Nova.Runtime.append("(", Nova.Runtime.append(Nova.String.join_with(", ", Nova.Runtime.map((&show_type/1), c.args)), ")"))
+          true -> c.name
+        end
+      _ -> c.name
+      _ -> Nova.Runtime.append(c.name, Nova.Runtime.append(" ", Nova.String.join_with(" ", Nova.Runtime.map((&show_type_arg/1), c.args))))
+    end
+  end
+
+  def show_type_arg(ty) do
+    case ty do
+      {:ty_var, v} -> v.name
+      {:ty_con, c} -> case c.name do
+          "Fun" -> Nova.Runtime.append("(", Nova.Runtime.append(show_type(ty), ")"))
+          _ ->
+            cond do
+              not(Nova.Array.null(c.args)) -> Nova.Runtime.append("(", Nova.Runtime.append(show_type(ty), ")"))
+              true -> c.name
+            end
+          _ -> c.name
+        end
+      {:ty_record, r} -> show_record(r)
+    end
+  end
+
+  def show_record(r) do
+    
+      fields = Nova.Map.to_unfoldable(r.fields)
+      field_strs = Nova.Runtime.map(fn ({:tuple, name, ty}) -> Nova.Runtime.append(name, Nova.Runtime.append(" :: ", show_type(ty))) end, fields)
+      inner = Nova.String.join_with(", ", field_strs)
+      case r.row do
+  :nothing -> Nova.Runtime.append("{ ", Nova.Runtime.append(inner, " }"))
+  {:just, rv} -> Nova.Runtime.append("{ ", Nova.Runtime.append(inner, Nova.Runtime.append(" | ", Nova.Runtime.append(rv.name, " }"))))
+end
+  end
+
+  def show_scheme(s) do
+    
+      ty_str = show_type(s.ty)
+      if Nova.Array.null(s.vars) do
+  ty_str
+else
+  Nova.Runtime.append("forall ", Nova.Runtime.append(Nova.String.join_with(" ", Nova.Runtime.map(& &1.name, s.vars)), Nova.Runtime.append(". ", ty_str)))
+end
+  end
 end
