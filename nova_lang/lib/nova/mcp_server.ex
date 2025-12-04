@@ -50,7 +50,8 @@ defmodule Nova.MCPServer do
       namespace_service: svc,
       undo_stack: [],      # Stack of previous states for undo
       redo_stack: [],      # Stack of undone states for redo
-      max_history: 50      # Maximum undo history size
+      max_history: 50,     # Maximum undo history size
+      sandboxes: %{}       # Map of sandbox_id => sandbox_pid
     }}
   end
 
@@ -626,6 +627,129 @@ defmodule Nova.MCPServer do
           },
           required: ["expression", "expected"]
         }
+      },
+
+      # Sandbox operations (isolated BEAM subprocess)
+      %{
+        name: "sandbox_start",
+        description: "Start a new sandboxed BEAM subprocess for safe code execution. Returns a sandbox ID.",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
+      },
+      %{
+        name: "sandbox_stop",
+        description: "Stop a sandbox subprocess and release its resources.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID to stop"
+            }
+          },
+          required: ["sandbox_id"]
+        }
+      },
+      %{
+        name: "sandbox_eval",
+        description: "Evaluate Elixir code in a sandbox. Safe from affecting the main MCP server.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID"
+            },
+            "code" => %{
+              type: "string",
+              description: "Elixir code to evaluate"
+            }
+          },
+          required: ["sandbox_id", "code"]
+        }
+      },
+      %{
+        name: "sandbox_load",
+        description: "Load compiled Nova code (as Elixir) into a sandbox. The modules become available for calling.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID"
+            },
+            "namespace" => %{
+              type: "string",
+              description: "The namespace to compile and load into the sandbox"
+            }
+          },
+          required: ["sandbox_id", "namespace"]
+        }
+      },
+      %{
+        name: "sandbox_call",
+        description: "Call a function in a sandbox that was previously loaded.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID"
+            },
+            "module" => %{
+              type: "string",
+              description: "The module name (e.g., 'Nova.MyModule')"
+            },
+            "function" => %{
+              type: "string",
+              description: "The function name"
+            },
+            "args" => %{
+              type: "array",
+              description: "Arguments to pass to the function (as JSON array)",
+              items: %{}
+            }
+          },
+          required: ["sandbox_id", "module", "function"]
+        }
+      },
+      %{
+        name: "sandbox_reset",
+        description: "Reset a sandbox to clean state (restart the subprocess).",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID to reset"
+            }
+          },
+          required: ["sandbox_id"]
+        }
+      },
+      %{
+        name: "sandbox_status",
+        description: "Get the status of a sandbox (running, modules loaded, uptime).",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID"
+            }
+          },
+          required: ["sandbox_id"]
+        }
+      },
+      %{
+        name: "sandbox_list",
+        description: "List all active sandboxes.",
+        inputSchema: %{
+          type: "object",
+          properties: %{}
+        }
       }
     ]
 
@@ -818,6 +942,135 @@ defmodule Nova.MCPServer do
       "assert" ->
         run_assert(svc, args["expression"], args["expected"], args["namespace"], args["description"])
 
+      # Sandbox operations
+      "sandbox_start" ->
+        case Nova.Sandbox.start_link() do
+          {:ok, pid} ->
+            {:ok, status} = Nova.Sandbox.status(pid)
+            sandbox_id = status.id
+            new_sandboxes = Map.put(state.sandboxes, sandbox_id, pid)
+            {:ok_with_state, {%{state | sandboxes: new_sandboxes}, %{
+              sandbox_id: sandbox_id,
+              message: "Sandbox started successfully",
+              node: to_string(status.node)
+            }}}
+          {:error, reason} ->
+            {:error, "Failed to start sandbox: #{inspect(reason)}"}
+        end
+
+      "sandbox_stop" ->
+        sandbox_id = args["sandbox_id"]
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            Nova.Sandbox.stop(pid)
+            new_sandboxes = Map.delete(state.sandboxes, sandbox_id)
+            {:ok_with_state, {%{state | sandboxes: new_sandboxes}, "Sandbox '#{sandbox_id}' stopped"}}
+        end
+
+      "sandbox_eval" ->
+        sandbox_id = args["sandbox_id"]
+        code = args["code"]
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            case Nova.Sandbox.eval(pid, code) do
+              {:ok, result} -> {:ok, %{result: inspect(result)}}
+              {:error, reason} -> {:error, "Eval failed: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_load" ->
+        sandbox_id = args["sandbox_id"]
+        namespace = args["namespace"]
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            # Compile the namespace to Elixir and load it into the sandbox
+            case compile_namespace(svc, namespace) do
+              {:ok, %{elixir_code: elixir_code}} ->
+                case Nova.Sandbox.load_compiled(pid, elixir_code) do
+                  {:ok, modules} ->
+                    {:ok, %{
+                      message: "Loaded namespace '#{namespace}' into sandbox",
+                      modules: format_modules(modules)
+                    }}
+                  {:error, reason} ->
+                    {:error, "Failed to load into sandbox: #{inspect(reason)}"}
+                end
+              {:error, reason} ->
+                {:error, "Failed to compile namespace: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_call" ->
+        sandbox_id = args["sandbox_id"]
+        module_str = args["module"]
+        function_str = args["function"]
+        call_args = args["args"] || []
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            module = String.to_atom("Elixir." <> module_str)
+            function = String.to_atom(function_str)
+            case Nova.Sandbox.call(pid, module, function, call_args) do
+              {:ok, result} -> {:ok, %{result: inspect(result)}}
+              {:error, reason} -> {:error, "Call failed: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_reset" ->
+        sandbox_id = args["sandbox_id"]
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            case Nova.Sandbox.reset(pid) do
+              :ok -> {:ok, "Sandbox '#{sandbox_id}' reset successfully"}
+              {:error, reason} -> {:error, "Reset failed: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_status" ->
+        sandbox_id = args["sandbox_id"]
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            case Nova.Sandbox.status(pid) do
+              {:ok, status} ->
+                {:ok, %{
+                  id: status.id,
+                  node: to_string(status.node),
+                  alive: status.alive,
+                  uptime_seconds: status.uptime_seconds,
+                  loaded_modules: Enum.map(status.loaded_modules, &to_string/1)
+                }}
+              {:error, reason} ->
+                {:error, "Failed to get status: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_list" ->
+        sandboxes = Enum.map(state.sandboxes, fn {id, pid} ->
+          case Nova.Sandbox.status(pid) do
+            {:ok, status} ->
+              %{
+                id: id,
+                alive: status.alive,
+                uptime_seconds: status.uptime_seconds,
+                loaded_modules: length(status.loaded_modules)
+              }
+            _ ->
+              %{id: id, alive: false}
+          end
+        end)
+        {:ok, sandboxes}
+
       _ ->
         {:error, "Unknown tool: #{name}"}
     end
@@ -843,6 +1096,9 @@ defmodule Nova.MCPServer do
 
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason), do: inspect(reason)
+
+  defp format_modules(modules) when is_list(modules), do: Enum.map(modules, &to_string/1)
+  defp format_modules(module), do: [to_string(module)]
 
   # ============================================================================
   # Search Declarations
