@@ -57,7 +57,8 @@ defmodule Nova.Sandbox do
     :os_pid,
     :status,
     :started_at,
-    loaded_modules: []
+    loaded_modules: [],
+    loaded_namespaces: %{}  # namespace => hash
   ]
 
   # ============================================================================
@@ -116,6 +117,21 @@ defmodule Nova.Sandbox do
   def load_compiled(sandbox, elixir_code, opts \\ []) do
     timeout = Keyword.get(opts, :timeout, @default_timeout)
     GenServer.call(sandbox, {:load_compiled, elixir_code}, timeout)
+  end
+
+  @doc """
+  Load a namespace into the sandbox, tracking its hash for change detection.
+  """
+  def load_namespace(sandbox, namespace, elixir_code, opts \\ []) do
+    timeout = Keyword.get(opts, :timeout, @default_timeout)
+    GenServer.call(sandbox, {:load_namespace, namespace, elixir_code}, timeout)
+  end
+
+  @doc """
+  Get the loaded namespaces and their hashes.
+  """
+  def loaded_namespaces(sandbox) do
+    GenServer.call(sandbox, :loaded_namespaces)
   end
 
   @doc """
@@ -202,6 +218,31 @@ defmodule Nova.Sandbox do
     end
   end
 
+  def handle_call({:load_namespace, namespace, elixir_code}, _from, state) do
+    hash = :crypto.hash(:sha256, elixir_code) |> Base.encode16(case: :lower) |> binary_part(0, 16)
+
+    case rpc_call(state.node, Nova.Sandbox.Worker, :load_compiled, [elixir_code]) do
+      {:ok, modules} when is_list(modules) ->
+        new_state = %{state |
+          loaded_modules: modules ++ state.loaded_modules,
+          loaded_namespaces: Map.put(state.loaded_namespaces, namespace, hash)
+        }
+        {:reply, {:ok, %{modules: modules, hash: hash}}, new_state}
+      {:ok, module_name} ->
+        new_state = %{state |
+          loaded_modules: [module_name | state.loaded_modules],
+          loaded_namespaces: Map.put(state.loaded_namespaces, namespace, hash)
+        }
+        {:reply, {:ok, %{modules: [module_name], hash: hash}}, new_state}
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+  def handle_call(:loaded_namespaces, _from, state) do
+    {:reply, {:ok, state.loaded_namespaces}, state}
+  end
+
   def handle_call({:call, module, function, args}, _from, state) do
     result = rpc_call(state.node, Nova.Sandbox.Worker, :call_function, [module, function, args])
     {:reply, result, state}
@@ -215,6 +256,7 @@ defmodule Nova.Sandbox do
       alive: node_alive,
       started_at: state.started_at,
       loaded_modules: state.loaded_modules,
+      loaded_namespaces: state.loaded_namespaces,
       uptime_seconds: DateTime.diff(DateTime.utc_now(), state.started_at)
     }
     {:reply, {:ok, status}, state}

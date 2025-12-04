@@ -689,6 +689,24 @@ defmodule Nova.MCPServer do
         }
       },
       %{
+        name: "sandbox_load_all",
+        description: "Load all defined namespaces into a sandbox. Tracks each namespace with a hash for change detection.",
+        inputSchema: %{
+          type: "object",
+          properties: %{
+            "sandbox_id" => %{
+              type: "string",
+              description: "The sandbox ID"
+            },
+            "include_runtime" => %{
+              type: "boolean",
+              description: "Whether to load Nova.Runtime first (default: true)"
+            }
+          },
+          required: ["sandbox_id"]
+        }
+      },
+      %{
         name: "sandbox_call",
         description: "Call a function in a sandbox that was previously loaded.",
         inputSchema: %{
@@ -1000,17 +1018,78 @@ defmodule Nova.MCPServer do
             # Compile the namespace to Elixir and load it into the sandbox
             case compile_namespace(svc, namespace) do
               {:ok, %{elixir_code: elixir_code}} ->
-                case Nova.Sandbox.load_compiled(pid, elixir_code) do
-                  {:ok, modules} ->
+                case Nova.Sandbox.load_namespace(pid, namespace, elixir_code) do
+                  {:ok, %{modules: modules, hash: hash}} ->
                     {:ok, %{
                       message: "Loaded namespace '#{namespace}' into sandbox",
-                      modules: format_modules(modules)
+                      modules: format_modules(modules),
+                      hash: hash
                     }}
                   {:error, reason} ->
                     {:error, "Failed to load into sandbox: #{inspect(reason)}"}
                 end
               {:error, reason} ->
                 {:error, "Failed to compile namespace: #{inspect(reason)}"}
+            end
+        end
+
+      "sandbox_load_all" ->
+        sandbox_id = args["sandbox_id"]
+        include_runtime = Map.get(args, "include_runtime", true)
+        case Map.get(state.sandboxes, sandbox_id) do
+          nil ->
+            {:error, "Sandbox '#{sandbox_id}' not found"}
+          pid ->
+            # Load runtime first if requested
+            runtime_result = if include_runtime do
+              runtime_path = Path.join([File.cwd!(), "lib", "nova", "runtime.ex"])
+              Nova.Sandbox.eval(pid, "Code.require_file(#{inspect(runtime_path)})")
+            else
+              {:ok, :skipped}
+            end
+
+            case runtime_result do
+              {:ok, _} ->
+                # Get all namespaces (from namespace service + persistent_term)
+                {:ok, ns_list} = Nova.NamespaceService.list_namespaces(svc)
+
+                # Also include compiler modules from persistent_term
+                compiler_namespaces = Enum.filter(
+                  ["Nova.Compiler.Ast", "Nova.Compiler.Types", "Nova.Compiler.Tokenizer",
+                   "Nova.Compiler.Parser", "Nova.Compiler.Unify", "Nova.Compiler.TypeChecker",
+                   "Nova.Compiler.Dependencies", "Nova.Compiler.CodeGen"],
+                  fn ns -> :persistent_term.get({:nova_module, ns}, nil) != nil end
+                )
+
+                all_namespaces = Enum.uniq(ns_list ++ compiler_namespaces)
+
+                # Load each namespace
+                results = Enum.map(all_namespaces, fn namespace ->
+                  case compile_namespace(svc, namespace) do
+                    {:ok, %{elixir_code: elixir_code}} ->
+                      case Nova.Sandbox.load_namespace(pid, namespace, elixir_code) do
+                        {:ok, %{modules: modules, hash: hash}} ->
+                          {:ok, %{namespace: namespace, modules: length(modules), hash: hash}}
+                        {:error, reason} ->
+                          {:error, %{namespace: namespace, error: inspect(reason)}}
+                      end
+                    {:error, reason} ->
+                      {:error, %{namespace: namespace, error: inspect(reason)}}
+                  end
+                end)
+
+                successes = Enum.filter(results, fn {status, _} -> status == :ok end)
+                failures = Enum.filter(results, fn {status, _} -> status == :error end)
+
+                {:ok, %{
+                  loaded: length(successes),
+                  failed: length(failures),
+                  namespaces: Enum.map(successes, fn {:ok, info} -> info end),
+                  errors: Enum.map(failures, fn {:error, info} -> info end)
+                }}
+
+              {:error, reason} ->
+                {:error, "Failed to load runtime: #{inspect(reason)}"}
             end
         end
 
@@ -1056,7 +1135,8 @@ defmodule Nova.MCPServer do
                   node: to_string(status.node),
                   alive: status.alive,
                   uptime_seconds: status.uptime_seconds,
-                  loaded_modules: Enum.map(status.loaded_modules, &to_string/1)
+                  loaded_modules: Enum.map(status.loaded_modules, &to_string/1),
+                  loaded_namespaces: status.loaded_namespaces
                 }}
               {:error, reason} ->
                 {:error, "Failed to get status: #{inspect(reason)}"}
