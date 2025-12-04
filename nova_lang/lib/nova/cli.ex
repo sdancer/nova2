@@ -25,22 +25,20 @@ defmodule Nova.CLI do
 
   defp start_mcp_server(opts \\ %{}) do
     port = Map.get(opts, :port, 9999)
+    shared = Map.get(opts, :shared, false)
 
     # Suppress Elixir logger output to keep MCP protocol clean
     Logger.configure(level: :none)
 
-    {:ok, _server} = ExMCP.Server.start_link(
-      handler: Nova.MCPServer,
-      transport: Nova.MCPTcpTransport,
-      port: port
-    )
+    # Start multi-connection server
+    {:ok, _server} = Nova.MCPMultiServer.start_link(port: port, shared: shared)
 
     # Keep the process alive
     Process.sleep(:infinity)
   end
 
   defp parse_args(args) do
-    parse_args(args, %{output_dir: ".", files: [], deps: [], port: 9999})
+    parse_args(args, %{output_dir: ".", files: [], deps: [], port: 9999, shared: false})
   end
 
   defp parse_args([], acc) do
@@ -64,6 +62,12 @@ defmodule Nova.CLI do
   end
   defp parse_mcp_args(["-p", port_str | rest], acc) do
     parse_mcp_args(["--port", port_str | rest], acc)
+  end
+  defp parse_mcp_args(["--shared" | rest], acc) do
+    parse_mcp_args(rest, %{acc | shared: true})
+  end
+  defp parse_mcp_args(["-s" | rest], acc) do
+    parse_mcp_args(rest, %{acc | shared: true})
   end
   defp parse_mcp_args([unknown | _], _acc) do
     {:error, "Unknown mcp option: #{unknown}"}
@@ -171,6 +175,7 @@ defmodule Nova.CLI do
 
     MCP Options:
       -p, --port PORT     TCP port to listen on (default: 9999)
+      -s, --shared        Share namespaces across all connections (default: isolated)
 
     General Options:
       -h, --help          Show this help message
@@ -182,6 +187,7 @@ defmodule Nova.CLI do
       nova -d src/Types.purs -d src/Ast.purs src/Parser.purs
       nova mcp                              # Start MCP server on port 9999
       nova mcp --port 8080                  # Start MCP server on port 8080
+      nova mcp --shared                     # Shared namespace mode
     """)
   end
 end

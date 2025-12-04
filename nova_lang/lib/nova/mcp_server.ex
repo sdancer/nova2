@@ -57,7 +57,8 @@ defmodule Nova.MCPServer do
   @impl true
   def handle_initialize(_params, state) do
     {:ok, %{
-      server_info: %{
+      protocolVersion: "2024-11-05",
+      serverInfo: %{
         name: "nova-compiler",
         version: "0.1.0"
       },

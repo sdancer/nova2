@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "nova": {
+      "type": "stdio",
+      "command": "/home/sdancer/nova2/nova_lang/nova-mcp-proxy.py",
+      "args": [],
+      "env": {}
+    }
+  }
+}
