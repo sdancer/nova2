@@ -68,10 +68,27 @@ After making changes to the PureScript source:
 - Parsing (~95% - supports functions, data types, newtypes, type classes, instances, imports, infixl/r, where clauses)
 - Type inference (Hindley-Milner with basic type class support)
 - Code generation to Elixir (functions, data types, newtypes, case expressions, do-notation)
+- Self-compilation: 10/10 core compiler modules parse and generate code
 
 ### In Progress
-- Self-compilation: Some type errors remain when compiling full compiler source (`Map.toUnfoldable`, `lookupModule`)
-- Type class instance method dispatch in generated code
+- **Self-hosting byte-for-byte**: The Elixir compiler can compile its own PureScript source, but output differs from PureScript-compiled version
+- Remaining differences: whitespace, type comment formatting, some operator associativity
+
+## Self-Hosting Verification (CRITICAL)
+
+**The ultimate test for correctness is byte-for-byte identical output.** When the compiled Elixir compiler processes its own PureScript source, it must produce **exactly the same** Elixir code as the PureScript compiler produces.
+
+Run the self-hosting test:
+```bash
+cd nova_lang && mix run test_self_host_all.exs
+```
+
+**Current status:** Ast.purs passes (whitespace diff only), other modules have differences in:
+1. **Blank lines** - Extra newlines between functions
+2. **Type comment formatting** - Parenthesization in `@type` comments
+3. **Operator associativity** - Fixed for `<>`, `+`, `-`, `*`, `/` (now left-associative)
+
+**Goal:** All modules must show "EXACT MATCH" or at minimum "whitespace diff only". Any semantic difference in generated code indicates a bug in the Elixir compiler.
 
 ## Test Structure
 

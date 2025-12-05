@@ -833,7 +833,7 @@ end
 
 
   def is_nullary_constructor(name) do
-    Nova.Array.elem(name, ["TokKeyword", "TokIdentifier", "TokNumber", "TokString", "TokChar", "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized", "PatWildcard", "ImportAll", "ImportNone", "KindFunction", "KindDataType", "KindTypeAlias", "KindTypeClass", "KindInstance", "KindForeignImport", "AssocLeft", "AssocRight", "AssocNone", "LytRoot", "LytTopDecl", "LytTopDeclHead", "LytDeclGuard", "LytCase", "LytCaseBinders", "LytCaseGuard", "LytLambdaBinders", "LytParen", "LytBrace", "LytSquare", "LytIf", "LytThen", "LytProperty", "LytForall", "LytTick", "LytLet", "LytLetStmt", "LytWhere", "LytOf", "LytDo", "LytAdo"])
+    Nova.Array.elem(name, ["TokKeyword", "TokIdentifier", "TokNumber", "TokString", "TokChar", "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized", "PatWildcard", "ImportAll", "ImportNone", "KindFunction", "KindDataType", "KindTypeAlias", "KindTypeClass", "KindInstance", "KindForeignImport", "AssocLeft", "AssocRight", "AssocNone", "LytRoot", "LytTopDecl", "LytTopDeclHead", "LytDeclGuard", "LytCase", "LytCaseBinders", "LytCaseGuard", "LytLambdaBinders", "LytParen", "LytBrace", "LytSquare", "LytIf", "LytThen", "LytProperty", "LytForall", "LytTick", "LytLet", "LytLetStmt", "LytWhere", "LytOf", "LytDo", "LytAdo", "TokLeftParen", "TokRightParen", "TokLeftBrace", "TokRightBrace", "TokLeftSquare", "TokRightSquare", "TokLeftArrow", "TokRightArrow", "TokRightFatArrow", "TokDoubleColon", "TokEquals", "TokPipe", "TokTick", "TokDot", "TokComma", "TokUnderscore", "TokBackslash", "TokAt", "TokForall", "Infix", "Infixl", "Infixr", "ASCII", "Unicode"])
   end
 
 
@@ -941,6 +941,21 @@ end
             "Nova.Compiler.TypeChecker" -> "Nova.Compiler.TypeChecker"
             "CodeGen" -> "Nova.Compiler.CodeGen"
             "Nova.Compiler.CodeGen" -> "Nova.Compiler.CodeGen"
+            "Cst" -> "Nova.Compiler.Cst"
+            "Nova.Compiler.Cst" -> "Nova.Compiler.Cst"
+            "CstLayout" -> "Nova.Compiler.CstLayout"
+            "Nova.Compiler.CstLayout" -> "Nova.Compiler.CstLayout"
+            "CstLexer" -> "Nova.Compiler.CstLexer"
+            "Nova.Compiler.CstLexer" -> "Nova.Compiler.CstLexer"
+            "Lexer" -> "Nova.Compiler.CstLexer"
+            "CstParser" -> "Nova.Compiler.CstParser"
+            "Nova.Compiler.CstParser" -> "Nova.Compiler.CstParser"
+            "CstToAst" -> "Nova.Compiler.CstToAst"
+            "Nova.Compiler.CstToAst" -> "Nova.Compiler.CstToAst"
+            "CstPipeline" -> "Nova.Compiler.CstPipeline"
+            "Nova.Compiler.CstPipeline" -> "Nova.Compiler.CstPipeline"
+            "Dependencies" -> "Nova.Compiler.Dependencies"
+            "Nova.Compiler.Dependencies" -> "Nova.Compiler.Dependencies"
             _ -> elixir_module_name(mod_)
           end
           Nova.Runtime.append(Nova.Runtime.append(elixir_mod, "."), snake_case(name))
@@ -986,6 +1001,7 @@ end
       case name do
   "Tuple" -> case gen_args do
       [a, b] -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", a), ", "), b), "}")
+      [a] -> Nova.Runtime.append(Nova.Runtime.append("fn auto_b -> {:tuple, ", a), ", auto_b} end")
       _ -> Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", Nova.Runtime.intercalate(", ", gen_args)), "}")
     end
   "Tuple2" -> Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", Nova.Runtime.intercalate(", ", gen_args)), "}")
@@ -1108,7 +1124,15 @@ else
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Types.", snake_case(name)), "/"), Nova.Runtime.show(arity)), ")")
 end
       else
-        translate_qualified(mod_, name)
+        if (mod_ == "Cst") do
+          if is_nullary_constructor(name) do
+            Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Cst.", snake_case(name)), "()")
+          else
+            Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Cst.", snake_case(name)), "/1)")
+          end
+        else
+          translate_qualified(mod_, name)
+        end
       end
     end
   end
@@ -1200,13 +1224,28 @@ end
           end
         end
       end end end end end end
+      gen_qualified_app = fn c -> fn i -> fn m -> fn func_name -> fn the_args -> 
+        num_args = Nova.Array.length(the_args)
+        gen_arg_expr = fn a -> gen_expr_prime(c, i, a) end
+        qualified_name = translate_qualified(m, func_name)
+        is_cst_parser_run_parser = ((((m == "CstParser") or (m == "Nova.Compiler.CstParser"))) and (func_name == "runParser"))
+        gen_args = Nova.Runtime.map(gen_arg_expr, the_args)
+        gen_args_str = Nova.Runtime.intercalate(", ", gen_args)
+        if (is_cst_parser_run_parser and (num_args > 1)) do
+  case Nova.Array.uncons(gen_args) do
+    {:just, %{head: first_arg, tail: rest_args}} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", qualified_name), "("), first_arg), ")).("), Nova.Runtime.intercalate(", ", rest_args)), ")")
+    :nothing -> Nova.Runtime.append(qualified_name, "()")
+  end
+else
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(qualified_name, "("), gen_args_str), ")")
+end end end end end end
       
   %{func: func, args: args} = collect_args((Nova.Compiler.Ast.expr_app(f, arg)))
   gen_arg = fn a -> gen_expr_prime(ctx, indent, a) end
   args_str = Nova.Runtime.intercalate(", ", (Nova.Runtime.map(gen_arg, args)))
   case func do
   {:expr_var, name} -> gen_var_app.(ctx).(indent).(name).(args).(args_str)
-  {:expr_qualified, m, n} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(translate_qualified(m, n), "("), args_str), ")")
+  {:expr_qualified, m, n} -> gen_qualified_app.(ctx).(indent).(m).(n).(args)
   {:expr_lambda, _, _} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
   _ -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
 end
@@ -2404,21 +2443,12 @@ end
               Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.intercalate("\n", (Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> gen_let_bind_ctx(ctx, indent, auto_p0) end), binds))))), "\n"), gen_do_stmts_ctx(ctx_with_binds, indent, rest))
           {:do_bind, pat, e} -> 
               ctx_with_pat = add_locals_from_pattern(pat, ctx)
-              monad_type = detect_monad_type(e)
               ind_str = repeat_str(indent, " ")
               pat_str = case pat do
                 {:pat_con, "Tuple", ([p1 | ([p2 | []])])} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", gen_pattern(p1)), ", "), gen_pattern(p2)), "}")
                 _ -> gen_pattern(pat)
               end
-              if (monad_type == 0) do
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(ind_str, "case "), gen_expr_prime(ctx, 0, e)), " do\n"), ind_str), "  :nothing -> :nothing\n"), ind_str), "  {:just, "), pat_str), "} ->\n"), gen_do_stmts_ctx(ctx_with_pat, ((indent + 4)), rest)), "\n"), ind_str), "end")
-else
-  if (monad_type == 1) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(ind_str, "case "), gen_expr_prime(ctx, 0, e)), " do\n"), ind_str), "  {:left, err} -> {:left, err}\n"), ind_str), "  {:right, "), pat_str), "} ->\n"), gen_do_stmts_ctx(ctx_with_pat, ((indent + 4)), rest)), "\n"), ind_str), "end")
-  else
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(ind_str, "Nova.Runtime.bind("), gen_expr_prime(ctx, 0, e)), ", fn "), pat_str), " ->\n"), gen_do_stmts_ctx(ctx_with_pat, ((indent + 2)), rest)), "\n"), ind_str), "end)")
-  end
-end
+              Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(ind_str, "Nova.Runtime.bind("), gen_expr_prime(ctx, 0, e)), ", fn "), pat_str), " ->\n"), gen_do_stmts_ctx(ctx_with_pat, ((indent + 2)), rest)), "\n"), ind_str), "end)")
         end
     end
   end

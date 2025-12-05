@@ -7,7 +7,7 @@ import Data.Tuple (Tuple(..), fst)
 import Data.Void (Void)
 import Nova.Compiler.Cst as Cst
 import Nova.Compiler.CstLexer as Lexer
-import Nova.Compiler.CstParser as Parser
+import Nova.Compiler.CstParser as CstParser
 import Nova.Compiler.CstToAst as CstToAst
 import Nova.Compiler.Ast as Ast
 
@@ -15,7 +15,7 @@ import Nova.Compiler.Ast as Ast
 parseModuleCst :: String -> Either String Ast.Module
 parseModuleCst source = do
   let tokens = Lexer.lexModule source
-  cstResult <- Parser.runParser Parser.parseModule tokens
+  cstResult <- CstParser.runParser CstParser.parseModule tokens
   let cstMod = fst cstResult
   CstToAst.convertModule cstMod
 
@@ -23,7 +23,7 @@ parseModuleCst source = do
 parseModuleToCst :: String -> Either String (Cst.Module Void)
 parseModuleToCst source = do
   let tokens = Lexer.lexModule source
-  cstResult <- Parser.runParser Parser.parseModule tokens
+  cstResult <- CstParser.runParser CstParser.parseModule tokens
   pure (fst cstResult)
 
 -- | Lex source code to tokens (for debugging)

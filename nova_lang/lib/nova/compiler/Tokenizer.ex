@@ -98,10 +98,8 @@ defmodule Nova.Compiler.Tokenizer do
 
 
   def next_token(state) do
-      case peek(state) do
-    :nothing -> :nothing
-    {:just, c} ->
-      case c do
+      Nova.Runtime.bind(peek(state), fn c ->
+    case c do
   ?\s -> next_token((advance(state, 1)))
   ?\t -> next_token((advance_tab(state)))
   ?\r -> case peek_at(state, 1) do
@@ -139,7 +137,7 @@ defmodule Nova.Compiler.Tokenizer do
     end
   _ -> {:just, ({:tuple, (mk_token(:tok_unrecognized, (Nova.String.singleton(c)), state.line, state.column, state.pos)), (advance(state, 1))})}
 end
-  end
+  end)
   end
 
 
@@ -362,11 +360,9 @@ end
 
 
   def tokenize_delimiter(state) do
-      case peek(state) do
-    :nothing -> :nothing
-    {:just, c} ->
-            tok = mk_token(:tok_delimiter, (Nova.String.singleton(c)), state.line, state.column, state.pos)
-      {:just, ({:tuple, tok, (advance(state, 1))})}
-  end
+      Nova.Runtime.bind(peek(state), fn c ->
+        tok = mk_token(:tok_delimiter, (Nova.String.singleton(c)), state.line, state.column, state.pos)
+    {:just, ({:tuple, tok, (advance(state, 1))})}
+  end)
   end
 end

@@ -22,29 +22,25 @@ defmodule Nova.Compiler.CstPipeline do
 
 
   def parse_module_cst(source) do
-        tokens = Lexer.lex_module(source)
-  case Nova.Compiler.Parser.run_parser(Nova.Compiler.Parser.parse_module, tokens) do
-    {:left, err} -> {:left, err}
-    {:right, cst_result} ->
-            cst_mod = Nova.Runtime.fst(cst_result)
-      CstToAst.convert_module(cst_mod)
-  end
+        tokens = Nova.Compiler.CstLexer.lex_module(source)
+  Nova.Runtime.bind((Nova.Compiler.CstParser.run_parser(Nova.Compiler.CstParser.parse_module)).(tokens), fn cst_result ->
+        cst_mod = Nova.Runtime.fst(cst_result)
+    Nova.Compiler.CstToAst.convert_module(cst_mod)
+  end)
   end
 
 
 
   def parse_module_to_cst(source) do
-        tokens = Lexer.lex_module(source)
-  case Nova.Compiler.Parser.run_parser(Nova.Compiler.Parser.parse_module, tokens) do
-    {:left, err} -> {:left, err}
-    {:right, cst_result} ->
-      Nova.Runtime.pure((Nova.Runtime.fst(cst_result)))
-  end
+        tokens = Nova.Compiler.CstLexer.lex_module(source)
+  Nova.Runtime.bind((Nova.Compiler.CstParser.run_parser(Nova.Compiler.CstParser.parse_module)).(tokens), fn cst_result ->
+    Nova.Runtime.pure((Nova.Runtime.fst(cst_result)))
+  end)
   end
 
 
 
   def lex_source() do
-    Lexer.lex_module
+    Nova.Compiler.CstLexer.lex_module
   end
 end

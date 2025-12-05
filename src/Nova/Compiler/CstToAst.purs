@@ -122,6 +122,17 @@ operatorPrecedence op = case op of
   "<-"  -> 0
   _     -> 5  -- default precedence for unknown operators
 
+-- | Is operator right-associative?
+-- Right-associative operators: :, $, >>>, <<<
+-- Left-associative: #, >>=
+operatorIsRightAssoc :: String -> Boolean
+operatorIsRightAssoc op = case op of
+  ":"   -> true
+  "$"   -> true
+  ">>>" -> true
+  "<<<" -> true
+  _     -> false
+
 -- ============================================================================
 -- CST to AST Conversion
 -- ============================================================================
@@ -769,26 +780,32 @@ shuntingYard firstExpr ops =
     -- No more input, reduce all remaining operators
     reduceAll output opStack
   go output opStack ((Tuple op expr) : rest) = do
-    -- Pop operators with higher or equal precedence
+    -- Pop operators with higher or equal precedence (or just higher for right-assoc)
     let newPrec = operatorPrecedence op
-    result <- popHigherPrec output opStack newPrec
+    let isRightAssoc = operatorIsRightAssoc op
+    result <- popHigherPrec output opStack newPrec isRightAssoc
     let newOutput = result.output
     let newOpStack = result.opStack
     -- Push current operator and expression
     go (expr : newOutput) (op : newOpStack) rest
 
   -- Pop operators with precedence >= given precedence and apply them
-  popHigherPrec :: List Ast.Expr -> List String -> Int -> Either String { output :: List Ast.Expr, opStack :: List String }
-  popHigherPrec output opStack prec = case opStack of
+  -- For right-associative operators, use > instead of >= (don't pop same-precedence ops)
+  popHigherPrec :: List Ast.Expr -> List String -> Int -> Boolean -> Either String { output :: List Ast.Expr, opStack :: List String }
+  popHigherPrec output opStack prec isRightAssoc = case opStack of
     Nil -> pure { output, opStack }
     (topOp : restOps) ->
-      if operatorPrecedence topOp >= prec
+      let topPrec = operatorPrecedence topOp
+          -- For right-associative: only pop if topPrec > prec (strictly greater)
+          -- For left-associative: pop if topPrec >= prec
+          shouldPop = if isRightAssoc then topPrec > prec else topPrec >= prec
+      in if shouldPop
       then do
         -- Pop and apply the operator
         case output of
           (right : left : restOutput) -> do
             let combined = Ast.ExprBinOp topOp left right
-            popHigherPrec (combined : restOutput) restOps prec
+            popHigherPrec (combined : restOutput) restOps prec isRightAssoc
           _ -> Left "Not enough operands for operator"
       else pure { output, opStack }
 
@@ -990,10 +1007,16 @@ foldBinderOps acc ops = case ops of
   (Tuple op b : rest) -> do
     let opName = unwrapOperator op.name
     binderPat <- convertBinder b
-    let combined = if opName == ":"
-                   then Ast.PatCons acc binderPat
-                   else Ast.PatCon opName (acc : binderPat : Nil)
-    foldBinderOps combined rest
+    -- For cons operator (:), we need right-associativity
+    -- (a : b : c) should be PatCons a (PatCons b c), not PatCons (PatCons a b) c
+    if opName == ":"
+    then do
+      -- First recursively process the rest, then combine
+      tailPat <- foldBinderOps binderPat rest
+      pure $ Ast.PatCons acc tailPat
+    else do
+      let combined = Ast.PatCon opName (acc : binderPat : Nil)
+      foldBinderOps combined rest
 
 convertRecordBinder :: Cst.RecordLabeled (Cst.Binder Void) -> Either String (Tuple String Ast.Pattern)
 convertRecordBinder field = case field of

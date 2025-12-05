@@ -146,16 +146,16 @@ end
         {:just, ({:tuple, pos, _})} -> if (next_pos.column <= pos.column) do
             state
           else
-            (insert_token.((lyt_token(next_pos, (Cst.tok_layout_start(next_pos.column)))))).((push_stack.(next_pos).(lyt)).(state))
+            (insert_token.((lyt_token(next_pos, (Nova.Compiler.Cst.tok_layout_start(next_pos.column)))))).((push_stack.(next_pos).(lyt)).(state))
           end
-        _ -> (insert_token.((lyt_token(next_pos, (Cst.tok_layout_start(next_pos.column)))))).((push_stack.(next_pos).(lyt)).(state))
+        _ -> (insert_token.((lyt_token(next_pos, (Nova.Compiler.Cst.tok_layout_start(next_pos.column)))))).((push_stack.(next_pos).(lyt)).(state))
       end end end
-      insert_end = fn indent -> insert_token.((lyt_token(tok_pos, (Cst.tok_layout_end(indent))))) end
+      insert_end = fn indent -> insert_token.((lyt_token(tok_pos, (Nova.Compiler.Cst.tok_layout_end(indent))))) end
       collapse = fn p -> 
         go = Nova.Runtime.fix(fn go -> fn state -> case state do
           {:tuple, ([{:tuple, lyt_pos, lyt} | stk_prime]), acc} -> if p.(lyt_pos).(lyt) do
-              go.((({:tuple, stk_prime}).(if is_indented(lyt) do
-  Nova.Runtime.append(acc, ([({:tuple, (lyt_token(tok_pos, (Cst.tok_layout_end(lyt_pos.column)))), stk_prime}) | []]))
+              go.(((fn auto_b -> {:tuple, stk_prime, auto_b} end).(if is_indented(lyt) do
+  Nova.Runtime.append(acc, ([({:tuple, (lyt_token(tok_pos, (Nova.Compiler.Cst.tok_layout_end(lyt_pos.column)))), stk_prime}) | []]))
 else
   acc
 end)))
@@ -192,7 +192,7 @@ end)))
         {lyt_pos, lyt} -> offside_end_p.(lyt_pos).(lyt)
       end end end
       insert_sep = fn ({:tuple, stk, acc}) = state -> 
-        sep_tok = lyt_token(tok_pos, (Cst.tok_layout_sep(tok_pos.column)))
+        sep_tok = lyt_token(tok_pos, (Nova.Compiler.Cst.tok_layout_sep(tok_pos.column)))
         case stk do
   [{:tuple, lyt_pos, :lyt_top_decl} | stk_prime] -> if sep_p.(lyt_pos) do
       (insert_token.(sep_tok)).({:tuple, stk_prime, acc})
@@ -240,7 +240,7 @@ end end
             _ -> (insert_start.(:lyt_where)).((insert_token.(src)).((collapse.(where_p)).(state)))
           end
         {:tok_lower_name, :nothing, "in"} -> case collapse.(in_p).(state) do
-            {:tuple, ([[({:tuple, pos1, :lyt_let_stmt}) | ({:tuple, pos2, :lyt_ado})] | stk_prime]), acc_prime} -> (insert_token.(src)).((insert_end.(pos2.column)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime})))
+            {:tuple, ([({:tuple, pos1, :lyt_let_stmt}) | [({:tuple, pos2, :lyt_ado}) | stk_prime]]), acc_prime} -> (insert_token.(src)).((insert_end.(pos2.column)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime})))
             {:tuple, ([{:tuple, pos1, lyt} | stk_prime]), acc_prime} -> if is_indented(lyt) do
                 (insert_token.(src)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime}))
               else

@@ -400,45 +400,33 @@ end
 
 
   def parse_forall_type(tokens) do
-      case expect_keyword(tokens, "forall") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_many((&parse_identifier_name/1), rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, vars, rest_prime}} ->
-          case expect_operator(rest_prime, ".") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime_prime}} ->
-              case parse_type(rest_prime_prime) do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, ty, rest_prime_prime_prime}} ->
-                  success((Nova.Compiler.Ast.ty_expr_for_all((Nova.List.from_foldable(vars)), ty)), rest_prime_prime_prime)
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "forall"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_many((&parse_identifier_name/1), rest), fn {:tuple, vars, rest_prime} ->
+      Nova.Runtime.bind(expect_operator(rest_prime, "."), fn {:tuple, _, rest_prime_prime} ->
+        Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
+          success((Nova.Compiler.Ast.ty_expr_for_all((Nova.List.from_foldable(vars)), ty)), rest_prime_prime_prime)
+        end)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_function_type(tokens) do
-      case parse_type_term(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-            ts = skip_newlines(rest)
-      case Nova.Array.head(ts) do
+      Nova.Runtime.bind(parse_type_term(tokens), fn {:tuple, left, rest} ->
+        ts = skip_newlines(rest)
+    case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "->")) do
-         case parse_function_type((Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.ty_expr_arrow(left, right)), rest_prime)
-   end
+         Nova.Runtime.bind(parse_function_type((Nova.Array.drop(1, ts))), fn {:tuple, right, rest_prime} ->
+     success((Nova.Compiler.Ast.ty_expr_arrow(left, right)), rest_prime)
+   end)
     else
       success(left, rest)
     end
   :nothing -> success(left, rest)
 end
-  end
+  end)
   end
 
 
@@ -454,15 +442,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-         case parse_separated((&parse_record_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, fields, rest}} ->
-       case expect_delimiter(rest, "}") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.ty_expr_record((Nova.List.from_foldable(fields)), :nothing)), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_separated((&parse_record_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, fields, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.ty_expr_record((Nova.List.from_foldable(fields)), :nothing)), rest_prime)
+     end)
+   end)
     else
       failure("Expected record type")
     end
@@ -473,20 +457,14 @@ end
 
 
   def parse_record_field(tokens) do
-      case parse_label(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, label, rest}} ->
-      case expect_operator(rest, "::") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-                    rest_prime_prime = skip_newlines(rest_prime)
-          case parse_type(rest_prime_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, ty, rest_prime_prime_prime}} ->
-              success(({:tuple, label, ty}), rest_prime_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_label(tokens), fn {:tuple, label, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "::"), fn {:tuple, _, rest_prime} ->
+            rest_prime_prime = skip_newlines(rest_prime)
+      Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
+        success(({:tuple, label, ty}), rest_prime_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
@@ -496,15 +474,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
-         case parse_type((Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, elem_type, rest}} ->
-       case expect_delimiter(rest, "]") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.ty_expr_app((Nova.Compiler.Ast.ty_expr_con("Array")), elem_type)), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_type((Nova.Array.drop(1, ts))), fn {:tuple, elem_type, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, "]"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.ty_expr_app((Nova.Compiler.Ast.ty_expr_con("Array")), elem_type)), rest_prime)
+     end)
+   end)
     else
       failure("Expected list type")
     end
@@ -519,21 +493,17 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-         case parse_separated((&parse_type/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, elements, rest}} ->
-       case expect_delimiter(rest, ")") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           case Nova.Array.length(elements) do
+         Nova.Runtime.bind(parse_separated((&parse_type/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+       case Nova.Array.length(elements) do
   1 -> case Nova.Array.head(elements) do
       {:just, e} -> success(e, rest_prime)
       :nothing -> failure("Expected type")
     end
   _ -> success((Nova.Compiler.Ast.ty_expr_tuple((Nova.List.from_foldable(elements)))), rest_prime)
 end
-       end
-   end
+     end)
+   end)
     else
       failure("Expected tuple type")
     end
@@ -550,34 +520,26 @@ end
   ts = skip_newlines(tokens)
   case Nova.Array.head(ts) do
   {:just, t} -> if (t.token_type == :tok_identifier) do
-         case parse_qualified_type_name(ts) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, name, rest}} ->
-       case parse_many((&parse_type_atom/1), rest) do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, args, rest_prime}} ->
-                      base = if is_lower_case(name) do
-                        Nova.Compiler.Ast.ty_expr_var(name)
-                      else
-                        Nova.Compiler.Ast.ty_expr_con(name)
-                      end
-           case Nova.Array.length(args) do
+         Nova.Runtime.bind(parse_qualified_type_name(ts), fn {:tuple, name, rest} ->
+     Nova.Runtime.bind(parse_many((&parse_type_atom/1), rest), fn {:tuple, args, rest_prime} ->
+              base = if is_lower_case(name) do
+                Nova.Compiler.Ast.ty_expr_var(name)
+              else
+                Nova.Compiler.Ast.ty_expr_con(name)
+              end
+       case Nova.Array.length(args) do
   0 -> success(base, rest_prime)
   _ -> success((fold_type_app.(base).(args)), rest_prime)
 end
-       end
-   end
+     end)
+   end)
     else
       if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-            case parse_type((Nova.Array.drop(1, ts))) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, ty, rest}} ->
-        case expect_delimiter(rest, ")") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, rest_prime}} ->
-            success(ty, rest_prime)
-        end
-    end
+            Nova.Runtime.bind(parse_type((Nova.Array.drop(1, ts))), fn {:tuple, ty, rest} ->
+      Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+        success(ty, rest_prime)
+      end)
+    end)
       else
         failure("Expected basic type")
       end
@@ -619,37 +581,27 @@ end
             parse_record_type(tokens)
           else
             if (t.token_type == :tok_identifier) do
-                     case parse_qualified_type_name(tokens) do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, name, rest}} ->
-           success((if is_lower_case(name) do
+                     Nova.Runtime.bind(parse_qualified_type_name(tokens), fn {:tuple, name, rest} ->
+         success((if is_lower_case(name) do
   Nova.Compiler.Ast.ty_expr_var(name)
 else
   Nova.Compiler.Ast.ty_expr_con(name)
 end), rest)
-       end
+       end)
             else
               if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-                        case parse_type((Nova.Array.drop(1, tokens))) do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, ty, rest}} ->
-            case expect_delimiter(rest, ")") do
-              {:left, err} -> {:left, err}
-              {:right, {:tuple, _, rest_prime}} ->
-                success(ty, rest_prime)
-            end
-        end
+                        Nova.Runtime.bind(parse_type((Nova.Array.drop(1, tokens))), fn {:tuple, ty, rest} ->
+          Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+            success(ty, rest_prime)
+          end)
+        end)
               else
                 if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
-                           case parse_type((Nova.Array.drop(1, tokens))) do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, elem_type, rest}} ->
-             case expect_delimiter(rest, "]") do
-               {:left, err} -> {:left, err}
-               {:right, {:tuple, _, rest_prime}} ->
-                 success((Nova.Compiler.Ast.ty_expr_app((Nova.Compiler.Ast.ty_expr_con("Array")), elem_type)), rest_prime)
-             end
-         end
+                           Nova.Runtime.bind(parse_type((Nova.Array.drop(1, tokens))), fn {:tuple, elem_type, rest} ->
+           Nova.Runtime.bind(expect_delimiter(rest, "]"), fn {:tuple, _, rest_prime} ->
+             success((Nova.Compiler.Ast.ty_expr_app((Nova.Compiler.Ast.ty_expr_con("Array")), elem_type)), rest_prime)
+           end)
+         end)
                 else
                   failure("Expected type atom")
                 end
@@ -691,11 +643,9 @@ end
   {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value != "_")) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
         {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "@")) do
-                  case parse_simple_pattern((Nova.Array.drop(2, ts))) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, pat, rest}} ->
-          success((Nova.Compiler.Ast.pat_as(t.value, pat)), rest)
-      end
+                  Nova.Runtime.bind(parse_simple_pattern((Nova.Array.drop(2, ts))), fn {:tuple, pat, rest} ->
+        success((Nova.Compiler.Ast.pat_as(t.value, pat)), rest)
+      end)
           else
             failure("Expected @ for as-pattern")
           end
@@ -726,11 +676,9 @@ end
 
 
   def parse_literal_pattern(tokens) do
-      case parse_literal(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, lit, rest}} ->
-      success((Nova.Compiler.Ast.pat_lit(lit)), rest)
-  end
+      Nova.Runtime.bind(parse_literal(tokens), fn {:tuple, lit, rest} ->
+    success((Nova.Compiler.Ast.pat_lit(lit)), rest)
+  end)
   end
 
 
@@ -741,22 +689,18 @@ end
         {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
-      case parse_qualified_constructor_name(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, name, rest}} ->
-    if is_capital.(name) do
-   case parse_many((&parse_simple_pattern/1), rest) do
-   {:left, err} -> {:left, err}
-   {:right, {:tuple, args, rest_prime}} ->
-     case Nova.Array.length(args) do
+      Nova.Runtime.bind(parse_qualified_constructor_name(tokens), fn {:tuple, name, rest} ->
+  if is_capital.(name) do
+   Nova.Runtime.bind(parse_many((&parse_simple_pattern/1), rest), fn {:tuple, args, rest_prime} ->
+   case Nova.Array.length(args) do
   0 -> success((Nova.Compiler.Ast.pat_con(name, [])), rest_prime)
   _ -> success((Nova.Compiler.Ast.pat_con(name, (Nova.List.from_foldable(args)))), rest_prime)
 end
- end
+ end)
 else
   failure("Expected constructor pattern")
 end
-end
+end)
   end
 
 
@@ -771,19 +715,13 @@ end
 
 
   def parse_cons_pattern(tokens) do
-      case parse_simple_pattern(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, hd, rest}} ->
-      case expect_colon(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_pattern(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, tl, rest_prime_prime}} ->
-              success((Nova.Compiler.Ast.pat_cons(hd, tl)), rest_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_simple_pattern(tokens), fn {:tuple, hd, rest} ->
+    Nova.Runtime.bind(expect_colon(rest), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_pattern(rest_prime), fn {:tuple, tl, rest_prime_prime} ->
+        success((Nova.Compiler.Ast.pat_cons(hd, tl)), rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
@@ -793,15 +731,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-         case parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, elements, rest}} ->
-       case expect_delimiter(rest, ")") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable((Nova.Array.map_with_index((fn i -> fn p -> {:tuple, (Nova.Runtime.show(i)), p} end end), elements)))))), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable((Nova.Array.map_with_index((fn i -> fn p -> {:tuple, (Nova.Runtime.show(i)), p} end end), elements)))))), rest_prime)
+     end)
+   end)
     else
       failure("Expected tuple pattern")
     end
@@ -820,15 +754,11 @@ end
         {:just, t_prime} -> if ((t_prime.token_type == :tok_delimiter) and (t_prime.value == "]")) do
             success((Nova.Compiler.Ast.pat_list([])), (Nova.Array.drop(2, ts)))
           else
-                  case parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, elements, rest}} ->
-          case expect_delimiter(rest, "]") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime}} ->
-              success((Nova.Compiler.Ast.pat_list((Nova.List.from_foldable(elements)))), rest_prime)
-          end
-      end
+                  Nova.Runtime.bind(parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
+        Nova.Runtime.bind(expect_delimiter(rest, "]"), fn {:tuple, _, rest_prime} ->
+          success((Nova.Compiler.Ast.pat_list((Nova.List.from_foldable(elements)))), rest_prime)
+        end)
+      end)
           end
         :nothing -> failure("Expected list pattern")
       end
@@ -846,15 +776,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-         case parse_separated((&parse_record_field_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, fields, rest}} ->
-       case expect_delimiter(rest, "}") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable(fields)))), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_separated((&parse_record_field_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, fields, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable(fields)))), rest_prime)
+     end)
+   end)
     else
       failure("Expected record pattern")
     end
@@ -865,25 +791,19 @@ end
 
 
   def parse_record_field_pattern(tokens) do
-      case parse_label(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, label, rest}} ->
-      case expect_colon(rest) do
-  {:right, ({:tuple, _, rest_prime})} ->   case parse_pattern(rest_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, pat, rest_prime_prime}} ->
-      success(({:tuple, label, pat}), rest_prime_prime)
-  end
+      Nova.Runtime.bind(parse_label(tokens), fn {:tuple, label, rest} ->
+    case expect_colon(rest) do
+  {:right, ({:tuple, _, rest_prime})} ->   Nova.Runtime.bind(parse_pattern(rest_prime), fn {:tuple, pat, rest_prime_prime} ->
+    success(({:tuple, label, pat}), rest_prime_prime)
+  end)
   {:left, _} -> case expect_operator(rest, "=") do
-      {:right, ({:tuple, _, rest_prime})} ->     case parse_pattern(rest_prime) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, pat, rest_prime_prime}} ->
-        success(({:tuple, label, pat}), rest_prime_prime)
-    end
+      {:right, ({:tuple, _, rest_prime})} ->     Nova.Runtime.bind(parse_pattern(rest_prime), fn {:tuple, pat, rest_prime_prime} ->
+      success(({:tuple, label, pat}), rest_prime_prime)
+    end)
       {:left, _} -> success(({:tuple, label, (Nova.Compiler.Ast.pat_var(label))}), rest)
     end
 end
-  end
+  end)
   end
 
 
@@ -893,15 +813,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-         case parse_pattern((Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, pat, rest}} ->
-       case expect_delimiter(rest, ")") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.pat_parens(pat)), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_pattern((Nova.Array.drop(1, ts))), fn {:tuple, pat, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.pat_parens(pat)), rest_prime)
+     end)
+   end)
     else
       failure("Expected parenthesized pattern")
     end
@@ -929,11 +845,9 @@ end
   {:just, t} -> if ((t.token_type == :tok_identifier) and is_capital.(t.value)) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
         {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == ".")) do
-                  case parse_qualified_constructor_name(ts) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest}} ->
-          success((Nova.Compiler.Ast.pat_con(name, [])), rest)
-      end
+                  Nova.Runtime.bind(parse_qualified_constructor_name(ts), fn {:tuple, name, rest} ->
+        success((Nova.Compiler.Ast.pat_con(name, [])), rest)
+      end)
           else
             success((Nova.Compiler.Ast.pat_con(t.value, [])), (Nova.Array.drop(1, ts)))
           end
@@ -955,33 +869,27 @@ end
 
 
   def parse_typed_expression(tokens) do
-      case parse_dollar_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, expr, rest}} ->
-      case Nova.Array.head(rest) do
+      Nova.Runtime.bind(parse_dollar_expression(tokens), fn {:tuple, expr, rest} ->
+    case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "::")) do
             rest_prime = Nova.Array.drop(1, rest)
-   case parse_type_atom_sequence(rest_prime) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, ty, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_typed(expr, ty)), rest_prime_prime)
-   end
+   Nova.Runtime.bind(parse_type_atom_sequence(rest_prime), fn {:tuple, ty, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_typed(expr, ty)), rest_prime_prime)
+   end)
     else
       success(expr, rest)
     end
   _ -> success(expr, rest)
 end
-  end
+  end)
   end
 
 
 
   def parse_type_atom_sequence(tokens) do
-      case parse_type_atom(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, first, rest}} ->
-      parse_type_atom_sequence_rest(first, rest)
-  end
+      Nova.Runtime.bind(parse_type_atom(tokens), fn {:tuple, first, rest} ->
+    parse_type_atom_sequence_rest(first, rest)
+  end)
   end
 
 
@@ -992,11 +900,9 @@ end
         cond do
           (t.token_type == :tok_newline) -> success(acc, tokens)
           ((t.token_type == :tok_operator) and (t.value == "->")) ->             rest = Nova.Array.drop(1, tokens)
-      case parse_type_atom_sequence(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, right, rest_prime}} ->
-          success((Nova.Compiler.Ast.ty_expr_arrow(acc, right)), rest_prime)
-      end
+      Nova.Runtime.bind(parse_type_atom_sequence(rest), fn {:tuple, right, rest_prime} ->
+        success((Nova.Compiler.Ast.ty_expr_arrow(acc, right)), rest_prime)
+      end)
           true -> case parse_type_atom(tokens) do
           {:right, ({:tuple, next, rest})} -> parse_type_atom_sequence_rest((Nova.Compiler.Ast.ty_expr_app(acc, next)), rest)
           {:left, _} -> success(acc, tokens)
@@ -1012,34 +918,28 @@ end
 
 
   def parse_dollar_expression(tokens) do
-      case parse_hash_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_hash_expression(tokens), fn {:tuple, left, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "$")) do
             rest_prime_prime = skip_newlines((Nova.Array.drop(1, rest_prime)))
-   case parse_dollar_expression(rest_prime_prime) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_app(left, right)), rest_prime_prime_prime)
-   end
+   Nova.Runtime.bind(parse_dollar_expression(rest_prime_prime), fn {:tuple, right, rest_prime_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_app(left, right)), rest_prime_prime_prime)
+   end)
     else
       success(left, rest)
     end
   _ -> success(left, rest)
 end
-  end
+  end)
   end
 
 
 
   def parse_hash_expression(tokens) do
-      case parse_composition_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-      parse_hash_expression_rest(left, rest)
-  end
+      Nova.Runtime.bind(parse_composition_expression(tokens), fn {:tuple, left, rest} ->
+    parse_hash_expression_rest(left, rest)
+  end)
   end
 
 
@@ -1050,11 +950,9 @@ end
       case Nova.Array.head(tokens_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "#")) do
             rest = skip_newlines((Nova.Array.drop(1, tokens_prime)))
-   case parse_composition_expression(rest) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       parse_hash_expression_rest((Nova.Compiler.Ast.expr_app(right, left)), rest_prime)
-   end
+   Nova.Runtime.bind(parse_composition_expression(rest), fn {:tuple, right, rest_prime} ->
+     parse_hash_expression_rest((Nova.Compiler.Ast.expr_app(right, left)), rest_prime)
+   end)
     else
       success(left, tokens)
     end
@@ -1067,64 +965,54 @@ end
   def parse_composition_expression(tokens) do
     
       is_composition_op = fn op -> ((((op == "<<<") or (op == ">>>")) or (op == ">>")) or (op == ">>=")) end
-      case parse_logical_expression(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-    case Nova.Array.head(rest) do
+      Nova.Runtime.bind(parse_logical_expression(tokens), fn {:tuple, left, rest} ->
+  case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_operator) and is_composition_op.(t.value)) do
-         case parse_composition_expression((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
-   end
+         Nova.Runtime.bind(parse_composition_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
+   end)
     else
       success(left, rest)
     end
   _ -> success(left, rest)
 end
-end
+end)
   end
 
 
 
   def parse_logical_expression(tokens) do
-      case parse_cons_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-      case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and (((t.value == "&&") or (t.value == "||")))) do
-         case parse_logical_expression((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
-   end
-    else
-      success(left, rest)
-    end
-  _ -> success(left, rest)
-end
-  end
+    
+      parse_logical_rest = Nova.Runtime.fix2(fn parse_logical_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (((t.value == "&&") or (t.value == "||")))) do
+                  Nova.Runtime.bind(parse_cons_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
+        parse_logical_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
+      end)
+          else
+            success(left, rest)
+          end
+        _ -> success(left, rest)
+      end  end end end)
+      Nova.Runtime.bind(parse_cons_expression(tokens), fn {:tuple, left, rest} ->
+  parse_logical_rest.(left).(rest)
+end)
   end
 
 
 
   def parse_cons_expression(tokens) do
-      case parse_comparison_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-      case Nova.Array.head(rest) do
+      Nova.Runtime.bind(parse_comparison_expression(tokens), fn {:tuple, left, rest} ->
+    case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ":")) do
-         case parse_cons_expression((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(":", left, right)), rest_prime)
-   end
+         Nova.Runtime.bind(parse_cons_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op(":", left, right)), rest_prime)
+   end)
     else
       success(left, rest)
     end
   _ -> success(left, rest)
 end
-  end
+  end)
   end
 
 
@@ -1133,24 +1021,20 @@ end
     
       is_comparison_op = fn op -> (((((((op == "==") or (op == "!=")) or (op == "/=")) or (op == "<")) or (op == "<=")) or (op == ">")) or (op == ">=")) end
       tokens_prime = skip_newlines(tokens)
-case parse_additive_expression(tokens_prime) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-        rest_prime = skip_newlines(rest)
-    case Nova.Array.head(rest_prime) do
+Nova.Runtime.bind(parse_additive_expression(tokens_prime), fn {:tuple, left, rest} ->
+    rest_prime = skip_newlines(rest)
+  case Nova.Array.head(rest_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and is_comparison_op.(t.value)) do
             rest_prime_prime = skip_newlines((Nova.Array.drop(1, rest_prime)))
-   case parse_comparison_expression(rest_prime_prime) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime_prime_prime)
-   end
+   Nova.Runtime.bind(parse_comparison_expression(rest_prime_prime), fn {:tuple, right, rest_prime_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime_prime_prime)
+   end)
     else
       success(left, rest)
     end
   _ -> success(left, rest)
 end
-end
+end)
   end
 
 
@@ -1158,22 +1042,19 @@ end
   def parse_additive_expression(tokens) do
     
       is_additive_op = fn op -> ((((op == "+") or (op == "-")) or (op == "++")) or (op == "<>")) end
-      case parse_multiplicative_expression(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-    case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and is_additive_op.(t.value)) do
-         case parse_additive_expression((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
-   end
-    else
-      success(left, rest)
-    end
-  _ -> success(left, rest)
-end
-end
+      parse_additive_rest = Nova.Runtime.fix2(fn parse_additive_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and is_additive_op.(t.value)) do
+                  Nova.Runtime.bind(parse_multiplicative_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
+        parse_additive_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
+      end)
+          else
+            success(left, rest)
+          end
+        _ -> success(left, rest)
+      end  end end end)
+      Nova.Runtime.bind(parse_multiplicative_expression(tokens), fn {:tuple, left, rest} ->
+  parse_additive_rest.(left).(rest)
+end)
   end
 
 
@@ -1181,22 +1062,19 @@ end
   def parse_multiplicative_expression(tokens) do
     
       is_mult_op = fn op -> ((op == "*") or (op == "/")) end
-      case parse_backtick_expression(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-    case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and is_mult_op.(t.value)) do
-         case parse_multiplicative_expression((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
-   end
-    else
-      success(left, rest)
-    end
-  _ -> success(left, rest)
-end
-end
+      parse_mult_rest = Nova.Runtime.fix2(fn parse_mult_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and is_mult_op.(t.value)) do
+                  Nova.Runtime.bind(parse_backtick_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
+        parse_mult_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
+      end)
+          else
+            success(left, rest)
+          end
+        _ -> success(left, rest)
+      end  end end end)
+      Nova.Runtime.bind(parse_backtick_expression(tokens), fn {:tuple, left, rest} ->
+  parse_mult_rest.(left).(rest)
+end)
   end
 
 
@@ -1228,33 +1106,27 @@ end
       end end
       parse_backtick_rest = Nova.Runtime.fix2(fn parse_backtick_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
         {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "`")) do
-                  case parse_backtick_fn.((Nova.Array.drop(1, rest))) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, fn_, rest_prime}} ->
-          case Nova.Array.head(rest_prime) do
+                  Nova.Runtime.bind(parse_backtick_fn.((Nova.Array.drop(1, rest))), fn {:tuple, fn_, rest_prime} ->
+        case Nova.Array.head(rest_prime) do
   {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "`")) do
-         case parse_unary_expression((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime}} ->
-              result = Nova.Compiler.Ast.expr_app((Nova.Compiler.Ast.expr_app(fn_, left)), right)
-       parse_backtick_rest.(result).(rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_unary_expression((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
+          result = Nova.Compiler.Ast.expr_app((Nova.Compiler.Ast.expr_app(fn_, left)), right)
+     parse_backtick_rest.(result).(rest_prime_prime)
+   end)
     else
       failure("Expected closing backtick")
     end
   _ -> failure("Expected closing backtick")
 end
-      end
+      end)
           else
             success(left, rest)
           end
         _ -> success(left, rest)
       end  end end end)
-      case parse_unary_expression(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-    parse_backtick_rest.(left).(rest)
-end
+      Nova.Runtime.bind(parse_unary_expression(tokens), fn {:tuple, left, rest} ->
+  parse_backtick_rest.(left).(rest)
+end)
   end
 
 
@@ -1264,11 +1136,9 @@ end
       is_unary_op = fn op -> (((op == "-") or (op == "+")) or (op == "!")) end
       case Nova.Array.head(tokens) do
   {:just, t} -> if ((t.token_type == :tok_operator) and is_unary_op.(t.value)) do
-         case parse_unary_expression((Nova.Array.drop(1, tokens))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, expr, rest}} ->
-       success((Nova.Compiler.Ast.expr_unary_op(t.value, expr)), rest)
-   end
+         Nova.Runtime.bind(parse_unary_expression((Nova.Array.drop(1, tokens))), fn {:tuple, expr, rest} ->
+     success((Nova.Compiler.Ast.expr_unary_op(t.value, expr)), rest)
+   end)
     else
       parse_application(tokens)
     end
@@ -1297,23 +1167,17 @@ end
         _ -> success(expr, toks)
       end  end end end)
       case Nova.Array.head(tokens) do
-  {:just, first_tok} ->   case parse_term(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, fn_, rest}} ->
-      case maybe_parse_record_access.(fn_).(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, fn_prime, rest_prime}} ->
-          case maybe_parse_record_update(fn_prime, rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, fn_prime_prime, rest_prime_prime}} ->
-                            {:tuple, args, rest_prime_prime_prime} = collect_application_args(rest_prime_prime, [], first_tok.column)
-              case Nova.Array.length(args) do
+  {:just, first_tok} ->   Nova.Runtime.bind(parse_term(tokens), fn {:tuple, fn_, rest} ->
+    Nova.Runtime.bind(maybe_parse_record_access.(fn_).(rest), fn {:tuple, fn_prime, rest_prime} ->
+      Nova.Runtime.bind(maybe_parse_record_update(fn_prime, rest_prime), fn {:tuple, fn_prime_prime, rest_prime_prime} ->
+                {:tuple, args, rest_prime_prime_prime} = collect_application_args(rest_prime_prime, [], first_tok.column)
+        case Nova.Array.length(args) do
   0 -> success(fn_prime_prime, rest_prime_prime_prime)
   _ -> success((fold_app.(fn_prime_prime).(args)), rest_prime_prime_prime)
 end
-          end
-      end
-  end
+      end)
+    end)
+  end)
   :nothing -> failure("No tokens remaining")
 end
   end
@@ -1342,15 +1206,11 @@ end
   case Nova.Array.head(tokens_prime) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
       case is_record_update.((Nova.Array.drop(1, tokens_prime))) do
-        true ->      case parse_record_update_fields((Nova.Array.drop(1, tokens_prime))) do
-       {:left, err} -> {:left, err}
-       {:right, {:tuple, updates, rest}} ->
-         case expect_delimiter(rest, "}") do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, _, rest_prime}} ->
-             maybe_parse_record_update((Nova.Compiler.Ast.expr_record_update(expr, (Nova.List.from_foldable(updates)))), rest_prime)
-         end
-     end
+        true ->      Nova.Runtime.bind(parse_record_update_fields((Nova.Array.drop(1, tokens_prime))), fn {:tuple, updates, rest} ->
+       Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
+         maybe_parse_record_update((Nova.Compiler.Ast.expr_record_update(expr, (Nova.List.from_foldable(updates)))), rest_prime)
+       end)
+     end)
         false -> success(expr, tokens)
       end
     else
@@ -1369,19 +1229,13 @@ end
 
 
   def parse_record_update_field(tokens) do
-      case parse_identifier_name(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, label, rest}} ->
-      case expect_operator(rest, "=") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_expression(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, expr, rest_prime_prime}} ->
-              success(({:tuple, label, expr}), rest_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_identifier_name(tokens), fn {:tuple, label, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "="), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_expression(rest_prime), fn {:tuple, expr, rest_prime_prime} ->
+        success(({:tuple, label, expr}), rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
@@ -1481,11 +1335,9 @@ end
 
 
   def parse_expr_literal(tokens) do
-      case parse_literal(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, lit, rest}} ->
-      success((Nova.Compiler.Ast.expr_lit(lit)), rest)
-  end
+      Nova.Runtime.bind(parse_literal(tokens), fn {:tuple, lit, rest} ->
+    success((Nova.Compiler.Ast.expr_lit(lit)), rest)
+  end)
   end
 
 
@@ -1506,25 +1358,17 @@ end
   {:just, close_tok} ->
     cond do
       ((close_tok.token_type == :tok_delimiter) and (close_tok.value == ")")) -> success((Nova.Compiler.Ast.expr_section(op_tok.value)), (Nova.Array.drop(1, after_op)))
-      true ->   case parse_expression((Nova.Array.drop(1, inner))) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, expr, rest}} ->
-      case expect_delimiter(rest, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          success((Nova.Compiler.Ast.expr_section_right(op_tok.value, expr)), rest_prime)
-      end
-  end
+      true ->   Nova.Runtime.bind(parse_expression((Nova.Array.drop(1, inner))), fn {:tuple, expr, rest} ->
+    Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+      success((Nova.Compiler.Ast.expr_section_right(op_tok.value, expr)), rest_prime)
+    end)
+  end)
     end
-  _ ->   case parse_expression((Nova.Array.drop(1, inner))) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, expr, rest}} ->
-      case expect_delimiter(rest, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          success((Nova.Compiler.Ast.expr_section_right(op_tok.value, expr)), rest_prime)
-      end
-  end
+  _ ->   Nova.Runtime.bind(parse_expression((Nova.Array.drop(1, inner))), fn {:tuple, expr, rest} ->
+    Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+      success((Nova.Compiler.Ast.expr_section_right(op_tok.value, expr)), rest_prime)
+    end)
+  end)
 end
       true -> case parse_application(inner) do
       {:right, ({:tuple, expr, rest})} -> 
@@ -1538,55 +1382,35 @@ end
   {:just, close_t} ->
     cond do
       ((close_t.token_type == :tok_delimiter) and (close_t.value == ")")) -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
-      true ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+      true ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
     end
-  _ ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+  _ ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
 end
-      true ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+      true ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
     end
-  _ ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+  _ ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
 end
-      {:left, _} ->     case parse_expression(inner) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, e, r}} ->
-        case expect_delimiter(r, ")") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, r_prime}} ->
-            success(e, r_prime)
-        end
-    end
+      {:left, _} ->     Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+      Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+        success(e, r_prime)
+      end)
+    end)
     end
     end
   _ -> case parse_application(inner) do
@@ -1601,55 +1425,35 @@ end
   {:just, close_t} ->
     cond do
       ((close_t.token_type == :tok_delimiter) and (close_t.value == ")")) -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
-      true ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+      true ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
     end
-  _ ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+  _ ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
 end
-      true ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+      true ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
     end
-  _ ->   case parse_expression(inner) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, e, r}} ->
-      case expect_delimiter(r, ")") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, r_prime}} ->
-          success(e, r_prime)
-      end
-  end
+  _ ->   Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+    Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+      success(e, r_prime)
+    end)
+  end)
 end
-      {:left, _} ->     case parse_expression(inner) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, e, r}} ->
-        case expect_delimiter(r, ")") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, r_prime}} ->
-            success(e, r_prime)
-        end
-    end
+      {:left, _} ->     Nova.Runtime.bind(parse_expression(inner), fn {:tuple, e, r} ->
+      Nova.Runtime.bind(expect_delimiter(r, ")"), fn {:tuple, _, r_prime} ->
+        success(e, r_prime)
+      end)
+    end)
     end
 end
     else
@@ -1672,15 +1476,11 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-         case parse_separated((&parse_record_field_expr/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, fields, rest}} ->
-       case expect_delimiter(rest, "}") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           success((Nova.Compiler.Ast.expr_record((Nova.List.from_foldable(fields)))), rest_prime)
-       end
-   end
+         Nova.Runtime.bind(parse_separated((&parse_record_field_expr/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, fields, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
+       success((Nova.Compiler.Ast.expr_record((Nova.List.from_foldable(fields)))), rest_prime)
+     end)
+   end)
     else
       failure("Expected record literal")
     end
@@ -1691,19 +1491,15 @@ end
 
 
   def parse_record_field_expr(tokens) do
-      case parse_identifier_name(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, label, rest}} ->
-      case expect_colon(rest) do
+      Nova.Runtime.bind(parse_identifier_name(tokens), fn {:tuple, label, rest} ->
+    case expect_colon(rest) do
   {:right, ({:tuple, _, rest_prime})} ->     rest_prime_prime = skip_newlines(rest_prime)
-  case parse_expression(rest_prime_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, expr, rest_prime_prime_prime}} ->
-      success(({:tuple, label, expr}), rest_prime_prime_prime)
-  end
+  Nova.Runtime.bind(parse_expression(rest_prime_prime), fn {:tuple, expr, rest_prime_prime_prime} ->
+    success(({:tuple, label, expr}), rest_prime_prime_prime)
+  end)
   {:left, _} -> success(({:tuple, label, (Nova.Compiler.Ast.expr_var(label))}), rest)
 end
-  end
+  end)
   end
 
 
@@ -1717,15 +1513,11 @@ end
         {:just, t_prime} -> if ((t_prime.token_type == :tok_delimiter) and (t_prime.value == "]")) do
             success((Nova.Compiler.Ast.expr_list([])), (Nova.Array.drop(2, ts)))
           else
-                  case parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, elements, rest}} ->
-          case expect_delimiter(rest, "]") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime}} ->
-              success((Nova.Compiler.Ast.expr_list((Nova.List.from_foldable(elements)))), rest_prime)
-          end
-      end
+                  Nova.Runtime.bind(parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
+        Nova.Runtime.bind(expect_delimiter(rest, "]"), fn {:tuple, _, rest_prime} ->
+          success((Nova.Compiler.Ast.expr_list((Nova.List.from_foldable(elements)))), rest_prime)
+        end)
+      end)
           end
         :nothing -> failure("Expected list literal")
       end
@@ -1743,21 +1535,17 @@ end
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-         case parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, elements, rest}} ->
-       case expect_delimiter(rest, ")") do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, _, rest_prime}} ->
-           case Nova.Array.length(elements) do
+         Nova.Runtime.bind(parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
+     Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+       case Nova.Array.length(elements) do
   1 -> case Nova.Array.head(elements) do
       {:just, e} -> success(e, rest_prime)
       :nothing -> failure("Expected expression")
     end
   _ -> success((Nova.Compiler.Ast.expr_tuple((Nova.List.from_foldable(elements)))), rest_prime)
 end
-       end
-   end
+     end)
+   end)
     else
       failure("Expected tuple literal")
     end
@@ -1822,26 +1610,18 @@ end
   _ -> success(acc, toks_prime)
 end  end end end)
       tokens_prime = skip_newlines(tokens)
-case expect_keyword(tokens_prime, "let") do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, _, rest}} ->
-        rest_prime = skip_newlines(rest)
-    case collect_let_bindings.(rest_prime).([]) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, bindings, rest_prime_prime}} ->
-                rest_prime_prime_prime = skip_newlines(rest_prime_prime)
-        case expect_keyword(rest_prime_prime_prime, "in") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, rest4}} ->
-                        rest5 = skip_newlines(rest4)
-            case parse_expression(rest5) do
-              {:left, err} -> {:left, err}
-              {:right, {:tuple, body, rest6}} ->
-                success((Nova.Compiler.Ast.expr_let((Nova.List.from_foldable(bindings)), body)), rest6)
-            end
-        end
-    end
-end
+Nova.Runtime.bind(expect_keyword(tokens_prime, "let"), fn {:tuple, _, rest} ->
+    rest_prime = skip_newlines(rest)
+  Nova.Runtime.bind(collect_let_bindings.(rest_prime).([]), fn {:tuple, bindings, rest_prime_prime} ->
+        rest_prime_prime_prime = skip_newlines(rest_prime_prime)
+    Nova.Runtime.bind(expect_keyword(rest_prime_prime_prime, "in"), fn {:tuple, _, rest4} ->
+            rest5 = skip_newlines(rest4)
+      Nova.Runtime.bind(parse_expression(rest5), fn {:tuple, body, rest6} ->
+        success((Nova.Compiler.Ast.expr_let((Nova.List.from_foldable(bindings)), body)), rest6)
+      end)
+    end)
+  end)
+end)
   end
 
 
@@ -1850,19 +1630,13 @@ end
         tokens_prime = skip_newlines(tokens)
   case parse_function_style_binding(tokens_prime) do
   {:right, r} -> {:right, r}
-  {:left, _} ->   case parse_pattern(tokens_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, pat, rest}} ->
-      case expect_operator(rest, "=") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_expression(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, expr, rest_prime_prime}} ->
-              success(%{pattern: pat, value: expr, type_ann: :nothing}, rest_prime_prime)
-          end
-      end
-  end
+  {:left, _} ->   Nova.Runtime.bind(parse_pattern(tokens_prime), fn {:tuple, pat, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "="), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_expression(rest_prime), fn {:tuple, expr, rest_prime_prime} ->
+        success(%{pattern: pat, value: expr, type_ann: :nothing}, rest_prime_prime)
+      end)
+    end)
+  end)
 end
   end
 
@@ -1919,58 +1693,38 @@ end
 
   def parse_if_expression(tokens) do
         tokens_prime = skip_newlines(tokens)
-  case expect_keyword(tokens_prime, "if") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_expression(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, cond_, rest_prime}} ->
-          case expect_keyword(rest_prime, "then") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime_prime}} ->
-              case parse_expression(rest_prime_prime) do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, then_branch, rest_prime_prime_prime}} ->
-                  case expect_keyword(rest_prime_prime_prime, "else") do
-                    {:left, err} -> {:left, err}
-                    {:right, {:tuple, _, rest4}} ->
-                      case parse_expression(rest4) do
-                        {:left, err} -> {:left, err}
-                        {:right, {:tuple, else_branch, rest5}} ->
-                          success((Nova.Compiler.Ast.expr_if(cond_, then_branch, else_branch)), rest5)
-                      end
-                  end
-              end
-          end
-      end
-  end
+  Nova.Runtime.bind(expect_keyword(tokens_prime, "if"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_expression(rest), fn {:tuple, cond_, rest_prime} ->
+      Nova.Runtime.bind(expect_keyword(rest_prime, "then"), fn {:tuple, _, rest_prime_prime} ->
+        Nova.Runtime.bind(parse_expression(rest_prime_prime), fn {:tuple, then_branch, rest_prime_prime_prime} ->
+          Nova.Runtime.bind(expect_keyword(rest_prime_prime_prime, "else"), fn {:tuple, _, rest4} ->
+            Nova.Runtime.bind(parse_expression(rest4), fn {:tuple, else_branch, rest5} ->
+              success((Nova.Compiler.Ast.expr_if(cond_, then_branch, else_branch)), rest5)
+            end)
+          end)
+        end)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_case_expression(tokens) do
-      case expect_keyword(tokens, "case") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_expression(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, expr, rest_prime}} ->
-                    rest_prime_prime = skip_newlines(rest_prime)
-          case expect_keyword(rest_prime_prime, "of") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime_prime_prime}} ->
-                            rest4 = skip_newlines(rest_prime_prime_prime)
-              case Nova.Array.head(rest4) do
+      Nova.Runtime.bind(expect_keyword(tokens, "case"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_expression(rest), fn {:tuple, expr, rest_prime} ->
+            rest_prime_prime = skip_newlines(rest_prime)
+      Nova.Runtime.bind(expect_keyword(rest_prime_prime, "of"), fn {:tuple, _, rest_prime_prime_prime} ->
+                rest4 = skip_newlines(rest_prime_prime_prime)
+        case Nova.Array.head(rest4) do
   :nothing -> failure("Expected case clauses")
-  {:just, first_tok} ->   case parse_case_clauses_at(rest4, first_tok.column, []) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, clauses, rest5}} ->
-      success((Nova.Compiler.Ast.expr_case(expr, (Nova.List.from_foldable(clauses)))), rest5)
-  end
+  {:just, first_tok} ->   Nova.Runtime.bind(parse_case_clauses_at(rest4, first_tok.column, []), fn {:tuple, clauses, rest5} ->
+    success((Nova.Compiler.Ast.expr_case(expr, (Nova.List.from_foldable(clauses)))), rest5)
+  end)
 end
-          end
-      end
-  end
+      end)
+    end)
+  end)
   end
 
 
@@ -1982,18 +1736,14 @@ end
         case Nova.Array.head(toks_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
          case parse_guard_expression((Nova.Array.drop(1, toks_prime))) do
-  {:right, ({:tuple, guard, after_guard})} ->   case expect_operator(after_guard, "->") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, after_arrow}} ->
-      case Nova.Array.head((skip_newlines(after_arrow))) do
+  {:right, ({:tuple, guard, after_guard})} ->   Nova.Runtime.bind(expect_operator(after_guard, "->"), fn {:tuple, _, after_arrow} ->
+    case Nova.Array.head((skip_newlines(after_arrow))) do
   {:just, first_body_tok} ->     {:tuple, body_tokens, rest} = take_body(after_arrow, [], first_body_tok.column)
-  case parse_expression(body_tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, body, remaining}} ->
-            clause = %{pattern: pat, guard: {:just, guard}, body: body}
-            new_acc = Nova.Array.snoc(clause_acc, clause)
-            rest_after_body = skip_newlines(rest)
-      case Nova.Array.head(rest_after_body) do
+  Nova.Runtime.bind(parse_expression(body_tokens), fn {:tuple, body, remaining} ->
+        clause = %{pattern: pat, guard: {:just, guard}, body: body}
+        new_acc = Nova.Array.snoc(clause_acc, clause)
+        rest_after_body = skip_newlines(rest)
+    case Nova.Array.head(rest_after_body) do
   {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "|")) do
       parse_additional_guard.(rest_after_body).(pat).(clause_indent).(new_acc)
     else
@@ -2001,10 +1751,10 @@ end
     end
   _ -> parse_case_clauses_at(rest, clause_indent, new_acc)
 end
-  end
+  end)
   :nothing -> failure("Expected body after ->")
 end
-  end
+  end)
   {:left, err} -> {:left, err}
 end
     else
@@ -2078,18 +1828,12 @@ end
       tokens_prime = skip_newlines(tokens)
 case Nova.Array.head(tokens_prime) do
   :nothing -> failure("No more tokens to parse")
-  {:just, first_tok} ->   case parse_pattern(tokens_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, pat, rest}} ->
-            {:tuple, guard, rest_prime} = maybe_parse_guard(rest)
-      case expect_operator(rest_prime, "->") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime_prime}} ->
-                    {:tuple, body_tokens, rest_prime_prime_prime} = take_body(rest_prime_prime, [], first_tok.column)
-          case parse_expression(body_tokens) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, body, remaining}} ->
-              case skip_newlines(remaining) do
+  {:just, first_tok} ->   Nova.Runtime.bind(parse_pattern(tokens_prime), fn {:tuple, pat, rest} ->
+        {:tuple, guard, rest_prime} = maybe_parse_guard(rest)
+    Nova.Runtime.bind(expect_operator(rest_prime, "->"), fn {:tuple, _, rest_prime_prime} ->
+            {:tuple, body_tokens, rest_prime_prime_prime} = take_body(rest_prime_prime, [], first_tok.column)
+      Nova.Runtime.bind(parse_expression(body_tokens), fn {:tuple, body, remaining} ->
+        case skip_newlines(remaining) do
   [] -> success(%{pattern: pat, guard: guard, body: body}, (drop_newlines(rest_prime_prime_prime)))
   _ -> case has_more_guards.(remaining) do
       true -> success(%{pattern: pat, guard: guard, body: body}, (Nova.Runtime.append(remaining, rest_prime_prime_prime)))
@@ -2099,9 +1843,9 @@ case Nova.Array.head(tokens_prime) do
         end
     end
 end
-          end
-      end
-  end
+      end)
+    end)
+  end)
 end
   end
 
@@ -2131,10 +1875,8 @@ end
         {:just, %{head: head, tail: tail}} -> Nova.Array.foldl((fn acc -> fn g -> Nova.Compiler.Ast.expr_bin_op("&&", acc, g) end end), head, tail)
         :nothing -> Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_bool(true)))
       end end
-      case parse_guard_parts(tokens, []) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, guards, rest}} ->
-    case Nova.Array.length(guards) do
+      Nova.Runtime.bind(parse_guard_parts(tokens, []), fn {:tuple, guards, rest} ->
+  case Nova.Array.length(guards) do
   0 -> failure("Expected guard expression")
   1 -> case Nova.Array.head(guards) do
       {:just, g} -> success(g, rest)
@@ -2142,17 +1884,15 @@ end
     end
   _ -> success((fold_guards.(guards)), rest)
 end
-end
+end)
   end
 
 
 
   def parse_guard_parts(tokens, acc) do
-      case parse_guard_part(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, g, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_guard_part(tokens), fn {:tuple, g, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == ",")) do
       parse_guard_parts((Nova.Array.drop(1, rest_prime)), (Nova.Array.snoc(acc, g)))
     else
@@ -2160,7 +1900,7 @@ end
     end
   _ -> success((Nova.Array.snoc(acc, g)), rest_prime)
 end
-  end
+  end)
   end
 
 
@@ -2178,23 +1918,19 @@ end
         ({:pat_list, ps}) -> Nova.Compiler.Ast.expr_list((Nova.Runtime.map(pattern_to_expr, ps)))
         ({:pat_parens, p}) -> Nova.Compiler.Ast.expr_parens((pattern_to_expr.(p)))
       end end end)
-      try_pattern_bind = fn toks ->    case parse_pattern(toks) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, pat, rest}} ->
-              rest_prime = skip_newlines(rest)
-       case Nova.Array.head(rest_prime) do
+      try_pattern_bind = fn toks ->    Nova.Runtime.bind(parse_pattern(toks), fn {:tuple, pat, rest} ->
+          rest_prime = skip_newlines(rest)
+     case Nova.Array.head(rest_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "<-")) do
-         case parse_logical_expression((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, expr, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op("<-", (pattern_to_expr.(pat)), expr)), rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_logical_expression((Nova.Array.drop(1, rest_prime))), fn {:tuple, expr, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op("<-", (pattern_to_expr.(pat)), expr)), rest_prime_prime)
+   end)
     else
       failure("Not a pattern bind")
     end
   _ -> failure("Not a pattern bind")
 end
-   end end
+   end) end
       tokens_prime = skip_newlines(tokens)
 case try_pattern_bind.(tokens_prime) do
   {:right, result} -> {:right, result}
@@ -2303,20 +2039,16 @@ end
 
 
   def parse_do_block(tokens) do
-      case expect_keyword(tokens, "do") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(expect_keyword(tokens, "do"), fn {:tuple, _, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   :nothing -> success((Nova.Compiler.Ast.expr_do([])), rest_prime)
   {:just, first_tok} ->     indent = first_tok.column
-  case parse_do_statements_at(rest_prime, indent, []) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, stmts, rest_prime_prime}} ->
-      success((Nova.Compiler.Ast.expr_do((Nova.List.from_foldable(stmts)))), rest_prime_prime)
-  end
+  Nova.Runtime.bind(parse_do_statements_at(rest_prime, indent, []), fn {:tuple, stmts, rest_prime_prime} ->
+    success((Nova.Compiler.Ast.expr_do((Nova.List.from_foldable(stmts)))), rest_prime_prime)
+  end)
 end
-  end
+  end)
   end
 
 
@@ -2361,84 +2093,58 @@ end
 
 
   def parse_do_let(tokens) do
-      case expect_keyword(tokens, "let") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_many((&parse_binding/1), rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, bindings, rest_prime}} ->
-          success((Nova.Compiler.Ast.do_let((Nova.List.from_foldable(bindings)))), rest_prime)
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "let"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_many((&parse_binding/1), rest), fn {:tuple, bindings, rest_prime} ->
+      success((Nova.Compiler.Ast.do_let((Nova.List.from_foldable(bindings)))), rest_prime)
+    end)
+  end)
   end
 
 
 
   def parse_do_bind(tokens) do
-      case parse_pattern(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, pat, rest}} ->
-      case expect_operator(rest, "<-") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_expression(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, expr, rest_prime_prime}} ->
-              success((Nova.Compiler.Ast.do_bind(pat, expr)), rest_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_pattern(tokens), fn {:tuple, pat, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "<-"), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_expression(rest_prime), fn {:tuple, expr, rest_prime_prime} ->
+        success((Nova.Compiler.Ast.do_bind(pat, expr)), rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_do_expr(tokens) do
-      case parse_expression(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, expr, rest}} ->
-      success((Nova.Compiler.Ast.do_expr(expr)), rest)
-  end
+      Nova.Runtime.bind(parse_expression(tokens), fn {:tuple, expr, rest} ->
+    success((Nova.Compiler.Ast.do_expr(expr)), rest)
+  end)
   end
 
 
 
   def parse_lambda(tokens) do
-      case expect_operator(tokens, "\\") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_many((&parse_simple_pattern/1), rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, params, rest_prime}} ->
-          case expect_operator(rest_prime, "->") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime_prime}} ->
-              case parse_expression(rest_prime_prime) do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, body, rest_prime_prime_prime}} ->
-                  success((Nova.Compiler.Ast.expr_lambda((Nova.List.from_foldable(params)), body)), rest_prime_prime_prime)
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_operator(tokens, "\\"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_many((&parse_simple_pattern/1), rest), fn {:tuple, params, rest_prime} ->
+      Nova.Runtime.bind(expect_operator(rest_prime, "->"), fn {:tuple, _, rest_prime_prime} ->
+        Nova.Runtime.bind(parse_expression(rest_prime_prime), fn {:tuple, body, rest_prime_prime_prime} ->
+          success((Nova.Compiler.Ast.expr_lambda((Nova.List.from_foldable(params)), body)), rest_prime_prime_prime)
+        end)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_type_signature(tokens) do
         tokens_prime = drop_newlines(tokens)
-  case parse_identifier_name(tokens_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, name, rest}} ->
-      case expect_operator(rest, "::") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_type(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, ty, rest_prime_prime}} ->
-              success(%{name: name, type_vars: [], constraints: [], ty: ty}, rest_prime_prime)
-          end
-      end
-  end
+  Nova.Runtime.bind(parse_identifier_name(tokens_prime), fn {:tuple, name, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "::"), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_type(rest_prime), fn {:tuple, ty, rest_prime_prime} ->
+        success(%{name: name, type_vars: [], constraints: [], ty: ty}, rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
@@ -2451,19 +2157,13 @@ end
 
   def parse_module_header(tokens) do
         tokens_prime = drop_newlines(tokens)
-  case expect_keyword(tokens_prime, "module") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_qualified_identifier_name(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest_prime}} ->
-          case expect_keyword(rest_prime, "where") do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest_prime_prime}} ->
-              success((Nova.Compiler.Ast.decl_module(%{name: name, declarations: []})), rest_prime_prime)
-          end
-      end
-  end
+  Nova.Runtime.bind(expect_keyword(tokens_prime, "module"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_qualified_identifier_name(rest), fn {:tuple, name, rest_prime} ->
+      Nova.Runtime.bind(expect_keyword(rest_prime, "where"), fn {:tuple, _, rest_prime_prime} ->
+        success((Nova.Compiler.Ast.decl_module(%{name: name, declarations: []})), rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
@@ -2479,21 +2179,15 @@ end
 
   def parse_import(tokens) do
         tokens_prime = drop_newlines(tokens)
-  case expect_keyword(tokens_prime, "import") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_qualified_identifier_name(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, mod_name, rest_prime}} ->
-                    {:tuple, alias_, rest_prime_prime} = parse_import_alias(rest_prime)
-          case parse_import_selectors(rest_prime_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, result, rest_prime_prime_prime}} ->
-                            {:tuple, items, is_hiding} = result
-              success((Nova.Compiler.Ast.decl_import(%{module_name: mod_name, alias_: alias_, items: Nova.List.from_foldable(items), hiding: is_hiding})), (drop_newlines(rest_prime_prime_prime)))
-          end
-      end
-  end
+  Nova.Runtime.bind(expect_keyword(tokens_prime, "import"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_qualified_identifier_name(rest), fn {:tuple, mod_name, rest_prime} ->
+            {:tuple, alias_, rest_prime_prime} = parse_import_alias(rest_prime)
+      Nova.Runtime.bind(parse_import_selectors(rest_prime_prime), fn {:tuple, result, rest_prime_prime_prime} ->
+                {:tuple, items, is_hiding} = result
+        success((Nova.Compiler.Ast.decl_import(%{module_name: mod_name, alias_: alias_, items: Nova.List.from_foldable(items), hiding: is_hiding})), (drop_newlines(rest_prime_prime_prime)))
+      end)
+    end)
+  end)
   end
 
 
@@ -2539,15 +2233,11 @@ end
   def parse_paren_import_list(tokens) do
     case Nova.Array.head(tokens) do
       {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-               case parse_separated((&parse_import_item/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))) do
-       {:left, err} -> {:left, err}
-       {:right, {:tuple, items, rest}} ->
-         case expect_delimiter(rest, ")") do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, _, rest_prime}} ->
-             success(items, rest_prime)
-         end
-     end
+               Nova.Runtime.bind(parse_separated((&parse_import_item/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))), fn {:tuple, items, rest} ->
+       Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+         success(items, rest_prime)
+       end)
+     end)
         else
           failure("No paren import list")
         end
@@ -2559,22 +2249,18 @@ end
 
   def parse_import_item(tokens) do
     
-      parse_normal_import_item = fn toks ->    case parse_identifier_name(toks) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, name, rest}} ->
-       case Nova.Array.head(rest) do
+      parse_normal_import_item = fn toks ->    Nova.Runtime.bind(parse_identifier_name(toks), fn {:tuple, name, rest} ->
+     case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
-         case parse_import_spec((Nova.Array.drop(1, rest))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, spec, rest_prime}} ->
-       success((Nova.Compiler.Ast.import_type(name, spec)), rest_prime)
-   end
+         Nova.Runtime.bind(parse_import_spec((Nova.Array.drop(1, rest))), fn {:tuple, spec, rest_prime} ->
+     success((Nova.Compiler.Ast.import_type(name, spec)), rest_prime)
+   end)
     else
       success((Nova.Compiler.Ast.import_value(name)), rest)
     end
   _ -> success((Nova.Compiler.Ast.import_value(name)), rest)
 end
-   end end
+   end) end
       case Nova.Array.head(tokens) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
       case Nova.Array.head((Nova.Array.drop(1, tokens))) do
@@ -2604,58 +2290,38 @@ end
   def parse_import_spec(tokens) do
     case Nova.Array.head(tokens) do
       {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "..")) do
-               case expect_delimiter((Nova.Array.drop(1, tokens)), ")") do
-       {:left, err} -> {:left, err}
-       {:right, {:tuple, _, rest}} ->
-         success(Nova.Compiler.Ast.import_all, rest)
-     end
+               Nova.Runtime.bind(expect_delimiter((Nova.Array.drop(1, tokens)), ")"), fn {:tuple, _, rest} ->
+       success(Nova.Compiler.Ast.import_all, rest)
+     end)
         else
-               case parse_separated((&parse_identifier_name/1), (fn tok -> expect_delimiter(tok, ",") end), tokens) do
-       {:left, err} -> {:left, err}
-       {:right, {:tuple, names, rest}} ->
-         case expect_delimiter(rest, ")") do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, _, rest_prime}} ->
-             success((Nova.Compiler.Ast.import_some((Nova.List.from_foldable(names)))), rest_prime)
-         end
-     end
+               Nova.Runtime.bind(parse_separated((&parse_identifier_name/1), (fn tok -> expect_delimiter(tok, ",") end), tokens), fn {:tuple, names, rest} ->
+       Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+         success((Nova.Compiler.Ast.import_some((Nova.List.from_foldable(names)))), rest_prime)
+       end)
+     end)
         end
-      _ ->     case parse_separated((&parse_identifier_name/1), (fn tok -> expect_delimiter(tok, ",") end), tokens) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, names, rest}} ->
-        case expect_delimiter(rest, ")") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, rest_prime}} ->
-            success((Nova.Compiler.Ast.import_some((Nova.List.from_foldable(names)))), rest_prime)
-        end
-    end
+      _ ->     Nova.Runtime.bind(parse_separated((&parse_identifier_name/1), (fn tok -> expect_delimiter(tok, ",") end), tokens), fn {:tuple, names, rest} ->
+      Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+        success((Nova.Compiler.Ast.import_some((Nova.List.from_foldable(names)))), rest_prime)
+      end)
+    end)
     end
   end
 
 
 
   def parse_foreign_import_simple(tokens) do
-      case expect_keyword(tokens, "foreign") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case expect_keyword(rest, "import") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_identifier_name(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, name, rest_prime_prime}} ->
-              case expect_operator(rest_prime_prime, "::") do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, _, rest_prime_prime_prime}} ->
-                  case parse_type(rest_prime_prime_prime) do
-                    {:left, err} -> {:left, err}
-                    {:right, {:tuple, ty, rest4}} ->
-                      success((Nova.Compiler.Ast.decl_foreign_import(%{module_name: "", function_name: name, alias_: {:just, name}, type_signature: ty})), (drop_newlines(rest4)))
-                  end
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "foreign"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(expect_keyword(rest, "import"), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_identifier_name(rest_prime), fn {:tuple, name, rest_prime_prime} ->
+        Nova.Runtime.bind(expect_operator(rest_prime_prime, "::"), fn {:tuple, _, rest_prime_prime_prime} ->
+          Nova.Runtime.bind(parse_type(rest_prime_prime_prime), fn {:tuple, ty, rest4} ->
+            success((Nova.Compiler.Ast.decl_foreign_import(%{module_name: "", function_name: name, alias_: {:just, name}, type_signature: ty})), (drop_newlines(rest4)))
+          end)
+        end)
+      end)
+    end)
+  end)
   end
 
 
@@ -2686,19 +2352,13 @@ end
           :nothing -> 9
         end
         rest = Nova.Array.drop(1, tokens_prime)
-    case parse_identifier_name(rest) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, func_name, rest_prime}} ->
-        case expect_identifier(rest_prime, "as") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, rest_prime_prime}} ->
-            case parse_infix_operator(rest_prime_prime) do
-              {:left, err} -> {:left, err}
-              {:right, {:tuple, op, rest_prime_prime_prime}} ->
-                success((Nova.Compiler.Ast.decl_infix(%{associativity: assoc, precedence: prec, function_name: func_name, operator: op})), rest_prime_prime_prime)
-            end
-        end
-    end
+    Nova.Runtime.bind(parse_identifier_name(rest), fn {:tuple, func_name, rest_prime} ->
+      Nova.Runtime.bind(expect_identifier(rest_prime, "as"), fn {:tuple, _, rest_prime_prime} ->
+        Nova.Runtime.bind(parse_infix_operator(rest_prime_prime), fn {:tuple, op, rest_prime_prime_prime} ->
+          success((Nova.Compiler.Ast.decl_infix(%{associativity: assoc, precedence: prec, function_name: func_name, operator: op})), rest_prime_prime_prime)
+        end)
+      end)
+    end)
       true -> failure("Expected precedence number")
     end
   _ -> failure("Expected precedence number")
@@ -2714,21 +2374,15 @@ end
     cond do
       (t.token_type == :tok_operator) -> success(t.value, (Nova.Array.drop(1, tokens_prime)))
       ((t.token_type == :tok_delimiter) and (t.value == "`")) ->         rest = Nova.Array.drop(1, tokens_prime)
-    case parse_identifier_name(rest) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, name, rest_prime}} ->
-        case expect_delimiter(rest_prime, "`") do
-          {:left, err} -> {:left, err}
-          {:right, {:tuple, _, rest_prime_prime}} ->
-            success(name, rest_prime_prime)
-        end
-    end
+    Nova.Runtime.bind(parse_identifier_name(rest), fn {:tuple, name, rest_prime} ->
+      Nova.Runtime.bind(expect_delimiter(rest_prime, "`"), fn {:tuple, _, rest_prime_prime} ->
+        success(name, rest_prime_prime)
+      end)
+    end)
       ((t.token_type == :tok_keyword) and (t.value == "type")) ->         rest = Nova.Array.drop(1, tokens_prime)
-    case parse_infix_operator(rest) do
-      {:left, err} -> {:left, err}
-      {:right, {:tuple, op, rest_prime}} ->
-        success((Nova.Runtime.append("type ", op)), rest_prime)
-    end
+    Nova.Runtime.bind(parse_infix_operator(rest), fn {:tuple, op, rest_prime} ->
+      success((Nova.Runtime.append("type ", op)), rest_prime)
+    end)
       true -> failure("Expected operator")
     end
   _ -> failure("Expected operator")
@@ -2738,61 +2392,39 @@ end
 
 
   def parse_newtype_declaration(tokens) do
-      case expect_keyword(tokens, "newtype") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_identifier_name(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest_prime}} ->
-          case parse_many((&parse_identifier_name/1), rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, vars, rest_prime_prime}} ->
-                            rest_prime_prime_prime = skip_newlines(rest_prime_prime)
-              case expect_operator(rest_prime_prime_prime, "=") do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, _, rest4}} ->
-                                    rest5 = skip_newlines(rest4)
-                  case parse_identifier_name(rest5) do
-                    {:left, err} -> {:left, err}
-                    {:right, {:tuple, ctor_name, rest6}} ->
-                      case parse_type_atom(rest6) do
-                        {:left, err} -> {:left, err}
-                        {:right, {:tuple, wrapped_ty, rest7}} ->
-                          success((Nova.Compiler.Ast.decl_newtype(%{name: name, type_vars: Nova.List.from_foldable(vars), constructor: ctor_name, wrapped_type: wrapped_ty})), rest7)
-                      end
-                  end
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "newtype"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_identifier_name(rest), fn {:tuple, name, rest_prime} ->
+      Nova.Runtime.bind(parse_many((&parse_identifier_name/1), rest_prime), fn {:tuple, vars, rest_prime_prime} ->
+                rest_prime_prime_prime = skip_newlines(rest_prime_prime)
+        Nova.Runtime.bind(expect_operator(rest_prime_prime_prime, "="), fn {:tuple, _, rest4} ->
+                    rest5 = skip_newlines(rest4)
+          Nova.Runtime.bind(parse_identifier_name(rest5), fn {:tuple, ctor_name, rest6} ->
+            Nova.Runtime.bind(parse_type_atom(rest6), fn {:tuple, wrapped_ty, rest7} ->
+              success((Nova.Compiler.Ast.decl_newtype(%{name: name, type_vars: Nova.List.from_foldable(vars), constructor: ctor_name, wrapped_type: wrapped_ty})), rest7)
+            end)
+          end)
+        end)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_data_declaration(tokens) do
-      case expect_keyword(tokens, "data") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_identifier_name(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest_prime}} ->
-          case parse_many((&parse_identifier_name/1), rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, vars, rest_prime_prime}} ->
-                            rest_prime_prime_prime = skip_newlines(rest_prime_prime)
-              case expect_operator(rest_prime_prime_prime, "=") do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, _, rest4}} ->
-                                    rest5 = skip_newlines(rest4)
-                  case parse_data_constructors(rest5) do
-                    {:left, err} -> {:left, err}
-                    {:right, {:tuple, ctors, rest6}} ->
-                      success((Nova.Compiler.Ast.decl_data_type(%{name: name, type_vars: Nova.List.from_foldable(vars), constructors: Nova.List.from_foldable(ctors)})), rest6)
-                  end
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "data"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_identifier_name(rest), fn {:tuple, name, rest_prime} ->
+      Nova.Runtime.bind(parse_many((&parse_identifier_name/1), rest_prime), fn {:tuple, vars, rest_prime_prime} ->
+                rest_prime_prime_prime = skip_newlines(rest_prime_prime)
+        Nova.Runtime.bind(expect_operator(rest_prime_prime_prime, "="), fn {:tuple, _, rest4} ->
+                    rest5 = skip_newlines(rest4)
+          Nova.Runtime.bind(parse_data_constructors(rest5), fn {:tuple, ctors, rest6} ->
+            success((Nova.Compiler.Ast.decl_data_type(%{name: name, type_vars: Nova.List.from_foldable(vars), constructors: Nova.List.from_foldable(ctors)})), rest6)
+          end)
+        end)
+      end)
+    end)
+  end)
   end
 
 
@@ -2807,26 +2439,20 @@ end
     
       field_to_data_field = fn f -> %{label: f.label, ty: f.ty} end
       type_to_data_field = fn ty -> %{label: "", ty: ty} end
-      case parse_identifier_name(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, name, rest}} ->
-    case Nova.Array.head(rest) do
+      Nova.Runtime.bind(parse_identifier_name(tokens), fn {:tuple, name, rest} ->
+  case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-         case parse_braced_record_fields(rest) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, fields, rest_prime}} ->
-       success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(field_to_data_field, fields))), is_record: true}, rest_prime)
-   end
+         Nova.Runtime.bind(parse_braced_record_fields(rest), fn {:tuple, fields, rest_prime} ->
+     success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(field_to_data_field, fields))), is_record: true}, rest_prime)
+   end)
     else
-         case parse_data_field_types(rest) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, field_types, rest_prime}} ->
-       success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(type_to_data_field, field_types))), is_record: false}, rest_prime)
-   end
+         Nova.Runtime.bind(parse_data_field_types(rest), fn {:tuple, field_types, rest_prime} ->
+     success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(type_to_data_field, field_types))), is_record: false}, rest_prime)
+   end)
     end
   _ -> success(%{name: name, fields: [], is_record: false}, rest)
 end
-end
+end)
   end
 
 
@@ -2852,15 +2478,11 @@ end
   def parse_braced_record_fields(tokens) do
     case Nova.Array.head(tokens) do
       {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-               case parse_separated((&parse_record_constructor_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))) do
-       {:left, err} -> {:left, err}
-       {:right, {:tuple, fields, rest}} ->
-         case expect_delimiter(rest, "}") do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, _, rest_prime}} ->
-             success(fields, rest_prime)
-         end
-     end
+               Nova.Runtime.bind(parse_separated((&parse_record_constructor_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))), fn {:tuple, fields, rest} ->
+       Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
+         success(fields, rest_prime)
+       end)
+     end)
         else
           failure("Expected '{' for record constructor")
         end
@@ -2871,79 +2493,55 @@ end
 
 
   def parse_record_constructor_field(tokens) do
-      case parse_identifier_name(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, label, rest}} ->
-      case expect_operator(rest, "::") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-                    rest_prime_prime = skip_newlines(rest_prime)
-          case parse_type(rest_prime_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, ty, rest_prime_prime_prime}} ->
-              success(%{label: label, ty: ty}, rest_prime_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_identifier_name(tokens), fn {:tuple, label, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "::"), fn {:tuple, _, rest_prime} ->
+            rest_prime_prime = skip_newlines(rest_prime)
+      Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
+        success(%{label: label, ty: ty}, rest_prime_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_type_alias(tokens) do
-      case expect_keyword(tokens, "type") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-      case parse_identifier_name(rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest_prime}} ->
-          case parse_many((&parse_identifier_name/1), rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, vars, rest_prime_prime}} ->
-              case expect_operator(rest_prime_prime, "=") do
-                {:left, err} -> {:left, err}
-                {:right, {:tuple, _, rest_prime_prime_prime}} ->
-                                    rest4 = skip_newlines(rest_prime_prime_prime)
-                  case parse_type(rest4) do
-                    {:left, err} -> {:left, err}
-                    {:right, {:tuple, aliased, rest5}} ->
-                      success((Nova.Compiler.Ast.decl_type_alias(%{name: name, type_vars: Nova.List.from_foldable(vars), ty: aliased})), rest5)
-                  end
-              end
-          end
-      end
-  end
+      Nova.Runtime.bind(expect_keyword(tokens, "type"), fn {:tuple, _, rest} ->
+    Nova.Runtime.bind(parse_identifier_name(rest), fn {:tuple, name, rest_prime} ->
+      Nova.Runtime.bind(parse_many((&parse_identifier_name/1), rest_prime), fn {:tuple, vars, rest_prime_prime} ->
+        Nova.Runtime.bind(expect_operator(rest_prime_prime, "="), fn {:tuple, _, rest_prime_prime_prime} ->
+                    rest4 = skip_newlines(rest_prime_prime_prime)
+          Nova.Runtime.bind(parse_type(rest4), fn {:tuple, aliased, rest5} ->
+            success((Nova.Compiler.Ast.decl_type_alias(%{name: name, type_vars: Nova.List.from_foldable(vars), ty: aliased})), rest5)
+          end)
+        end)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_type_class(tokens) do
-      case expect_keyword(tokens, "class") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest}} ->
-            {:tuple, rest_prime, _} = skip_superclass_constraints(rest)
-      case parse_identifier_name(rest_prime) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, name, rest_prime_prime}} ->
-                    {:tuple, rest_prime_prime_prime, kind} = maybe_parse_class_kind(rest_prime_prime)
-          case parse_many((&parse_identifier_name/1), rest_prime_prime_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, vars, rest4}} ->
-                            rest5 = skip_newlines(rest4)
-              case Nova.Array.head(rest5) do
+      Nova.Runtime.bind(expect_keyword(tokens, "class"), fn {:tuple, _, rest} ->
+        {:tuple, rest_prime, _} = skip_superclass_constraints(rest)
+    Nova.Runtime.bind(parse_identifier_name(rest_prime), fn {:tuple, name, rest_prime_prime} ->
+            {:tuple, rest_prime_prime_prime, kind} = maybe_parse_class_kind(rest_prime_prime)
+      Nova.Runtime.bind(parse_many((&parse_identifier_name/1), rest_prime_prime_prime), fn {:tuple, vars, rest4} ->
+                rest5 = skip_newlines(rest4)
+        case Nova.Array.head(rest5) do
   {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "where")) do
-         case parse_many((&parse_type_signature/1), (Nova.Array.drop(1, rest5))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, methods, rest6}} ->
-       success((Nova.Compiler.Ast.decl_type_class(%{name: name, type_vars: Nova.List.from_foldable(vars), methods: Nova.List.from_foldable(methods), kind: kind})), rest6)
-   end
+         Nova.Runtime.bind(parse_many((&parse_type_signature/1), (Nova.Array.drop(1, rest5))), fn {:tuple, methods, rest6} ->
+     success((Nova.Compiler.Ast.decl_type_class(%{name: name, type_vars: Nova.List.from_foldable(vars), methods: Nova.List.from_foldable(methods), kind: kind})), rest6)
+   end)
     else
       success((Nova.Compiler.Ast.decl_type_class(%{name: name, type_vars: Nova.List.from_foldable(vars), methods: [], kind: kind})), rest5)
     end
   _ -> success((Nova.Compiler.Ast.decl_type_class(%{name: name, type_vars: Nova.List.from_foldable(vars), methods: [], kind: kind})), rest5)
 end
-          end
-      end
-  end
+      end)
+    end)
+  end)
   end
 
 
@@ -2979,26 +2577,20 @@ end
   def parse_type_class_instance(tokens) do
     
       parse_unnamed_instance = fn rest -> fn is_derived ->       rest_prime = drop_instance_constraints(rest)
-   case parse_identifier_name(rest_prime) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, class_name, rest_prime_prime}} ->
-       case parse_type(rest_prime_prime) do
-         {:left, err} -> {:left, err}
-         {:right, {:tuple, ty, rest_prime_prime_prime}} ->
-           case expect_keyword(rest_prime_prime_prime, "where") do
-  {:right, ({:tuple, _, rest4})} ->   case parse_many((&parse_function_declaration_raw/1), rest4) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, methods, rest5}} ->
-      success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: Nova.List.from_foldable(methods), derived: is_derived})), rest5)
-  end
+   Nova.Runtime.bind(parse_identifier_name(rest_prime), fn {:tuple, class_name, rest_prime_prime} ->
+     Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
+       case expect_keyword(rest_prime_prime_prime, "where") do
+  {:right, ({:tuple, _, rest4})} ->   Nova.Runtime.bind(parse_many((&parse_function_declaration_raw/1), rest4), fn {:tuple, methods, rest5} ->
+    success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: Nova.List.from_foldable(methods), derived: is_derived})), rest5)
+  end)
   {:left, _} -> if is_derived do
       success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: [], derived: is_derived})), rest_prime_prime_prime)
     else
       failure("Expected 'where' clause for non-derived instance")
     end
 end
-       end
-   end end end
+     end)
+   end) end end
       extract_class_name = Nova.Runtime.fix(fn extract_class_name -> fn auto_arg0 -> case auto_arg0 do
         ({:ty_expr_con, name}) -> name
         ({:ty_expr_app, fn_, _}) -> extract_class_name.(fn_)
@@ -3012,25 +2604,19 @@ end
     end
   _ -> {:tuple, tokens, false}
 end
-case expect_keyword(tokens_prime, "instance") do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, _, rest}} ->
-        rest_prime = drop_newlines(rest)
-    case Nova.Array.head(rest_prime) do
+Nova.Runtime.bind(expect_keyword(tokens_prime, "instance"), fn {:tuple, _, rest} ->
+    rest_prime = drop_newlines(rest)
+  case Nova.Array.head(rest_prime) do
   {:just, t} -> if (t.token_type == :tok_identifier) do
       case Nova.Array.head((Nova.Array.drop(1, rest_prime))) do
         {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "::")) do
                         rest_prime_prime = drop_instance_constraints((Nova.Array.drop(2, rest_prime)))
-      case parse_type(rest_prime_prime) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, ty, rest_prime_prime_prime}} ->
-          case expect_keyword(rest_prime_prime_prime, "where") do
-  {:right, ({:tuple, _, rest4})} ->   case parse_many((&parse_function_declaration_raw/1), rest4) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, methods, rest5}} ->
-            class_name = extract_class_name.(ty)
-      success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: Nova.List.from_foldable(methods), derived: derived})), rest5)
-  end
+      Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
+        case expect_keyword(rest_prime_prime_prime, "where") do
+  {:right, ({:tuple, _, rest4})} ->   Nova.Runtime.bind(parse_many((&parse_function_declaration_raw/1), rest4), fn {:tuple, methods, rest5} ->
+        class_name = extract_class_name.(ty)
+    success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: Nova.List.from_foldable(methods), derived: derived})), rest5)
+  end)
   {:left, _} -> if derived do
             class_name = extract_class_name.(ty)
    success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: [], derived: derived})), rest_prime_prime_prime)
@@ -3038,7 +2624,7 @@ case expect_keyword(tokens_prime, "instance") do
       failure("Expected 'where' clause for non-derived instance")
     end
 end
-      end
+      end)
           else
             parse_unnamed_instance.(rest_prime).(derived)
           end
@@ -3049,7 +2635,7 @@ end
     end
   _ -> parse_unnamed_instance.(rest_prime).(derived)
 end
-end
+end)
   end
 
 
@@ -3077,19 +2663,15 @@ end
             name = t.value
    case expect_operator((Nova.Array.drop(1, tokens_prime)), "::") do
   {:right, ({:tuple, _, rest})} ->     {:tuple, type_tokens, rest_prime} = split_type_and_rest(rest, name)
-  case parse_type((strip_newlines(type_tokens))) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, ty, _}} ->
-      case parse_function_declaration_raw(rest_prime) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, fun, rest_prime_prime}} ->
-          if (fun.name == name) do
+  Nova.Runtime.bind(parse_type((strip_newlines(type_tokens))), fn {:tuple, ty, _} ->
+    Nova.Runtime.bind(parse_function_declaration_raw(rest_prime), fn {:tuple, fun, rest_prime_prime} ->
+      if (fun.name == name) do
   success((Nova.Compiler.Ast.decl_function(%{name: fun.name, parameters: fun.parameters, body: fun.body, guards: fun.guards, type_signature: {:just, %{name: name, type_vars: [], constraints: [], ty: ty}}})), rest_prime_prime)
 else
   failure("Function name mismatch")
 end
-      end
-  end
+    end)
+  end)
   {:left, _} -> failure("Expected '::'")
 end
     else
@@ -3121,74 +2703,54 @@ end
 
 
   def parse_function_declaration(tokens) do
-      case parse_function_declaration_raw(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, fun, rest}} ->
-      success((Nova.Compiler.Ast.decl_function(fun)), rest)
-  end
+      Nova.Runtime.bind(parse_function_declaration_raw(tokens), fn {:tuple, fun, rest} ->
+    success((Nova.Compiler.Ast.decl_function(fun)), rest)
+  end)
   end
 
 
 
   def parse_function_declaration_raw(tokens) do
-      case parse_identifier_name(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, name, rest}} ->
-      case parse_many((&parse_simple_pattern/1), rest) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, params, rest_prime}} ->
-                    rest_prime_prime = skip_newlines(rest_prime)
-          case Nova.Array.head(rest_prime_prime) do
+      Nova.Runtime.bind(parse_identifier_name(tokens), fn {:tuple, name, rest} ->
+    Nova.Runtime.bind(parse_many((&parse_simple_pattern/1), rest), fn {:tuple, params, rest_prime} ->
+            rest_prime_prime = skip_newlines(rest_prime)
+      case Nova.Array.head(rest_prime_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "|")) do
       parse_guarded_function(name, params, rest_prime_prime)
     else
-         case expect_operator(rest_prime, "=") do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, _, rest_prime_prime_prime}} ->
-       case Nova.Array.head(rest_prime_prime_prime) do
-  {:just, first_tok} ->   case parse_expression(rest_prime_prime_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, body, rest4}} ->
-      case maybe_parse_where(rest4, first_tok.column, body) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, body_prime, rest5}} ->
-          success(%{name: name, parameters: Nova.List.from_foldable(params), body: body_prime, guards: [], type_signature: :nothing}, rest5)
-      end
-  end
+         Nova.Runtime.bind(expect_operator(rest_prime, "="), fn {:tuple, _, rest_prime_prime_prime} ->
+     case Nova.Array.head(rest_prime_prime_prime) do
+  {:just, first_tok} ->   Nova.Runtime.bind(parse_expression(rest_prime_prime_prime), fn {:tuple, body, rest4} ->
+    Nova.Runtime.bind(maybe_parse_where(rest4, first_tok.column, body), fn {:tuple, body_prime, rest5} ->
+      success(%{name: name, parameters: Nova.List.from_foldable(params), body: body_prime, guards: [], type_signature: :nothing}, rest5)
+    end)
+  end)
   :nothing -> failure("Expected expression")
 end
-   end
+   end)
     end
-  _ ->   case expect_operator(rest_prime, "=") do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, _, rest_prime_prime_prime}} ->
-      case Nova.Array.head(rest_prime_prime_prime) do
-  {:just, first_tok} ->   case parse_expression(rest_prime_prime_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, body, rest4}} ->
-      case maybe_parse_where(rest4, first_tok.column, body) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, body_prime, rest5}} ->
-          success(%{name: name, parameters: Nova.List.from_foldable(params), body: body_prime, guards: [], type_signature: :nothing}, rest5)
-      end
-  end
+  _ ->   Nova.Runtime.bind(expect_operator(rest_prime, "="), fn {:tuple, _, rest_prime_prime_prime} ->
+    case Nova.Array.head(rest_prime_prime_prime) do
+  {:just, first_tok} ->   Nova.Runtime.bind(parse_expression(rest_prime_prime_prime), fn {:tuple, body, rest4} ->
+    Nova.Runtime.bind(maybe_parse_where(rest4, first_tok.column, body), fn {:tuple, body_prime, rest5} ->
+      success(%{name: name, parameters: Nova.List.from_foldable(params), body: body_prime, guards: [], type_signature: :nothing}, rest5)
+    end)
+  end)
   :nothing -> failure("Expected expression")
 end
-  end
+  end)
 end
-      end
-  end
+    end)
+  end)
   end
 
 
 
   def parse_guarded_function(name, params, tokens) do
-      case parse_guarded_exprs(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, guards, rest}} ->
-            body = Nova.Compiler.Ast.expr_var("__guarded__")
-      success(%{name: name, parameters: Nova.List.from_foldable(params), body: body, guards: Nova.List.from_foldable(guards), type_signature: :nothing}, rest)
-  end
+      Nova.Runtime.bind(parse_guarded_exprs(tokens), fn {:tuple, guards, rest} ->
+        body = Nova.Compiler.Ast.expr_var("__guarded__")
+    success(%{name: name, parameters: Nova.List.from_foldable(params), body: body, guards: Nova.List.from_foldable(guards), type_signature: :nothing}, rest)
+  end)
   end
 
 
@@ -3199,11 +2761,9 @@ end
         toks_prime = skip_newlines(toks)
         case Nova.Array.head(toks_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "|")) do
-         case parse_one_guarded_expr((Nova.Array.drop(1, toks_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, guard, rest}} ->
-       parse_guarded_exprs_acc.(rest).((Nova.Array.snoc(acc, guard)))
-   end
+         Nova.Runtime.bind(parse_one_guarded_expr((Nova.Array.drop(1, toks_prime))), fn {:tuple, guard, rest} ->
+     parse_guarded_exprs_acc.(rest).((Nova.Array.snoc(acc, guard)))
+   end)
     else
       success(acc, toks_prime)
     end
@@ -3215,29 +2775,21 @@ end  end end end)
 
 
   def parse_one_guarded_expr(tokens) do
-      case parse_guard_clauses(tokens, []) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, clauses, rest}} ->
-      case expect_operator(rest, "=") do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest_prime}} ->
-          case parse_expression(rest_prime) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, body, rest_prime_prime}} ->
-              success(%{guards: Nova.List.from_foldable(clauses), body: body}, rest_prime_prime)
-          end
-      end
-  end
+      Nova.Runtime.bind(parse_guard_clauses(tokens, []), fn {:tuple, clauses, rest} ->
+    Nova.Runtime.bind(expect_operator(rest, "="), fn {:tuple, _, rest_prime} ->
+      Nova.Runtime.bind(parse_expression(rest_prime), fn {:tuple, body, rest_prime_prime} ->
+        success(%{guards: Nova.List.from_foldable(clauses), body: body}, rest_prime_prime)
+      end)
+    end)
+  end)
   end
 
 
 
   def parse_guard_clauses(tokens, acc) do
-      case parse_one_guard_clause(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, clause, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_one_guard_clause(tokens), fn {:tuple, clause, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_delimiter) and (tok.value == ",")) do
       parse_guard_clauses((Nova.Array.drop(1, rest_prime)), (Nova.Array.snoc(acc, clause)))
     else
@@ -3245,7 +2797,7 @@ end  end end end)
     end
   _ -> success((Nova.Array.snoc(acc, clause)), rest_prime)
 end
-  end
+  end)
   end
 
 
@@ -3263,23 +2815,19 @@ end
 
 
   def try_pattern_guard(tokens) do
-      case parse_pattern(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, pat, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_pattern(tokens), fn {:tuple, pat, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "<-")) do
-         case parse_func_guard_expr((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, expr, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.guard_pat(pat, expr)), rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_func_guard_expr((Nova.Array.drop(1, rest_prime))), fn {:tuple, expr, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.guard_pat(pat, expr)), rest_prime_prime)
+   end)
     else
       failure("Expected <- for pattern guard")
     end
   _ -> failure("Expected <- for pattern guard")
 end
-  end
+  end)
   end
 
 
@@ -3291,45 +2839,37 @@ end
 
 
   def parse_guard_expr_or(tokens) do
-      case parse_guard_expr_and(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_guard_expr_and(tokens), fn {:tuple, left, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "||")) do
-         case parse_guard_expr_or((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op("||", left, right)), rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_guard_expr_or((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op("||", left, right)), rest_prime_prime)
+   end)
     else
       success(left, rest_prime)
     end
   _ -> success(left, rest_prime)
 end
-  end
+  end)
   end
 
 
 
   def parse_guard_expr_and(tokens) do
-      case parse_guard_expr_comparison(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, left, rest}} ->
-            rest_prime = skip_newlines(rest)
-      case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_guard_expr_comparison(tokens), fn {:tuple, left, rest} ->
+        rest_prime = skip_newlines(rest)
+    case Nova.Array.head(rest_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "&&")) do
-         case parse_guard_expr_and((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op("&&", left, right)), rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_guard_expr_and((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op("&&", left, right)), rest_prime_prime)
+   end)
     else
       success(left, rest_prime)
     end
   _ -> success(left, rest_prime)
 end
-  end
+  end)
   end
 
 
@@ -3337,33 +2877,27 @@ end
   def parse_guard_expr_comparison(tokens) do
     
       is_comparison_op = fn op -> Nova.Array.elem(op, ["==", "/=", "<", ">", "<=", ">="]) end
-      case parse_guard_expr_app(tokens) do
-  {:left, err} -> {:left, err}
-  {:right, {:tuple, left, rest}} ->
-        rest_prime = skip_newlines(rest)
-    case Nova.Array.head(rest_prime) do
+      Nova.Runtime.bind(parse_guard_expr_app(tokens), fn {:tuple, left, rest} ->
+    rest_prime = skip_newlines(rest)
+  case Nova.Array.head(rest_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and is_comparison_op.(tok.value)) do
-         case parse_guard_expr_app((Nova.Array.drop(1, rest_prime))) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, right, rest_prime_prime}} ->
-       success((Nova.Compiler.Ast.expr_bin_op(tok.value, left, right)), rest_prime_prime)
-   end
+         Nova.Runtime.bind(parse_guard_expr_app((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
+     success((Nova.Compiler.Ast.expr_bin_op(tok.value, left, right)), rest_prime_prime)
+   end)
     else
       success(left, rest_prime)
     end
   _ -> success(left, rest_prime)
 end
-end
+end)
   end
 
 
 
   def parse_guard_expr_app(tokens) do
-      case parse_guard_expr_atom(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, first, rest}} ->
-      parse_guard_expr_app_rest(first, rest)
-  end
+      Nova.Runtime.bind(parse_guard_expr_atom(tokens), fn {:tuple, first, rest} ->
+    parse_guard_expr_app_rest(first, rest)
+  end)
   end
 
 
@@ -3425,15 +2959,11 @@ end
                 success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_bool(true)))), (Nova.Array.drop(1, tokens_prime)))
               else
                 if ((tok.token_type == :tok_delimiter) and (tok.value == "(")) do
-                           case parse_expression((Nova.Array.drop(1, tokens_prime))) do
-           {:left, err} -> {:left, err}
-           {:right, {:tuple, expr, rest}} ->
-             case expect_delimiter(rest, ")") do
-               {:left, err} -> {:left, err}
-               {:right, {:tuple, _, rest_prime}} ->
-                 success(expr, rest_prime)
-             end
-         end
+                           Nova.Runtime.bind(parse_expression((Nova.Array.drop(1, tokens_prime))), fn {:tuple, expr, rest} ->
+           Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
+             success(expr, rest_prime)
+           end)
+         end)
                 else
                   if ((tok.token_type == :tok_operator) and (tok.value == ".")) do
                     case Nova.Array.head((Nova.Array.drop(1, tokens_prime))) do
@@ -3489,11 +3019,9 @@ end
         rest = skip_newlines((Nova.Array.drop(1, tokens_prime)))
         case Nova.Array.head(rest) do
   {:just, first_tok} -> if (first_tok.column >= where_col) do
-         case collect_where_bindings(rest, where_col, []) do
-     {:left, err} -> {:left, err}
-     {:right, {:tuple, bindings, rest_prime}} ->
-       success((Nova.Compiler.Ast.expr_let((Nova.List.from_foldable(bindings)), body)), rest_prime)
-   end
+         Nova.Runtime.bind(collect_where_bindings(rest, where_col, []), fn {:tuple, bindings, rest_prime} ->
+     success((Nova.Compiler.Ast.expr_let((Nova.List.from_foldable(bindings)), body)), rest_prime)
+   end)
     else
       success(body, tokens_prime)
     end
@@ -3556,12 +3084,10 @@ case Nova.Array.head(tokens_prime) do
          case is_type_signature_line.(tokens_prime) do
   true ->     rest = skip_to_next_line.(tokens_prime)
   collect_where_bindings(rest, where_col, acc)
-  false ->   case parse_function_declaration_raw(tokens_prime) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, fun, rest}} ->
-            binding = %{pattern: Nova.Compiler.Ast.pat_var(fun.name), value: wrap_lambda.((Nova.Array.from_foldable(fun.parameters))).(fun.body), type_ann: :nothing}
-      collect_where_bindings(rest, where_col, (Nova.Array.snoc(acc, binding)))
-  end
+  false ->   Nova.Runtime.bind(parse_function_declaration_raw(tokens_prime), fn {:tuple, fun, rest} ->
+        binding = %{pattern: Nova.Compiler.Ast.pat_var(fun.name), value: wrap_lambda.((Nova.Array.from_foldable(fun.parameters))).(fun.body), type_ann: :nothing}
+    collect_where_bindings(rest, where_col, (Nova.Array.snoc(acc, binding)))
+  end)
 end
     else
       success(acc, tokens_prime)
@@ -3573,11 +3099,9 @@ end
 
 
   def parse_type_signature_decl(tokens) do
-      case parse_type_signature(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, sig, rest}} ->
-      success((Nova.Compiler.Ast.decl_type_sig(sig)), rest)
-  end
+      Nova.Runtime.bind(parse_type_signature(tokens), fn {:tuple, sig, rest} ->
+    success((Nova.Compiler.Ast.decl_type_sig(sig)), rest)
+  end)
   end
 
 
@@ -3606,21 +3130,17 @@ end
 
 
   def parse_module(tokens) do
-      case parse_module_header(tokens) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, header, rest}} ->
-      case header do
-  {:decl_module, m} ->   case parse_declarations(rest) do
-    {:left, err} -> {:left, err}
-    {:right, {:tuple, decls, rest_prime}} ->
-            rest_prime_prime = skip_newlines(rest_prime)
-      case Nova.Array.length(rest_prime_prime) do
+      Nova.Runtime.bind(parse_module_header(tokens), fn {:tuple, header, rest} ->
+    case header do
+  {:decl_module, m} ->   Nova.Runtime.bind(parse_declarations(rest), fn {:tuple, decls, rest_prime} ->
+        rest_prime_prime = skip_newlines(rest_prime)
+    case Nova.Array.length(rest_prime_prime) do
   0 -> success(%{name: m.name, declarations: Nova.List.from_foldable(decls)}, [])
   _ -> failure("Unexpected tokens after module")
 end
-  end
+  end)
   _ -> failure("Expected module declaration")
 end
-  end
+  end)
   end
 end

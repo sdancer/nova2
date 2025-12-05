@@ -25,6 +25,41 @@ defmodule Nova.Runtime do
   # Maybe bind
   def bind(:nothing, _f), do: :nothing
   def bind({:just, x}, f), do: f.(x)
+  # Parser bind
+  def bind({:parser, pa}, f) do
+    {:parser, fn ts ->
+      case pa.(ts) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, a, rest}} ->
+          # f might return {:parser, _} or {:right, _} from generic pure
+          # Handle both cases
+          case f.(a) do
+            {:parser, pb} -> pb.(rest)
+            {:right, result} -> {:right, {:tuple, result, rest}}
+            {:left, err} -> {:left, err}
+          end
+      end
+    end}
+  end
+
+  # Parser alternative - try first, if fails try second
+  def alt({:parser, p1}, {:parser, p2}) do
+    {:parser, fn ts ->
+      case p1.(ts) do
+        {:right, result} -> {:right, result}
+        {:left, _} -> p2.(ts)
+      end
+    end}
+  end
+  # Handle case where second arg is pure result (Either) - wrap it as Parser
+  def alt({:parser, p1}, {:right, value}) do
+    {:parser, fn ts ->
+      case p1.(ts) do
+        {:right, result} -> {:right, result}
+        {:left, _} -> {:right, {:tuple, value, ts}}  # pure value preserves tokens
+      end
+    end}
+  end
 
   # Semigroup append - works for both strings and lists
   def append(a, b) when is_binary(a) and is_binary(b), do: a <> b
@@ -136,6 +171,47 @@ defmodule Nova.Runtime do
   # Map over Maybe
   def map(_f, :nothing), do: :nothing
   def map(f, {:just, x}), do: {:just, f.(x)}
+  # Map over Parser
+  def map(f, {:parser, pa}) do
+    {:parser, fn ts ->
+      case pa.(ts) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, a, rest}} -> {:right, {:tuple, f.(a), rest}}
+      end
+    end}
+  end
+
+  # fmap - alias for map (Functor)
+  def fmap(f, x), do: map(f, x)
+  def fmap(f) when is_function(f, 1), do: fn x -> map(f, x) end
+
+  # seq - sequence two parsers, keeping second result (Applicative *>)
+  def seq({:parser, p1}, {:parser, p2}) do
+    {:parser, fn ts ->
+      case p1.(ts) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, _, rest}} -> p2.(rest)
+      end
+    end}
+  end
+
+  # seqL - sequence two parsers, keeping first result (Applicative <*)
+  def seq_l({:parser, p1}, {:parser, p2}) do
+    {:parser, fn ts ->
+      case p1.(ts) do
+        {:left, err} -> {:left, err}
+        {:right, {:tuple, a, rest1}} ->
+          case p2.(rest1) do
+            {:left, err} -> {:left, err}
+            {:right, {:tuple, _, rest2}} -> {:right, {:tuple, a, rest2}}
+          end
+      end
+    end}
+  end
+
+  # applySecond / applyFirst - alias for seq/seq_l
+  def apply_second(p1, p2), do: seq(p1, p2)
+  def apply_first(p1, p2), do: seq_l(p1, p2)
   # Map over Elixir map values (for PureScript Map.map)
   def map(f, map) when is_map(map) do
     Map.new(map, fn {k, v} -> {k, f.(v)} end)
@@ -155,6 +231,12 @@ defmodule Nova.Runtime do
   def zip([h1 | t1], [h2 | t2]), do: [{:tuple, h1, h2} | zip(t1, t2)]
 
   def pure(x), do: {:right, x}
+
+  # Parser-specific pure - wraps value in Parser that preserves token stream
+  # pure a = Parser \ts -> Right (Tuple a ts)
+  def pure_parser(x) do
+    {:parser, fn ts -> {:right, {:tuple, x, ts}} end}
+  end
 
   def otherwise(), do: true
 

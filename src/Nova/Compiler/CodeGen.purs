@@ -662,6 +662,16 @@ isNullaryConstructor name = Array.elem name
   , "LytParen", "LytBrace", "LytSquare", "LytIf", "LytThen"
   , "LytProperty", "LytForall", "LytTick", "LytLet", "LytLetStmt"
   , "LytWhere", "LytOf", "LytDo", "LytAdo"
+  -- CST Token type nullary constructors
+  , "TokLeftParen", "TokRightParen", "TokLeftBrace", "TokRightBrace"
+  , "TokLeftSquare", "TokRightSquare", "TokLeftArrow", "TokRightArrow"
+  , "TokRightFatArrow", "TokDoubleColon", "TokEquals", "TokPipe"
+  , "TokTick", "TokDot", "TokComma", "TokUnderscore", "TokBackslash"
+  , "TokAt", "TokForall"
+  -- CST Fixity nullary constructors
+  , "Infix", "Infixl", "Infixr"
+  -- CST SourceStyle nullary constructors
+  , "ASCII", "Unicode"
   ]
 
 -- | Known 2-argument functions that may be partially applied
@@ -765,6 +775,22 @@ translateQualified mod name =
             "Nova.Compiler.TypeChecker" -> "Nova.Compiler.TypeChecker"
             "CodeGen" -> "Nova.Compiler.CodeGen"
             "Nova.Compiler.CodeGen" -> "Nova.Compiler.CodeGen"
+            -- CST pipeline modules
+            "Cst" -> "Nova.Compiler.Cst"
+            "Nova.Compiler.Cst" -> "Nova.Compiler.Cst"
+            "CstLayout" -> "Nova.Compiler.CstLayout"
+            "Nova.Compiler.CstLayout" -> "Nova.Compiler.CstLayout"
+            "CstLexer" -> "Nova.Compiler.CstLexer"
+            "Nova.Compiler.CstLexer" -> "Nova.Compiler.CstLexer"
+            "Lexer" -> "Nova.Compiler.CstLexer"
+            "CstParser" -> "Nova.Compiler.CstParser"
+            "Nova.Compiler.CstParser" -> "Nova.Compiler.CstParser"
+            "CstToAst" -> "Nova.Compiler.CstToAst"
+            "Nova.Compiler.CstToAst" -> "Nova.Compiler.CstToAst"
+            "CstPipeline" -> "Nova.Compiler.CstPipeline"
+            "Nova.Compiler.CstPipeline" -> "Nova.Compiler.CstPipeline"
+            "Dependencies" -> "Nova.Compiler.Dependencies"
+            "Nova.Compiler.Dependencies" -> "Nova.Compiler.Dependencies"
             _ -> elixirModuleName mod
       in elixirMod <> "." <> snakeCase name
 
@@ -799,8 +825,10 @@ genConstructorApp ctx indent name args =
                          else ":" <> snakeCase name
   in case name of
     -- Tuple constructors - generate native Elixir tuples tagged with :tuple
+    -- For partial application (1 arg), generate a lambda that creates the full tuple
     "Tuple" -> case genArgs of
       [a, b] -> "{:tuple, " <> a <> ", " <> b <> "}"
+      [a] -> "fn auto_b -> {:tuple, " <> a <> ", auto_b} end"  -- Partial application
       _ -> "{:tuple, " <> intercalate ", " genArgs <> "}"
     "Tuple2" -> "{:tuple, " <> intercalate ", " genArgs <> "}"
     "Tuple3" -> "{:tuple3, " <> intercalate ", " genArgs <> "}"
@@ -895,6 +923,13 @@ genExpr' _ _ (ExprQualified mod name) =
     in if arity == 0
        then "Nova.Compiler.Types." <> snakeCase name <> "()"
        else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
+  -- Handle Cst module constructors/functions used as values (e.g., Cst.ModuleName as first arg to map)
+  -- When Cst module names are used as function values (not in call position), wrap with capture
+  -- Nullary constructors (TokAt, Infix, etc.) should be called with (), not captured
+  else if mod == "Cst"
+  then if isNullaryConstructor name
+       then "Nova.Compiler.Cst." <> snakeCase name <> "()"
+       else "(&Nova.Compiler.Cst." <> snakeCase name <> "/1)"
   else translateQualified mod name
 genExpr' _ _ (ExprLit lit) = genLiteral lit
 
@@ -905,7 +940,7 @@ genExpr' ctx indent (ExprApp f arg) =
       argsStr = intercalate ", " (map genArg args)
   in case func of
     ExprVar name -> genVarApp ctx indent name args argsStr
-    ExprQualified m n -> translateQualified m n <> "(" <> argsStr <> ")"
+    ExprQualified m n -> genQualifiedApp ctx indent m n args
     ExprLambda _ _ -> "(" <> genExpr' ctx indent func <> ").(" <> argsStr <> ")"
     _ -> "(" <> genExpr' ctx indent func <> ").(" <> argsStr <> ")"
   where
@@ -967,6 +1002,29 @@ genExpr' ctx indent (ExprApp f arg) =
         -- For local variables (lambdas), use chained application for curried calls
         -- f a b -> f.(a).(b)
         genChainedApp (snakeCase n) exprs c i
+
+    -- Handle qualified function application with curried semantics
+    -- For functions that have lower arity than the number of arguments provided,
+    -- we need to generate curried application: Module.func(arg1).(arg2)
+    genQualifiedApp :: GenCtx -> Int -> String -> String -> Array Expr -> String
+    genQualifiedApp c i m funcName theArgs =
+      let numArgs = Array.length theArgs
+          genArgExpr a = genExpr' c i a
+          genArgs = map genArgExpr theArgs
+          genArgsStr = intercalate ", " genArgs
+          qualifiedName = translateQualified m funcName
+          -- Check if this is CstParser.runParser which has arity 1 but returns a function
+          isCstParserRunParser = (m == "CstParser" || m == "Nova.Compiler.CstParser") && funcName == "runParser"
+      in if isCstParserRunParser && numArgs > 1
+         then
+           -- runParser parser tokens -> (run_parser(parser)).(tokens)
+           case Array.uncons genArgs of
+             Just { head: firstArg, tail: restArgs } ->
+               "(" <> qualifiedName <> "(" <> firstArg <> ")).(" <> intercalate ", " restArgs <> ")"
+             Nothing -> qualifiedName <> "()"
+         else
+           -- Default: all arguments in one call
+           qualifiedName <> "(" <> genArgsStr <> ")"
 
 genExpr' ctx indent (ExprLambda pats body) =
   -- Generate curried lambda: \a b -> x becomes fn a -> fn b -> x end end
@@ -1761,39 +1819,19 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
         let ctxWithBinds = foldr (\b c -> addLocalsFromPattern b.pattern c) ctx binds
         in intercalate "\n" (Array.fromFoldable (map (genLetBindCtx ctx indent) binds)) <> "\n" <> genDoStmtsCtx ctxWithBinds indent rest
       DoBind pat e ->
-        -- Monadic bind: detect monad type from expression
-        -- Maybe monad: peek, peekAt, charAt, Array.head, Array.find, etc.
-        -- Either monad: parse functions, etc.
-        -- Generic: use bind function (for Effect, custom monads)
+        -- Always use Nova.Runtime.bind for monadic do-notation
+        -- This is polymorphic and handles Maybe, Either, Parser, and custom monads
         let ctxWithPat = addLocalsFromPattern pat ctx
-            monadType = detectMonadType e
             indStr = repeatStr indent " "
             -- Check if pattern is a Tuple destructuring - common for parser results
             patStr = case pat of
               PatCon "Tuple" (Cons p1 (Cons p2 Nil)) -> "{:tuple, " <> genPattern p1 <> ", " <> genPattern p2 <> "}"
               _ -> genPattern pat
-        in if monadType == 0
-           then
-             -- Maybe monad: use case expression to handle :nothing
-             indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
-             indStr <> "  :nothing -> :nothing\n" <>
-             indStr <> "  {:just, " <> patStr <> "} ->\n" <>
-             genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
-             indStr <> "end"
-           else if monadType == 1
-           then
-             -- Either monad: use case expression to propagate :left
-             indStr <> "case " <> genExpr' ctx 0 e <> " do\n" <>
-             indStr <> "  {:left, err} -> {:left, err}\n" <>
-             indStr <> "  {:right, " <> patStr <> "} ->\n" <>
-             genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
-             indStr <> "end"
-           else
-             -- Generic monad: use bind function from Nova.Runtime
-             -- Desugar: x <- e; rest  =>  Nova.Runtime.bind(e, fn x -> rest end)
-             indStr <> "Nova.Runtime.bind(" <> genExpr' ctx 0 e <> ", fn " <> patStr <> " ->\n" <>
-             genDoStmtsCtx ctxWithPat (indent + 2) rest <> "\n" <>
-             indStr <> "end)"
+        -- Use polymorphic bind from Nova.Runtime
+        -- Desugar: x <- e; rest  =>  Nova.Runtime.bind(e, fn x -> rest end)
+        in indStr <> "Nova.Runtime.bind(" <> genExpr' ctx 0 e <> ", fn " <> patStr <> " ->\n" <>
+           genDoStmtsCtx ctxWithPat (indent + 2) rest <> "\n" <>
+           indStr <> "end)"
 
 -- | Detect which monad type an expression returns
 -- | Returns: 0 = Maybe, 1 = Either, 2 = Generic

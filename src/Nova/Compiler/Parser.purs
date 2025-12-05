@@ -798,14 +798,18 @@ parseCompositionExpression tokens = do
 parseLogicalExpression :: Array Token -> ParseResult Ast.Expr
 parseLogicalExpression tokens = do
   Tuple left rest <- parseConsExpression tokens
-  case Array.head rest of
-    Just t ->
-      if t.tokenType == TokOperator && (t.value == "&&" || t.value == "||")
-      then do
-        Tuple right rest' <- parseLogicalExpression (Array.drop 1 rest)
-        success (Ast.ExprBinOp t.value left right) rest'
-      else success left rest
-    _ -> success left rest
+  parseLogicalRest left rest
+  where
+    parseLogicalRest left rest =
+      case Array.head rest of
+        Just t ->
+          if t.tokenType == TokOperator && (t.value == "&&" || t.value == "||")
+          then do
+            Tuple right rest' <- parseConsExpression (Array.drop 1 rest)
+            -- Build left-associative tree and continue
+            parseLogicalRest (Ast.ExprBinOp t.value left right) rest'
+          else success left rest
+        _ -> success left rest
 
 -- | Parse cons operator (:) - right associative, low precedence
 parseConsExpression :: Array Token -> ParseResult Ast.Expr
@@ -840,29 +844,35 @@ parseComparisonExpression tokens = do
 parseAdditiveExpression :: Array Token -> ParseResult Ast.Expr
 parseAdditiveExpression tokens = do
   Tuple left rest <- parseMultiplicativeExpression tokens
-  case Array.head rest of
-    Just t ->
-      if t.tokenType == TokOperator && isAdditiveOp t.value
-      then do
-        Tuple right rest' <- parseAdditiveExpression (Array.drop 1 rest)
-        success (Ast.ExprBinOp t.value left right) rest'
-      else success left rest
-    _ -> success left rest
+  parseAdditiveRest left rest
   where
+    parseAdditiveRest left rest =
+      case Array.head rest of
+        Just t ->
+          if t.tokenType == TokOperator && isAdditiveOp t.value
+          then do
+            Tuple right rest' <- parseMultiplicativeExpression (Array.drop 1 rest)
+            -- Build left-associative tree and continue
+            parseAdditiveRest (Ast.ExprBinOp t.value left right) rest'
+          else success left rest
+        _ -> success left rest
     isAdditiveOp op = op == "+" || op == "-" || op == "++" || op == "<>"
 
 parseMultiplicativeExpression :: Array Token -> ParseResult Ast.Expr
 parseMultiplicativeExpression tokens = do
   Tuple left rest <- parseBacktickExpression tokens
-  case Array.head rest of
-    Just t ->
-      if t.tokenType == TokOperator && isMultOp t.value
-      then do
-        Tuple right rest' <- parseMultiplicativeExpression (Array.drop 1 rest)
-        success (Ast.ExprBinOp t.value left right) rest'
-      else success left rest
-    _ -> success left rest
+  parseMultRest left rest
   where
+    parseMultRest left rest =
+      case Array.head rest of
+        Just t ->
+          if t.tokenType == TokOperator && isMultOp t.value
+          then do
+            Tuple right rest' <- parseBacktickExpression (Array.drop 1 rest)
+            -- Build left-associative tree and continue
+            parseMultRest (Ast.ExprBinOp t.value left right) rest'
+          else success left rest
+        _ -> success left rest
     isMultOp op = op == "*" || op == "/"
 
 -- | Parse backtick infix expressions like: x `elem` ys
