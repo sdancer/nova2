@@ -242,94 +242,14 @@ builtinPrelude = Map.fromFoldable
   -- Reverse function application
   , Tuple "#" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (tArrow (TyVar a) (TyVar b)) (TyVar b))))
 
-  -- Array functions
-  , Tuple "Array.head" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a))))
-  , Tuple "Array.index" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArrow tInt (tMaybe (TyVar a)))))
-  , Tuple "Array.last" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a))))
-  , Tuple "Array.tail" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (tArray (TyVar a)))))
-  , Tuple "Array.init" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (tArray (TyVar a)))))
-  , Tuple "Array.uncons" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a)))) -- simplified
-  , Tuple "Array.length" (mkScheme [a] (tArrow (tArray (TyVar a)) tInt))
-  , Tuple "Array.null" (mkScheme [a] (tArrow (tArray (TyVar a)) tBool))
-  , Tuple "Array.elem" (mkScheme [a] (tArrow (TyVar a) (tArrow (tArray (TyVar a)) tBool)))
-  , Tuple "Array.cons" (mkScheme [a] (tArrow (TyVar a) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.snoc" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArrow (TyVar a) (tArray (TyVar a)))))
-  , Tuple "Array.take" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.drop" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.reverse" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
-  , Tuple "Array.filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.find" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tMaybe (TyVar a)))))
-  , Tuple "Array.foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tArray (TyVar a)) (TyVar b)))))
-  , Tuple "Array.foldr" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))) (tArrow (TyVar b) (tArrow (tArray (TyVar a)) (TyVar b)))))
-  , Tuple "Array.map" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-  , Tuple "Array.mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
+  -- Array functions - now provided by lib/Data/Array.purs via import
+  -- Note: Array.fromFoldable and Array.toUnfoldable kept for List <-> Array conversion
   , Tuple "mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-  , Tuple "Array.replicate" (mkScheme [a] (tArrow tInt (tArrow (TyVar a) (tArray (TyVar a)))))
-  , Tuple "Array.zip" (mkScheme [a, b] (tArrow (tArray (TyVar a)) (tArrow (tArray (TyVar b)) (tArray (tTuple [TyVar a, TyVar b])))))
-  , Tuple "Array.dropWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.takeWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.span" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "init" (tArray (TyVar a)), Tuple "rest" (tArray (TyVar a))], row: Nothing }))))
-  , Tuple "Array.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-  , Tuple "Array.range" (mkScheme [] (tArrow tInt (tArrow tInt (tArray tInt))))
-  , Tuple "Array.any" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
-  , Tuple "Array.all" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
-  , Tuple "Array.concatMap" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tArray (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-  , Tuple "Array.concat" (mkScheme [a] (tArrow (tArray (tArray (TyVar a))) (tArray (TyVar a))))
-  , Tuple "Array.partition" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (TyRecord { fields: Map.fromFoldable [Tuple "yes" (tArray (TyVar a)), Tuple "no" (tArray (TyVar a))], row: Nothing }))))
-  , Tuple "Array.mapWithIndex" (mkScheme [a, b] (tArrow (tArrow tInt (tArrow (TyVar a) (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-  , Tuple "Array.nubByEq" (mkScheme [a] (tArrow (tArrow (TyVar a) (tArrow (TyVar a) tBool)) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-  , Tuple "Array.nub" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
 
-  -- Char comparison (needed for isAlpha, isDigit etc)
-  , Tuple "charLt" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
-  , Tuple "charGt" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
-  , Tuple "charLte" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
-  , Tuple "charGte" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
-  , Tuple "charEq" (mkScheme [] (tArrow tChar (tArrow tChar tBool)))
-  -- Character classification functions
-  , Tuple "isAlpha" (mkScheme [] (tArrow tChar tBool))
-  , Tuple "isDigit" (mkScheme [] (tArrow tChar tBool))
-  , Tuple "isAlphaNum" (mkScheme [] (tArrow tChar tBool))
-  , Tuple "isSpace" (mkScheme [] (tArrow tChar tBool))
-  , Tuple "isUpper" (mkScheme [] (tArrow tChar tBool))
-  , Tuple "isLower" (mkScheme [] (tArrow tChar tBool))
+  -- Char functions - now provided by lib/Data/Char.purs via import
 
-  -- String.CodeUnits functions (CU alias)
-  , Tuple "CU.charAt" (mkScheme [] (tArrow tInt (tArrow tString (tMaybe tChar))))
-  , Tuple "CU.length" (mkScheme [] (tArrow tString tInt))
-  , Tuple "CU.drop" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "CU.take" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "CU.singleton" (mkScheme [] (tArrow tChar tString))
-  , Tuple "CU.toCharArray" (mkScheme [] (tArrow tString (tArray tChar)))
-  , Tuple "CU.fromCharArray" (mkScheme [] (tArrow (tArray tChar) tString))
-
-  -- SCU alias (same as CU but different import alias)
-  , Tuple "SCU.charAt" (mkScheme [] (tArrow tInt (tArrow tString (tMaybe tChar))))
-  , Tuple "SCU.length" (mkScheme [] (tArrow tString tInt))
-  , Tuple "SCU.drop" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "SCU.take" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "SCU.singleton" (mkScheme [] (tArrow tChar tString))
-  , Tuple "SCU.toCharArray" (mkScheme [] (tArrow tString (tArray tChar)))
-  , Tuple "SCU.fromCharArray" (mkScheme [] (tArrow (tArray tChar) tString))
-
-  -- String functions
-  , Tuple "String.length" (mkScheme [] (tArrow tString tInt))
-  , Tuple "String.take" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "String.drop" (mkScheme [] (tArrow tInt (tArrow tString tString)))
-  , Tuple "String.joinWith" (mkScheme [] (tArrow tString (tArrow (tArray tString) tString)))
-  , Tuple "String.singleton" (mkScheme [] (tArrow tChar tString))
-  , Tuple "String.toCodePointArray" (mkScheme [] (tArrow tString (tArray tChar)))
-  , Tuple "String.toLower" (mkScheme [] (tArrow tString tString))
-  , Tuple "String.toUpper" (mkScheme [] (tArrow tString tString))
-  , Tuple "String.contains" (mkScheme [] (tArrow tString (tArrow tString tBool)))
-  , Tuple "String.replaceAll" (mkScheme [] (tArrow tString (tArrow tString (tArrow tString tString))))
-  , Tuple "String.Pattern" (mkScheme [] (tArrow tString tString))  -- Pattern constructor
-  , Tuple "StringPattern.Pattern" (mkScheme [] (tArrow tString tString))  -- StringPattern.Pattern alias
-  , Tuple "String.split" (mkScheme [] (tArrow tString (tArrow tString (tArray tString))))
-  , Tuple "String.stripPrefix" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tString))))
-  , Tuple "String.indexOf" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tInt))))
-  , Tuple "String.lastIndexOf" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tInt))))
-  , Tuple "String.Replacement" (mkScheme [] (tArrow tString tString))  -- Replacement constructor
+  -- String functions - now provided by lib/Data/String.purs via import
+  -- Note: String.CodeUnits (CU/SCU) aliases need to be added to the library
 
   -- Maybe functions
   , Tuple "Just" (mkScheme [a] (tArrow (TyVar a) (tMaybe (TyVar a))))
@@ -346,38 +266,9 @@ builtinPrelude = Map.fromFoldable
   -- Applicative/Monad pure (simplified - works for all m a)
   , Tuple "pure" (mkScheme [a, b] (tArrow (TyVar a) (TyVar b)))
 
-  -- Map functions
-  , Tuple "Map.empty" (mkScheme [k, v] (tMap (TyVar k) (TyVar v)))
-  , Tuple "Map.singleton" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (TyVar v) (tMap (TyVar k) (TyVar v)))))
-  , Tuple "Map.insert" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (TyVar v) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v))))))
-  , Tuple "Map.lookup" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) (tMaybe (TyVar v)))))
-  , Tuple "Map.member" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) tBool)))
-  , Tuple "Map.keys" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (TyVar k))))
-  , Tuple "Map.values" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (TyVar v))))
-  , Tuple "Map.union" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
-  , Tuple "Map.fromFoldable" (mkScheme [k, v] (tArrow (tArray (tTuple [TyVar k, TyVar v])) (tMap (TyVar k) (TyVar v))))
-  , Tuple "Map.toUnfoldable" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (tTuple [TyVar k, TyVar v]))))
-  , Tuple "Map.delete" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
-  , Tuple "Map.mapMaybe" (mkScheme [k, a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tMap (TyVar k) (TyVar a)) (tMap (TyVar k) (TyVar b)))))
-  , Tuple "Map.size" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) tInt))
+  -- Map functions - now provided by lib/Data/Map.purs via import
 
-  -- Set functions
-  , Tuple "Set.empty" (mkScheme [a] (tSet (TyVar a)))
-  , Tuple "Set.singleton" (mkScheme [a] (tArrow (TyVar a) (tSet (TyVar a))))
-  , Tuple "Set.insert" (mkScheme [a] (tArrow (TyVar a) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.member" (mkScheme [a] (tArrow (TyVar a) (tArrow (tSet (TyVar a)) tBool)))
-  , Tuple "Set.delete" (mkScheme [a] (tArrow (TyVar a) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.union" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.difference" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.fromFoldable" (mkScheme [a] (tArrow (tArray (TyVar a)) (tSet (TyVar a))))
-  , Tuple "Set.toUnfoldable" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArray (TyVar a))))
-  , Tuple "Set.map" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tSet (TyVar a)) (tSet (TyVar b)))))
-  , Tuple "Set.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tSet (TyVar a)) (tSet (TyVar b)))))
-  , Tuple "Set.filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.size" (mkScheme [a] (tArrow (tSet (TyVar a)) tInt))
-  , Tuple "Set.isEmpty" (mkScheme [a] (tArrow (tSet (TyVar a)) tBool))
-  , Tuple "Set.intersection" (mkScheme [a] (tArrow (tSet (TyVar a)) (tArrow (tSet (TyVar a)) (tSet (TyVar a)))))
-  , Tuple "Set.findMin" (mkScheme [a] (tArrow (tSet (TyVar a)) (tMaybe (TyVar a))))
+  -- Set functions - now provided by lib/Data/Set.purs via import
 
   -- Foldable functions
   , Tuple "foldl" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b))))) -- generic Foldable
