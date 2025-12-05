@@ -103,3 +103,71 @@ fromCharArray :: Array Char -> String
 fromCharArray cs = fromCharArrayImpl cs
 
 foreign import fromCharArrayImpl :: Array Char -> String
+
+-- String.CodeUnits (CU) functions
+
+-- Index into string (by code unit)
+codeUnitIndex :: Int -> String -> Maybe Char
+codeUnitIndex i s = codeUnitIndexImpl i s
+
+foreign import codeUnitIndexImpl :: Int -> String -> Maybe Char
+
+-- Take n code units
+codeUnitTake :: Int -> String -> String
+codeUnitTake n s = codeUnitTakeImpl n s
+
+foreign import codeUnitTakeImpl :: Int -> String -> String
+
+-- Drop n code units
+codeUnitDrop :: Int -> String -> String
+codeUnitDrop n s = codeUnitDropImpl n s
+
+foreign import codeUnitDropImpl :: Int -> String -> String
+
+-- Length in code units
+codeUnitLength :: String -> Int
+codeUnitLength s = codeUnitLengthImpl s
+
+foreign import codeUnitLengthImpl :: String -> Int
+
+-- Index of substring
+indexOf :: String -> String -> Maybe Int
+indexOf pattern s = indexOfImpl pattern s
+
+foreign import indexOfImpl :: String -> String -> Maybe Int
+
+-- Uncons (split first char from rest)
+uncons :: String -> Maybe { head :: Char, tail :: String }
+uncons s = unconsImpl s
+
+foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String }
+
+-- String.CodePoints (SCU) functions
+
+-- To code point array
+toCodePointArray :: String -> Array Int
+toCodePointArray s = toCodePointArrayImpl s
+
+-- Slice substring
+slice :: Int -> Int -> String -> String
+slice start end s = sliceImpl start end s
+
+foreign import sliceImpl :: Int -> Int -> String -> String
+
+-- Null check
+null :: String -> Boolean
+null s = nullImpl s
+
+foreign import nullImpl :: String -> Boolean
+
+-- Code unit at index (returns Int instead of Char)
+codePointAt :: Int -> String -> Maybe Int
+codePointAt i s = codePointAtImpl i s
+
+foreign import codePointAtImpl :: Int -> String -> Maybe Int
+
+-- From code point array
+fromCodePointArray :: Array Int -> String
+fromCodePointArray cps = fromCodePointArrayImpl cps
+
+foreign import fromCodePointArrayImpl :: Array Int -> String

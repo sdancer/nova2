@@ -435,11 +435,17 @@ genPattern (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
-      -- Use original case for nullary constructors, snake_case for others
-      atomName = if isNullaryConstructor conName then conName else snakeCase conName
-  in if List.null pats
-     then ":" <> atomName
-     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "}"
+      -- Always use snake_case for consistency with generated data type constructors
+      atomName = snakeCase conName
+  in case conName of
+     -- Special handling for List constructors -> native Elixir lists
+     "Nil" -> "[]"
+     "Cons" -> case List.fromFoldable pats of
+       List.Cons h (List.Cons t List.Nil) -> "[" <> genPattern h <> " | " <> genPattern t <> "]"
+       _ -> "{:cons, " <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "}"
+     _ -> if List.null pats
+          then ":" <> atomName
+          else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "}"
 genPattern (PatRecord fields) =
   "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
   where
@@ -469,11 +475,17 @@ genPatternWithUsed used (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
-      -- Use original case for nullary constructors, snake_case for others
-      atomName = if isNullaryConstructor conName then conName else snakeCase conName
-  in if List.null pats
-     then ":" <> atomName
-     else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "}"
+      -- Always use snake_case for consistency with generated data type constructors
+      atomName = snakeCase conName
+  in case conName of
+     -- Special handling for List constructors -> native Elixir lists
+     "Nil" -> "[]"
+     "Cons" -> case List.fromFoldable pats of
+       List.Cons h (List.Cons t List.Nil) -> "[" <> genPatternWithUsed used h <> " | " <> genPatternWithUsed used t <> "]"
+       _ -> "{:cons, " <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "}"
+     _ -> if List.null pats
+          then ":" <> atomName
+          else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "}"
 genPatternWithUsed used (PatRecord fields) =
   "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
   where
@@ -837,9 +849,9 @@ genExpr' ctx _ (ExprVar name) =
                       Nothing -> name
                 in "(&" <> translateQualified (intercalate "." modParts) funcName <> "/2)"
            else snakeCase name
-      -- Handle nullary data constructors as atoms (e.g., LytRoot -> :LytRoot)
+      -- Handle nullary data constructors as atoms (e.g., LytRoot -> :lyt_root)
       else if isNullaryConstructor name
-      then ":" <> name
+      then ":" <> snakeCase name
       -- If it's a module function used as a value (not in call position),
       -- generate a function reference &func/arity
       else if isModuleFunc ctx name

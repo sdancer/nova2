@@ -63,6 +63,84 @@ defmodule Nova.Compiler.Unify do
 
 
 
+  def are_equivalent_types(n1, n2) do
+    cond do
+      ((n1 == n2)) ->
+        true
+      (((n1 == "List") and (n2 == "Array"))) ->
+        true
+      (((n1 == "Array") and (n2 == "List"))) ->
+        true
+      (true) ->
+        false
+    end
+  end
+
+
+
+  def is_record_type_alias(name) do
+    cond do
+      ((name == "TypeClass")) ->
+        true
+      ((name == "TypeClassInstance")) ->
+        true
+      ((name == "NewtypeDecl")) ->
+        true
+      ((name == "FunctionDecl")) ->
+        true
+      ((name == "FunctionDeclaration")) ->
+        true
+      ((name == "TypeSig")) ->
+        true
+      ((name == "DataType")) ->
+        true
+      ((name == "DataConstructor")) ->
+        true
+      ((name == "DataField")) ->
+        true
+      ((name == "TypeAlias")) ->
+        true
+      ((name == "ModuleDecl")) ->
+        true
+      ((name == "ModuleExports")) ->
+        true
+      ((name == "ImportDecl")) ->
+        true
+      ((name == "InfixDecl")) ->
+        true
+      ((name == "Constraint")) ->
+        true
+      ((name == "ForeignImport")) ->
+        true
+      ((name == "TypeDecl")) ->
+        true
+      ((name == "LetBind")) ->
+        true
+      ((name == "CaseClause")) ->
+        true
+      ((name == "GuardedExpr")) ->
+        true
+      ((name == "PatResult")) ->
+        true
+      ((name == "InstantiateResult")) ->
+        true
+      ((name == "InferResult")) ->
+        true
+      ((name == "Env")) ->
+        true
+      ((name == "Scheme")) ->
+        true
+      ((name == "TVar")) ->
+        true
+      ((name == "LiftedLambda")) ->
+        true
+      (true) ->
+        false
+    end
+  end
+
+
+
   def unify(({:ty_var, v}), t) do
     bind_var(v, t)
   end
@@ -73,12 +151,30 @@ defmodule Nova.Compiler.Unify do
 
   def unify(({:ty_con, c1}), ({:ty_con, c2})) do
     cond do
-      ((c1.name != c2.name)) ->
+      (not((are_equivalent_types(c1.name, c2.name)))) ->
         {:left, ({:type_mismatch, ({:ty_con, c1}), ({:ty_con, c2})})}
       ((Nova.Runtime.length(c1.args) != Nova.Runtime.length(c2.args))) ->
         {:left, ({:arity_mismatch, c1.name, (Nova.Runtime.length(c1.args)), (Nova.Runtime.length(c2.args))})}
       (true) ->
         unify_many(c1.args, c2.args)
+    end
+  end
+
+  def unify(({:ty_con, c}), ({:ty_record, r})) do
+    cond do
+      (((Nova.Runtime.length(c.args) == 0) and is_record_type_alias(c.name))) ->
+        {:right, Nova.Compiler.Types.empty_subst()}
+      (true) ->
+        {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_record, r})})}
+    end
+  end
+
+  def unify(({:ty_record, r}), ({:ty_con, c})) do
+    cond do
+      (((Nova.Runtime.length(c.args) == 0) and is_record_type_alias(c.name))) ->
+        {:right, Nova.Compiler.Types.empty_subst()}
+      (true) ->
+        {:left, ({:type_mismatch, ({:ty_record, r}), ({:ty_con, c})})}
     end
   end
 

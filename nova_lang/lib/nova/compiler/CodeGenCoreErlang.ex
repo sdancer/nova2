@@ -130,7 +130,7 @@ defmodule Nova.Compiler.CodeGenCoreErlang do
     %{ctx | locals: Nova.Set.insert(name, ctx.locals)}
   end
 
-  def add_locals_from_pattern({:pat_wildcard, ctx}) do
+  def add_locals_from_pattern(:pat_wildcard, ctx) do
     ctx
   end
 
@@ -168,7 +168,7 @@ defmodule Nova.Compiler.CodeGenCoreErlang do
     
       add_pattern_vars = Nova.Runtime.fix2(fn add_pattern_vars -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {({:pat_var, n}), s} -> Nova.Set.insert(n, s)
-        {{:pat_wildcard, s}} -> s
+        {:pat_wildcard, s} -> s
         {({:pat_lit, _}), s} -> s
         {({:pat_con, _, pats}), s} -> Nova.Runtime.foldr(add_pattern_vars, s, pats)
         {({:pat_record, fields}), s} -> Nova.Runtime.foldr((fn ({:tuple, _, p}) -> fn acc -> add_pattern_vars.(p).(acc) end end), s, fields)
@@ -300,7 +300,7 @@ end
   all_imports = Nova.Array.concat_map(get_imports, (Nova.Array.from_foldable(m.declarations)))
   import_map = Nova.Map.from_foldable(all_imports)
   grouped = group_functions(all_funcs)
-  unique_funcs = Nova.Array.nub_by_eq((fn a -> fn b -> (((a.name == b.name) and a.arity) == b.arity) end end), (Nova.Runtime.map((fn g -> %{name: g.name, arity: g.arity} end), grouped)))
+  unique_funcs = Nova.Array.nub_by_eq((fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end), (Nova.Runtime.map((fn g -> %{name: g.name, arity: g.arity} end), grouped)))
   exports = Nova.Runtime.intercalate(", ", (Nova.Runtime.map((fn f -> Nova.Runtime.append(Nova.Runtime.append(atom(f.name), "/"), Nova.Runtime.show(f.arity)) end), unique_funcs)))
   ctx = %{(empty_ctx(mod_name)) | module_funcs: Nova.Set.from_foldable((Nova.Runtime.map(& &1.name, unique_funcs))), func_arities: unique_funcs, imports: import_map}
   func_defs = Nova.Runtime.intercalate("\n\n", (Nova.Runtime.map((fn auto_p0 -> gen_function_group(ctx, auto_p0) end), grouped)))
@@ -329,8 +329,8 @@ end)), func_defs), "\nend\n")
 
   def group_functions(funcs) do
     
-      keys = Nova.Array.nub_by_eq((fn a -> fn b -> (((a.name == b.name) and a.arity) == b.arity) end end), (Nova.Runtime.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
-      mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter((fn f -> (((f.name == k.name) and Nova.List.length(f.parameters)) == k.arity) end), funcs)} end
+      keys = Nova.Array.nub_by_eq((fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end), (Nova.Runtime.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
+      mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter((fn f -> ((f.name == k.name) and (Nova.List.length(f.parameters) == k.arity)) end), funcs)} end
       Nova.Runtime.map(mk_group, keys)
   end
 
@@ -354,7 +354,7 @@ end)), func_defs), "\nend\n")
     
       is_complex = fn auto_arg0 -> case auto_arg0 do
         ({:pat_var, _}) -> false
-        :PatWildcard -> false
+        :pat_wildcard -> false
         _ -> true
       end end
       Nova.List.any(is_complex, pats)
@@ -366,7 +366,7 @@ end)), func_defs), "\nend\n")
     false
   end
 
-  def has_complex_pattern_single(:PatWildcard) do
+  def has_complex_pattern_single(:pat_wildcard) do
     false
   end
 
@@ -495,7 +495,7 @@ end
     %{str: core_var(name), counter: n}
   end
 
-  def gen_pattern_with_counter({:pat_wildcard, n}) do
+  def gen_pattern_with_counter(:pat_wildcard, n) do
     %{str: Nova.Runtime.append("_W", Nova.Runtime.show(n)), counter: (n + 1)}
   end
 
@@ -570,7 +570,7 @@ end
   def gen_expr(ctx, ({:expr_var, name})) do
     
       is_constructor_name = fn s -> case Nova.String.take(1, s) do
-        c -> (((c >= "A") and c) <= "Z")
+        c -> ((c >= "A") and (c <= "Z"))
       end end
       if (name == "otherwise") do
   "'true'"
@@ -624,7 +624,7 @@ end
   def gen_expr(ctx, ({:expr_app, f, arg})) do
     
       is_constructor_name = fn s -> case Nova.String.take(1, s) do
-        c -> (((c >= "A") and c) <= "Z")
+        c -> ((c >= "A") and (c <= "Z"))
       end end
       
   %{func: func, args: args} = collect_args((Nova.Compiler.Ast.expr_app(f, arg)))
@@ -646,7 +646,7 @@ end
                   
                     declared_arity = lookup_arity(name, ctx)
                     num_args = Nova.Runtime.length(args)
-                    if (((declared_arity == 0) and num_args) > 0) do
+                    if ((declared_arity == 0) and (num_args > 0)) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("let <_Fn0> = apply ", atom(name)), "/0()\n"), "      in apply _Fn0("), Nova.Runtime.intercalate(", ", (Nova.Runtime.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args)))), ")")
 else
   if (num_args >= declared_arity) do
@@ -925,7 +925,7 @@ end
     true
   end
 
-  def is_simple_pattern(:PatWildcard) do
+  def is_simple_pattern(:pat_wildcard) do
     true
   end
 
@@ -1108,7 +1108,7 @@ end end end
     true
   end
 
-  def is_wildcard_pattern(:PatWildcard) do
+  def is_wildcard_pattern(:pat_wildcard) do
     true
   end
 
@@ -1390,7 +1390,7 @@ end
 
   def to_snake_case(s) do
     
-      is_upper = fn c -> (((c >= ?A) and c) <= ?Z) end
+      is_upper = fn c -> ((c >= ?A) and (c <= ?Z)) end
       to_lower = fn c -> Nova.Runtime.from_maybe(c, (Nova.String.char_at(0, (Nova.String.to_lower((Nova.String.singleton(c))))))) end
       convert_char = fn c -> if is_upper.(c) do
         [?_, to_lower.(c)]
@@ -1410,7 +1410,7 @@ end
     else
       case Nova.List.uncons(elems) do
         :nothing -> "[]"
-        {:just, %{head: h, tail: :nil}} -> Nova.Runtime.append(Nova.Runtime.append("[", gen_expr(ctx, h)), "]")
+        {:just, %{head: h, tail: []}} -> Nova.Runtime.append(Nova.Runtime.append("[", gen_expr(ctx, h)), "]")
         {:just, %{head: h, tail: t}} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("[", gen_expr(ctx, h)), "|"), gen_core_list(ctx, t)), "]")
       end
     end

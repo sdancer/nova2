@@ -40,7 +40,7 @@ defmodule Nova.Compiler.Parser do
 
 
   def skip_newlines(tokens) do
-    Nova.Array.drop_while((fn t -> (t.token_type == :TokNewline) end), tokens)
+    Nova.Array.drop_while((fn t -> (t.token_type == :tok_newline) end), tokens)
   end
 
 
@@ -52,14 +52,14 @@ defmodule Nova.Compiler.Parser do
 
 
   def strip_newlines(auto_arg0) do
-    Nova.Array.filter((fn t -> (t.token_type != :TokNewline) end), auto_arg0)
+    Nova.Array.filter((fn t -> (t.token_type != :tok_newline) end), auto_arg0)
   end
 
 
 
   def is_lower_case(s) do
     case Nova.String.char_at(0, s) do
-      {:just, c} -> (((c >= ?a) and c) <= ?z)
+      {:just, c} -> ((c >= ?a) and (c <= ?z))
       :nothing -> false
     end
   end
@@ -70,7 +70,7 @@ defmodule Nova.Compiler.Parser do
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == expected) do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == expected)) do
       success(expected, (Nova.Array.drop(1, ts)))
     else
       failure((Nova.Runtime.append(Nova.Runtime.append("Expected keyword '", expected), "'")))
@@ -85,7 +85,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokIdentifier) and t.value) == expected) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value == expected)) do
       success(expected, (Nova.Array.drop(1, ts)))
     else
       failure((Nova.Runtime.append(Nova.Runtime.append("Expected identifier '", expected), "'")))
@@ -100,7 +100,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == expected) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == expected)) do
       success(expected, (Nova.Array.drop(1, ts)))
     else
       failure((Nova.Runtime.append(Nova.Runtime.append("Expected operator '", expected), "'")))
@@ -115,7 +115,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == expected) do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == expected)) do
       success(expected, (Nova.Array.drop(1, ts)))
     else
       failure((Nova.Runtime.append(Nova.Runtime.append("Expected delimiter '", expected), "'")))
@@ -128,7 +128,7 @@ end
 
   def expect_colon(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == ":") do
+      {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ":")) do
           success(":", (Nova.Array.drop(1, tokens)))
         else
           failure("Expected ':'  operator")
@@ -143,7 +143,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
       success((Nova.Compiler.Ast.expr_var(t.value)), (Nova.Array.drop(1, ts)))
     else
       failure("Expected identifier")
@@ -158,7 +158,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
       success(t.value, (Nova.Array.drop(1, ts)))
     else
       failure("Expected identifier")
@@ -173,7 +173,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokIdentifier) or t.token_type) == :TokKeyword) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) or (t.token_type == :tok_keyword)) do
       success(t.value, (Nova.Array.drop(1, ts)))
     else
       failure("Expected label")
@@ -202,14 +202,14 @@ end
   ts = skip_newlines(tokens)
   case Nova.Array.head(ts) do
   {:just, t} -> case t.token_type do
-      :TokNumber -> if Nova.String.contains((Nova.String.pattern(".")), t.value) do
+      :tok_number -> if Nova.String.contains((Nova.String.pattern(".")), t.value) do
           success((Nova.Compiler.Ast.lit_number((read_number.(t.value)))), (Nova.Array.drop(1, ts)))
         else
           success((Nova.Compiler.Ast.lit_int((read_int.(t.value)))), (Nova.Array.drop(1, ts)))
         end
-      :TokString -> success((Nova.Compiler.Ast.lit_string(t.value)), (Nova.Array.drop(1, ts)))
-      :TokChar -> success((Nova.Compiler.Ast.lit_char((first_char.(t.value)))), (Nova.Array.drop(1, ts)))
-      :TokIdentifier -> if (t.value == "true") do
+      :tok_string -> success((Nova.Compiler.Ast.lit_string(t.value)), (Nova.Array.drop(1, ts)))
+      :tok_char -> success((Nova.Compiler.Ast.lit_char((first_char.(t.value)))), (Nova.Array.drop(1, ts)))
+      :tok_identifier -> if (t.value == "true") do
           success((Nova.Compiler.Ast.lit_bool(true)), (Nova.Array.drop(1, ts)))
         else
           if (t.value == "false") do
@@ -230,7 +230,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (t.token_type == :TokString) do
+  {:just, t} -> if (t.token_type == :tok_string) do
       success(t.value, (Nova.Array.drop(1, ts)))
     else
       failure("Expected string literal")
@@ -282,7 +282,7 @@ end
   def parse_qualified_identifier(tokens) do
     
       is_upper_case = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       parse_qualified_identifier_inner = fn toks -> case parse_separated((&parse_identifier_name/1), (fn t -> expect_operator(t, ".") end), toks) do
@@ -321,9 +321,9 @@ end
       
   tokens_prime = skip_newlines(tokens)
   case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (((t.token_type == :TokIdentifier) and t.column) == 1) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and (t.column == 1)) do
       case Nova.Array.head((Nova.Array.drop(1, tokens_prime))) do
-        {:just, t_prime} -> if (((t_prime.token_type == :TokOperator) and t_prime.value) == "::") do
+        {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "::")) do
             failure("Not consuming top-level type signature")
           else
             parse_qualified_identifier_inner.(tokens_prime)
@@ -342,7 +342,7 @@ end
   def parse_qualified_identifier_for_guard(tokens) do
     
       is_upper_case = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       
@@ -388,7 +388,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == "forall") do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "forall")) do
       parse_forall_type(ts)
     else
       parse_function_type(tokens)
@@ -427,7 +427,7 @@ end
     {:right, {:tuple, left, rest}} ->
             ts = skip_newlines(rest)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "->") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "->")) do
          case parse_function_type((Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -453,7 +453,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
          case parse_separated((&parse_record_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, fields, rest}} ->
@@ -495,7 +495,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "[") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
          case parse_type((Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, elem_type, rest}} ->
@@ -518,7 +518,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          case parse_separated((&parse_type/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, elements, rest}} ->
@@ -549,7 +549,7 @@ end
       
   ts = skip_newlines(tokens)
   case Nova.Array.head(ts) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
          case parse_qualified_type_name(ts) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, name, rest}} ->
@@ -568,7 +568,7 @@ end
        end
    end
     else
-      if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+      if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
             case parse_type((Nova.Array.drop(1, ts))) do
       {:left, err} -> {:left, err}
       {:right, {:tuple, ty, rest}} ->
@@ -599,11 +599,11 @@ end
 
   def parse_type_atom(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (t.token_type == :TokNewline) do
+      {:just, t} -> if (t.token_type == :tok_newline) do
           
             rest = Nova.Array.drop(1, tokens)
             case Nova.Array.head(rest) do
-  {:just, t_prime} -> if (t_prime.token_type == :TokNewline) do
+  {:just, t_prime} -> if (t_prime.token_type == :tok_newline) do
       parse_type_atom(rest)
     else
       if (t_prime.column <= 1) do
@@ -615,10 +615,10 @@ end
   _ -> parse_type_atom(rest)
 end
         else
-          if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+          if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
             parse_record_type(tokens)
           else
-            if (t.token_type == :TokIdentifier) do
+            if (t.token_type == :tok_identifier) do
                      case parse_qualified_type_name(tokens) do
          {:left, err} -> {:left, err}
          {:right, {:tuple, name, rest}} ->
@@ -629,7 +629,7 @@ else
 end), rest)
        end
             else
-              if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+              if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
                         case parse_type((Nova.Array.drop(1, tokens))) do
           {:left, err} -> {:left, err}
           {:right, {:tuple, ty, rest}} ->
@@ -640,7 +640,7 @@ end), rest)
             end
         end
               else
-                if (((t.token_type == :TokDelimiter) and t.value) == "[") do
+                if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
                            case parse_type((Nova.Array.drop(1, tokens))) do
            {:left, err} -> {:left, err}
            {:right, {:tuple, elem_type, rest}} ->
@@ -673,7 +673,7 @@ end), rest)
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
       success((Nova.Compiler.Ast.pat_var(t.value)), (Nova.Array.drop(1, ts)))
     else
       failure("Expected variable pattern")
@@ -688,9 +688,9 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokIdentifier) and t.value) != "_") do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value != "_")) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
-        {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "@") do
+        {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "@")) do
                   case parse_simple_pattern((Nova.Array.drop(2, ts))) do
         {:left, err} -> {:left, err}
         {:right, {:tuple, pat, rest}} ->
@@ -714,7 +714,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokIdentifier) and t.value) == "_") do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value == "_")) do
       success(Nova.Compiler.Ast.pat_wildcard(), (Nova.Array.drop(1, ts)))
     else
       failure("Expected wildcard")
@@ -738,7 +738,7 @@ end
   def parse_constructor_pattern(tokens) do
     
       is_capital = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       case parse_qualified_constructor_name(tokens) do
@@ -792,7 +792,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          case parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, elements, rest}} ->
@@ -815,9 +815,9 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "[") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
-        {:just, t_prime} -> if (((t_prime.token_type == :TokDelimiter) and t_prime.value) == "]") do
+        {:just, t_prime} -> if ((t_prime.token_type == :tok_delimiter) and (t_prime.value == "]")) do
             success((Nova.Compiler.Ast.pat_list([])), (Nova.Array.drop(2, ts)))
           else
                   case parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
@@ -845,7 +845,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
          case parse_separated((&parse_record_field_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, fields, rest}} ->
@@ -892,7 +892,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          case parse_pattern((Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, pat, rest}} ->
@@ -920,15 +920,15 @@ end
   def parse_qualified_constructor_pattern_simple(tokens) do
     
       is_capital = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       
   ts = skip_newlines(tokens)
   case Nova.Array.head(ts) do
-  {:just, t} -> if ((t.token_type == :TokIdentifier) and is_capital.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and is_capital.(t.value)) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
-        {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == ".") do
+        {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == ".")) do
                   case parse_qualified_constructor_name(ts) do
         {:left, err} -> {:left, err}
         {:right, {:tuple, name, rest}} ->
@@ -959,7 +959,7 @@ end
     {:left, err} -> {:left, err}
     {:right, {:tuple, expr, rest}} ->
       case Nova.Array.head(rest) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "::") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "::")) do
             rest_prime = Nova.Array.drop(1, rest)
    case parse_type_atom_sequence(rest_prime) do
      {:left, err} -> {:left, err}
@@ -990,8 +990,8 @@ end
     case Nova.Array.head(tokens) do
       {:just, t} ->
         cond do
-          (t.token_type == :TokNewline) -> success(acc, tokens)
-          (((t.token_type == :TokOperator) and t.value) == "->") ->             rest = Nova.Array.drop(1, tokens)
+          (t.token_type == :tok_newline) -> success(acc, tokens)
+          ((t.token_type == :tok_operator) and (t.value == "->")) ->             rest = Nova.Array.drop(1, tokens)
       case parse_type_atom_sequence(rest) do
         {:left, err} -> {:left, err}
         {:right, {:tuple, right, rest_prime}} ->
@@ -1017,7 +1017,7 @@ end
     {:right, {:tuple, left, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "$") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "$")) do
             rest_prime_prime = skip_newlines((Nova.Array.drop(1, rest_prime)))
    case parse_dollar_expression(rest_prime_prime) do
      {:left, err} -> {:left, err}
@@ -1048,7 +1048,7 @@ end
     
       tokens_prime = skip_newlines(tokens)
       case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "#") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "#")) do
             rest = skip_newlines((Nova.Array.drop(1, tokens_prime)))
    case parse_composition_expression(rest) do
      {:left, err} -> {:left, err}
@@ -1066,12 +1066,12 @@ end
 
   def parse_composition_expression(tokens) do
     
-      is_composition_op = fn op -> (op == "<<<") or (op == ">>>") or (op == ">>") or (op == ">>=") end
+      is_composition_op = fn op -> ((((op == "<<<") or (op == ">>>")) or (op == ">>")) or (op == ">>=")) end
       case parse_logical_expression(tokens) do
   {:left, err} -> {:left, err}
   {:right, {:tuple, left, rest}} ->
     case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and is_composition_op.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_composition_op.(t.value)) do
          case parse_composition_expression((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -1092,7 +1092,7 @@ end
     {:left, err} -> {:left, err}
     {:right, {:tuple, left, rest}} ->
       case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and ((((t.value == "&&") or t.value) == "||"))) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (((t.value == "&&") or (t.value == "||")))) do
          case parse_logical_expression((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -1113,7 +1113,7 @@ end
     {:left, err} -> {:left, err}
     {:right, {:tuple, left, rest}} ->
       case Nova.Array.head(rest) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == ":") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ":")) do
          case parse_cons_expression((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -1131,14 +1131,14 @@ end
 
   def parse_comparison_expression(tokens) do
     
-      is_comparison_op = fn op -> (op == "==") or (op == "!=") or (op == "/=") or (op == "<") or (op == "<=") or (op == ">") or (op == ">=") end
+      is_comparison_op = fn op -> (((((((op == "==") or (op == "!=")) or (op == "/=")) or (op == "<")) or (op == "<=")) or (op == ">")) or (op == ">=")) end
       tokens_prime = skip_newlines(tokens)
 case parse_additive_expression(tokens_prime) do
   {:left, err} -> {:left, err}
   {:right, {:tuple, left, rest}} ->
         rest_prime = skip_newlines(rest)
     case Nova.Array.head(rest_prime) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and is_comparison_op.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_comparison_op.(t.value)) do
             rest_prime_prime = skip_newlines((Nova.Array.drop(1, rest_prime)))
    case parse_comparison_expression(rest_prime_prime) do
      {:left, err} -> {:left, err}
@@ -1157,12 +1157,12 @@ end
 
   def parse_additive_expression(tokens) do
     
-      is_additive_op = fn op -> (op == "+") or (op == "-") or (op == "++") or (op == "<>") end
+      is_additive_op = fn op -> ((((op == "+") or (op == "-")) or (op == "++")) or (op == "<>")) end
       case parse_multiplicative_expression(tokens) do
   {:left, err} -> {:left, err}
   {:right, {:tuple, left, rest}} ->
     case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and is_additive_op.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_additive_op.(t.value)) do
          case parse_additive_expression((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -1180,12 +1180,12 @@ end
 
   def parse_multiplicative_expression(tokens) do
     
-      is_mult_op = fn op -> (op == "*") or (op == "/") end
+      is_mult_op = fn op -> ((op == "*") or (op == "/")) end
       case parse_backtick_expression(tokens) do
   {:left, err} -> {:left, err}
   {:right, {:tuple, left, rest}} ->
     case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and is_mult_op.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_mult_op.(t.value)) do
          case parse_multiplicative_expression((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime}} ->
@@ -1204,9 +1204,9 @@ end
   def parse_backtick_expression(tokens) do
     
       parse_backtick_qualified = Nova.Runtime.fix2(fn parse_backtick_qualified -> fn name -> fn toks -> case Nova.Array.head(toks) do
-        {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == ".") do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ".")) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
-              {:just, t_prime} -> if (t_prime.token_type == :TokIdentifier) do
+              {:just, t_prime} -> if (t_prime.token_type == :tok_identifier) do
                   parse_backtick_qualified.((Nova.Runtime.append(Nova.Runtime.append(name, "."), t_prime.value))).((Nova.Array.drop(2, toks)))
                 else
                   success((Nova.Compiler.Ast.expr_var(name)), toks)
@@ -1219,7 +1219,7 @@ end
         _ -> success((Nova.Compiler.Ast.expr_var(name)), toks)
       end  end end end)
       parse_backtick_fn = fn toks -> case Nova.Array.head(toks) do
-        {:just, t} -> if (t.token_type == :TokIdentifier) do
+        {:just, t} -> if (t.token_type == :tok_identifier) do
             parse_backtick_qualified.(t.value).((Nova.Array.drop(1, toks)))
           else
             failure("Expected identifier in backtick expression")
@@ -1227,12 +1227,12 @@ end
         _ -> failure("Expected identifier in backtick expression")
       end end
       parse_backtick_rest = Nova.Runtime.fix2(fn parse_backtick_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
-        {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "`") do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "`")) do
                   case parse_backtick_fn.((Nova.Array.drop(1, rest))) do
         {:left, err} -> {:left, err}
         {:right, {:tuple, fn_, rest_prime}} ->
           case Nova.Array.head(rest_prime) do
-  {:just, t_prime} -> if (((t_prime.token_type == :TokOperator) and t_prime.value) == "`") do
+  {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "`")) do
          case parse_unary_expression((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime_prime}} ->
@@ -1261,9 +1261,9 @@ end
 
   def parse_unary_expression(tokens) do
     
-      is_unary_op = fn op -> (op == "-") or (op == "+") or (op == "!") end
+      is_unary_op = fn op -> (((op == "-") or (op == "+")) or (op == "!")) end
       case Nova.Array.head(tokens) do
-  {:just, t} -> if ((t.token_type == :TokOperator) and is_unary_op.(t.value)) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_unary_op.(t.value)) do
          case parse_unary_expression((Nova.Array.drop(1, tokens))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, expr, rest}} ->
@@ -1282,9 +1282,9 @@ end
     
       fold_app = fn fn_ -> fn args -> Nova.Array.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, fn_, args) end end
       maybe_parse_record_access = Nova.Runtime.fix2(fn maybe_parse_record_access -> fn expr -> fn toks -> case Nova.Array.head(toks) do
-        {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == ".") do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ".")) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
-              {:just, fld} -> if (fld.token_type == :TokIdentifier) do
+              {:just, fld} -> if (fld.token_type == :tok_identifier) do
                   maybe_parse_record_access.((Nova.Compiler.Ast.expr_record_access(expr, fld.value))).((Nova.Array.drop(2, toks)))
                 else
                   success(expr, toks)
@@ -1323,9 +1323,9 @@ end
   def maybe_parse_record_update(expr, tokens) do
     
       is_record_update = fn toks -> case Nova.Array.head(toks) do
-        {:just, t1} -> if (t1.token_type == :TokIdentifier) do
+        {:just, t1} -> if (t1.token_type == :tok_identifier) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
-              {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "=") do
+              {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "=")) do
                   true
                 else
                   false
@@ -1340,7 +1340,7 @@ end
       
   tokens_prime = skip_newlines(tokens)
   case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
       case is_record_update.((Nova.Array.drop(1, tokens_prime))) do
         true ->      case parse_record_update_fields((Nova.Array.drop(1, tokens_prime))) do
        {:left, err} -> {:left, err}
@@ -1391,13 +1391,13 @@ end
       looks_like_record_binding = fn toks -> 
         go = Nova.Runtime.fix2(fn go -> fn toks_prime -> fn depth -> case Nova.Array.head(toks_prime) do
           :nothing -> false
-          {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+          {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
               go.((Nova.Array.drop(1, toks_prime))).(((depth + 1)))
             else
-              if (((t.token_type == :TokDelimiter) and t.value) == "}") do
+              if ((t.token_type == :tok_delimiter) and (t.value == "}")) do
                 if (depth == 1) do
                   case Nova.Array.head((skip_newlines((Nova.Array.drop(1, toks_prime))))) do
-                    {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "=") do
+                    {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "=")) do
                         true
                       else
                         false
@@ -1413,11 +1413,11 @@ end
             end
         end  end end end)
         go.(toks).(1) end
-      is_continuation_token = fn t -> ((t.token_type == :TokDelimiter) and ((((((t.value == "[") or t.value) == "(") or t.value) == "{"))) end
+      is_continuation_token = fn t -> ((t.token_type == :tok_delimiter) and ((((t.value == "[") or (t.value == "(")) or (t.value == "{")))) end
       looks_like_binding = fn toks -> case Nova.Array.head(toks) do
-        {:just, t1} -> if (t1.token_type == :TokIdentifier) do
+        {:just, t1} -> if (t1.token_type == :tok_identifier) do
             case Nova.Array.head((skip_newlines((Nova.Array.drop(1, toks))))) do
-              {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "=") do
+              {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "=")) do
                   true
                 else
                   false
@@ -1425,7 +1425,7 @@ end
               _ -> false
             end
           else
-            if (((t1.token_type == :TokDelimiter) and t1.value) == "{") do
+            if ((t1.token_type == :tok_delimiter) and (t1.value == "{")) do
               looks_like_record_binding.((Nova.Array.drop(1, toks)))
             else
               false
@@ -1434,7 +1434,7 @@ end
         _ -> false
       end end
       case Nova.Array.head(tokens) do
-  {:just, t} -> if (t.token_type == :TokNewline) do
+  {:just, t} -> if (t.token_type == :tok_newline) do
       
         rest = skip_newlines((Nova.Array.drop(1, tokens)))
         case Nova.Array.head(rest) do
@@ -1447,7 +1447,7 @@ end
           {:left, _} -> {:tuple, acc, rest}
         end
       else
-        if (((t_prime.column > 1) and t_prime.column) > base) do
+        if ((t_prime.column > 1) and (t_prime.column > base)) do
           case parse_term(rest) do
             {:right, ({:tuple, arg, rest_prime})} -> collect_application_args(rest_prime, (Nova.Array.snoc(acc, arg)), base)
             {:left, _} -> {:tuple, acc, rest}
@@ -1494,7 +1494,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
       
         inner = skip_newlines((Nova.Array.drop(1, ts)))
         case Nova.Array.head(inner) do
@@ -1505,7 +1505,7 @@ end
           case Nova.Array.head(after_op) do
   {:just, close_tok} ->
     cond do
-      (((close_tok.token_type == :TokDelimiter) and close_tok.value) == ")") -> success((Nova.Compiler.Ast.expr_section(op_tok.value)), (Nova.Array.drop(1, after_op)))
+      ((close_tok.token_type == :tok_delimiter) and (close_tok.value == ")")) -> success((Nova.Compiler.Ast.expr_section(op_tok.value)), (Nova.Array.drop(1, after_op)))
       true ->   case parse_expression((Nova.Array.drop(1, inner))) do
     {:left, err} -> {:left, err}
     {:right, {:tuple, expr, rest}} ->
@@ -1537,7 +1537,7 @@ end
           case Nova.Array.head(after_op) do
   {:just, close_t} ->
     cond do
-      (((close_t.token_type == :TokDelimiter) and close_t.value) == ")") -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
+      ((close_t.token_type == :tok_delimiter) and (close_t.value == ")")) -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
       true ->   case parse_expression(inner) do
     {:left, err} -> {:left, err}
     {:right, {:tuple, e, r}} ->
@@ -1600,7 +1600,7 @@ end
           case Nova.Array.head(after_op) do
   {:just, close_t} ->
     cond do
-      (((close_t.token_type == :TokDelimiter) and close_t.value) == ")") -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
+      ((close_t.token_type == :tok_delimiter) and (close_t.value == ")")) -> success((Nova.Compiler.Ast.expr_section_left(expr, op_tok.value)), (Nova.Array.drop(1, after_op)))
       true ->   case parse_expression(inner) do
     {:left, err} -> {:left, err}
     {:right, {:tuple, e, r}} ->
@@ -1662,7 +1662,7 @@ end
 
 
   def is_operator_token(tok) do
-    (tok.token_type == :TokOperator) and (tok.value != "=") and (tok.value != "|") and (tok.value != "\\") and (tok.value != "->") and (tok.value != "<-") and (tok.value != "::") and (tok.value != "=>")
+    ((((((((tok.token_type == :tok_operator) and (tok.value != "=")) and (tok.value != "|")) and (tok.value != "\\")) and (tok.value != "->")) and (tok.value != "<-")) and (tok.value != "::")) and (tok.value != "=>"))
   end
 
 
@@ -1671,7 +1671,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
          case parse_separated((&parse_record_field_expr/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, fields, rest}} ->
@@ -1712,9 +1712,9 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "[") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "[")) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
-        {:just, t_prime} -> if (((t_prime.token_type == :TokDelimiter) and t_prime.value) == "]") do
+        {:just, t_prime} -> if ((t_prime.token_type == :tok_delimiter) and (t_prime.value == "]")) do
             success((Nova.Compiler.Ast.expr_list([])), (Nova.Array.drop(2, ts)))
           else
                   case parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
@@ -1742,7 +1742,7 @@ end
     
       ts = skip_newlines(tokens)
       case Nova.Array.head(ts) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          case parse_separated((&parse_expression/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, elements, rest}} ->
@@ -1770,9 +1770,9 @@ end
   def parse_let_expression(tokens) do
     
       is_type_signature_line = fn toks -> case Nova.Array.head(toks) do
-        {:just, t1} -> if (t1.token_type == :TokIdentifier) do
+        {:just, t1} -> if (t1.token_type == :tok_identifier) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
-              {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "::") do
+              {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "::")) do
                   true
                 else
                   false
@@ -1785,14 +1785,14 @@ end
         _ -> false
       end end
       skip_to_next_let_line = Nova.Runtime.fix(fn skip_to_next_let_line -> fn toks -> case Nova.Array.head(toks) do
-        {:just, t} -> if (t.token_type == :TokNewline) do
+        {:just, t} -> if (t.token_type == :tok_newline) do
             
               rest = Nova.Array.drop(1, toks)
               case Nova.Array.head(rest) do
-  {:just, t_prime} -> if (((t_prime.token_type == :TokKeyword) and t_prime.value) == "in") do
+  {:just, t_prime} -> if ((t_prime.token_type == :tok_keyword) and (t_prime.value == "in")) do
       rest
     else
-      if (t_prime.token_type == :TokNewline) do
+      if (t_prime.token_type == :tok_newline) do
         skip_to_next_let_line.(rest)
       else
         rest
@@ -1807,7 +1807,7 @@ end
       end  end end)
       collect_let_bindings = Nova.Runtime.fix2(fn collect_let_bindings -> fn toks -> fn acc ->       toks_prime = skip_newlines(toks)
    case Nova.Array.head(toks_prime) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == "in") do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "in")) do
       success(acc, toks_prime)
     else
       if is_type_signature_line.(toks_prime) do
@@ -1871,13 +1871,13 @@ end
   def parse_function_style_binding(tokens) do
     
       is_upper_case = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       collect_params = Nova.Runtime.fix2(fn collect_params -> fn toks -> fn acc -> 
         toks_prime = skip_newlines(toks)
         case Nova.Array.head(toks_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "=") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "=")) do
       {:tuple, (Nova.Array.reverse(acc)), toks_prime}
     else
       case parse_simple_pattern(toks_prime) do
@@ -1891,7 +1891,7 @@ end
     end
 end  end end end)
       case Nova.Array.head(tokens) do
-  {:just, t} -> if ((t.token_type == :TokIdentifier) and not((is_upper_case.(t.value)))) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and not((is_upper_case.(t.value)))) do
       
         name = t.value
         rest = Nova.Array.drop(1, tokens)
@@ -1980,7 +1980,7 @@ end
       parse_additional_guard = Nova.Runtime.fix4(fn parse_additional_guard -> fn toks -> fn pat -> fn clause_indent -> fn clause_acc -> 
         toks_prime = skip_newlines(toks)
         case Nova.Array.head(toks_prime) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "|") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
          case parse_guard_expression((Nova.Array.drop(1, toks_prime))) do
   {:right, ({:tuple, guard, after_guard})} ->   case expect_operator(after_guard, "->") do
     {:left, err} -> {:left, err}
@@ -1994,7 +1994,7 @@ end
             new_acc = Nova.Array.snoc(clause_acc, clause)
             rest_after_body = skip_newlines(rest)
       case Nova.Array.head(rest_after_body) do
-  {:just, t_prime} -> if (((t_prime.token_type == :TokOperator) and t_prime.value) == "|") do
+  {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "|")) do
       parse_additional_guard.(rest_after_body).(pat).(clause_indent).(new_acc)
     else
       parse_case_clauses_at(rest, clause_indent, new_acc)
@@ -2020,7 +2020,7 @@ end  end end end end end)
     else
       failure("Expected case clause")
     end
-  {:just, t} -> if ((t.token_type == :TokOperator) and (t.value == "|") and (Nova.Array.length(acc) > 0)) do
+  {:just, t} -> if (((t.token_type == :tok_operator) and (t.value == "|")) and (Nova.Array.length(acc) > 0)) do
       case Nova.Array.last(acc) do
         {:just, prev_clause} -> parse_additional_guard.(tokens_prime).(prev_clause.pattern).(indent).(acc)
         :nothing -> failure("Internal error: no previous clause")
@@ -2036,7 +2036,7 @@ end  end end end end end)
             {:right, ({:tuple, clause, rest})} -> 
                 rest_prime = skip_newlines(rest)
                 case Nova.Array.head(rest_prime) do
-  {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "|") do
+  {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "|")) do
       parse_additional_guard.(rest_prime).(clause.pattern).(indent).((Nova.Array.snoc(acc, clause)))
     else
       parse_case_clauses_at(rest, indent, (Nova.Array.snoc(acc, clause)))
@@ -2060,7 +2060,7 @@ end
   def parse_case_clause(tokens) do
     
       has_more_guards = fn toks -> case Nova.Array.head((skip_newlines(toks))) do
-        {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "|") do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
             true
           else
             false
@@ -2068,7 +2068,7 @@ end
         _ -> false
       end end
       is_closing_delimiter = fn toks -> case Nova.Array.head((skip_newlines(toks))) do
-        {:just, t} -> if ((t.token_type == :TokDelimiter) and ((((((t.value == ")") or t.value) == "]") or t.value) == "}"))) do
+        {:just, t} -> if ((t.token_type == :tok_delimiter) and ((((t.value == ")") or (t.value == "]")) or (t.value == "}")))) do
             true
           else
             false
@@ -2111,7 +2111,7 @@ end
     
       tokens_prime = skip_newlines(tokens)
       case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "|") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
       case parse_guard_expression((Nova.Array.drop(1, tokens_prime))) do
         {:right, ({:tuple, guard, rest})} -> {:tuple, ({:just, guard}), rest}
         {:left, _} -> {:tuple, :nothing, tokens}
@@ -2153,7 +2153,7 @@ end
     {:right, {:tuple, g, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == ",") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == ",")) do
       parse_guard_parts((Nova.Array.drop(1, rest_prime)), (Nova.Array.snoc(acc, g)))
     else
       success((Nova.Array.snoc(acc, g)), rest_prime)
@@ -2171,7 +2171,7 @@ end
         ({:pat_var, v}) -> Nova.Compiler.Ast.expr_var(v)
         ({:pat_con, c, args}) -> Nova.Runtime.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, (Nova.Compiler.Ast.expr_var(c)), (Nova.Runtime.map(pattern_to_expr, args)))
         ({:pat_lit, l}) -> Nova.Compiler.Ast.expr_lit(l)
-        :PatWildcard -> Nova.Compiler.Ast.expr_var("_")
+        :pat_wildcard -> Nova.Compiler.Ast.expr_var("_")
         ({:pat_record, fields}) -> Nova.Compiler.Ast.expr_record((Nova.Runtime.map((fn ({:tuple, k, p}) -> {:tuple, k, (pattern_to_expr.(p))} end), fields)))
         ({:pat_cons, h, t}) -> Nova.Compiler.Ast.expr_bin_op(":", (pattern_to_expr.(h)), (pattern_to_expr.(t)))
         ({:pat_as, n, p}) -> pattern_to_expr.(p)
@@ -2183,7 +2183,7 @@ end
      {:right, {:tuple, pat, rest}} ->
               rest_prime = skip_newlines(rest)
        case Nova.Array.head(rest_prime) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "<-") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "<-")) do
          case parse_logical_expression((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, expr, rest_prime_prime}} ->
@@ -2207,7 +2207,7 @@ end
   def take_body(tokens, acc, indent) do
     case Nova.Array.head(tokens) do
       :nothing -> {:tuple, (Nova.Array.reverse(acc)), []}
-      {:just, t} -> if (t.token_type == :TokNewline) do
+      {:just, t} -> if (t.token_type == :tok_newline) do
           
             rest = skip_newlines((Nova.Array.drop(1, tokens)))
             case Nova.Array.head(rest) do
@@ -2217,10 +2217,10 @@ end
       if ((t_prime.column == indent) and clause_start(rest)) do
         {:tuple, (Nova.Array.reverse(acc)), tokens}
       else
-        if ((((t_prime.token_type == :TokOperator) and t_prime.value) == "|") and guard_start(rest)) do
+        if (((t_prime.token_type == :tok_operator) and (t_prime.value == "|")) and guard_start(rest)) do
           {:tuple, (Nova.Array.reverse(acc)), tokens}
         else
-          if (((t_prime.token_type == :TokKeyword) and t_prime.value) == "where") do
+          if ((t_prime.token_type == :tok_keyword) and (t_prime.value == "where")) do
             {:tuple, (Nova.Array.reverse(acc)), tokens}
           else
             take_body(rest, (Nova.Array.cons(t, acc)), indent)
@@ -2240,7 +2240,7 @@ end
 
   def guard_start(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "|") do
+      {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
           case parse_guard_expression((Nova.Array.drop(1, tokens))) do
             {:right, ({:tuple, _, rest})} -> case expect_operator(rest, "->") do
                 {:right, _} -> true
@@ -2260,17 +2260,17 @@ end
   def clause_start(tokens) do
     
       maybe_parse_guard_indented = fn pat_col -> fn toks -> case Nova.Array.head(toks) do
-        {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "|") do
+        {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "|")) do
             case parse_guard_expression((Nova.Array.drop(1, toks))) do
               {:right, ({:tuple, guard, rest})} -> {:tuple, ({:just, guard}), rest}
               {:left, _} -> {:tuple, :nothing, toks}
             end
           else
-            if (t.token_type == :TokNewline) do
+            if (t.token_type == :tok_newline) do
               
                 toks_prime = skip_newlines(toks)
                 case Nova.Array.head(toks_prime) do
-  {:just, t_prime} -> if (((((t_prime.token_type == :TokOperator) and t_prime.value) == "|") and t_prime.column) > pat_col) do
+  {:just, t_prime} -> if (((t_prime.token_type == :tok_operator) and (t_prime.value == "|")) and (t_prime.column > pat_col)) do
       case parse_guard_expression((Nova.Array.drop(1, toks_prime))) do
         {:right, ({:tuple, guard, rest})} -> {:tuple, ({:just, guard}), rest}
         {:left, _} -> {:tuple, :nothing, toks}
@@ -2329,13 +2329,13 @@ end
   {:just, t} -> if (t.column < indent) do
       success(acc, tokens_prime)
     else
-      if (((t.column > indent) and Nova.Array.length(acc)) == 0) do
+      if ((t.column > indent) and (Nova.Array.length(acc) == 0)) do
         case parse_do_statement(tokens_prime) do
           {:right, ({:tuple, stmt, rest})} -> parse_do_statements_at(rest, indent, (Nova.Array.snoc(acc, stmt)))
           {:left, _} -> success(acc, tokens_prime)
         end
       else
-        if (((t.column != indent) and Nova.Array.length(acc)) > 0) do
+        if ((t.column != indent) and (Nova.Array.length(acc) > 0)) do
           success(acc, tokens_prime)
         else
           case parse_do_statement(tokens_prime) do
@@ -2500,7 +2500,7 @@ end
 
   def parse_import_alias(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokIdentifier) and t.value) == "as") do
+      {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value == "as")) do
           case parse_identifier_name((Nova.Array.drop(1, tokens))) do
             {:right, ({:tuple, name, rest})} -> {:tuple, ({:just, name}), rest}
             {:left, _} -> {:tuple, :nothing, tokens}
@@ -2516,7 +2516,7 @@ end
 
   def parse_import_selectors(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokIdentifier) and t.value) == "hiding") do
+      {:just, t} -> if ((t.token_type == :tok_identifier) and (t.value == "hiding")) do
           case parse_paren_import_list((Nova.Array.drop(1, tokens))) do
             {:right, ({:tuple, items, rest})} -> success(({:tuple, items, true}), rest)
             {:left, err} -> {:left, err}
@@ -2538,7 +2538,7 @@ end
 
   def parse_paren_import_list(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+      {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
                case parse_separated((&parse_import_item/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))) do
        {:left, err} -> {:left, err}
        {:right, {:tuple, items, rest}} ->
@@ -2563,7 +2563,7 @@ end
      {:left, err} -> {:left, err}
      {:right, {:tuple, name, rest}} ->
        case Nova.Array.head(rest) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          case parse_import_spec((Nova.Array.drop(1, rest))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, spec, rest_prime}} ->
@@ -2576,11 +2576,11 @@ end
 end
    end end
       case Nova.Array.head(tokens) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "(") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
       case Nova.Array.head((Nova.Array.drop(1, tokens))) do
-        {:just, op_tok} -> if (op_tok.token_type == :TokOperator) do
+        {:just, op_tok} -> if (op_tok.token_type == :tok_operator) do
             case Nova.Array.head((Nova.Array.drop(2, tokens))) do
-              {:just, close_tok} -> if (((close_tok.token_type == :TokDelimiter) and close_tok.value) == ")") do
+              {:just, close_tok} -> if ((close_tok.token_type == :tok_delimiter) and (close_tok.value == ")")) do
                   success((Nova.Compiler.Ast.import_value((Nova.Runtime.append(Nova.Runtime.append("(", op_tok.value), ")")))), (Nova.Array.drop(3, tokens)))
                 else
                   parse_normal_import_item.(tokens)
@@ -2603,7 +2603,7 @@ end
 
   def parse_import_spec(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "..") do
+      {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "..")) do
                case expect_delimiter((Nova.Array.drop(1, tokens)), ")") do
        {:left, err} -> {:left, err}
        {:right, {:tuple, _, rest}} ->
@@ -2665,9 +2665,9 @@ end
   case Nova.Array.head(tokens_prime) do
   {:just, t} ->
     cond do
-      (((t.token_type == :TokKeyword) and t.value) == "infixl") -> parse_infix_with(Nova.Compiler.Ast.assoc_left, (Nova.Array.drop(1, tokens_prime)))
-      (((t.token_type == :TokKeyword) and t.value) == "infixr") -> parse_infix_with(Nova.Compiler.Ast.assoc_right, (Nova.Array.drop(1, tokens_prime)))
-      (((t.token_type == :TokKeyword) and t.value) == "infix") -> parse_infix_with(Nova.Compiler.Ast.assoc_none, (Nova.Array.drop(1, tokens_prime)))
+      ((t.token_type == :tok_keyword) and (t.value == "infixl")) -> parse_infix_with(Nova.Compiler.Ast.assoc_left, (Nova.Array.drop(1, tokens_prime)))
+      ((t.token_type == :tok_keyword) and (t.value == "infixr")) -> parse_infix_with(Nova.Compiler.Ast.assoc_right, (Nova.Array.drop(1, tokens_prime)))
+      ((t.token_type == :tok_keyword) and (t.value == "infix")) -> parse_infix_with(Nova.Compiler.Ast.assoc_none, (Nova.Array.drop(1, tokens_prime)))
       true -> failure("Expected infix declaration")
     end
   _ -> failure("Expected infix declaration")
@@ -2681,7 +2681,7 @@ end
   case Nova.Array.head(tokens_prime) do
   {:just, t} ->
     cond do
-      (t.token_type == :TokNumber) ->         prec = case Nova.String.to_int(t.value) do
+      (t.token_type == :tok_number) ->         prec = case Nova.String.to_int(t.value) do
           {:just, n} -> n
           :nothing -> 9
         end
@@ -2712,8 +2712,8 @@ end
   case Nova.Array.head(tokens_prime) do
   {:just, t} ->
     cond do
-      (t.token_type == :TokOperator) -> success(t.value, (Nova.Array.drop(1, tokens_prime)))
-      (((t.token_type == :TokDelimiter) and t.value) == "`") ->         rest = Nova.Array.drop(1, tokens_prime)
+      (t.token_type == :tok_operator) -> success(t.value, (Nova.Array.drop(1, tokens_prime)))
+      ((t.token_type == :tok_delimiter) and (t.value == "`")) ->         rest = Nova.Array.drop(1, tokens_prime)
     case parse_identifier_name(rest) do
       {:left, err} -> {:left, err}
       {:right, {:tuple, name, rest_prime}} ->
@@ -2723,7 +2723,7 @@ end
             success(name, rest_prime_prime)
         end
     end
-      (((t.token_type == :TokKeyword) and t.value) == "type") ->         rest = Nova.Array.drop(1, tokens_prime)
+      ((t.token_type == :tok_keyword) and (t.value == "type")) ->         rest = Nova.Array.drop(1, tokens_prime)
     case parse_infix_operator(rest) do
       {:left, err} -> {:left, err}
       {:right, {:tuple, op, rest_prime}} ->
@@ -2811,7 +2811,7 @@ end
   {:left, err} -> {:left, err}
   {:right, {:tuple, name, rest}} ->
     case Nova.Array.head(rest) do
-  {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+  {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
          case parse_braced_record_fields(rest) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, fields, rest_prime}} ->
@@ -2835,7 +2835,7 @@ end
     
       go = Nova.Runtime.fix2(fn go -> fn toks -> fn acc -> case Nova.Array.head(toks) do
         :nothing -> success(acc, toks)
-        {:just, t} -> if ((t.token_type == :TokNewline) or ((((t.token_type == :TokOperator) and t.value) == "|"))) do
+        {:just, t} -> if ((t.token_type == :tok_newline) or (((t.token_type == :tok_operator) and (t.value == "|")))) do
             success(acc, toks)
           else
             case parse_type_atom(toks) do
@@ -2851,7 +2851,7 @@ end
 
   def parse_braced_record_fields(tokens) do
     case Nova.Array.head(tokens) do
-      {:just, t} -> if (((t.token_type == :TokDelimiter) and t.value) == "{") do
+      {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
                case parse_separated((&parse_record_constructor_field/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, tokens))) do
        {:left, err} -> {:left, err}
        {:right, {:tuple, fields, rest}} ->
@@ -2930,7 +2930,7 @@ end
             {:right, {:tuple, vars, rest4}} ->
                             rest5 = skip_newlines(rest4)
               case Nova.Array.head(rest5) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == "where") do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "where")) do
          case parse_many((&parse_type_signature/1), (Nova.Array.drop(1, rest5))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, methods, rest6}} ->
@@ -2951,9 +2951,9 @@ end
   def skip_superclass_constraints(tokens) do
     
       tokens_prime = skip_newlines(tokens)
-      %{init: before, rest: after_} = Nova.Array.span((fn t -> not(((((t.token_type == :TokOperator) and t.value) == "<="))) end), tokens_prime)
+      %{init: before, rest: after_} = Nova.Array.span((fn t -> not((((t.token_type == :tok_operator) and (t.value == "<=")))) end), tokens_prime)
       case Nova.Array.head(after_) do
-  {:just, t} -> if (((t.token_type == :TokOperator) and t.value) == "<=") do
+  {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "<=")) do
       {:tuple, (Nova.Array.drop(1, after_)), before}
     else
       {:tuple, tokens_prime, []}
@@ -3005,7 +3005,7 @@ end
         _ -> "Unknown"
       end end end)
       {:tuple, tokens_prime, derived} = case Nova.Array.head(tokens) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == "derive") do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "derive")) do
       {:tuple, (Nova.Array.drop(1, tokens)), true}
     else
       {:tuple, tokens, false}
@@ -3017,9 +3017,9 @@ case expect_keyword(tokens_prime, "instance") do
   {:right, {:tuple, _, rest}} ->
         rest_prime = drop_newlines(rest)
     case Nova.Array.head(rest_prime) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
       case Nova.Array.head((Nova.Array.drop(1, rest_prime))) do
-        {:just, t_prime} -> if (((t_prime.token_type == :TokOperator) and t_prime.value) == "::") do
+        {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "::")) do
                         rest_prime_prime = drop_instance_constraints((Nova.Array.drop(2, rest_prime)))
       case parse_type(rest_prime_prime) do
         {:left, err} -> {:left, err}
@@ -3057,9 +3057,9 @@ end
   def drop_instance_constraints(tokens) do
     
       tokens_prime = skip_newlines(tokens)
-      %{init: before, rest: after_} = Nova.Array.span((fn t -> not(((((t.token_type == :TokOperator) and t.value) == "=>"))) end), tokens_prime)
+      %{init: before, rest: after_} = Nova.Array.span((fn t -> not((((t.token_type == :tok_operator) and (t.value == "=>")))) end), tokens_prime)
       case Nova.Array.head(after_) do
-  {:just, t} -> if (((((t.token_type == :TokOperator) and t.value) == "=>") and Nova.Array.length(before)) < 20) do
+  {:just, t} -> if (((t.token_type == :tok_operator) and (t.value == "=>")) and (Nova.Array.length(before) < 20)) do
       skip_newlines((Nova.Array.drop(1, after_)))
     else
       tokens_prime
@@ -3073,7 +3073,7 @@ end
   def parse_function_with_type_signature(tokens) do
         tokens_prime = drop_newlines(tokens)
   case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (t.token_type == :TokIdentifier) do
+  {:just, t} -> if (t.token_type == :tok_identifier) do
             name = t.value
    case expect_operator((Nova.Array.drop(1, tokens_prime)), "::") do
   {:right, ({:tuple, _, rest})} ->     {:tuple, type_tokens, rest_prime} = split_type_and_rest(rest, name)
@@ -3105,10 +3105,10 @@ end
     
       go = Nova.Runtime.fix2(fn go -> fn toks -> fn acc -> case Nova.Array.head(toks) do
         :nothing -> {:tuple, acc, toks}
-        {:just, t} -> if (((((t.token_type == :TokIdentifier) and t.value) == name) and t.column) == 1) do
+        {:just, t} -> if (((t.token_type == :tok_identifier) and (t.value == name)) and (t.column == 1)) do
             {:tuple, acc, toks}
           else
-            if (t.token_type == :TokNewline) do
+            if (t.token_type == :tok_newline) do
               go.((Nova.Array.drop(1, toks))).(acc)
             else
               go.((Nova.Array.drop(1, toks))).((Nova.Array.snoc(acc, t)))
@@ -3139,7 +3139,7 @@ end
         {:right, {:tuple, params, rest_prime}} ->
                     rest_prime_prime = skip_newlines(rest_prime)
           case Nova.Array.head(rest_prime_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "|") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "|")) do
       parse_guarded_function(name, params, rest_prime_prime)
     else
          case expect_operator(rest_prime, "=") do
@@ -3198,7 +3198,7 @@ end
       parse_guarded_exprs_acc = Nova.Runtime.fix2(fn parse_guarded_exprs_acc -> fn toks -> fn acc -> 
         toks_prime = skip_newlines(toks)
         case Nova.Array.head(toks_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "|") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "|")) do
          case parse_one_guarded_expr((Nova.Array.drop(1, toks_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, guard, rest}} ->
@@ -3238,7 +3238,7 @@ end  end end end)
     {:right, {:tuple, clause, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokDelimiter) and tok.value) == ",") do
+  {:just, tok} -> if ((tok.token_type == :tok_delimiter) and (tok.value == ",")) do
       parse_guard_clauses((Nova.Array.drop(1, rest_prime)), (Nova.Array.snoc(acc, clause)))
     else
       success((Nova.Array.snoc(acc, clause)), rest_prime)
@@ -3268,7 +3268,7 @@ end
     {:right, {:tuple, pat, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "<-") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "<-")) do
          case parse_func_guard_expr((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, expr, rest_prime_prime}} ->
@@ -3296,7 +3296,7 @@ end
     {:right, {:tuple, left, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "||") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "||")) do
          case parse_guard_expr_or((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime_prime}} ->
@@ -3318,7 +3318,7 @@ end
     {:right, {:tuple, left, rest}} ->
             rest_prime = skip_newlines(rest)
       case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == "&&") do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "&&")) do
          case parse_guard_expr_and((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime_prime}} ->
@@ -3342,7 +3342,7 @@ end
   {:right, {:tuple, left, rest}} ->
         rest_prime = skip_newlines(rest)
     case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if ((tok.token_type == :TokOperator) and is_comparison_op.(tok.value)) do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and is_comparison_op.(tok.value)) do
          case parse_guard_expr_app((Nova.Array.drop(1, rest_prime))) do
      {:left, err} -> {:left, err}
      {:right, {:tuple, right, rest_prime_prime}} ->
@@ -3372,10 +3372,10 @@ end
     
       tokens_prime = skip_newlines(tokens)
       case Nova.Array.head(tokens_prime) do
-  {:just, tok} -> if ((tok.token_type == :TokOperator) and Nova.Array.elem(tok.value, ["=", ",", "|", "||", "&&", "==", "/=", "<", ">", "<=", ">="])) do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and Nova.Array.elem(tok.value, ["=", ",", "|", "||", "&&", "==", "/=", "<", ">", "<=", ">="])) do
       success(func, tokens_prime)
     else
-      if (tok.token_type == :TokNewline) do
+      if (tok.token_type == :tok_newline) do
         success(func, tokens_prime)
       else
         case parse_guard_expr_atom(tokens_prime) do
@@ -3397,7 +3397,7 @@ end
     
       tokens_prime = skip_newlines(tokens)
       case Nova.Array.head(tokens_prime) do
-  {:just, tok} -> if (tok.token_type == :TokIdentifier) do
+  {:just, tok} -> if (tok.token_type == :tok_identifier) do
       case parse_qualified_identifier_for_guard(tokens_prime) do
         {:right, result} -> {:right, result}
         {:left, _} -> 
@@ -3406,25 +3406,25 @@ end
             parse_record_access_chain(base_expr, rest)
       end
     else
-      if (tok.token_type == :TokNumber) do
+      if (tok.token_type == :tok_number) do
         case Nova.String.to_int(tok.value) do
           {:just, n} -> success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_int(n)))), (Nova.Array.drop(1, tokens_prime)))
           :nothing -> failure((Nova.Runtime.append("Invalid integer: ", tok.value)))
         end
       else
-        if (tok.token_type == :TokString) do
+        if (tok.token_type == :tok_string) do
           success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_string(tok.value)))), (Nova.Array.drop(1, tokens_prime)))
         else
-          if (((tok.token_type == :TokKeyword) and tok.value) == "true") do
+          if ((tok.token_type == :tok_keyword) and (tok.value == "true")) do
             success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_bool(true)))), (Nova.Array.drop(1, tokens_prime)))
           else
-            if (((tok.token_type == :TokKeyword) and tok.value) == "false") do
+            if ((tok.token_type == :tok_keyword) and (tok.value == "false")) do
               success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_bool(false)))), (Nova.Array.drop(1, tokens_prime)))
             else
-              if (((tok.token_type == :TokKeyword) and tok.value) == "otherwise") do
+              if ((tok.token_type == :tok_keyword) and (tok.value == "otherwise")) do
                 success((Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_bool(true)))), (Nova.Array.drop(1, tokens_prime)))
               else
-                if (((tok.token_type == :TokDelimiter) and tok.value) == "(") do
+                if ((tok.token_type == :tok_delimiter) and (tok.value == "(")) do
                            case parse_expression((Nova.Array.drop(1, tokens_prime))) do
            {:left, err} -> {:left, err}
            {:right, {:tuple, expr, rest}} ->
@@ -3435,9 +3435,9 @@ end
              end
          end
                 else
-                  if (((tok.token_type == :TokOperator) and tok.value) == ".") do
+                  if ((tok.token_type == :tok_operator) and (tok.value == ".")) do
                     case Nova.Array.head((Nova.Array.drop(1, tokens_prime))) do
-                      {:just, fld} -> if (fld.token_type == :TokIdentifier) do
+                      {:just, fld} -> if (fld.token_type == :tok_identifier) do
                           success((Nova.Compiler.Ast.expr_section((Nova.Runtime.append(".", fld.value)))), (Nova.Array.drop(2, tokens_prime)))
                         else
                           failure("Expected field name after .")
@@ -3462,9 +3462,9 @@ end
 
   def parse_record_access_chain(expr, tokens) do
     case Nova.Array.head(tokens) do
-      {:just, tok} -> if (((tok.token_type == :TokOperator) and tok.value) == ".") do
+      {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == ".")) do
           case Nova.Array.head((Nova.Array.drop(1, tokens))) do
-            {:just, fld} -> if (fld.token_type == :TokIdentifier) do
+            {:just, fld} -> if (fld.token_type == :tok_identifier) do
                 parse_record_access_chain((Nova.Compiler.Ast.expr_record_access(expr, fld.value)), (Nova.Array.drop(2, tokens)))
               else
                 success(expr, tokens)
@@ -3483,7 +3483,7 @@ end
   def maybe_parse_where(tokens, _, body) do
         tokens_prime = skip_newlines(tokens)
   case Nova.Array.head(tokens_prime) do
-  {:just, t} -> if (((t.token_type == :TokKeyword) and t.value) == "where") do
+  {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "where")) do
       
         where_col = t.column
         rest = skip_newlines((Nova.Array.drop(1, tokens_prime)))
@@ -3515,9 +3515,9 @@ end
         _ -> Nova.Compiler.Ast.expr_lambda((Nova.List.from_foldable(params)), body)
       end end end
       is_type_signature_line = fn toks -> case Nova.Array.head(toks) do
-        {:just, t1} -> if (t1.token_type == :TokIdentifier) do
+        {:just, t1} -> if (t1.token_type == :tok_identifier) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
-              {:just, t2} -> if (((t2.token_type == :TokOperator) and t2.value) == "::") do
+              {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "::")) do
                   true
                 else
                   false
@@ -3531,14 +3531,14 @@ end
       end end
       skip_to_next_line = Nova.Runtime.fix(fn skip_to_next_line -> fn toks -> case Nova.Array.head(toks) do
         :nothing -> toks
-        {:just, t} -> if (t.token_type == :TokNewline) do
+        {:just, t} -> if (t.token_type == :tok_newline) do
             
               rest = Nova.Array.drop(1, toks)
               case Nova.Array.head(rest) do
   {:just, t_prime} -> if (t_prime.column <= where_col) do
       toks
     else
-      if (t_prime.token_type == :TokNewline) do
+      if (t_prime.token_type == :tok_newline) do
         skip_to_next_line.(rest)
       else
         rest

@@ -66,7 +66,7 @@ defmodule Nova.Compiler.CstParser do
   def get_position() do
     {:parser, fn ts -> case ts do
       ([tok | _]) -> {:right, ({:tuple, tok.range.start, ts})}
-      :nil -> {:right, ({:tuple, %{line: 0, column: 0}, ts})}
+      [] -> {:right, ({:tuple, %{line: 0, column: 0}, ts})}
     end end}
   end
 
@@ -79,7 +79,7 @@ defmodule Nova.Compiler.CstParser do
         else
           {:left, "Token did not match predicate"}
         end
-      :nil -> {:left, "Unexpected end of input"}
+      [] -> {:left, "Unexpected end of input"}
     end end}
   end
 
@@ -97,7 +97,7 @@ defmodule Nova.Compiler.CstParser do
           {:just, a} -> {:right, ({:tuple, ({:tuple, tok, a}), rest})}
           :nothing -> {:left, "Token did not match"}
         end
-      :nil -> {:left, "Unexpected end of input"}
+      [] -> {:left, "Unexpected end of input"}
     end end}
   end
 
@@ -1120,7 +1120,7 @@ end))), fn where_clause ->
 
   def parse_let_name() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_lower_name(), fn name ->
-    Nova.Runtime.bind(many(parse_binder()), fn binders ->
+    Nova.Runtime.bind(many(parse_binder_atom()), fn binders ->
       case parse_guarded() do
         {:left, err} -> {:left, err}
         {:right, guarded} ->
@@ -1400,7 +1400,7 @@ end
 
   def parse_binder_con() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_qualified_upper_name(), fn con ->
-    Nova.Runtime.bind(many(parse_binder_atom()), fn args ->
+    Nova.Runtime.bind(some(parse_binder_atom()), fn args ->
       Nova.Runtime.pure((Cst.binder_constructor(con, args)))
     end)
   end) end)
@@ -2130,7 +2130,7 @@ end)
 
   def parse_decl_value() do
       Nova.Runtime.bind(tok_lower_name(), fn name ->
-    Nova.Runtime.bind(many(parse_binder()), fn binders ->
+    Nova.Runtime.bind(many(parse_binder_atom()), fn binders ->
       case parse_guarded() do
         {:left, err} -> {:left, err}
         {:right, guarded} ->

@@ -197,3 +197,87 @@ partition :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Arra
 partition f xs = partitionImpl f xs
 
 foreign import partitionImpl :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a }
+
+-- Singleton array
+singleton :: forall a. a -> Array a
+singleton x = singletonImpl x
+
+foreign import singletonImpl :: forall a. a -> Array a
+
+-- Update element at index
+updateAt :: forall a. Int -> a -> Array a -> Maybe (Array a)
+updateAt i x xs = updateAtImpl i x xs
+
+foreign import updateAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a)
+
+-- Delete element at index
+deleteAt :: forall a. Int -> Array a -> Maybe (Array a)
+deleteAt i xs = deleteAtImpl i xs
+
+foreign import deleteAtImpl :: forall a. Int -> Array a -> Maybe (Array a)
+
+-- Insert element at index
+insertAt :: forall a. Int -> a -> Array a -> Maybe (Array a)
+insertAt i x xs = insertAtImpl i x xs
+
+foreign import insertAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a)
+
+-- Slice array from start to end indices
+slice :: forall a. Int -> Int -> Array a -> Array a
+slice start end xs = sliceImpl start end xs
+
+foreign import sliceImpl :: forall a. Int -> Int -> Array a -> Array a
+
+-- Remove duplicates
+nub :: forall a. Array a -> Array a
+nub xs = nubImpl xs
+
+foreign import nubImpl :: forall a. Array a -> Array a
+
+-- Remove duplicates with custom equality
+nubBy :: forall a. (a -> a -> Boolean) -> Array a -> Array a
+nubBy f xs = nubByImpl f xs
+
+foreign import nubByImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array a
+
+-- Group consecutive equal elements
+group :: forall a. Array a -> Array (Array a)
+group xs = groupImpl xs
+
+foreign import groupImpl :: forall a. Array a -> Array (Array a)
+
+-- Group by custom equality
+groupBy :: forall a. (a -> a -> Boolean) -> Array a -> Array (Array a)
+groupBy f xs = groupByImpl f xs
+
+foreign import groupByImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array (Array a)
+
+-- Take while predicate holds
+takeWhile :: forall a. (a -> Boolean) -> Array a -> Array a
+takeWhile f xs = takeWhileImpl f xs
+
+foreign import takeWhileImpl :: forall a. (a -> Boolean) -> Array a -> Array a
+
+-- Find index of first element matching predicate
+findIndex :: forall a. (a -> Boolean) -> Array a -> Maybe Int
+findIndex f xs = findIndexImpl f xs
+
+foreign import findIndexImpl :: forall a. (a -> Boolean) -> Array a -> Maybe Int
+
+-- Sort array (uses natural ordering)
+sort :: forall a. Array a -> Array a
+sort xs = sortImpl xs
+
+foreign import sortImpl :: forall a. Array a -> Array a
+
+-- Intercalate (join arrays with separator array)
+intercalate :: forall a. Array a -> Array (Array a) -> Array a
+intercalate sep xs = intercalateImpl sep xs
+
+foreign import intercalateImpl :: forall a. Array a -> Array (Array a) -> Array a
+
+-- Split at index
+splitAt :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }
+splitAt i xs = splitAtImpl i xs
+
+foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }

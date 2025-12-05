@@ -13,6 +13,7 @@ import Data.Map as Map
 import Data.Set as Set
 import Data.String as String
 import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo)
+import Nova.Compiler.Types as Types
 import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl)
 import Nova.Compiler.Unify (UnifyError, unify)
 
@@ -1094,16 +1095,26 @@ processImportDecl registry env imp =
   case lookupModule registry imp.moduleName of
     Nothing -> env  -- Module not found, skip (could add warning)
     Just exports ->
-      if imp.hiding then
-        -- Import everything EXCEPT the listed items
-        -- For now, just import everything (hiding not fully implemented)
-        mergeExportsToEnv env exports
-      else if List.null imp.items then
-        -- Empty import list - import everything
-        mergeExportsToEnv env exports
-      else
-        -- Import only specified items
-        foldl (importItem exports) env imp.items
+      let -- Apply alias prefix if present, or use module name as prefix
+          envWithQualified = case imp.alias of
+            Just alias -> Types.mergeExportsToEnvWithPrefix env exports alias
+            Nothing ->
+              -- Extract last component of module name for default qualified access
+              -- e.g., Data.List -> List
+              let lastPart = case String.lastIndexOf (String.Pattern ".") imp.moduleName of
+                    Nothing -> imp.moduleName
+                    Just idx -> String.drop (idx + 1) imp.moduleName
+              in Types.mergeExportsToEnvWithPrefix env exports lastPart
+      in
+        if imp.hiding then
+          -- Import everything EXCEPT the listed items (qualified access already added)
+          mergeExportsToEnv envWithQualified exports
+        else if List.null imp.items then
+          -- Empty import list - import everything unqualified too
+          mergeExportsToEnv envWithQualified exports
+        else
+          -- Import only specified items unqualified (qualified access already added)
+          foldl (importItem exports) envWithQualified imp.items
 
 -- | Import a single item from module exports
 importItem :: ModuleExports -> Env -> ImportItem -> Env
@@ -1165,6 +1176,13 @@ extractExports decls =
       -- Functions need their types inferred, so we can't add them pre-typecheck
       -- They would be added after type checking
       exp
+    collectExport exp (DeclForeignImport fi) =
+      -- Foreign imports have explicit type signatures, so we can add them
+      let ty = typeExprToType Map.empty fi.typeSignature
+          freeVars = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
+          tvars = map (\id -> { id: id, name: "a" <> show id }) freeVars
+          scheme = mkScheme tvars ty
+      in exp { values = Map.insert fi.functionName scheme exp.values }
     collectExport exp _ = exp
 
     -- Build alias maps for resolving field types

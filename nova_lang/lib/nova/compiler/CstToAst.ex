@@ -91,12 +91,12 @@ defmodule Nova.Compiler.CstToAst do
 
   def traverse(f, lst) do
     case lst do
-      :nil -> {:right, []}
+      [] -> {:right, []}
       ([head | tail]) ->     Nova.Runtime.bind(f.(head), fn h ->
       case traverse(f, tail) do
         {:left, err} -> {:left, err}
         {:right, t} ->
-          [((&Nova.Runtime.pure/1)).(h) | t]
+          ((&Nova.Runtime.pure/1)).([h | t])
       end
     end)
     end
@@ -107,7 +107,7 @@ defmodule Nova.Compiler.CstToAst do
   def list_map_with_index(f, list) do
     
       go = Nova.Runtime.fix2(fn go -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :nil} -> []
+        {_, []} -> []
         {i, ([x | xs])} -> [f.(i).(x) | go.(((i + 1))).(xs)]
       end end end end)
       go.(0).(list)
@@ -121,6 +121,38 @@ defmodule Nova.Compiler.CstToAst do
 
   def is_underscore(_) do
     false
+  end
+
+
+
+  def operator_precedence(op) do
+    case op do
+      "*" -> 7
+      "/" -> 7
+      "mod" -> 7
+      "+" -> 6
+      "-" -> 6
+      "<>" -> 6
+      "++" -> 5
+      ":" -> 5
+      "==" -> 4
+      "/=" -> 4
+      "!=" -> 4
+      "<" -> 4
+      ">" -> 4
+      "<=" -> 4
+      ">=" -> 4
+      "&&" -> 3
+      "||" -> 2
+      "$" -> 1
+      "#" -> 1
+      ">>>" -> 1
+      ">>=" -> 1
+      "<<<" -> 1
+      ">>" -> 1
+      "<-" -> 0
+      _ -> 5
+    end
   end
 
 
@@ -323,7 +355,7 @@ end, fn methods ->
     class_name = unwrap_proper(inst.head.class_name.name)
   Nova.Runtime.bind(case inst.head.types do
   ([t | _]) -> convert_type(t)
-  :nil -> {:left, "Instance needs at least one type"}
+  [] -> {:left, "Instance needs at least one type"}
 end, fn ty ->
     Nova.Runtime.bind(case inst.body do
   :nothing -> Nova.Runtime.pure([])
@@ -349,7 +381,7 @@ end, fn methods ->
         class_name = unwrap_proper(head.class_name.name)
   Nova.Runtime.bind(case head.types do
   ([t | _]) -> convert_type(t)
-  :nil -> {:left, "Derived instance needs at least one type"}
+  [] -> {:left, "Derived instance needs at least one type"}
 end, fn ty ->
     ((&Nova.Runtime.pure/1)).(Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: [], derived: true}))
   end)
@@ -383,7 +415,7 @@ end, fn ty ->
     {:right, guards} ->
       case guards do
   ([g | _]) -> Nova.Runtime.pure(%{name: name, parameters: params, body: g.body, guards: guards, type_signature: :nothing})
-  :nil -> {:left, "Empty guarded expression"}
+  [] -> {:left, "Empty guarded expression"}
 end
   end
 end
@@ -424,7 +456,7 @@ end
     {:left, err} -> {:left, err}
     {:right, bind_body} ->
             value = case bind_params do
-              :nil -> bind_body
+              [] -> bind_body
               _ -> Nova.Compiler.Ast.expr_lambda(bind_params, bind_body)
             end
       Nova.Runtime.pure(%{pattern: Nova.Compiler.Ast.pat_var(bind_name), value: value, type_ann: :nothing})
@@ -635,7 +667,7 @@ end
 
   def fold_type_ops(acc, ops) do
     case ops do
-      :nil -> Nova.Runtime.pure(acc)
+      [] -> Nova.Runtime.pure(acc)
       ([{:tuple, op, ty} | rest]) ->         op_name = unwrap_operator(op.name)
     case convert_type(ty) do
       {:left, err} -> {:left, err}
@@ -757,7 +789,7 @@ end, fn fields ->
                 labels = Nova.Runtime.map((fn l -> unwrap_label(l.name) end), path)
         case labels do
   ([first_label | rest]) ->   ((&Nova.Runtime.pure/1)).(Nova.List.foldl(fn a, b -> Nova.Compiler.Ast.expr_record_access(a, b) end, (Nova.Compiler.Ast.expr_record_access(base, first_label)), rest))
-  :nil -> {:left, "Empty record accessor path"}
+  [] -> {:left, "Empty record accessor path"}
 end
     end
       {:expr_record_update, base, updates} ->     case convert_expr(base) do
@@ -803,7 +835,7 @@ end
     end
       {:expr_case, case_of} ->         all_heads = [case_of.head.head | (Nova.Runtime.map((fn ({:tuple, _, e}) -> e end), case_of.head.tail))]
     case all_heads do
-  ([single | :nil]) -> if is_underscore(single) do
+  ([single | []]) -> if is_underscore(single) do
          case traverse((&convert_case_branch/1), case_of.branches) do
      {:left, err} -> {:left, err}
      {:right, clauses} ->
@@ -861,24 +893,76 @@ end
 
 
 
-  def fold_bin_ops(acc, ops) do
+  def fold_bin_ops(first_expr, ops) do
+      case convert_op_list(ops) do
+    {:left, err} -> {:left, err}
+    {:right, converted} ->
+      shunting_yard(first_expr, converted)
+  end
+  end
+
+
+
+  def convert_op_list(ops) do
     case ops do
-      :nil -> Nova.Runtime.pure(acc)
+      [] -> Nova.Runtime.pure([])
       ([{:tuple, op, e} | rest]) ->         op_name = unwrap_operator(op.name)
     case convert_expr(e) do
       {:left, err} -> {:left, err}
       {:right, expr_e} ->
-                combined = Nova.Compiler.Ast.expr_bin_op(op_name, acc, expr_e)
-        fold_bin_ops(combined, rest)
+        case convert_op_list(rest) do
+          {:left, err} -> {:left, err}
+          {:right, rest_converted} ->
+            ((&Nova.Runtime.pure/1)).([({:tuple, op_name, expr_e}) | rest_converted])
+        end
     end
     end
   end
 
 
 
+  def shunting_yard(first_expr, ops) do
+    
+      pop_higher_prec = Nova.Runtime.fix3(fn pop_higher_prec -> fn output -> fn op_stack -> fn prec -> case op_stack do
+        [] -> Nova.Runtime.pure(%{output: output, op_stack: op_stack})
+        ([top_op | rest_ops]) -> if (operator_precedence(top_op) >= prec) do
+                  case output do
+  ([[right | left] | rest_output]) ->     combined = Nova.Compiler.Ast.expr_bin_op(top_op, left, right)
+  pop_higher_prec.(([combined | rest_output])).(rest_ops).(prec)
+  _ -> {:left, "Not enough operands for operator"}
+end
+          else
+            Nova.Runtime.pure(%{output: output, op_stack: op_stack})
+          end
+      end  end end end end)
+      reduce_all = Nova.Runtime.fix2(fn reduce_all -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {output, []} -> case output do
+  ([result | []]) -> Nova.Runtime.pure(result)
+  _ -> {:left, "Invalid expression: multiple values remaining"}
+end
+        {output, ([op | rest_ops])} -> case output do
+  ([[right | left] | rest_output]) ->     combined = Nova.Compiler.Ast.expr_bin_op(op, left, right)
+  reduce_all.(([combined | rest_output])).(rest_ops)
+  _ -> {:left, "Not enough operands for operator"}
+end
+      end end end end)
+      go = Nova.Runtime.fix3(fn go -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
+        {output, op_stack, []} -> reduce_all.(output).(op_stack)
+        {output, op_stack, ([({:tuple, op, expr}) | rest])} -> new_prec = operator_precedence(op)
+Nova.Runtime.bind(pop_higher_prec.(output).(op_stack).(new_prec), fn result ->
+    new_output = result.output
+    new_op_stack = result.op_stack
+  go.(([expr | new_output])).(([op | new_op_stack])).(rest)
+end)
+      end end end end end)
+      go.(([first_expr | []])).([]).(ops)
+  end
+
+
+
   def fold_infix_ops(acc, ops) do
     case ops do
-      :nil -> Nova.Runtime.pure(acc)
+      [] -> Nova.Runtime.pure(acc)
       ([{:tuple, wrapped, e} | rest]) ->     case convert_expr(wrapped.value) do
       {:left, err} -> {:left, err}
       {:right, fn_} ->
@@ -932,7 +1016,7 @@ end
   def convert_case_branch(({:tuple, patterns, guarded})) do
         all_pats = [patterns.head | (Nova.Runtime.map((fn ({:tuple, _, p}) -> p end), patterns.tail))]
   Nova.Runtime.bind(case all_pats do
-  ([single | :nil]) -> convert_binder(single)
+  ([single | []]) -> convert_binder(single)
   multiple ->   case traverse((&convert_binder/1), multiple) do
     {:left, err} -> {:left, err}
     {:right, ps} ->
@@ -959,7 +1043,7 @@ end, fn pat ->
             Nova.Runtime.pure(%{pattern: pat, guard: guard, body: body})
         end
     end
-      :nil -> {:left, "Empty guarded expression in case"}
+      [] -> {:left, "Empty guarded expression in case"}
     end
 end
   end)
@@ -983,7 +1067,7 @@ end
   {:unconditional, _, wh} -> convert_expr(wh.expr)
   {:guarded, guards} -> case guards do
       ([ge | _]) -> convert_expr(ge.where.expr)
-      :nil -> {:left, "Empty guarded let binding"}
+      [] -> {:left, "Empty guarded let binding"}
     end
 end, fn body_expr ->
                     body = if Nova.List.null(params) do
@@ -1098,7 +1182,7 @@ end, fn fields ->
 
   def fold_binder_ops(acc, ops) do
     case ops do
-      :nil -> Nova.Runtime.pure(acc)
+      [] -> Nova.Runtime.pure(acc)
       ([{:tuple, op, b} | rest]) ->         op_name = unwrap_operator(op.name)
     case convert_binder(b) do
       {:left, err} -> {:left, err}

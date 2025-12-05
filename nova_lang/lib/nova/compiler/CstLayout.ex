@@ -42,19 +42,19 @@ defmodule Nova.Compiler.CstLayout do
 
 
   def root_layout_delim() do
-    :LytRoot
+    :lyt_root
   end
 
 
 
   def is_indented(lyt) do
     case lyt do
-      :LytLet -> true
-      :LytLetStmt -> true
-      :LytWhere -> true
-      :LytOf -> true
-      :LytDo -> true
-      :LytAdo -> true
+      :lyt_let -> true
+      :lyt_let_stmt -> true
+      :lyt_where -> true
+      :lyt_of -> true
+      :lyt_do -> true
+      :lyt_ado -> true
       _ -> false
     end
   end
@@ -82,9 +82,9 @@ defmodule Nova.Compiler.CstLayout do
 
   def is_top_decl(tok_pos, stack) do
     case stack do
-      [{:tuple, lyt_pos, lyt1} | rest] -> if (lyt1 == :LytWhere) do
+      [{:tuple, lyt_pos, lyt1} | rest] -> if (lyt1 == :lyt_where) do
           case rest do
-            [{:tuple, _, lyt2} | :nil] -> (((lyt2 == :LytRoot) and tok_pos.column) == lyt_pos.column)
+            [{:tuple, _, lyt2} | []] -> ((lyt2 == :lyt_root) and (tok_pos.column == lyt_pos.column))
             _ -> false
           end
         else
@@ -107,7 +107,7 @@ defmodule Nova.Compiler.CstLayout do
       tok_pos = src.range.start
       tok = src.value
       find_indented = Nova.Runtime.fix(fn find_indented -> fn auto_arg0 -> case auto_arg0 do
-        :nil -> :nothing
+        [] -> :nothing
         ([({:tuple, _, lyt}) = item | rest]) -> if is_indented(lyt) do
   {:just, item}
 else
@@ -126,20 +126,20 @@ end
       end end end
       indented_p = Nova.Runtime.const((&is_indented/1))
       in_p = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :LytLet} -> false
-        {_, :LytAdo} -> false
+        {_, :lyt_let} -> false
+        {_, :lyt_ado} -> false
         {_, lyt} -> is_indented(lyt)
       end end end
       guard_p = fn auto_arg0 -> case auto_arg0 do
-        :LytCaseBinders -> true
-        :LytCaseGuard -> true
-        :LytLambdaBinders -> true
+        :lyt_case_binders -> true
+        :lyt_case_guard -> true
+        :lyt_lambda_binders -> true
         _ -> false
       end end
       equals_p = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :LytWhere} -> true
-        {_, :LytLet} -> true
-        {_, :LytLetStmt} -> true
+        {_, :lyt_where} -> true
+        {_, :lyt_let} -> true
+        {_, :lyt_let_stmt} -> true
         {_, _} -> false
       end end end
       insert_start = fn lyt -> fn ({:tuple, stk, _}) = state -> case find_indented.(stk) do
@@ -165,48 +165,48 @@ end)))
           _ -> state
         end  end end)
         go end
-      offside_p = fn lyt_pos -> fn lyt -> ((is_indented(lyt) and tok_pos.column) < lyt_pos.column) end end
-      offside_end_p = fn lyt_pos -> fn lyt -> ((is_indented(lyt) and tok_pos.column) <= lyt_pos.column) end end
-      sep_p = fn lyt_pos -> (((tok_pos.column == lyt_pos.column) and tok_pos.line) != lyt_pos.line) end
+      offside_p = fn lyt_pos -> fn lyt -> (is_indented(lyt) and (tok_pos.column < lyt_pos.column)) end end
+      offside_end_p = fn lyt_pos -> fn lyt -> (is_indented(lyt) and (tok_pos.column <= lyt_pos.column)) end end
+      sep_p = fn lyt_pos -> ((tok_pos.column == lyt_pos.column) and (tok_pos.line != lyt_pos.line)) end
       indent_sep_p = fn lyt_pos -> fn lyt -> (is_indented(lyt) and sep_p.(lyt_pos)) end end
       where_p = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :LytDo} -> true
+        {_, :lyt_do} -> true
         {lyt_pos, lyt} -> offside_end_p.(lyt_pos).(lyt)
       end end end
       let_next = fn ({:tuple, stk_prime, _}) = state_prime -> case stk_prime do
-        [{:tuple, p, :LytDo} | _] -> if (p.column == tok_pos.column) do
-            (insert_start.(:LytLetStmt)).(state_prime)
+        [{:tuple, p, :lyt_do} | _] -> if (p.column == tok_pos.column) do
+            (insert_start.(:lyt_let_stmt)).(state_prime)
           else
-            (insert_start.(:LytLet)).(state_prime)
+            (insert_start.(:lyt_let)).(state_prime)
           end
-        [{:tuple, p, :LytAdo} | _] -> if (p.column == tok_pos.column) do
-            (insert_start.(:LytLetStmt)).(state_prime)
+        [{:tuple, p, :lyt_ado} | _] -> if (p.column == tok_pos.column) do
+            (insert_start.(:lyt_let_stmt)).(state_prime)
           else
-            (insert_start.(:LytLet)).(state_prime)
+            (insert_start.(:lyt_let)).(state_prime)
           end
-        _ -> (insert_start.(:LytLet)).(state_prime)
+        _ -> (insert_start.(:lyt_let)).(state_prime)
       end end
       arrow_p = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :LytDo} -> true
-        {_, :LytOf} -> false
+        {_, :lyt_do} -> true
+        {_, :lyt_of} -> false
         {lyt_pos, lyt} -> offside_end_p.(lyt_pos).(lyt)
       end end end
       insert_sep = fn ({:tuple, stk, acc}) = state -> 
         sep_tok = lyt_token(tok_pos, (Cst.tok_layout_sep(tok_pos.column)))
         case stk do
-  [{:tuple, lyt_pos, :LytTopDecl} | stk_prime] -> if sep_p.(lyt_pos) do
+  [{:tuple, lyt_pos, :lyt_top_decl} | stk_prime] -> if sep_p.(lyt_pos) do
       (insert_token.(sep_tok)).({:tuple, stk_prime, acc})
     else
       state
     end
-  [{:tuple, lyt_pos, :LytTopDeclHead} | stk_prime] -> if sep_p.(lyt_pos) do
+  [{:tuple, lyt_pos, :lyt_top_decl_head} | stk_prime] -> if sep_p.(lyt_pos) do
       (insert_token.(sep_tok)).({:tuple, stk_prime, acc})
     else
       state
     end
   [{:tuple, lyt_pos, lyt} | _] -> if indent_sep_p.(lyt_pos).(lyt) do
       case lyt do
-        :LytOf -> (push_stack.(tok_pos).(:LytCaseBinders)).((insert_token.(sep_tok)).(state))
+        :lyt_of -> (push_stack.(tok_pos).(:lyt_case_binders)).((insert_token.(sep_tok)).(state))
         _ -> (insert_token.(sep_tok)).(state)
       end
     else
@@ -216,95 +216,95 @@ end)))
 end end
       insert_default = fn state -> (insert_token.(src)).((insert_sep).((collapse.(offside_p)).(state))) end
       insert_kw_property = fn k -> fn state -> case (insert_default).(state) do
-        {:tuple, ([{:tuple, _, :LytProperty} | stk_prime]), acc_prime} -> {:tuple, stk_prime, acc_prime}
+        {:tuple, ([{:tuple, _, :lyt_property} | stk_prime]), acc_prime} -> {:tuple, stk_prime, acc_prime}
         state_prime -> k.(state_prime)
       end end end
       insert = fn state -> case tok do
         {:tok_lower_name, :nothing, "data"} -> case (insert_default).(state) do
             ({:tuple, stk_prime, _}) = state_prime ->
               if is_top_decl(tok_pos, stk_prime) do
-                (push_stack.(tok_pos).(:LytTopDecl)).(state_prime)
+                (push_stack.(tok_pos).(:lyt_top_decl)).(state_prime)
               end
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).(state_prime)
+            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).(state_prime)
           end
         {:tok_lower_name, :nothing, "class"} -> case (insert_default).(state) do
             ({:tuple, stk_prime, _}) = state_prime ->
               if is_top_decl(tok_pos, stk_prime) do
-                (push_stack.(tok_pos).(:LytTopDeclHead)).(state_prime)
+                (push_stack.(tok_pos).(:lyt_top_decl_head)).(state_prime)
               end
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).(state_prime)
+            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).(state_prime)
           end
         {:tok_lower_name, :nothing, "where"} -> case stack do
-            [{:tuple, _, :LytTopDeclHead} | stk_prime] -> (insert_start.(:LytWhere)).((insert_token.(src)).({:tuple, stk_prime, (Nova.Runtime.snd(state))}))
-            [{:tuple, _, :LytProperty} | stk_prime] -> (insert_token.(src)).({:tuple, stk_prime, (Nova.Runtime.snd(state))})
-            _ -> (insert_start.(:LytWhere)).((insert_token.(src)).((collapse.(where_p)).(state)))
+            [{:tuple, _, :lyt_top_decl_head} | stk_prime] -> (insert_start.(:lyt_where)).((insert_token.(src)).({:tuple, stk_prime, (Nova.Runtime.snd(state))}))
+            [{:tuple, _, :lyt_property} | stk_prime] -> (insert_token.(src)).({:tuple, stk_prime, (Nova.Runtime.snd(state))})
+            _ -> (insert_start.(:lyt_where)).((insert_token.(src)).((collapse.(where_p)).(state)))
           end
         {:tok_lower_name, :nothing, "in"} -> case collapse.(in_p).(state) do
-            {:tuple, ([[({:tuple, pos1, :LytLetStmt}) | ({:tuple, pos2, :LytAdo})] | stk_prime]), acc_prime} -> (insert_token.(src)).((insert_end.(pos2.column)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime})))
+            {:tuple, ([[({:tuple, pos1, :lyt_let_stmt}) | ({:tuple, pos2, :lyt_ado})] | stk_prime]), acc_prime} -> (insert_token.(src)).((insert_end.(pos2.column)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime})))
             {:tuple, ([{:tuple, pos1, lyt} | stk_prime]), acc_prime} -> if is_indented(lyt) do
                 (insert_token.(src)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime}))
               else
-                (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state))
+                (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
               end
-            _ -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state))
+            _ -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
           end
         {:tok_lower_name, :nothing, "let"} -> (insert_kw_property.(let_next)).(state)
-        {:tok_lower_name, _, "do"} -> (insert_kw_property.((insert_start.(:LytDo)))).(state)
-        {:tok_lower_name, _, "ado"} -> (insert_kw_property.((insert_start.(:LytAdo)))).(state)
-        {:tok_lower_name, :nothing, "case"} -> (insert_kw_property.((push_stack.(tok_pos).(:LytCase)))).(state)
+        {:tok_lower_name, _, "do"} -> (insert_kw_property.((insert_start.(:lyt_do)))).(state)
+        {:tok_lower_name, _, "ado"} -> (insert_kw_property.((insert_start.(:lyt_ado)))).(state)
+        {:tok_lower_name, :nothing, "case"} -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_case)))).(state)
         {:tok_lower_name, :nothing, "of"} -> case collapse.(indented_p).(state) do
-            {:tuple, ([{:tuple, _, :LytCase} | stk_prime]), acc_prime} -> (push_stack.(next_pos).(:LytCaseBinders)).((insert_start.(:LytOf)).((insert_token.(src)).({:tuple, stk_prime, acc_prime})))
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state_prime))
+            {:tuple, ([{:tuple, _, :lyt_case} | stk_prime]), acc_prime} -> (push_stack.(next_pos).(:lyt_case_binders)).((insert_start.(:lyt_of)).((insert_token.(src)).({:tuple, stk_prime, acc_prime})))
+            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state_prime))
           end
-        {:tok_lower_name, :nothing, "if"} -> (insert_kw_property.((push_stack.(tok_pos).(:LytIf)))).(state)
+        {:tok_lower_name, :nothing, "if"} -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_if)))).(state)
         {:tok_lower_name, :nothing, "then"} -> case (collapse.(indented_p)).(state) do
-            {:tuple, ([{:tuple, _, :LytIf} | stk_prime]), acc_prime} -> (push_stack.(tok_pos).(:LytThen)).((insert_token.(src)).({:tuple, stk_prime, acc_prime}))
-            _ -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state))
+            {:tuple, ([{:tuple, _, :lyt_if} | stk_prime]), acc_prime} -> (push_stack.(tok_pos).(:lyt_then)).((insert_token.(src)).({:tuple, stk_prime, acc_prime}))
+            _ -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
           end
         {:tok_lower_name, :nothing, "else"} -> case (collapse.(indented_p)).(state) do
-            {:tuple, ([{:tuple, _, :LytThen} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
+            {:tuple, ([{:tuple, _, :lyt_then} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
             _ -> case (collapse.(offside_p)).(state) do
                 ({:tuple, stk_prime, _}) = state_prime ->
                   if is_top_decl(tok_pos, stk_prime) do
                     (insert_token.(src)).(state_prime)
                   end
-                state_prime -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_token.(src)).((insert_sep).(state_prime)))
+                state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_token.(src)).((insert_sep).(state_prime)))
               end
           end
-        :tok_forall -> (insert_kw_property.((push_stack.(tok_pos).(:LytForall)))).(state)
-        :tok_backslash -> (push_stack.(tok_pos).(:LytLambdaBinders)).((insert_default).(state))
+        :tok_forall -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_forall)))).(state)
+        :tok_backslash -> (push_stack.(tok_pos).(:lyt_lambda_binders)).((insert_default).(state))
         :tok_right_arrow -> (insert_token.(src)).((pop_stack.(guard_p)).((collapse.(arrow_p)).(state)))
         :tok_equals -> case (collapse.(equals_p)).(state) do
-            {:tuple, ([{:tuple, _, :LytDeclGuard} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
+            {:tuple, ([{:tuple, _, :lyt_decl_guard} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
             _ -> (insert_default).(state)
           end
         :tok_pipe -> case collapse.(offside_end_p).(state) do
-            ({:tuple, ([{:tuple, _, :LytOf} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:LytCaseGuard)).(state_prime))
-            ({:tuple, ([{:tuple, _, :LytLet} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:LytDeclGuard)).(state_prime))
-            ({:tuple, ([{:tuple, _, :LytLetStmt} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:LytDeclGuard)).(state_prime))
-            ({:tuple, ([{:tuple, _, :LytWhere} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:LytDeclGuard)).(state_prime))
+            ({:tuple, ([{:tuple, _, :lyt_of} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:lyt_case_guard)).(state_prime))
+            ({:tuple, ([{:tuple, _, :lyt_let} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:lyt_decl_guard)).(state_prime))
+            ({:tuple, ([{:tuple, _, :lyt_let_stmt} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:lyt_decl_guard)).(state_prime))
+            ({:tuple, ([{:tuple, _, :lyt_where} | _]), _}) = state_prime -> (insert_token.(src)).((push_stack.(tok_pos).(:lyt_decl_guard)).(state_prime))
             _ -> (insert_default).(state)
           end
         :tok_tick -> case (collapse.(indented_p)).(state) do
-            {:tuple, ([{:tuple, _, :LytTick} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
-            _ -> (push_stack.(tok_pos).(:LytTick)).((insert_token.(src)).((insert_sep).((collapse.(offside_end_p)).(state))))
+            {:tuple, ([{:tuple, _, :lyt_tick} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
+            _ -> (push_stack.(tok_pos).(:lyt_tick)).((insert_token.(src)).((insert_sep).((collapse.(offside_end_p)).(state))))
           end
         :tok_comma -> case (collapse.(indented_p)).(state) do
-            ({:tuple, ([{:tuple, _, :LytBrace} | _]), _}) = state_prime -> (push_stack.(tok_pos).(:LytProperty)).((insert_token.(src)).(state_prime))
+            ({:tuple, ([{:tuple, _, :lyt_brace} | _]), _}) = state_prime -> (push_stack.(tok_pos).(:lyt_property)).((insert_token.(src)).(state_prime))
             state_prime -> (insert_token.(src)).(state_prime)
           end
         :tok_dot -> case (insert_default).(state) do
-            {:tuple, ([{:tuple, _, :LytForall} | stk_prime]), acc_prime} -> {:tuple, stk_prime, acc_prime}
-            state_prime -> (push_stack.(tok_pos).(:LytProperty)).(state_prime)
+            {:tuple, ([{:tuple, _, :lyt_forall} | stk_prime]), acc_prime} -> {:tuple, stk_prime, acc_prime}
+            state_prime -> (push_stack.(tok_pos).(:lyt_property)).(state_prime)
           end
-        :tok_left_paren -> (push_stack.(tok_pos).(:LytParen)).((insert_default).(state))
-        :tok_left_brace -> (push_stack.(tok_pos).(:LytProperty)).((push_stack.(tok_pos).(:LytBrace)).((insert_default).(state)))
-        :tok_left_square -> (push_stack.(tok_pos).(:LytSquare)).((insert_default).(state))
-        :tok_right_paren -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :LytParen) end))).((collapse.(indented_p)).(state)))
-        :tok_right_brace -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :LytBrace) end))).((pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((collapse.(indented_p)).(state))))
-        :tok_right_square -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :LytSquare) end))).((collapse.(indented_p)).(state)))
-        {:tok_string, _, _} -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state))
-        {:tok_lower_name, :nothing, _} -> (pop_stack.((fn __x__ -> (__x__ == :LytProperty) end))).((insert_default).(state))
+        :tok_left_paren -> (push_stack.(tok_pos).(:lyt_paren)).((insert_default).(state))
+        :tok_left_brace -> (push_stack.(tok_pos).(:lyt_property)).((push_stack.(tok_pos).(:lyt_brace)).((insert_default).(state)))
+        :tok_left_square -> (push_stack.(tok_pos).(:lyt_square)).((insert_default).(state))
+        :tok_right_paren -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_paren) end))).((collapse.(indented_p)).(state)))
+        :tok_right_brace -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_brace) end))).((pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((collapse.(indented_p)).(state))))
+        :tok_right_square -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_square) end))).((collapse.(indented_p)).(state)))
+        {:tok_string, _, _} -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
+        {:tok_lower_name, :nothing, _} -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
         {:tok_operator, _, _} -> (insert_token.(src)).((insert_sep).((collapse.(offside_end_p)).(state)))
         _ -> (insert_default).(state)
       end end

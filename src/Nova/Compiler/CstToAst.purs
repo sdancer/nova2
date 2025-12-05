@@ -83,6 +83,45 @@ isUnderscore :: Cst.Expr Void -> Boolean
 isUnderscore (Cst.ExprIdent qn) = unwrapIdent qn.name == "_"
 isUnderscore _ = false
 
+-- | Get operator precedence (higher number = binds tighter)
+-- Standard Haskell/PureScript precedences:
+-- 9: function application (implicit)
+-- 7: *, /, mod
+-- 6: +, -, <>
+-- 5: :, ++
+-- 4: ==, /=, <, >, <=, >=
+-- 3: &&
+-- 2: ||
+-- 1: $, #
+-- 0: lowest
+operatorPrecedence :: String -> Int
+operatorPrecedence op = case op of
+  "*"   -> 7
+  "/"   -> 7
+  "mod" -> 7
+  "+"   -> 6
+  "-"   -> 6
+  "<>"  -> 6
+  "++"  -> 5
+  ":"   -> 5
+  "=="  -> 4
+  "/="  -> 4
+  "!="  -> 4
+  "<"   -> 4
+  ">"   -> 4
+  "<="  -> 4
+  ">="  -> 4
+  "&&"  -> 3
+  "||"  -> 2
+  "$"   -> 1
+  "#"   -> 1
+  ">>>" -> 1
+  ">>=" -> 1
+  "<<<" -> 1
+  ">>"  -> 1
+  "<-"  -> 0
+  _     -> 5  -- default precedence for unknown operators
+
 -- ============================================================================
 -- CST to AST Conversion
 -- ============================================================================
@@ -696,14 +735,73 @@ convertExpr expr = case expr of
   Cst.ExprError _ ->
     Left "Cannot convert expression error"
 
+-- | Fold binary operators with proper precedence using shunting-yard algorithm
+-- Input: first expr, list of (operator, expr) pairs
+-- Output: properly nested AST respecting operator precedence
 foldBinOps :: Ast.Expr -> List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Expr Void)) -> Either String Ast.Expr
-foldBinOps acc ops = case ops of
-  Nil -> pure acc
+foldBinOps firstExpr ops = do
+  -- Convert all operators and expressions first
+  converted <- convertOpList ops
+  -- Apply shunting-yard to build properly nested tree
+  shuntingYard firstExpr converted
+
+-- | Convert CST operator list to (opName, Ast.Expr) pairs
+convertOpList :: List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Expr Void)) -> Either String (List (Tuple String Ast.Expr))
+convertOpList ops = case ops of
+  Nil -> pure Nil
   (Tuple op e : rest) -> do
     let opName = unwrapOperator op.name
     exprE <- convertExpr e
-    let combined = Ast.ExprBinOp opName acc exprE
-    foldBinOps combined rest
+    restConverted <- convertOpList rest
+    pure $ (Tuple opName exprE) : restConverted
+
+-- | Shunting-yard algorithm for operator precedence
+-- Takes first expression and list of (operator, expression) pairs
+-- Returns properly nested expression tree
+shuntingYard :: Ast.Expr -> List (Tuple String Ast.Expr) -> Either String Ast.Expr
+shuntingYard firstExpr ops =
+  -- Process with output stack and operator stack
+  go (firstExpr : Nil) Nil ops
+  where
+  -- go :: output stack -> operator stack -> remaining ops -> result
+  go :: List Ast.Expr -> List String -> List (Tuple String Ast.Expr) -> Either String Ast.Expr
+  go output opStack Nil =
+    -- No more input, reduce all remaining operators
+    reduceAll output opStack
+  go output opStack ((Tuple op expr) : rest) = do
+    -- Pop operators with higher or equal precedence
+    let newPrec = operatorPrecedence op
+    result <- popHigherPrec output opStack newPrec
+    let newOutput = result.output
+    let newOpStack = result.opStack
+    -- Push current operator and expression
+    go (expr : newOutput) (op : newOpStack) rest
+
+  -- Pop operators with precedence >= given precedence and apply them
+  popHigherPrec :: List Ast.Expr -> List String -> Int -> Either String { output :: List Ast.Expr, opStack :: List String }
+  popHigherPrec output opStack prec = case opStack of
+    Nil -> pure { output, opStack }
+    (topOp : restOps) ->
+      if operatorPrecedence topOp >= prec
+      then do
+        -- Pop and apply the operator
+        case output of
+          (right : left : restOutput) -> do
+            let combined = Ast.ExprBinOp topOp left right
+            popHigherPrec (combined : restOutput) restOps prec
+          _ -> Left "Not enough operands for operator"
+      else pure { output, opStack }
+
+  -- Reduce all remaining operators on the stack
+  reduceAll :: List Ast.Expr -> List String -> Either String Ast.Expr
+  reduceAll output Nil = case output of
+    (result : Nil) -> pure result
+    _ -> Left "Invalid expression: multiple values remaining"
+  reduceAll output (op : restOps) = case output of
+    (right : left : restOutput) -> do
+      let combined = Ast.ExprBinOp op left right
+      reduceAll (combined : restOutput) restOps
+    _ -> Left "Not enough operands for operator"
 
 -- Note: Expanding Wrapped type alias manually for self-hosted type checker compatibility
 -- Wrapped a = { open :: SourceToken, value :: a, close :: SourceToken }

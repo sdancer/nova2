@@ -197,6 +197,9 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Array" (mkScheme [a] (tArray (TyVar a)))
   , Tuple "List" (mkScheme [a] (tList (TyVar a)))
   , Tuple "List.fromFoldable" (mkScheme [a] (tArrow (tArray (TyVar a)) (tList (TyVar a))))
+  , Tuple "List.uncons" (mkScheme [a] (tArrow (tList (TyVar a)) (tMaybe (TyRecord { fields: Map.fromFoldable [Tuple "head" (TyVar a), Tuple "tail" (tList (TyVar a))], row: Nothing }))))
+  , Tuple "List.null" (mkScheme [a] (tArrow (tList (TyVar a)) tBool))
+  , Tuple "List.length" (mkScheme [a] (tArrow (tList (TyVar a)) tInt))
   , Tuple "Array.fromFoldable" (mkScheme [a] (tArrow (tList (TyVar a)) (tArray (TyVar a))))
   , Tuple "Array.toUnfoldable" (mkScheme [a] (tArrow (tArray (TyVar a)) (tList (TyVar a))))
   , Tuple "Cons" (mkScheme [a] (tArrow (TyVar a) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
@@ -321,6 +324,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "String.contains" (mkScheme [] (tArrow tString (tArrow tString tBool)))
   , Tuple "String.replaceAll" (mkScheme [] (tArrow tString (tArrow tString (tArrow tString tString))))
   , Tuple "String.Pattern" (mkScheme [] (tArrow tString tString))  -- Pattern constructor
+  , Tuple "StringPattern.Pattern" (mkScheme [] (tArrow tString tString))  -- StringPattern.Pattern alias
   , Tuple "String.split" (mkScheme [] (tArrow tString (tArrow tString (tArray tString))))
   , Tuple "String.stripPrefix" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tString))))
   , Tuple "String.indexOf" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tInt))))
@@ -355,6 +359,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Map.toUnfoldable" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) (tArray (tTuple [TyVar k, TyVar v]))))
   , Tuple "Map.delete" (mkScheme [k, v] (tArrow (TyVar k) (tArrow (tMap (TyVar k) (TyVar v)) (tMap (TyVar k) (TyVar v)))))
   , Tuple "Map.mapMaybe" (mkScheme [k, a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tMap (TyVar k) (TyVar a)) (tMap (TyVar k) (TyVar b)))))
+  , Tuple "Map.size" (mkScheme [k, v] (tArrow (tMap (TyVar k) (TyVar v)) tInt))
 
   -- Set functions
   , Tuple "Set.empty" (mkScheme [a] (tSet (TyVar a)))
@@ -446,6 +451,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "registerModule" (mkScheme [] (tArrow tModuleRegistry (tArrow tString (tArrow tModuleExports tModuleRegistry))))
   , Tuple "emptyExports" (mkScheme [] tModuleExports)
   , Tuple "mergeExportsToEnv" (mkScheme [] (tArrow tEnv (tArrow tModuleExports tEnv)))
+  , Tuple "mergeExportsToEnvWithPrefix" (mkScheme [] (tArrow tEnv (tArrow tModuleExports (tArrow tString tEnv))))
   , Tuple "mergeSelectedExports" (mkScheme [] (tArrow tEnv (tArrow tModuleExports (tArrow (tArray tString) tEnv))))
   , Tuple "mergeTypeExport" (mkScheme [] (tArrow tEnv (tArrow tModuleExports (tArrow tString (tArrow (tArray tString) tEnv)))))
 
@@ -559,9 +565,15 @@ builtinPrelude = Map.fromFoldable
   , Tuple "DeclFunction" (mkScheme [] (tArrow tFunctionDecl tDeclaration))
   , Tuple "DeclTypeSig" (mkScheme [] (tArrow tTypeSig tDeclaration))
   , Tuple "DeclDataType" (mkScheme [] (tArrow tDataType tDeclaration))
+  , Tuple "DeclType" (mkScheme [] (tArrow tTypeDecl tDeclaration))
   , Tuple "DeclTypeAlias" (mkScheme [] (tArrow tTypeAlias tDeclaration))
   , Tuple "DeclModule" (mkScheme [] (tArrow tModuleDecl tDeclaration))
   , Tuple "DeclImport" (mkScheme [] (tArrow tImportDecl tDeclaration))
+  , Tuple "DeclTypeClass" (mkScheme [] (tArrow tTypeClass tDeclaration))
+  , Tuple "DeclTypeClassInstance" (mkScheme [] (tArrow tTypeClassInstance tDeclaration))
+  , Tuple "DeclNewtype" (mkScheme [] (tArrow tNewtypeDecl tDeclaration))
+  , Tuple "DeclInfix" (mkScheme [] (tArrow tInfixDecl tDeclaration))
+  , Tuple "DeclForeignImport" (mkScheme [] (tArrow tForeignImport tDeclaration))
 
   -- Ast-qualified constructors (for imports like "import Nova.Compiler.Ast as Ast")
   -- Expression constructors
@@ -653,10 +665,55 @@ builtinPrelude = Map.fromFoldable
   -- ImportItem constructors
   , Tuple "Ast.ImportValue" (mkScheme [] (tArrow tString tImportItem))
   , Tuple "Ast.ImportType" (mkScheme [] (tArrow tString (tArrow tImportSpec tImportItem)))
+  , Tuple "ImportValue" (mkScheme [] (tArrow tString tImportItem))
+  , Tuple "ImportType" (mkScheme [] (tArrow tString (tArrow tImportSpec tImportItem)))
   -- ImportSpec constructors
   , Tuple "Ast.ImportAll" (mkScheme [] tImportSpec)
   , Tuple "Ast.ImportSome" (mkScheme [] (tArrow (tArray tString) tImportSpec))
   , Tuple "Ast.ImportNone" (mkScheme [] tImportSpec)
+  , Tuple "ImportAll" (mkScheme [] tImportSpec)
+  , Tuple "ImportSome" (mkScheme [] (tArrow (tArray tString) tImportSpec))
+  , Tuple "ImportNone" (mkScheme [] tImportSpec)
+
+  -- Associativity constructors
+  , Tuple "Ast.AssocLeft" (mkScheme [] tAssociativity)
+  , Tuple "Ast.AssocRight" (mkScheme [] tAssociativity)
+  , Tuple "Ast.AssocNone" (mkScheme [] tAssociativity)
+  , Tuple "AssocLeft" (mkScheme [] tAssociativity)
+  , Tuple "AssocRight" (mkScheme [] tAssociativity)
+  , Tuple "AssocNone" (mkScheme [] tAssociativity)
+
+  -- List functions moved to lib/Data/List.purs
+  -- These are retained for backwards compatibility until the lib is properly integrated
+  , Tuple "List.reverse" (mkScheme [a] (tArrow (tList (TyVar a)) (tList (TyVar a))))
+  , Tuple "List.any" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tList (TyVar a)) tBool)))
+  , Tuple "List.range" (mkScheme [] (tArrow tInt (tArrow tInt (tList tInt))))
+  , Tuple "List.mapMaybe" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tMaybe (TyVar b))) (tArrow (tList (TyVar a)) (tList (TyVar b)))))
+  , Tuple "List.head" (mkScheme [a] (tArrow (tList (TyVar a)) (tMaybe (TyVar a))))
+  , Tuple "List.tail" (mkScheme [a] (tArrow (tList (TyVar a)) (tMaybe (tList (TyVar a)))))
+  , Tuple "List.takeWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.dropWhile" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.map" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tList (TyVar a)) (tList (TyVar b)))))
+  , Tuple "List.foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tList (TyVar a)) (TyVar b)))))
+  , Tuple "List.foldr" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))) (tArrow (TyVar b) (tArrow (tList (TyVar a)) (TyVar b)))))
+  , Tuple "List.take" (mkScheme [a] (tArrow tInt (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.drop" (mkScheme [a] (tArrow tInt (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.cons" (mkScheme [a] (tArrow (TyVar a) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.singleton" (mkScheme [a] (tArrow (TyVar a) (tList (TyVar a))))
+  , Tuple "List.append" (mkScheme [a] (tArrow (tList (TyVar a)) (tArrow (tList (TyVar a)) (tList (TyVar a)))))
+  , Tuple "List.elem" (mkScheme [a] (tArrow (TyVar a) (tArrow (tList (TyVar a)) tBool)))
+  , Tuple "List.toUnfoldable" (mkScheme [a] (tArrow (tList (TyVar a)) (tArray (TyVar a))))
+
+  -- CST Lexer/Parser functions (for CstPipeline)
+  , Tuple "Lexer.lexModule" (mkScheme [a] (tArrow tString (tList (TyVar a))))  -- simplified: returns List SourceToken
+  , Tuple "Parser.runParser" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (tEither tString (TyVar a)))))  -- simplified parser runner
+  , Tuple "Parser.parseModule" (mkScheme [a] (TyVar a))  -- simplified parser
+  , Tuple "CstToAst.convertModule" (mkScheme [a, b] (tArrow (TyVar a) (tEither tString (TyVar b))))  -- CST to AST conversion
+
+  -- Math functions
+  , Tuple "max" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
+  , Tuple "min" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
   ]
   where
     a = mkTVar (-1) "a"
@@ -852,11 +909,22 @@ tImportItem = TyCon (mkTCon0 "ImportItem")
 tImportSpec :: Type
 tImportSpec = TyCon (mkTCon0 "ImportSpec")
 
+tAssociativity :: Type
+tAssociativity = TyCon (mkTCon0 "Associativity")
+
 tForeignImport :: Type
 tForeignImport = TyRecord { fields: Map.fromFoldable
   [ Tuple "moduleName" tString
   , Tuple "functionName" tString
   , Tuple "ty" tTypeExpr
+  ], row: Nothing }
+
+tNewtypeDecl :: Type
+tNewtypeDecl = TyRecord { fields: Map.fromFoldable
+  [ Tuple "name" tString
+  , Tuple "typeVars" (tArray tString)
+  , Tuple "constructor" tString
+  , Tuple "wrappedType" tTypeExpr
   ], row: Nothing }
 
 tTypeDecl :: Type
@@ -944,6 +1012,19 @@ mergeExportsToEnv env exports =
       -- Add values
       valList = Map.toUnfoldable exports.values
       env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env1 valList
+  in env2
+
+-- | Merge exports into environment with a module prefix
+-- | Used when importing with "as" alias: import Data.List as List
+-- | Adds bindings like "List.reverse" for qualified access
+mergeExportsToEnvWithPrefix :: Env -> ModuleExports -> String -> Env
+mergeExportsToEnvWithPrefix env exports prefix =
+  let -- Add constructors with prefix
+      ctorList = Map.toUnfoldable exports.constructors
+      env1 = Array.foldl (\e (Tuple name scheme) -> extendEnv e (prefix <> "." <> name) scheme) env ctorList
+      -- Add values with prefix
+      valList = Map.toUnfoldable exports.values
+      env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e (prefix <> "." <> name) scheme) env1 valList
   in env2
 
 -- | Merge specific items from exports into environment

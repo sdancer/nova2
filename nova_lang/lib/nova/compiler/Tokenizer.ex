@@ -105,10 +105,10 @@ defmodule Nova.Compiler.Tokenizer do
   ?\s -> next_token((advance(state, 1)))
   ?\t -> next_token((advance_tab(state)))
   ?\r -> case peek_at(state, 1) do
-      {:just, ?\n} -> {:just, ({:tuple, (mk_token(:TokNewline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 2))))})}
-      _ -> {:just, ({:tuple, (mk_token(:TokNewline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 1))))})}
+      {:just, ?\n} -> {:just, ({:tuple, (mk_token(:tok_newline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 2))))})}
+      _ -> {:just, ({:tuple, (mk_token(:tok_newline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 1))))})}
     end
-  ?\n -> {:just, ({:tuple, (mk_token(:TokNewline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 1))))})}
+  ?\n -> {:just, ({:tuple, (mk_token(:tok_newline, "\n", state.line, state.column, state.pos)), (advance_newline((advance(state, 1))))})}
   ?- -> case peek_at(state, 1) do
       {:just, ?-} -> 
           state_prime = consume_line_comment((advance(state, 2)))
@@ -120,7 +120,7 @@ defmodule Nova.Compiler.Tokenizer do
               end
             _ -> state_prime
           end
-          {:just, ({:tuple, (mk_token(:TokNewline, "\n", state.line, state.column, state.pos)), (advance_newline(state_prime_prime))})}
+          {:just, ({:tuple, (mk_token(:tok_newline, "\n", state.line, state.column, state.pos)), (advance_newline(state_prime_prime))})}
       _ -> tokenize_operator(state)
     end
   ?{ -> case peek_at(state, 1) do
@@ -135,9 +135,9 @@ defmodule Nova.Compiler.Tokenizer do
       (is_alpha(c) or ((c == ?_))) -> tokenize_identifier(state)
       is_operator_char(c) -> tokenize_operator(state)
       is_delimiter(c) -> tokenize_delimiter(state)
-      true -> {:just, ({:tuple, (mk_token(:TokUnrecognized, (Nova.String.singleton(c)), state.line, state.column, state.pos)), (advance(state, 1))})}
+      true -> {:just, ({:tuple, (mk_token(:tok_unrecognized, (Nova.String.singleton(c)), state.line, state.column, state.pos)), (advance(state, 1))})}
     end
-  _ -> {:just, ({:tuple, (mk_token(:TokUnrecognized, (Nova.String.singleton(c)), state.line, state.column, state.pos)), (advance(state, 1))})}
+  _ -> {:just, ({:tuple, (mk_token(:tok_unrecognized, (Nova.String.singleton(c)), state.line, state.column, state.pos)), (advance(state, 1))})}
 end
   end
   end
@@ -215,7 +215,7 @@ end
       start_col = state.column
       start_pos = state.pos
       {:tuple, str, state_prime} = consume_string((advance(state, 1)), "")
-      tok = mk_token(:TokString, str, start_line, start_col, start_pos)
+      tok = mk_token(:tok_string, str, start_line, start_col, start_pos)
       {:just, ({:tuple, tok, state_prime})}
   end
 
@@ -263,16 +263,16 @@ end
                 ?' -> "'"
                 _ -> Nova.String.singleton(c)
               end
-              {:just, ({:tuple, (mk_token(:TokChar, val, start_line, start_col, start_pos)), (advance(state1, 3))})}
-          _ -> {:just, ({:tuple, (mk_token(:TokUnrecognized, "'", start_line, start_col, start_pos)), state1})}
+              {:just, ({:tuple, (mk_token(:tok_char, val, start_line, start_col, start_pos)), (advance(state1, 3))})}
+          _ -> {:just, ({:tuple, (mk_token(:tok_unrecognized, "'", start_line, start_col, start_pos)), state1})}
         end
-      _ -> {:just, ({:tuple, (mk_token(:TokUnrecognized, "'", start_line, start_col, start_pos)), state1})}
+      _ -> {:just, ({:tuple, (mk_token(:tok_unrecognized, "'", start_line, start_col, start_pos)), state1})}
     end
   {:just, c} -> case peek_at(state1, 1) do
-      {:just, ?'} -> {:just, ({:tuple, (mk_token(:TokChar, (Nova.String.singleton(c)), start_line, start_col, start_pos)), (advance(state1, 2))})}
-      _ -> {:just, ({:tuple, (mk_token(:TokUnrecognized, "'", start_line, start_col, start_pos)), state1})}
+      {:just, ?'} -> {:just, ({:tuple, (mk_token(:tok_char, (Nova.String.singleton(c)), start_line, start_col, start_pos)), (advance(state1, 2))})}
+      _ -> {:just, ({:tuple, (mk_token(:tok_unrecognized, "'", start_line, start_col, start_pos)), state1})}
     end
-  :nothing -> {:just, ({:tuple, (mk_token(:TokUnrecognized, "'", start_line, start_col, start_pos)), state1})}
+  :nothing -> {:just, ({:tuple, (mk_token(:tok_unrecognized, "'", start_line, start_col, start_pos)), state1})}
 end
   end
 
@@ -284,7 +284,7 @@ end
       start_col = state.column
       start_pos = state.pos
       {:tuple, num, state_prime} = consume_number(state, "")
-      {:just, ({:tuple, (mk_token(:TokNumber, num, start_line, start_col, start_pos)), state_prime})}
+      {:just, ({:tuple, (mk_token(:tok_number, num, start_line, start_col, start_pos)), state_prime})}
   end
 
 
@@ -316,9 +316,9 @@ end
       start_pos = state.pos
       {:tuple, ident, state_prime} = consume_ident(state, "")
       tok_type = if Nova.Array.elem(ident, keywords()) do
-        :TokKeyword
+        :tok_keyword
       else
-        :TokIdentifier
+        :tok_identifier
       end
       {:just, ({:tuple, (mk_token(tok_type, ident, start_line, start_col, start_pos)), state_prime})}
   end
@@ -344,7 +344,7 @@ end
       start_col = state.column
       start_pos = state.pos
       prefix = Nova.String.from_char_array((Nova.Array.take(3, state.chars)))
-      tok_type = :TokOperator
+      tok_type = :tok_operator
       op = find_operator(prefix, operators())
       len = Nova.String.length(op)
       {:just, ({:tuple, (mk_token(tok_type, op, start_line, start_col, start_pos)), (advance(state, len))})}
@@ -365,7 +365,7 @@ end
       case peek(state) do
     :nothing -> :nothing
     {:just, c} ->
-            tok = mk_token(:TokDelimiter, (Nova.String.singleton(c)), state.line, state.column, state.pos)
+            tok = mk_token(:tok_delimiter, (Nova.String.singleton(c)), state.line, state.column, state.pos)
       {:just, ({:tuple, tok, (advance(state, 1))})}
   end
   end

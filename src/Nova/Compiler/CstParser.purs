@@ -763,7 +763,7 @@ parseLetPattern = Control.Lazy.defer \_ -> do
 parseLetName :: Parser (Cst.LetBinding Void)
 parseLetName = Control.Lazy.defer \_ -> do
   name <- tokLowerName
-  binders <- many parseBinder
+  binders <- many parseBinderAtom
   guarded <- parseGuarded
   pure (Cst.LetBindingName { name, binders, guarded })
 
@@ -945,7 +945,8 @@ parseBinder3 = Control.Lazy.defer \_ -> parseBinderCon <|> parseBinderAtom
 parseBinderCon :: Parser (Cst.Binder Void)
 parseBinderCon = Control.Lazy.defer \_ -> do
   con <- tokQualifiedUpperName
-  args <- many parseBinderAtom
+  -- Use 'some' to require at least one argument; nullary constructors fall through to parseBinderNullaryCon
+  args <- some parseBinderAtom
   pure (Cst.BinderConstructor con args)
 
 -- | Atomic binders
@@ -1426,6 +1427,8 @@ parseDeclSignature = do
 parseDeclValue :: Parser (Cst.Declaration Void)
 parseDeclValue = do
   name <- tokLowerName
-  binders <- many parseBinder
+  -- Use parseBinderAtom for function parameters to avoid greedy constructor arg consumption
+  -- Constructor patterns with arguments must be parenthesized: f (Cons x xs) = ...
+  binders <- many parseBinderAtom
   guarded <- parseGuarded
   pure (Cst.DeclValue { name, binders, guarded })

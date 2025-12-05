@@ -14,7 +14,9 @@ defmodule Nova.Dependencies do
   # ============================================================================
 
   # Convert PureScript-style linked list to Elixir list
+  # Note: Support both :nil and :nil_ (with underscore) since code generator escapes 'nil' as reserved word
   defp to_list(:nil), do: []
+  defp to_list(:nil_), do: []
   defp to_list({:cons, h, t}), do: [h | to_list(t)]
   defp to_list(list) when is_list(list), do: list
 

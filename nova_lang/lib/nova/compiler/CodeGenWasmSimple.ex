@@ -357,21 +357,21 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
 
 
 
-  def collect_do_free_vars(_, :nil) do
+  def collect_do_free_vars(_, []) do
     Nova.Set.empty
   end
 
-  def collect_do_free_vars(b, ({:cons, ({:do_expr, e}), rest})) do
+  def collect_do_free_vars(b, ([({:do_expr, e}) | rest])) do
     Nova.Set.union((collect_free_vars(b, e)), (collect_do_free_vars(b, rest)))
   end
 
-  def collect_do_free_vars(b, ({:cons, ({:do_bind, pat, e}), rest})) do
+  def collect_do_free_vars(b, ([({:do_bind, pat, e}) | rest])) do
     
       pat_vars = Nova.Set.from_foldable((pattern_vars(pat)))
       Nova.Set.union((collect_free_vars(b, e)), (collect_do_free_vars((Nova.Set.union(b, pat_vars)), rest)))
   end
 
-  def collect_do_free_vars(b, ({:cons, ({:do_let, binds}), rest})) do
+  def collect_do_free_vars(b, ([({:do_let, binds}) | rest])) do
     
       b_prime = Nova.Set.union(b, (Nova.Set.from_foldable((list_concat_map((fn bn -> pattern_vars(bn.pattern) end), binds)))))
       Nova.Set.union((Nova.Runtime.foldl((fn s -> fn bn -> Nova.Set.union(s, (collect_free_vars(b, bn.value))) end end), Nova.Set.empty, binds)), (collect_do_free_vars(b_prime, rest)))
@@ -389,7 +389,7 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
     n
   end
 
-  def get_lambda_param_name(i, :PatWildcard) do
+  def get_lambda_param_name(i, :pat_wildcard) do
     Nova.Runtime.append("__w", Nova.Runtime.show(i))
   end
 
@@ -471,19 +471,19 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
 
   def collect_lambdas(bound, ({:expr_do, stmts}), state) do
     
-      collect_do_lambdas = Nova.Runtime.fix2(fn collect_do_lambdas -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, {:nil, st}} -> st
-        {b, ({:cons, ({:do_expr, e}), rest}), st} -> collect_do_lambdas.(b).(rest).((collect_lambdas(b, e, st)))
-        {b, ({:cons, ({:do_bind, pat, e}), rest}), st} -> 
+      collect_do_lambdas = Nova.Runtime.fix3(fn collect_do_lambdas -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
+        {_, [], st} -> st
+        {b, ([({:do_expr, e}) | rest]), st} -> collect_do_lambdas.(b).(rest).((collect_lambdas(b, e, st)))
+        {b, ([({:do_bind, pat, e}) | rest]), st} -> 
   pat_vars = Nova.Set.from_foldable((pattern_vars(pat)))
   collect_do_lambdas.((Nova.Set.union(b, pat_vars))).(rest).((collect_lambdas(b, e, st)))
-        {b, ({:cons, ({:do_let, binds}), rest}), st} -> 
+        {b, ([({:do_let, binds}) | rest]), st} -> 
   binds_arr = Nova.Array.from_foldable(binds)
   bind_names = Nova.Set.from_foldable((Nova.Array.concat_map((fn bn -> pattern_vars(bn.pattern) end), binds_arr)))
   st_prime = Nova.Array.foldl((fn s -> fn bn -> collect_lambdas(b, bn.value, s) end end), st, binds_arr)
   b_prime = Nova.Set.union(b, bind_names)
   collect_do_lambdas.(b_prime).(rest).(st_prime)
-      end end end end)
+      end end end end end)
       collect_do_lambdas.(bound).(stmts).(state)
   end
 
@@ -525,7 +525,7 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
     end
   end
 
-  def add_locals_from_pattern({:pat_wildcard, ctx}) do
+  def add_locals_from_pattern(:pat_wildcard, ctx) do
     ctx
   end
 
@@ -569,7 +569,7 @@ end
     [name]
   end
 
-  def pattern_vars(:PatWildcard) do
+  def pattern_vars(:pat_wildcard) do
     []
   end
 
@@ -607,8 +607,8 @@ end
 
   def group_functions(funcs) do
     
-      keys = Nova.Array.nub_by_eq((fn a -> fn b -> (((a.name == b.name) and a.arity) == b.arity) end end), (Nova.Runtime.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
-      mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter((fn f -> (((f.name == k.name) and Nova.List.length(f.parameters)) == k.arity) end), funcs)} end
+      keys = Nova.Array.nub_by_eq((fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end), (Nova.Runtime.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
+      mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter((fn f -> ((f.name == k.name) and (Nova.List.length(f.parameters) == k.arity)) end), funcs)} end
       Nova.Runtime.map(mk_group, keys)
   end
 

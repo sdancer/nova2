@@ -129,7 +129,7 @@ defmodule Nova.Compiler.Dependencies do
   def get_do_statements_deps(stmts) do
     
       go = Nova.Runtime.fix2(fn go -> fn remaining -> fn bound -> case remaining do
-        :nil -> Nova.Set.empty
+        [] -> Nova.Set.empty
         ([stmt | rest]) -> case stmt do
             {:do_let, binds} -> 
                 deps = get_let_binds_deps(binds)
@@ -170,7 +170,7 @@ defmodule Nova.Compiler.Dependencies do
   def get_bound_names(pat) do
     case pat do
       {:pat_var, name} -> Nova.Set.singleton(name)
-      :PatWildcard -> Nova.Set.empty
+      :pat_wildcard -> Nova.Set.empty
       {:pat_lit, _} -> Nova.Set.empty
       {:pat_con, _, pats} -> Nova.Runtime.foldl((fn acc -> fn p -> Nova.Set.union(acc, (get_bound_names(p))) end end), Nova.Set.empty, pats)
       {:pat_record, fields} -> Nova.Runtime.foldl((fn acc -> fn ({:tuple, _, p}) -> Nova.Set.union(acc, (get_bound_names(p))) end end), Nova.Set.empty, fields)

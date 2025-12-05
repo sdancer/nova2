@@ -73,6 +73,7 @@ defmodule Nova.Runtime do
   # Foldable - support both curried (f.(a).(b)) and uncurried (f.(a, b)) styles
   def foldr(_f, acc, []), do: acc
   def foldr(_f, acc, :nil), do: acc
+  def foldr(_f, acc, :nil_), do: acc
   def foldr(_f, acc, nil), do: acc
   def foldr(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
@@ -89,6 +90,7 @@ defmodule Nova.Runtime do
 
   def foldl(_f, acc, []), do: acc
   def foldl(_f, acc, :nil), do: acc
+  def foldl(_f, acc, :nil_), do: acc
   def foldl(_f, acc, nil), do: acc
   def foldl(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
@@ -129,6 +131,7 @@ defmodule Nova.Runtime do
   def map(f, [h | t]), do: [f.(h) | map(f, t)]
   # Map over PureScript-style linked lists
   def map(_f, :nil), do: :nil
+  def map(_f, :nil_), do: :nil_
   def map(f, {:cons, h, t}), do: {:cons, f.(h), map(f, t)}
   # Map over Maybe
   def map(_f, :nothing), do: :nothing
@@ -304,6 +307,7 @@ defmodule Nova.Array do
   def to_unfoldable([h | t]), do: {:cons, h, to_unfoldable(t)}
   # Convert PureScript List to array
   def from_foldable(:nil), do: []
+  def from_foldable(:nil_), do: []
   def from_foldable({:cons, h, t}), do: [h | from_foldable(t)]
   def from_foldable(list) when is_list(list), do: list  # Already an Elixir list
 

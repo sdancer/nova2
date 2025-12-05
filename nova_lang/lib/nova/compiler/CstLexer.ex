@@ -41,12 +41,12 @@ defmodule Nova.Compiler.CstLexer do
 
   def is_indented(lyt) do
     case lyt do
-      :LytLet -> true
-      :LytLetStmt -> true
-      :LytWhere -> true
-      :LytOf -> true
-      :LytDo -> true
-      :LytAdo -> true
+      :lyt_let -> true
+      :lyt_let_stmt -> true
+      :lyt_where -> true
+      :lyt_of -> true
+      :lyt_do -> true
+      :lyt_ado -> true
       _ -> false
     end
   end
@@ -65,7 +65,7 @@ defmodule Nova.Compiler.CstLexer do
 
 
 
-  def close_layouts_go(acc, :nil) do
+  def close_layouts_go(acc, []) do
     acc
   end
 
@@ -89,11 +89,11 @@ defmodule Nova.Compiler.CstLexer do
 
   def insert_layout_go(stack, toks, acc) do
     case toks do
-      :nil -> Nova.Runtime.append(acc, close_layouts(stack))
+      [] -> Nova.Runtime.append(acc, close_layouts(stack))
       ([tok | rest]) -> 
           next_pos = case rest do
             ([next | _]) -> next.range.start
-            :nil -> %{line: (tok.range.end_.line + 1), column: 1}
+            [] -> %{line: (tok.range.end_.line + 1), column: 1}
           end
           case call_insert_layout(tok, next_pos, stack) do
   {:tuple, new_stack, output_tokens} -> 
@@ -205,19 +205,19 @@ end
 
 
   def is_digit(c) do
-    (((c >= ?0) and c) <= ?9)
+    ((c >= ?0) and (c <= ?9))
   end
 
 
 
   def is_upper(c) do
-    (((c >= ?A) and c) <= ?Z)
+    ((c >= ?A) and (c <= ?Z))
   end
 
 
 
   def is_lower(c) do
-    (((c >= ?a) and c) <= ?z)
+    ((c >= ?a) and (c <= ?z))
   end
 
 
@@ -247,7 +247,7 @@ end
 
 
   def is_operator_char(c) do
-    (((((((((((((((((((((((((((((((((((((c == ?:) or c) == ?!) or c) == ?#) or c) == ?$) or c) == ?%) or c) == ?&) or c) == ?*) or c) == ?+) or c) == ?.) or c) == ?/) or c) == ?<) or c) == ?=) or c) == ?>) or c) == ??) or c) == ?\\) or c) == ?^) or c) == ?|) or c) == ?-) or c) == ?~)
+    (((((((((((((((((((c == ?:) or (c == ?!)) or (c == ?#)) or (c == ?$)) or (c == ?%)) or (c == ?&)) or (c == ?*)) or (c == ?+)) or (c == ?.)) or (c == ?/)) or (c == ?<)) or (c == ?=)) or (c == ?>)) or (c == ??)) or (c == ?\\)) or (c == ?^)) or (c == ?|)) or (c == ?-)) or (c == ?~))
   end
 
 

@@ -39,14 +39,63 @@ bindVar v t
   | occurs v t = Left (OccursCheck v t)
   | otherwise = Right (singleSubst v t)
 
+-- | Check if two type names are considered equivalent
+-- | List and Array are treated as equivalent since they compile to the same Elixir representation
+areEquivalentTypes :: String -> String -> Boolean
+areEquivalentTypes n1 n2
+  | n1 == n2 = true
+  | n1 == "List" && n2 == "Array" = true
+  | n1 == "Array" && n2 == "List" = true
+  | otherwise = false
+
+-- | Check if a type name is a record type alias that should unify with records
+-- | These are type aliases like "type TypeClass = { name :: String, ... }"
+isRecordTypeAlias :: String -> Boolean
+isRecordTypeAlias name
+  | name == "TypeClass" = true
+  | name == "TypeClassInstance" = true
+  | name == "NewtypeDecl" = true
+  | name == "FunctionDecl" = true
+  | name == "FunctionDeclaration" = true
+  | name == "TypeSig" = true
+  | name == "DataType" = true
+  | name == "DataConstructor" = true
+  | name == "DataField" = true
+  | name == "TypeAlias" = true
+  | name == "ModuleDecl" = true
+  | name == "ModuleExports" = true
+  | name == "ImportDecl" = true
+  | name == "InfixDecl" = true
+  | name == "Constraint" = true
+  | name == "ForeignImport" = true
+  | name == "TypeDecl" = true
+  | name == "LetBind" = true
+  | name == "CaseClause" = true
+  | name == "GuardedExpr" = true
+  | name == "PatResult" = true
+  | name == "InstantiateResult" = true
+  | name == "InferResult" = true
+  | name == "Env" = true
+  | name == "Scheme" = true
+  | name == "TVar" = true
+  | name == "LiftedLambda" = true
+  | otherwise = false
+
 -- | Main unification algorithm
 unify :: Type -> Type -> Either UnifyError Subst
 unify (TyVar v) t = bindVar v t
 unify t (TyVar v) = bindVar v t
 unify (TyCon c1) (TyCon c2)
-  | c1.name /= c2.name = Left (TypeMismatch (TyCon c1) (TyCon c2))
+  | not (areEquivalentTypes c1.name c2.name) = Left (TypeMismatch (TyCon c1) (TyCon c2))
   | length c1.args /= length c2.args = Left (ArityMismatch c1.name (length c1.args) (length c2.args))
   | otherwise = unifyMany c1.args c2.args
+-- Treat record type aliases as unifying with their record expansions
+unify (TyCon c) (TyRecord r)
+  | length c.args == 0 && isRecordTypeAlias c.name = Right emptySubst
+  | otherwise = Left (TypeMismatch (TyCon c) (TyRecord r))
+unify (TyRecord r) (TyCon c)
+  | length c.args == 0 && isRecordTypeAlias c.name = Right emptySubst
+  | otherwise = Left (TypeMismatch (TyRecord r) (TyCon c))
 unify (TyRecord r1) (TyRecord r2) = unifyRecords r1 r2
 unify t1 t2 = Left (TypeMismatch t1 t2)
 

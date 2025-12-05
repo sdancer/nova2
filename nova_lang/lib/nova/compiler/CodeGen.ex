@@ -54,7 +54,7 @@ defmodule Nova.Compiler.CodeGen do
     %{ctx | locals: Nova.Set.insert(name, ctx.locals)}
   end
 
-  def add_locals_from_pattern({:pat_wildcard, ctx}) do
+  def add_locals_from_pattern(:pat_wildcard, ctx) do
     ctx
   end
 
@@ -209,13 +209,13 @@ defmodule Nova.Compiler.CodeGen do
 
   def free_vars_do(stmts, bound) do
     case stmts do
-      :nil -> Nova.Set.empty
-      {:cons, ({:do_expr, e}), rest} -> Nova.Set.union((Nova.Set.difference((free_vars_expr(e)), bound)), (free_vars_do(rest, bound)))
-      {:cons, ({:do_bind, pat, e}), rest} -> 
+      [] -> Nova.Set.empty
+      [({:do_expr, e}) | rest] -> Nova.Set.union((Nova.Set.difference((free_vars_expr(e)), bound)), (free_vars_do(rest, bound)))
+      [({:do_bind, pat, e}) | rest] -> 
           expr_vars = Nova.Set.difference((free_vars_expr(e)), bound)
           new_bound = Nova.Set.union(bound, (pattern_vars(pat)))
           Nova.Set.union(expr_vars, (free_vars_do(rest, new_bound)))
-      {:cons, ({:do_let, binds}), rest} -> 
+      [({:do_let, binds}) | rest] -> 
           bind_pat_vars = Nova.Runtime.foldr((fn b -> fn s -> Nova.Set.union((pattern_vars(b.pattern)), s) end end), Nova.Set.empty, binds)
           bind_vars = Nova.Runtime.foldr((fn b -> fn s -> Nova.Set.union((Nova.Set.difference((free_vars_expr(b.value)), bound)), s) end end), Nova.Set.empty, binds)
           new_bound = Nova.Set.union(bound, bind_pat_vars)
@@ -229,7 +229,7 @@ defmodule Nova.Compiler.CodeGen do
     Nova.Set.singleton(name)
   end
 
-  def pattern_vars(:PatWildcard) do
+  def pattern_vars(:pat_wildcard) do
     Nova.Set.empty
   end
 
@@ -426,11 +426,11 @@ end
 
 
   def is_partial_app_of_arity2(({:expr_app, ({:expr_qualified, "Array", fn_}), _})) do
-    (((((((((((((((((fn_ == "filter") or fn_) == "map") or fn_) == "find") or fn_) == "any") or fn_) == "all") or fn_) == "takeWhile") or fn_) == "dropWhile") or fn_) == "sortBy") or fn_) == "groupBy")
+    (((((((((fn_ == "filter") or (fn_ == "map")) or (fn_ == "find")) or (fn_ == "any")) or (fn_ == "all")) or (fn_ == "takeWhile")) or (fn_ == "dropWhile")) or (fn_ == "sortBy")) or (fn_ == "groupBy"))
   end
 
   def is_partial_app_of_arity2(({:expr_app, ({:expr_var, fn_}), _})) do
-    (((((((((fn_ == "filter") or fn_) == "map") or fn_) == "find") or fn_) == "any") or fn_) == "all")
+    (((((fn_ == "filter") or (fn_ == "map")) or (fn_ == "find")) or (fn_ == "any")) or (fn_ == "all"))
   end
 
   def is_partial_app_of_arity2(_) do
@@ -620,7 +620,7 @@ end
     snake_case(name)
   end
 
-  def gen_pattern(:PatWildcard) do
+  def gen_pattern(:pat_wildcard) do
     "_"
   end
 
@@ -634,15 +634,18 @@ end
         {:just, i} -> Nova.String.drop(((i + 1)), name)
         :nothing -> name
       end
-      atom_name = if is_nullary_constructor(con_name) do
-        con_name
-      else
-        snake_case(con_name)
-      end
-      if Nova.List.null(pats) do
-  Nova.Runtime.append(":", atom_name)
-else
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:", snake_case(con_name)), ", "), Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((&gen_pattern/1), pats)))))), "}")
+      atom_name = snake_case(con_name)
+      case con_name do
+  "Nil" -> "[]"
+  "Cons" -> case Nova.List.from_foldable(pats) do
+      [h | ([t | []])] -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("[", gen_pattern(h)), " | "), gen_pattern(t)), "]")
+      _ -> Nova.Runtime.append(Nova.Runtime.append("{:cons, ", Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((&gen_pattern/1), pats)))))), "}")
+    end
+  _ -> if Nova.List.null(pats) do
+      Nova.Runtime.append(":", atom_name)
+    else
+      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:", snake_case(con_name)), ", "), Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((&gen_pattern/1), pats)))))), "}")
+    end
 end
   end
 
@@ -682,7 +685,7 @@ end
     end
   end
 
-  def gen_pattern_with_used(_, :PatWildcard) do
+  def gen_pattern_with_used(_, :pat_wildcard) do
     "_"
   end
 
@@ -696,15 +699,18 @@ end
         {:just, i} -> Nova.String.drop(((i + 1)), name)
         :nothing -> name
       end
-      atom_name = if is_nullary_constructor(con_name) do
-        con_name
-      else
-        snake_case(con_name)
-      end
-      if Nova.List.null(pats) do
-  Nova.Runtime.append(":", atom_name)
-else
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:", snake_case(con_name)), ", "), Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> gen_pattern_with_used(used, auto_p0) end), pats)))))), "}")
+      atom_name = snake_case(con_name)
+      case con_name do
+  "Nil" -> "[]"
+  "Cons" -> case Nova.List.from_foldable(pats) do
+      [h | ([t | []])] -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("[", gen_pattern_with_used(used, h)), " | "), gen_pattern_with_used(used, t)), "]")
+      _ -> Nova.Runtime.append(Nova.Runtime.append("{:cons, ", Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> gen_pattern_with_used(used, auto_p0) end), pats)))))), "}")
+    end
+  _ -> if Nova.List.null(pats) do
+      Nova.Runtime.append(":", atom_name)
+    else
+      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:", snake_case(con_name)), ", "), Nova.Runtime.intercalate(", ", (Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> gen_pattern_with_used(used, auto_p0) end), pats)))))), "}")
+    end
 end
   end
 
@@ -785,7 +791,7 @@ end
 
 
   def get_ast_constructor_arity(name) do
-    if (((((name == "PatWildcard") or name) == "ImportAll") or name) == "ImportNone") do
+    if (((name == "PatWildcard") or (name == "ImportAll")) or (name == "ImportNone")) do
       0
     else
       if (name == "ExprIf") do
@@ -1036,7 +1042,7 @@ else
 end
           else
             if is_nullary_constructor(name) do
-              Nova.Runtime.append(":", name)
+              Nova.Runtime.append(":", snake_case(name))
             else
               if is_module_func(ctx, name) do
                 case lookup_arity(name, ctx) do
@@ -1210,7 +1216,7 @@ end
     
       gen_curried_lambda = Nova.Runtime.fix4(fn gen_curried_lambda -> fn c -> fn i -> fn ps -> fn b -> case Nova.List.uncons(ps) do
         :nothing -> gen_expr_prime(c, i, b)
-        {:just, {p, rest}} -> if Nova.List.null(rest) do
+        {:just, %{head: p, tail: rest}} -> if Nova.List.null(rest) do
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn ", gen_pattern(p)), " -> "), gen_expr_prime(c, i, b)), " end")
           else
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn ", gen_pattern(p)), " -> "), gen_curried_lambda.(c).(i).(rest).(b)), " end")
@@ -1287,7 +1293,7 @@ end
   def gen_expr_prime(ctx, _, ({:expr_bin_op, op, l, r})) do
     
       is_upper_case = fn s -> case Nova.String.char_at(0, s) do
-        {:just, c} -> (((c >= ?A) and c) <= ?Z)
+        {:just, c} -> ((c >= ?A) and (c <= ?Z))
         :nothing -> false
       end end
       
@@ -1827,7 +1833,7 @@ end
                     :nothing -> 0
                     {:just, c} -> Nova.Runtime.length(c.patterns)
                   end
-                  if ((Nova.Array.null(clauses) or arity) == 0) do
+                  if (Nova.Array.null(clauses) or (arity == 0)) do
   Nova.Runtime.intercalate("\n", (Nova.Runtime.map((fn auto_p0 -> gen_let_bind_ctx(ctx, indent, auto_p0) end), binds)))
 else
   gen_merged_function(ctx, indent, name, arity, clauses, is_recursive)
@@ -2221,7 +2227,7 @@ end
 
   def can_pat_be_fallback(orig_pat, fallback_pat) do
     case fallback_pat do
-      :PatWildcard -> true
+      :pat_wildcard -> true
       _ -> same_clause_pattern(orig_pat, fallback_pat)
     end
   end
@@ -2230,7 +2236,7 @@ end
 
   def same_clause_pattern(p1, p2) do
     case {:tuple, p1, p2} do
-      {:tuple, :PatWildcard, :PatWildcard} -> true
+      {:tuple, :pat_wildcard, :pat_wildcard} -> true
       {:tuple, ({:pat_var, _}), ({:pat_var, _})} -> true
       {:tuple, ({:pat_con, n1, _}), ({:pat_con, n2, _})} -> (n1 == n2)
       {:tuple, ({:pat_lit, _}), ({:pat_lit, _})} -> true
@@ -2248,7 +2254,7 @@ end
           last_clause = Nova.Array.last(clauses)
           has_wildcard_fallback = case last_clause do
             {:just, c} -> case c.pattern do
-                :PatWildcard -> true
+                :pat_wildcard -> true
                 _ -> false
               end
             :nothing -> false
@@ -2267,7 +2273,7 @@ end
     
       last_clause = case Nova.Array.last(clauses) do
         {:just, c} -> c
-        :nothing -> %{pattern: :PatWildcard, guard: :nothing, body: Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_int(0)))}
+        :nothing -> %{pattern: :pat_wildcard, guard: :nothing, body: Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_int(0)))}
       end
       init_clauses = Nova.Runtime.from_maybe([], (Nova.Array.init(clauses)))
       used_vars = Nova.Runtime.foldr((fn cl -> fn s -> Nova.Set.union((used_vars_in_clause(cl)), s) end end), Nova.Set.empty, clauses)
@@ -2287,7 +2293,7 @@ end
     
       first_clause = case Nova.Array.head(clauses) do
         {:just, c} -> c
-        :nothing -> %{pattern: :PatWildcard, guard: :nothing, body: Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_int(0)))}
+        :nothing -> %{pattern: :pat_wildcard, guard: :nothing, body: Nova.Compiler.Ast.expr_lit((Nova.Compiler.Ast.lit_int(0)))}
       end
       used_vars = Nova.Runtime.foldr((fn cl -> fn s -> Nova.Set.union((used_vars_in_clause(cl)), s) end end), Nova.Set.empty, clauses)
       pat = gen_pattern_with_used(used_vars, first_clause.pattern)
@@ -2401,7 +2407,7 @@ end
               monad_type = detect_monad_type(e)
               ind_str = repeat_str(indent, " ")
               pat_str = case pat do
-                {:pat_con, "Tuple", ({:cons, p1, ({:cons, p2, :nil})})} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", gen_pattern(p1)), ", "), gen_pattern(p2)), "}")
+                {:pat_con, "Tuple", ([p1 | ([p2 | []])])} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", gen_pattern(p1)), ", "), gen_pattern(p2)), "}")
                 _ -> gen_pattern(pat)
               end
               if (monad_type == 0) do
@@ -2421,8 +2427,8 @@ end
 
   def detect_monad_type(expr) do
     
-      is_maybe_func = fn name -> (((((((((((((((((((((((((((((((name == "peek") or name) == "peekAt") or name) == "charAt") or name) == "head") or name) == "tail") or name) == "last") or name) == "init") or name) == "find") or name) == "findIndex") or name) == "elemIndex") or name) == "lookup") or name) == "index") or name) == "uncons") or name) == "fromString") or name) == "stripPrefix") or name) == "stripSuffix") end
-      is_either_func = fn name -> (((((((((((((((Nova.String.contains((Nova.String.pattern("parse")), (Nova.String.to_lower(name))) or Nova.String.contains((Nova.String.pattern("unify")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("expect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("collect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("infer")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("check")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("instantiate")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("generalize")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("lookup")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("convert")), (Nova.String.to_lower(name)))) or name) == "traverse") or name) == "success") or name) == "failure") end
+      is_maybe_func = fn name -> ((((((((((((((((name == "peek") or (name == "peekAt")) or (name == "charAt")) or (name == "head")) or (name == "tail")) or (name == "last")) or (name == "init")) or (name == "find")) or (name == "findIndex")) or (name == "elemIndex")) or (name == "lookup")) or (name == "index")) or (name == "uncons")) or (name == "fromString")) or (name == "stripPrefix")) or (name == "stripSuffix")) end
+      is_either_func = fn name -> ((((((((((((Nova.String.contains((Nova.String.pattern("parse")), (Nova.String.to_lower(name))) or Nova.String.contains((Nova.String.pattern("unify")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("expect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("collect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("infer")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("check")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("instantiate")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("generalize")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("lookup")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("convert")), (Nova.String.to_lower(name)))) or (name == "traverse")) or (name == "success")) or (name == "failure")) end
       classify_func = fn name -> if is_maybe_func.(name) do
         0
       else
@@ -2497,9 +2503,9 @@ end
   def gen_infix(inf) do
     
       assoc_str = case inf.associativity do
-        :AssocLeft -> "infixl"
-        :AssocRight -> "infixr"
-        :AssocNone -> "infix"
+        :assoc_left -> "infixl"
+        :assoc_right -> "infixr"
+        :assoc_none -> "infix"
       end
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  # ", assoc_str), " "), Nova.Runtime.show(inf.precedence)), " "), inf.function_name), " as "), inf.operator)
   end
@@ -2643,7 +2649,7 @@ end
   :nothing -> acc
   {:just, %{head: cp, tail: rest}} -> 
       cp_str = Nova.String.singleton(cp)
-      is_upper = (((cp_str >= "A") and cp_str) <= "Z")
+      is_upper = ((cp_str >= "A") and (cp_str <= "Z"))
       lower = Nova.String.to_lower(cp_str)
       prefix = if (is_upper and prev_lower) do
         "_"

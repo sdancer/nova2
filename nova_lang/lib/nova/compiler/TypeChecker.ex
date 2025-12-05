@@ -25,6 +25,8 @@ defmodule Nova.Compiler.TypeChecker do
 
   # import Nova.Compiler.Types
 
+  # import Nova.Compiler.Types
+
   # import Nova.Compiler.Ast
 
   # import Nova.Compiler.Unify
@@ -41,33 +43,19 @@ defmodule Nova.Compiler.TypeChecker do
   def list_map_with_index(f, list) do
     
       go = Nova.Runtime.fix2(fn go -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {_, :nil} -> []
-        {i, ({:cons, x, xs})} -> [(f.(i).(x)) | (go.(((i + 1))).(xs))]
+        {_, []} -> []
+        {i, ([x | xs])} -> [(f.(i).(x)) | (go.(((i + 1))).(xs))]
       end end end end)
       go.(0).(list)
   end
 
 
 
-  def instantiate_go(scheme_ty, e, :nil, sub) do
-    %{ty: Nova.Compiler.Types.apply_subst(sub, scheme_ty), env: e}
-  end
-
-  def instantiate_go(scheme_ty, e, nil, sub) do
-    %{ty: Nova.Compiler.Types.apply_subst(sub, scheme_ty), env: e}
-  end
-
   def instantiate_go(scheme_ty, e, [], sub) do
     %{ty: Nova.Compiler.Types.apply_subst(sub, scheme_ty), env: e}
   end
 
-  def instantiate_go(scheme_ty, e, [v | rest], sub) do
-    {:tuple, fresh, e_prime} = Nova.Compiler.Types.fresh_var(e, v.name)
-    sub_prime = Nova.Map.insert(v.id, ({:ty_var, fresh}), sub)
-    instantiate_go(scheme_ty, e_prime, rest, sub_prime)
-  end
-
-  def instantiate_go(scheme_ty, e, ({:cons, v, rest}), sub) do
+  def instantiate_go(scheme_ty, e, ([v | rest]), sub) do
     
       {:tuple, fresh, e_prime} = Nova.Compiler.Types.fresh_var(e, v.name)
       sub_prime = Nova.Map.insert(v.id, ({:ty_var, fresh}), sub)
@@ -177,7 +165,7 @@ end
   def infer(env, ({:expr_lambda, pats, body})) do
     case Nova.List.uncons(pats) do
       :nothing -> infer(env, body)
-      {:just, {pat, rest_pats}} -> 
+      {:just, %{head: pat, tail: rest_pats}} -> 
           {:tuple, arg_tv, env1} = Nova.Compiler.Types.fresh_var(env, "a")
           arg_ty = {:ty_var, arg_tv}
           case infer_pat(env1, pat, arg_ty) do
@@ -435,11 +423,11 @@ end
 
 
 
-  def infer_many_go(e, {:nil, acc, sub}) do
+  def infer_many_go(e, [], acc, sub) do
     {:right, %{tys: Nova.Array.from_foldable((Nova.List.reverse(acc))), sub: sub, env: e}}
   end
 
-  def infer_many_go(e, ({:cons, expr, rest}), acc, sub) do
+  def infer_many_go(e, ([expr | rest]), acc, sub) do
     case infer(e, expr) do
       {:left, err} -> {:left, err}
       {:right, res} -> infer_many_go(res.env, rest, ([res.ty | acc]), (Nova.Compiler.Types.compose_subst(res.sub, sub)))
@@ -456,11 +444,11 @@ end
 
 
 
-  def infer_elems_go(e, _, {:nil, sub}) do
+  def infer_elems_go(e, _, [], sub) do
     {:right, %{sub: sub, env: e}}
   end
 
-  def infer_elems_go(e, e_ty, ({:cons, expr, rest}), sub) do
+  def infer_elems_go(e, e_ty, ([expr | rest]), sub) do
     case infer(e, expr) do
       {:left, err} -> {:left, err}
       {:right, res} -> case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(res.sub, e_ty)), res.ty) do
@@ -480,11 +468,11 @@ end
 
 
 
-  def infer_fields_go(e, {:nil, acc, sub}) do
+  def infer_fields_go(e, [], acc, sub) do
     {:right, %{tys: Nova.List.reverse(acc), sub: sub, env: e}}
   end
 
-  def infer_fields_go(e, ({:cons, ({:tuple, name, expr}), rest}), acc, sub) do
+  def infer_fields_go(e, ([({:tuple, name, expr}) | rest]), acc, sub) do
     case infer(e, expr) do
       {:left, err} -> {:left, err}
       {:right, res} -> infer_fields_go(res.env, rest, ([({:tuple, name, res.ty}) | acc]), (Nova.Compiler.Types.compose_subst(res.sub, sub)))
@@ -508,7 +496,7 @@ end
       {:right, %{env: env_prime, sub: Nova.Compiler.Types.empty_subst()}}
   end
 
-  def infer_pat(env, :pat_wildcard, _ty) do
+  def infer_pat(env, :pat_wildcard, _) do
     {:right, %{env: env, sub: Nova.Compiler.Types.empty_subst()}}
   end
 
@@ -573,7 +561,7 @@ end
 
 
 
-  def infer_record_pat_go(ty, e, {:nil, field_types, sub}) do
+  def infer_record_pat_go(ty, e, [], field_types, sub) do
         {:tuple, row_var, e_prime} = Nova.Compiler.Types.fresh_var(e, "row")
     expected_rec = {:ty_record, %{fields: field_types, row: {:just, row_var}}}
   case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(sub, ty)), expected_rec) do
@@ -582,7 +570,7 @@ end
 end
   end
 
-  def infer_record_pat_go(ty, e, ({:cons, ({:tuple, label, pat}), rest}), field_types, sub) do
+  def infer_record_pat_go(ty, e, ([({:tuple, label, pat}) | rest]), field_types, sub) do
         {:tuple, field_var, e1} = Nova.Compiler.Types.fresh_var(e, (Nova.Runtime.append("f_", label)))
     field_ty = {:ty_var, field_var}
   case infer_pat(e1, pat, field_ty) do
@@ -602,14 +590,14 @@ end
 
   def infer_list_pat(env, pats, ty) do
     
-      go_elems = Nova.Runtime.fix2(fn go_elems -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {e, {:nil, _, sub}} -> {:right, %{env: e, sub: sub}}
-        {e, ({:cons, p, rest}), e_ty, sub} -> case infer_pat(e, p, e_ty) do
+      go_elems = Nova.Runtime.fix4(fn go_elems -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> fn auto_arg3 -> case {auto_arg0, auto_arg1, auto_arg2, auto_arg3} do
+        {e, [], _, sub} -> {:right, %{env: e, sub: sub}}
+        {e, ([p | rest]), e_ty, sub} -> case infer_pat(e, p, e_ty) do
   {:left, err} -> {:left, err}
   {:right, pat_res} ->
     go_elems.(pat_res.env).(rest).((Nova.Compiler.Types.apply_subst(pat_res.sub, e_ty))).((Nova.Compiler.Types.compose_subst(pat_res.sub, sub)))
 end
-      end end end end)
+      end end end end end end)
       {:tuple, elem_var, env1} = Nova.Compiler.Types.fresh_var(env, "elem")
 elem_ty = {:ty_var, elem_var}
 case Nova.Compiler.Unify.unify(ty, (Nova.Compiler.Types.t_array(elem_ty))) do
@@ -642,19 +630,14 @@ end
 
 
 
-  def infer_con_pats_go(result_ty, e, ty, :nil, sub) do
+  def infer_con_pats_go(result_ty, e, ty, [], sub) do
     case Nova.Compiler.Unify.unify(ty, result_ty) do
       {:left, ue} -> {:left, ({:unify_err, ue})}
       {:right, s} -> {:right, %{env: e, sub: Nova.Compiler.Types.compose_subst(s, sub)}}
     end
   end
 
-  # Handle empty Elixir list (from parser)
-  def infer_con_pats_go(result_ty, e, ty, [], sub) do
-    infer_con_pats_go(result_ty, e, ty, :nil, sub)
-  end
-
-  def infer_con_pats_go(result_ty, e, ty, ({:cons, p, rest}), sub) do
+  def infer_con_pats_go(result_ty, e, ty, ([p | rest]), sub) do
     case ty do
       {:ty_con, c} ->
         cond do
@@ -687,9 +670,9 @@ end
             Nova.Compiler.Types.extend_env(e_prime, name, (Nova.Compiler.Types.mk_scheme([], ({:ty_var, tv}))))
         _ -> e
       end end end
-      infer_binds_pass2 = Nova.Runtime.fix2(fn infer_binds_pass2 -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {e, {:nil, sub}} -> {:right, %{env: e, sub: sub}}
-        {e, ({:cons, bind, rest}), sub} -> case infer(e, bind.value) do
+      infer_binds_pass2 = Nova.Runtime.fix3(fn infer_binds_pass2 -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
+        {e, [], sub} -> {:right, %{env: e, sub: sub}}
+        {e, ([bind | rest]), sub} -> case infer(e, bind.value) do
   {:left, err} -> {:left, err}
   {:right, val_res} -> case infer_pat(val_res.env, bind.pattern, val_res.ty) do
       {:left, err} -> {:left, err}
@@ -704,7 +687,7 @@ end
           infer_binds_pass2.(env3).(rest).((Nova.Compiler.Types.compose_subst(pat_res.sub, (Nova.Compiler.Types.compose_subst(val_res.sub, sub)))))
     end
 end
-      end end end end)
+      end end end end end)
       add_bind_placeholders = fn e -> fn bs -> Nova.Runtime.foldl(add_one, e, bs) end end
       
   env_with_placeholders = add_bind_placeholders.(env).(binds)
@@ -734,7 +717,7 @@ end
   end
 
   def expr_to_pattern(_) do
-    :PatWildcard
+    :pat_wildcard
   end
 
 
@@ -784,16 +767,11 @@ end
 
 
 
-  def infer_clauses_go(_, _, e, :nil, sub) do
-    {:right, %{env: e, sub: sub}}
-  end
-
-  # Handle empty Elixir list (from parser)
   def infer_clauses_go(_, _, e, [], sub) do
     {:right, %{env: e, sub: sub}}
   end
 
-  def infer_clauses_go(s_ty, r_ty, e, ({:cons, clause, rest}), sub) do
+  def infer_clauses_go(s_ty, r_ty, e, ([clause | rest]), sub) do
     
       s_ty_prime = Nova.Compiler.Types.apply_subst(sub, s_ty)
       r_ty_prime = Nova.Compiler.Types.apply_subst(sub, r_ty)
@@ -830,7 +808,7 @@ end
       {:tuple, func_tv, env1} = Nova.Compiler.Types.fresh_var(env, (Nova.Runtime.append("fn_", func.name)))
       func_ty = {:ty_var, func_tv}
       expr = case func.parameters do
-        :nil -> func.body
+        [] -> func.body
         _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, func.body)
       end
       temp_scheme = Nova.Compiler.Types.mk_scheme([], func_ty)
@@ -943,11 +921,11 @@ end
 
 
 
-  def build_constructor_type_go(_, result_type, :nil) do
+  def build_constructor_type_go(_, result_type, []) do
     result_type
   end
 
-  def build_constructor_type_go(var_map, result_type, ({:cons, field, rest})) do
+  def build_constructor_type_go(var_map, result_type, ([field | rest])) do
     
       field_ty = type_expr_to_type(var_map, field.ty)
       Nova.Compiler.Types.t_arrow(field_ty, (build_constructor_type_go(var_map, result_type, rest)))
@@ -961,11 +939,11 @@ end
 
 
 
-  def build_constructor_type_with_aliases_go(_, _, result_type, :nil) do
+  def build_constructor_type_with_aliases_go(_, _, result_type, []) do
     result_type
   end
 
-  def build_constructor_type_with_aliases_go(alias_map, var_map, result_type, ({:cons, field, rest})) do
+  def build_constructor_type_with_aliases_go(alias_map, var_map, result_type, ([field | rest])) do
     
       field_ty = type_expr_to_type_with_aliases(alias_map, var_map, field.ty)
       Nova.Compiler.Types.t_arrow(field_ty, (build_constructor_type_with_aliases_go(alias_map, var_map, result_type, rest)))
@@ -979,24 +957,11 @@ end
 
 
 
-  def build_constructor_type_with_all_aliases_go(_, _, _, result_type, :nil) do
-    result_type
-  end
-
-  def build_constructor_type_with_all_aliases_go(_, _, _, result_type, nil) do
-    result_type
-  end
-
   def build_constructor_type_with_all_aliases_go(_, _, _, result_type, []) do
     result_type
   end
 
-  def build_constructor_type_with_all_aliases_go(alias_map, param_alias_map, var_map, result_type, [field | rest]) do
-    field_ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, field.ty)
-    Nova.Compiler.Types.t_arrow(field_ty, (build_constructor_type_with_all_aliases_go(alias_map, param_alias_map, var_map, result_type, rest)))
-  end
-
-  def build_constructor_type_with_all_aliases_go(alias_map, param_alias_map, var_map, result_type, ({:cons, field, rest})) do
+  def build_constructor_type_with_all_aliases_go(alias_map, param_alias_map, var_map, result_type, ([field | rest])) do
     
       field_ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, field.ty)
       Nova.Compiler.Types.t_arrow(field_ty, (build_constructor_type_with_all_aliases_go(alias_map, param_alias_map, var_map, result_type, rest)))
@@ -1441,15 +1406,25 @@ end
   def process_import_decl(registry, env, imp) do
     case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
       :nothing -> env
-      {:just, exports} -> if imp.hiding do
-          Nova.Compiler.Types.merge_exports_to_env(env, exports)
-        else
-          if Nova.List.null(imp.items) do
-            Nova.Compiler.Types.merge_exports_to_env(env, exports)
-          else
-            Nova.Runtime.foldl((fn auto_p0 -> fn auto_p1 -> import_item(exports, auto_p0, auto_p1) end end), env, imp.items)
+      {:just, exports} -> 
+          env_with_qualified = case imp.alias_ do
+            {:just, alias_} -> Nova.Compiler.Types.merge_exports_to_env_with_prefix(env, exports, alias_)
+            :nothing -> 
+                last_part = case Nova.String.last_index_of((Nova.String.pattern(".")), imp.module_name) do
+                  :nothing -> imp.module_name
+                  {:just, idx} -> Nova.String.drop(((idx + 1)), imp.module_name)
+                end
+                Nova.Compiler.Types.merge_exports_to_env_with_prefix(env, exports, last_part)
           end
-        end
+          if imp.hiding do
+  Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+else
+  if Nova.List.null(imp.items) do
+    Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+  else
+    Nova.Runtime.foldl((fn auto_p0 -> fn auto_p1 -> import_item(exports, auto_p0, auto_p1) end end), env_with_qualified, imp.items)
+  end
+end
     end
   end
 
@@ -1467,9 +1442,9 @@ end
       {:import_type, type_name, spec} -> case Nova.Map.lookup(type_name, exports.types) do
           :nothing -> env
           {:just, type_info} -> case spec do
-              :ImportAll -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, type_info.constructors)
+              :import_all -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, type_info.constructors)
               {:import_some, ctor_names} -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, (Nova.Array.from_foldable(ctor_names)))
-              :ImportNone -> env
+              :import_none -> env
             end
         end
     end
@@ -1513,6 +1488,12 @@ end
   Nova.Array.foldl((add_constructor_placeholder.(dt)), exp1, (Nova.Array.from_foldable(dt.constructors)))
         {exp, ({:decl_type_alias, ta})} -> %{exp | type_aliases: Nova.Map.insert(ta.name, %{params: Nova.Array.from_foldable(ta.type_vars), body: ta.ty}, exp.type_aliases)}
         {exp, ({:decl_function, func})} -> exp
+        {exp, ({:decl_foreign_import, fi})} -> 
+  ty = type_expr_to_type(Nova.Map.empty, fi.type_signature)
+  free_vars = Nova.Array.from_foldable((Nova.Set.to_unfoldable((Nova.Compiler.Types.free_type_vars(ty)))))
+  tvars = Nova.Runtime.map((fn id -> %{id: id, name: Nova.Runtime.append("a", Nova.Runtime.show(id))} end), free_vars)
+  scheme = Nova.Compiler.Types.mk_scheme(tvars, ty)
+  %{exp | values: Nova.Map.insert(fi.function_name, scheme, exp.values)}
         {exp, _} -> exp
       end end end
       Nova.Array.foldl(collect_export, Nova.Compiler.Types.empty_exports(), decls)
