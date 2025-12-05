@@ -160,6 +160,9 @@ tokRightFatArrow = token Cst.TokRightFatArrow
 tokForall :: Parser Cst.SourceToken
 tokForall = token Cst.TokForall
 
+tokTick :: Parser Cst.SourceToken
+tokTick = token Cst.TokTick
+
 -- | Layout tokens
 tokLayoutStart :: Parser Cst.SourceToken
 tokLayoutStart = satisfy isLayoutStart
@@ -258,6 +261,13 @@ tokString = expectMap extractStr
     extractStr (Cst.TokString _ s) = Just s
     extractStr _ = Nothing
 
+-- | Match hole token (_name)
+tokHole :: Parser (Tuple Cst.SourceToken String)
+tokHole = expectMap extractHole
+  where
+    extractHole (Cst.TokHole name) = Just name
+    extractHole _ = Nothing
+
 -- | Match integer literal
 tokInt :: Parser (Tuple Cst.SourceToken Cst.IntValue)
 tokInt = expectMap extractInt
@@ -285,15 +295,19 @@ tokChar = expectMap extractChar
 
 -- | Optional parser
 optional :: forall a. Parser a -> Parser (Maybe a)
-optional p = (Just <$> p) <|> pure Nothing
+optional p = (map (\x -> Just x) p) <|> pure Nothing
 
 -- | Many (zero or more)
 many :: forall a. Parser a -> Parser (List a)
-many p = Parser \ts -> go ts Nil
-  where
-    go tokens acc = case runParser p tokens of
-      Right (Tuple a rest) -> go rest (acc <> (a : Nil))
-      Left _ -> Right (Tuple acc tokens)
+many p = Parser \ts -> manyGo p ts Nil
+
+-- | Helper for many - must be top-level for code gen
+manyGo :: forall a. Parser a -> TokenStream -> List a -> ParseResult (List a)
+manyGo p tokens acc =
+  let pFunc = runParser p
+  in case pFunc tokens of
+    Right (Tuple a rest) -> manyGo p rest (acc <> (a : Nil))
+    Left _ -> Right (Tuple acc tokens)
 
 -- | Some (one or more)
 some :: forall a. Parser a -> Parser (List a)
@@ -355,7 +369,16 @@ layoutItems p = do
 
 -- | Parse a type (full type with arrows)
 parseType :: Parser (Cst.Type Void)
-parseType = Control.Lazy.defer \_ -> parseType1
+parseType = Control.Lazy.defer \_ -> parseTypeForall <|> parseType1
+
+-- | Forall type: forall a b. Type
+parseTypeForall :: Parser (Cst.Type Void)
+parseTypeForall = Control.Lazy.defer \_ -> do
+  forallTok <- tokForall
+  vars <- some parseTypeVarBinding
+  dot <- tokDot
+  body <- parseType
+  pure (Cst.TypeForall forallTok vars dot body)
 
 -- | Type with constraints: Constraint => Type
 parseType1 :: Parser (Cst.Type Void)
@@ -441,7 +464,9 @@ parseLabel = do
   pure { token: tok, name: Cst.Label name }
   where
     -- Labels can be any lowercase name including keywords (like "hiding", "module", etc.)
+    -- Also accept string literals for reserved keywords like "in", "then", "else"
     extractLabel (Cst.TokLowerName Nothing name) = Just name
+    extractLabel (Cst.TokString _ s) = Just s  -- Allow quoted labels like "in"
     extractLabel _ = Nothing
 
 -- ============================================================================
@@ -464,17 +489,64 @@ parseExpr1 = Control.Lazy.defer \_ -> do
     Just (Tuple dc t) -> pure (Cst.ExprTyped e dc t)
     Nothing -> pure e
 
--- | Expr2: Infix operators
+-- | Expr2: Infix operators and backtick expressions
 parseExpr2 :: Parser (Cst.Expr Void)
 parseExpr2 = Control.Lazy.defer \_ -> do
   e <- parseExpr3
-  ops <- many (do
+  -- Try to parse operator or backtick infix chains
+  parseExpr2Rest e
+
+-- | Parse the rest of an infix expression (operators or backticks)
+parseExpr2Rest :: Cst.Expr Void -> Parser (Cst.Expr Void)
+parseExpr2Rest e = do
+  -- Try operator first
+  opResult <- optional (do
     op <- tokOperator
     e2 <- parseExpr3
     pure (Tuple op e2))
-  if List.null ops
-    then pure e
-    else pure (Cst.ExprOp e ops)
+  case opResult of
+    Just (Tuple op e2) -> do
+      -- More operators?
+      rest <- parseExpr2Ops (Tuple op e2 : Nil)
+      pure (Cst.ExprOp e rest)
+    Nothing -> do
+      -- Try backtick infix
+      tickResult <- optional (do
+        tick1 <- tokTick
+        funcExpr <- parseExpr5  -- Parse the function expression (not full expr to avoid recursion)
+        tick2 <- tokTick
+        e2 <- parseExpr3
+        pure (Tuple { open: tick1, value: funcExpr, close: tick2 } e2))
+      case tickResult of
+        Just (Tuple wrapped e2) -> do
+          -- More backtick expressions?
+          rest <- parseExpr2Infix (Tuple wrapped e2 : Nil)
+          pure (Cst.ExprInfix e rest)
+        Nothing -> pure e
+
+-- | Parse remaining operator chain
+parseExpr2Ops :: List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Expr Void)) -> Parser (List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Expr Void)))
+parseExpr2Ops acc = do
+  result <- optional (do
+    op <- tokOperator
+    e2 <- parseExpr3
+    pure (Tuple op e2))
+  case result of
+    Just item -> parseExpr2Ops (acc <> (item : Nil))
+    Nothing -> pure acc
+
+-- | Parse remaining backtick infix chain
+parseExpr2Infix :: List (Tuple (Cst.Wrapped (Cst.Expr Void)) (Cst.Expr Void)) -> Parser (List (Tuple (Cst.Wrapped (Cst.Expr Void)) (Cst.Expr Void)))
+parseExpr2Infix acc = do
+  result <- optional (do
+    tick1 <- tokTick
+    funcExpr <- parseExpr5
+    tick2 <- tokTick
+    e2 <- parseExpr3
+    pure (Tuple { open: tick1, value: funcExpr, close: tick2 } e2))
+  case result of
+    Just item -> parseExpr2Infix (acc <> (item : Nil))
+    Nothing -> pure acc
 
 -- | Expr3: Negation (prefix -)
 parseExpr3 :: Parser (Cst.Expr Void)
@@ -509,28 +581,63 @@ parseExpr5 = Control.Lazy.defer \_ -> do
   -- Handle postfix record accessor: e.field.subfield
   parseRecordAccessor e
 
--- | Parse record accessor chain after an expression
+-- | Parse record accessor chain or record update after an expression
+-- | Record accessor: e.field.subfield
+-- | Record update: e { field = value, field2 = value2 }
 parseRecordAccessor :: Cst.Expr Void -> Parser (Cst.Expr Void)
 parseRecordAccessor e = Control.Lazy.defer \_ -> do
-  access <- optional (do
-    dot <- tokDot
-    first <- parseLabel
-    rest <- many (tokDot *> parseLabel)
-    pure { dot, path: { head: first, tail: map (\l -> Tuple dot l) rest } })
-  case access of
-    Just { dot, path } -> pure (Cst.ExprRecordAccessor { expr: e, dot, path })
-    Nothing -> pure e
+  -- First try record update: e { field = value }
+  updateResult <- optional parseRecordUpdatePart
+  case updateResult of
+    Just updates -> pure (Cst.ExprRecordUpdate e updates)
+    Nothing -> do
+      -- Then try record accessor: e.field
+      access <- optional (do
+        dot <- tokDot
+        first <- parseLabel
+        rest <- many (tokDot *> parseLabel)
+        pure { dot, path: { head: first, tail: map (\l -> Tuple dot l) rest } })
+      case access of
+        Just { dot, path } -> do
+          let accessExpr = Cst.ExprRecordAccessor { expr: e, dot, path }
+          -- Continue checking for more accessors/updates
+          parseRecordAccessor accessExpr
+        Nothing -> pure e
+
+-- | Parse the record update part: { field = value, ... }
+-- | Record updates use = not : to distinguish from record literals
+parseRecordUpdatePart :: Parser (Cst.DelimitedNonEmpty (Cst.RecordUpdate Void))
+parseRecordUpdatePart = do
+  open <- tokLeftBrace
+  -- Must have at least one field with = (not :) to be a record update
+  first <- parseRecordUpdateField
+  rest <- many (do
+    comma <- tokComma
+    field <- parseRecordUpdateField
+    pure (Tuple comma field))
+  close <- tokRightBrace
+  pure { open, value: { head: first, tail: rest }, close }
+
+-- | Parse a single record update field: field = value
+-- | Uses = specifically (not :) to distinguish from record literals
+parseRecordUpdateField :: Parser (Cst.RecordUpdate Void)
+parseRecordUpdateField = do
+  label <- parseLabel
+  -- Specifically match = (TokEquals), not : (TokOperator ":")
+  eq <- tokEquals
+  value <- parseExpr
+  pure (Cst.RecordUpdateLeaf label eq value)
 
 -- | If-then-else
 parseIf :: Parser (Cst.Expr Void)
 parseIf = Control.Lazy.defer \_ -> do
   kw <- tokKeyword "if"
-  cond <- parseExpr
+  condExpr <- parseExpr
   thenKw <- tokKeyword "then"
   trueExpr <- parseExpr
   elseKw <- tokKeyword "else"
   falseExpr <- parseExpr
-  pure (Cst.ExprIf { keyword: kw, cond, "then": thenKw, "true": trueExpr, "else": elseKw, "false": falseExpr })
+  pure (Cst.ExprIf { keyword: kw, cond: condExpr, thenKw: thenKw, thenBranch: trueExpr, elseKw: elseKw, elseBranch: falseExpr })
 
 -- | Let-in
 parseLet :: Parser (Cst.Expr Void)
@@ -643,8 +750,8 @@ parseLetSig = Control.Lazy.defer \_ -> do
 parseLetPattern :: Parser (Cst.LetBinding Void)
 parseLetPattern = Control.Lazy.defer \_ -> do
   -- Pattern binding: pattern = expr
-  -- Must start with a constructor pattern (uppercase) to distinguish from name binding
-  pat <- parseBinderCon  -- Constructor pattern like `Tuple a b` or `Just x`
+  -- Can be a constructor pattern (Tuple a b) or record pattern ({ a, b })
+  pat <- parseBinderCon <|> parseBinderRecord  -- Constructor or record pattern
   eq <- tokEquals
   expr <- parseExpr
   whereClause <- optional (do
@@ -711,6 +818,22 @@ parseExprAtom = Control.Lazy.defer \_ ->
   <|> parseExprArray
   <|> parseExprRecord
   <|> parseExprParens
+  <|> parseExprSection
+  <|> parseExprHole
+
+-- | Underscore section expression (for _.field accessor syntax)
+parseExprSection :: Parser (Cst.Expr Void)
+parseExprSection = do
+  tok <- token Cst.TokUnderscore
+  pure (Cst.ExprSection tok)
+
+-- | Hole expression (like _name) - for typed holes or underscore-prefixed variable references
+parseExprHole :: Parser (Cst.Expr Void)
+parseExprHole = do
+  Tuple tok holeName <- tokHole
+  let fullName = "_" <> holeName
+      name = { token: tok, name: Cst.Ident fullName }
+  pure (Cst.ExprHole name)
 
 parseExprIdent :: Parser (Cst.Expr Void)
 parseExprIdent = Cst.ExprIdent <$> tokQualifiedLowerName
@@ -829,16 +952,33 @@ parseBinderCon = Control.Lazy.defer \_ -> do
 parseBinderAtom :: Parser (Cst.Binder Void)
 parseBinderAtom = Control.Lazy.defer \_ ->
   parseBinderWildcard
+  <|> parseBinderHole
+  <|> parseBinderNullaryCon
   <|> parseBinderVar
   <|> parseBinderLiteral
   <|> parseBinderArray
   <|> parseBinderRecord
   <|> parseBinderParens
 
+-- | Nullary constructor (uppercase name without arguments, used as argument to another constructor)
+parseBinderNullaryCon :: Parser (Cst.Binder Void)
+parseBinderNullaryCon = do
+  con <- tokQualifiedUpperName
+  pure (Cst.BinderConstructor con Nil)
+
 parseBinderWildcard :: Parser (Cst.Binder Void)
 parseBinderWildcard = do
   tok <- token Cst.TokUnderscore
   pure (Cst.BinderWildcard tok)
+
+-- | Named wildcard pattern like _foo (parsed as underscore prefixed variable)
+parseBinderHole :: Parser (Cst.Binder Void)
+parseBinderHole = do
+  Tuple tok holeName <- tokHole
+  -- Convert _foo to a BinderVar with name "_foo"
+  let fullName = "_" <> holeName
+      name = { token: tok, name: Cst.Ident fullName }
+  pure (Cst.BinderVar name)
 
 parseBinderVar :: Parser (Cst.Binder Void)
 parseBinderVar = Control.Lazy.defer \_ -> do
@@ -953,14 +1093,13 @@ parseModule = do
 parseModuleImports :: Parser (List (Cst.ImportDecl Void))
 parseModuleImports = go Nil
   where
-    go acc = tryImport acc <|> pure acc
-    tryImport acc = do
+    go acc = (do
       imp <- parseImport
       -- After an import, we might have a separator or we're done with imports
       sep <- optional tokLayoutSep
       case sep of
         Just _ -> go (acc <> (imp : Nil))
-        Nothing -> pure (acc <> (imp : Nil))
+        Nothing -> pure (acc <> (imp : Nil))) <|> pure acc
 
 -- | Parse declarations after imports
 parseModuleDecls :: Parser (List (Cst.Declaration Void))
@@ -969,13 +1108,12 @@ parseModuleDecls = do
   _ <- optional tokLayoutSep
   go Nil
   where
-    go acc = tryDecl acc <|> pure acc
-    tryDecl acc = do
+    go acc = (do
       decl <- parseDeclaration
       sep <- optional tokLayoutSep
       case sep of
         Just _ -> go (acc <> (decl : Nil))
-        Nothing -> pure (acc <> (decl : Nil))
+        Nothing -> pure (acc <> (decl : Nil))) <|> pure acc
 
 parseModuleHeader :: Parser (Cst.ModuleHeader Void)
 parseModuleHeader = do
@@ -990,7 +1128,7 @@ parseModuleName = do
   Tuple tok name <- expectMap extractModuleName
   pure { token: tok, name }
   where
-    extractModuleName = case _ of
+    extractModuleName tok = case tok of
       Cst.TokUpperName (Just prefix) proper ->
         Just (Cst.ModuleName (prefix <> "." <> proper))
       Cst.TokUpperName Nothing proper ->
@@ -1045,13 +1183,13 @@ parseImport = do
   kw <- tokKeyword "import"
   mod <- parseModuleName
   names <- optional (do
-    hiding <- optional (tokKeyword "hiding")
+    isHiding <- optional (tokKeyword "hiding")
     imports <- wrapped tokLeftParen (separated parseImportItem tokComma) tokRightParen
-    pure (Tuple hiding imports))
+    pure (Tuple isHiding imports))
   qualified <- optional (do
-    as <- tokKeyword "as"
+    asKw <- tokKeyword "as"
     alias <- parseModuleName
-    pure (Tuple as alias))
+    pure (Tuple asKw alias))
   pure { keyword: kw, module: mod, names, qualified }
 
 parseImportItem :: Parser (Cst.Import Void)
@@ -1267,9 +1405,9 @@ parseFixityOp :: Parser Cst.FixityOp
 parseFixityOp = do
   -- For now just parse: name as op
   name <- tokQualifiedLowerName
-  as <- tokKeyword "as"
+  asKw <- tokKeyword "as"
   op <- parseOpName
-  pure (Cst.FixityValue (toEitherName name) as op)
+  pure (Cst.FixityValue (toEitherName name) asKw op)
   where
     toEitherName qn = { token: qn.token, module: qn.module, name: Left qn.name }
 

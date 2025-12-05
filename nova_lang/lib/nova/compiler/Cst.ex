@@ -231,7 +231,7 @@ defmodule Nova.Compiler.Cst do
 
   # @type lambda :: %{symbol: source_token(), binders: list()((binder()(e))), arrow: source_token(), body: expr()(e)}
 
-  # @type if_then_else :: %{keyword: source_token(), cond_: expr()(e), then: source_token(), true_: expr()(e), else_: source_token(), false_: expr()(e)}
+  # @type if_then_else :: %{keyword: source_token(), cond_: expr()(e), then_kw: source_token(), then_branch: expr()(e), else_kw: source_token(), else_branch: expr()(e)}
 
   # @type case_of :: %{keyword: source_token(), head: separated()((expr()(e))), of: source_token(), branches: list()((tuple()((separated()((binder()(e)))))((guarded()(e)))))}
 

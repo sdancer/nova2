@@ -153,9 +153,11 @@ lookupArity name ctx = map _.arity (Array.find (\f -> f.name == name) ctx.funcAr
 genModule :: Module -> String
 genModule mod =
   let decls = Array.fromFoldable mod.declarations
-      ctx = emptyCtx { moduleFuncs = collectModuleFuncs decls
-                     , funcArities = collectFuncArities decls
-                     }
+      ctx = { moduleFuncs: collectModuleFuncs decls
+            , funcArities: collectFuncArities decls
+            , locals: Set.empty
+            , localArities: []
+            }
   in "defmodule " <> elixirModuleName mod.name <> " do\n" <>
      intercalate "\n\n" (map (genDeclaration ctx) decls) <>
      "\nend\n"
@@ -433,8 +435,10 @@ genPattern (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
+      -- Use original case for nullary constructors, snake_case for others
+      atomName = if isNullaryConstructor conName then conName else snakeCase conName
   in if List.null pats
-     then ":" <> snakeCase conName
+     then ":" <> atomName
      else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map genPattern pats)) <> "}"
 genPattern (PatRecord fields) =
   "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
@@ -465,8 +469,10 @@ genPatternWithUsed used (PatCon name pats) =
   let conName = case String.lastIndexOf (String.Pattern ".") name of
         Just i -> String.drop (i + 1) name
         Nothing -> name
+      -- Use original case for nullary constructors, snake_case for others
+      atomName = if isNullaryConstructor conName then conName else snakeCase conName
   in if List.null pats
-     then ":" <> snakeCase conName
+     then ":" <> atomName
      else "{:" <> snakeCase conName <> ", " <> intercalate ", " (Array.fromFoldable (map (genPatternWithUsed used) pats)) <> "}"
 genPatternWithUsed used (PatRecord fields) =
   "%{" <> intercalate ", " (Array.fromFoldable (map genFieldPattern fields)) <> "}"
@@ -548,6 +554,8 @@ isDataConstructor name = Array.elem name
   , "DoLet", "DoBind", "DoExpr"
   -- Guard clause constructors
   , "GuardExpr", "GuardPat"
+  -- Newtype constructors (single-arg wrappers)
+  , "Parser"
   ]
 
 -- | Get the arity of an AST constructor
@@ -636,6 +644,12 @@ isNullaryConstructor name = Array.elem name
   , "KindInstance", "KindForeignImport"
   -- Associativity
   , "AssocLeft", "AssocRight", "AssocNone"
+  -- Layout delimiters (from CstLayout)
+  , "LytRoot", "LytTopDecl", "LytTopDeclHead", "LytDeclGuard"
+  , "LytCase", "LytCaseBinders", "LytCaseGuard", "LytLambdaBinders"
+  , "LytParen", "LytBrace", "LytSquare", "LytIf", "LytThen"
+  , "LytProperty", "LytForall", "LytTick", "LytLet", "LytLetStmt"
+  , "LytWhere", "LytOf", "LytDo", "LytAdo"
   ]
 
 -- | Known 2-argument functions that may be partially applied
@@ -717,6 +731,8 @@ translateQualified mod name =
             "Data.Set" -> "Nova.Set"
             "Array" -> "Nova.Array"
             "Data.Array" -> "Nova.Array"
+            "List" -> "Nova.List"
+            "Data.List" -> "Nova.List"
             "String" -> "Nova.String"
             "Data.String" -> "Nova.String"
             "Data.String.CodeUnits" -> "Nova.String"
@@ -821,9 +837,9 @@ genExpr' ctx _ (ExprVar name) =
                       Nothing -> name
                 in "(&" <> translateQualified (intercalate "." modParts) funcName <> "/2)"
            else snakeCase name
-      -- Handle nullary data constructors as atoms (e.g., TokOperator -> :tok_operator)
+      -- Handle nullary data constructors as atoms (e.g., LytRoot -> :LytRoot)
       else if isNullaryConstructor name
-      then ":" <> snakeCase name
+      then ":" <> name
       -- If it's a module function used as a value (not in call position),
       -- generate a function reference &func/arity
       else if isModuleFunc ctx name
@@ -883,7 +899,7 @@ genExpr' ctx indent (ExprApp f arg) =
   where
     -- Handle function application where function is a variable
     genVarApp :: GenCtx -> Int -> String -> Array Expr -> String -> String
-    genVarApp c i n as argsS =
+    genVarApp c i n exprs argsS =
       -- Handle special built-in functions first
       if n == "not" then "not(" <> argsS <> ")"
       else if n == "mod" then "rem(" <> argsS <> ")"
@@ -902,12 +918,12 @@ genExpr' ctx indent (ExprApp f arg) =
            else snakeCase n <> ".(" <> argsS <> ")"
       -- Handle data constructors specially
       else if isDataConstructor n
-      then genConstructorApp c i n as
+      then genConstructorApp c i n exprs
       -- Handle module-level functions (possibly with partial application)
       else if isModuleFunc c n
       then case lookupArity n c of
              Just arity ->
-               let numArgs = length as
+               let numArgs = length exprs
                in if numArgs == arity
                   then snakeCase n <> "(" <> argsS <> ")"
                   else if numArgs < arity
@@ -919,7 +935,7 @@ genExpr' ctx indent (ExprApp f arg) =
       -- Handle external Types module functions
       else if isTypesModuleFunc n
       then let arity = typesModuleFuncArity n
-               numArgs = length as
+               numArgs = length exprs
            in if numArgs == arity
               then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
               else if numArgs < arity
@@ -927,7 +943,7 @@ genExpr' ctx indent (ExprApp f arg) =
               else "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
       else if isUnifyModuleFunc n
       then let arity = unifyModuleFuncArity n
-               numArgs = length as
+               numArgs = length exprs
            in if numArgs == arity
               then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
               else if numArgs < arity
@@ -938,7 +954,7 @@ genExpr' ctx indent (ExprApp f arg) =
       else
         -- For local variables (lambdas), use chained application for curried calls
         -- f a b -> f.(a).(b)
-        genChainedApp (snakeCase n) as c i
+        genChainedApp (snakeCase n) exprs c i
 
 genExpr' ctx indent (ExprLambda pats body) =
   -- Generate curried lambda: \a b -> x becomes fn a -> fn b -> x end end
@@ -998,26 +1014,66 @@ genExpr' ctx _ (ExprBinOp ">>>" l r) =
   -- Function composition (left-to-right): f >>> g = fn x -> g.(f.(x)) end
   "fn auto_c -> (" <> genExpr' ctx 0 r <> ").((" <> genExpr' ctx 0 l <> ").(auto_c)) end"
 
+genExpr' ctx _ (ExprBinOp "$" l r) =
+  -- $ is function application: f $ x = f(x)
+  "(" <> genExpr' ctx 0 l <> ").(" <> genExpr' ctx 0 r <> ")"
+
+genExpr' ctx _ (ExprBinOp "#" l r) =
+  -- # is reverse application: x # f = f(x)
+  "(" <> genExpr' ctx 0 r <> ").(" <> genExpr' ctx 0 l <> ")"
+
+genExpr' ctx _ (ExprBinOp "<$>" l r) =
+  -- Functor map: f <$> x = map(f, x)
+  "Nova.Runtime.fmap(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+
+genExpr' ctx _ (ExprBinOp "<|>" l r) =
+  -- Alternative: x <|> y = alt(x, y) - for Maybe, returns first Just or Nothing
+  "Nova.Runtime.alt(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+
+genExpr' ctx _ (ExprBinOp "*>" l r) =
+  -- Applicative sequence: x *> y = discard x then y
+  "Nova.Runtime.seq(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+
+genExpr' ctx _ (ExprBinOp "<*" l r) =
+  -- Applicative sequence left: x <* y = x then discard y
+  "Nova.Runtime.seq_left(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+
 genExpr' ctx _ (ExprBinOp op l r) =
-  -- Check if this is a backtick function call (contains . or starts with uppercase)
-  if String.contains (String.Pattern ".") op || isUpperCase (String.take 1 op)
-  then
-    -- Backtick syntax: x `f` y -> f(x, y)
-    -- For qualified names like Array.elem, translate properly
-    let funcCall = if String.contains (String.Pattern ".") op
-                   then let parts = String.split (String.Pattern ".") op
-                            len = Array.length parts
-                        in if len > 1
-                           then let modParts = Array.take (len - 1) parts
-                                    funcName = case Array.last parts of
-                                      Just n -> n
-                                      Nothing -> op
-                                in translateQualified (intercalate "." modParts) funcName
-                           else snakeCase op
-                   else snakeCase op
-    in funcCall <> "(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
-  else
-    "(" <> genExpr' ctx 0 l <> " " <> genBinOp op <> " " <> genExpr' ctx 0 r <> ")"
+  -- Check for section syntax: (_ == x) or (x == _)
+  -- Handle both ExprVar "_" (old parser) and ExprSection "_" (CST parser)
+  let isUnderscore e = case e of
+        ExprVar "_" -> true
+        ExprSection "_" -> true
+        _ -> false
+  in case l of
+    _ | isUnderscore l ->
+      -- Left section: (_ op r) -> fn __x__ -> __x__ op r end
+      "fn __x__ -> (__x__ " <> genBinOp op <> " " <> genExpr' ctx 0 r <> ") end"
+    _ -> case r of
+      _ | isUnderscore r ->
+        -- Right section: (l op _) -> fn __x__ -> l op __x__ end
+        "fn __x__ -> (" <> genExpr' ctx 0 l <> " " <> genBinOp op <> " __x__) end"
+      _ ->
+        -- Normal binary operation
+        -- Check if this is a backtick function call (contains . or starts with uppercase)
+        if String.contains (String.Pattern ".") op || isUpperCase (String.take 1 op)
+        then
+          -- Backtick syntax: x `f` y -> f(x, y)
+          -- For qualified names like Array.elem, translate properly
+          let funcCall = if String.contains (String.Pattern ".") op
+                         then let parts = String.split (String.Pattern ".") op
+                                  len = Array.length parts
+                              in if len > 1
+                                 then let modParts = Array.take (len - 1) parts
+                                          funcName = case Array.last parts of
+                                            Just n -> n
+                                            Nothing -> op
+                                      in translateQualified (intercalate "." modParts) funcName
+                                 else snakeCase op
+                         else snakeCase op
+          in funcCall <> "(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+        else
+          "(" <> genExpr' ctx 0 l <> " " <> genBinOp op <> " " <> genExpr' ctx 0 r <> ")"
   where
     isUpperCase s = case SCU.charAt 0 s of
       Just c -> c >= 'A' && c <= 'Z'
@@ -1041,10 +1097,13 @@ genExpr' ctx _ (ExprRecordAccess rec field) =
   -- Handle _.field pattern -> & &1.field
   case rec of
     ExprVar "_" -> "& &1." <> snakeCase field
+    ExprSection "_" -> "& &1." <> snakeCase field  -- Also handle ExprSection from CST parsing
     ExprRecordAccess inner innerField ->
       -- Check if nested: _.foo.bar -> & &1.foo.bar
       case collectRecordAccessChain rec of
         { base: ExprVar "_", fields } ->
+          "& &1." <> intercalate "." (map snakeCase fields) <> "." <> snakeCase field
+        { base: ExprSection "_", fields } ->
           "& &1." <> intercalate "." (map snakeCase fields) <> "." <> snakeCase field
         _ -> genExpr' ctx 0 rec <> "." <> snakeCase field
     _ -> genExpr' ctx 0 rec <> "." <> snakeCase field
@@ -1718,9 +1777,9 @@ genDoStmtsCtx ctx indent stmts = case Array.uncons stmts of
              genDoStmtsCtx ctxWithPat (indent + 4) rest <> "\n" <>
              indStr <> "end"
            else
-             -- Generic monad: use bind function
-             -- Desugar: x <- e; rest  =>  bind(e, fn x -> rest end)
-             indStr <> "bind(" <> genExpr' ctx 0 e <> ", fn " <> patStr <> " ->\n" <>
+             -- Generic monad: use bind function from Nova.Runtime
+             -- Desugar: x <- e; rest  =>  Nova.Runtime.bind(e, fn x -> rest end)
+             indStr <> "Nova.Runtime.bind(" <> genExpr' ctx 0 e <> ", fn " <> patStr <> " ->\n" <>
              genDoStmtsCtx ctxWithPat (indent + 2) rest <> "\n" <>
              indStr <> "end)"
 
@@ -1748,7 +1807,7 @@ detectMonadType expr = go expr
       name == "lookup" || name == "index" || name == "uncons" ||
       name == "fromString" || name == "stripPrefix" || name == "stripSuffix"
 
-    -- Known functions that return Either (parser functions, unification, type inference)
+    -- Known functions that return Either (parser functions, unification, type inference, CST conversion)
     isEitherFunc name =
       String.contains (String.Pattern "parse") (String.toLower name) ||
       String.contains (String.Pattern "unify") (String.toLower name) ||
@@ -1759,6 +1818,8 @@ detectMonadType expr = go expr
       String.contains (String.Pattern "instantiate") (String.toLower name) ||
       String.contains (String.Pattern "generalize") (String.toLower name) ||
       String.contains (String.Pattern "lookup") (String.toLower name) ||
+      String.contains (String.Pattern "convert") (String.toLower name) ||
+      name == "traverse" ||
       name == "success" || name == "failure"
 
 -- | Generate data type (as tagged tuples or structs)
@@ -1853,7 +1914,6 @@ genBinOp "||" = "or"
 genBinOp "<>" = "<>"
 genBinOp "++" = "++"
 genBinOp ":" = "|"  -- cons
-genBinOp "$" = "|>"  -- application becomes pipe
 genBinOp ">>=" = "|> bind"  -- monadic bind
 genBinOp op = op  -- pass through
 

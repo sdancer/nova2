@@ -15,8 +15,8 @@ defmodule Nova.MCPServerTest do
 
     test "handle_initialize returns server info", %{state: state} do
       {:ok, result, _state} = MCPServer.handle_initialize(%{}, state)
-      assert result.server_info.name == "nova-compiler"
-      assert result.server_info.version == "0.1.0"
+      assert result.serverInfo.name == "nova-compiler"
+      assert result.serverInfo.version == "0.1.0"
       assert result.capabilities.tools == %{}
     end
   end

@@ -7,13 +7,13 @@ module Nova.Compiler.CstLayout
   , isIndented
   , insertLayout
   , lytToken
+  , rootLayoutDelim
   ) where
 
 import Prelude
 import Data.List (List(..), (:))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..), snd)
-import Data.Foldable (find)
 import Nova.Compiler.Cst as Cst
 
 type LayoutStack = List (Tuple Cst.SourcePos LayoutDelim)
@@ -45,9 +45,13 @@ data LayoutDelim
 derive instance eqLayoutDelim :: Eq LayoutDelim
 derive instance ordLayoutDelim :: Ord LayoutDelim
 
+-- Helper to return LytRoot (for modules that import this and need to construct a root stack)
+rootLayoutDelim :: LayoutDelim
+rootLayoutDelim = LytRoot
+
 -- Must be defined before currentIndent
 isIndented :: LayoutDelim -> Boolean
-isIndented = case _ of
+isIndented lyt = case lyt of
   LytLet -> true
   LytLetStmt -> true
   LytWhere -> true
@@ -58,10 +62,11 @@ isIndented = case _ of
 
 -- Helper for currentIndent - recursive, must be defined after isIndented
 currentIndentGo :: LayoutStack -> Maybe Cst.SourcePos
-currentIndentGo = case _ of
-  Tuple pos lyt : stk
-    | isIndented lyt -> Just pos
-    | otherwise -> currentIndentGo stk
+currentIndentGo stk = case stk of
+  Tuple pos lyt : rest ->
+    if isIndented lyt
+    then Just pos
+    else currentIndentGo rest
   _ -> Nothing
 
 currentIndent :: LayoutStack -> Maybe Cst.SourcePos
@@ -121,36 +126,21 @@ insertLayout src nextPos stack =
           Tuple stk' (snd state) # insertToken src
         _ ->
           state # collapse whereP # insertToken src # insertStart LytWhere
-      where
-      -- `where` always closes do blocks
-      -- `where` closes layout contexts even when indented at the same level
-      whereP _ LytDo = true
-      whereP lytPos lyt = offsideEndP lytPos lyt
 
     Cst.TokLowerName Nothing "in" ->
       case collapse inP state of
         -- `let/in` is not allowed in `ado` syntax
         Tuple ((Tuple pos1 LytLetStmt) : (Tuple pos2 LytAdo) : stk') acc' ->
           Tuple stk' acc' # insertEnd pos1.column # insertEnd pos2.column # insertToken src
-        Tuple (Tuple pos1 lyt : stk') acc' | isIndented lyt ->
-          Tuple stk' acc' # insertEnd pos1.column # insertToken src
+        Tuple (Tuple pos1 lyt : stk') acc' ->
+          if isIndented lyt
+          then Tuple stk' acc' # insertEnd pos1.column # insertToken src
+          else state # insertDefault # popStack (_ == LytProperty)
         _ ->
           state # insertDefault # popStack (_ == LytProperty)
-      where
-      inP _ LytLet = false
-      inP _ LytAdo = false
-      inP _ lyt = isIndented lyt
 
     Cst.TokLowerName Nothing "let" ->
-      state # insertKwProperty next
-      where
-      next state'@(Tuple stk' _) = case stk' of
-        Tuple p LytDo : _ | p.column == tokPos.column ->
-          state' # insertStart LytLetStmt
-        Tuple p LytAdo : _ | p.column == tokPos.column ->
-          state' # insertStart LytLetStmt
-        _ ->
-          state' # insertStart LytLet
+      state # insertKwProperty letNext
 
     Cst.TokLowerName _ "do" ->
       state # insertKwProperty (insertStart LytDo)
@@ -204,15 +194,6 @@ insertLayout src nextPos stack =
 
     Cst.TokRightArrow ->
       state # collapse arrowP # popStack guardP # insertToken src
-      where
-      arrowP _ LytDo = true
-      arrowP _ LytOf = false
-      arrowP lytPos lyt = offsideEndP lytPos lyt
-
-      guardP LytCaseBinders = true
-      guardP LytCaseGuard = true
-      guardP LytLambdaBinders = true
-      guardP _ = false
 
     Cst.TokEquals ->
       case state # collapse equalsP of
@@ -220,11 +201,6 @@ insertLayout src nextPos stack =
           Tuple stk' acc' # insertToken src
         _ ->
           state # insertDefault
-      where
-      equalsP _ LytWhere = true
-      equalsP _ LytLet = true
-      equalsP _ LytLetStmt = true
-      equalsP _ _ = false
 
     -- Guards need masking because of commas.
     Cst.TokPipe ->
@@ -300,27 +276,43 @@ insertLayout src nextPos stack =
 
   insertStart lyt state@(Tuple stk _) =
     -- Only insert a new layout start when it's going to increase indentation.
-    case find (isIndented <<< snd) stk of
-      Just (Tuple pos _) | nextPos.column <= pos.column -> state
+    case findIndented stk of
+      Just (Tuple pos _) ->
+        if nextPos.column <= pos.column
+        then state
+        else state # pushStack nextPos lyt # insertToken (lytToken nextPos (Cst.TokLayoutStart nextPos.column))
       _ -> state # pushStack nextPos lyt # insertToken (lytToken nextPos (Cst.TokLayoutStart nextPos.column))
 
-  insertSep state@(Tuple stk acc) = case stk of
-    -- LytTopDecl is closed by a separator.
-    Tuple lytPos LytTopDecl : stk' | sepP lytPos ->
-      Tuple stk' acc # insertToken sepTok
-    -- LytTopDeclHead can be closed by a separator if there is no `where`.
-    Tuple lytPos LytTopDeclHead : stk' | sepP lytPos ->
-      Tuple stk' acc # insertToken sepTok
-    Tuple lytPos lyt : _ | indentSepP lytPos lyt ->
-      case lyt of
-        -- If a separator is inserted in a case block, we need to push an
-        -- additional LytCaseBinders context for comma masking.
-        LytOf -> state # insertToken sepTok # pushStack tokPos LytCaseBinders
-        _ -> state # insertToken sepTok
-    _ ->
-      state
-    where
-    sepTok = lytToken tokPos (Cst.TokLayoutSep tokPos.column)
+  -- Local find function to avoid depending on external import
+  findIndented Nil = Nothing
+  findIndented (item@(Tuple _ lyt) : rest) =
+    if isIndented lyt
+    then Just item
+    else findIndented rest
+
+  insertSep state@(Tuple stk acc) =
+    let sepTok = lytToken tokPos (Cst.TokLayoutSep tokPos.column)
+    in case stk of
+      -- LytTopDecl is closed by a separator.
+      Tuple lytPos LytTopDecl : stk' ->
+        if sepP lytPos
+        then Tuple stk' acc # insertToken sepTok
+        else state
+      -- LytTopDeclHead can be closed by a separator if there is no `where`.
+      Tuple lytPos LytTopDeclHead : stk' ->
+        if sepP lytPos
+        then Tuple stk' acc # insertToken sepTok
+        else state
+      Tuple lytPos lyt : _ ->
+        if indentSepP lytPos lyt
+        then case lyt of
+          -- If a separator is inserted in a case block, we need to push an
+          -- additional LytCaseBinders context for comma masking.
+          LytOf -> state # insertToken sepTok # pushStack tokPos LytCaseBinders
+          _ -> state # insertToken sepTok
+        else state
+      _ ->
+        state
 
   insertKwProperty k state =
     case state # insertDefault of
@@ -338,19 +330,24 @@ insertLayout src nextPos stack =
   pushStack lytPos lyt (Tuple stk acc) =
     Tuple (Tuple lytPos lyt : stk) acc
 
-  popStack p (Tuple (Tuple _ lyt : stk') acc)
-    | p lyt = Tuple stk' acc
-  popStack _ state = state
+  popStack p state = case state of
+    Tuple (Tuple _ lyt : stk') acc ->
+      if p lyt
+      then Tuple stk' acc
+      else state
+    _ -> state
 
   collapse p = go
     where
-    go (Tuple (Tuple lytPos lyt : stk') acc)
-      | p lytPos lyt =
-          go (Tuple stk' $
-            if isIndented lyt
-            then acc <> ((Tuple (lytToken tokPos (Cst.TokLayoutEnd lytPos.column)) stk') : Nil)
-            else acc)
-    go state = state
+    go state = case state of
+      Tuple (Tuple lytPos lyt : stk') acc ->
+        if p lytPos lyt
+        then go (Tuple stk' $
+              if isIndented lyt
+              then acc <> ((Tuple (lytToken tokPos (Cst.TokLayoutEnd lytPos.column)) stk') : Nil)
+              else acc)
+        else state
+      _ -> state
 
   indentedP = const isIndented
 
@@ -365,3 +362,38 @@ insertLayout src nextPos stack =
 
   sepP lytPos =
     tokPos.column == lytPos.column && tokPos.line /= lytPos.line
+
+  -- `where` always closes do blocks
+  -- `where` closes layout contexts even when indented at the same level
+  whereP _ LytDo = true
+  whereP lytPos lyt = offsideEndP lytPos lyt
+
+  inP _ LytLet = false
+  inP _ LytAdo = false
+  inP _ lyt = isIndented lyt
+
+  letNext state'@(Tuple stk' _) = case stk' of
+    Tuple p LytDo : _ ->
+      if p.column == tokPos.column
+      then state' # insertStart LytLetStmt
+      else state' # insertStart LytLet
+    Tuple p LytAdo : _ ->
+      if p.column == tokPos.column
+      then state' # insertStart LytLetStmt
+      else state' # insertStart LytLet
+    _ ->
+      state' # insertStart LytLet
+
+  arrowP _ LytDo = true
+  arrowP _ LytOf = false
+  arrowP lytPos lyt = offsideEndP lytPos lyt
+
+  guardP LytCaseBinders = true
+  guardP LytCaseGuard = true
+  guardP LytLambdaBinders = true
+  guardP _ = false
+
+  equalsP _ LytWhere = true
+  equalsP _ LytLet = true
+  equalsP _ LytLetStmt = true
+  equalsP _ _ = false

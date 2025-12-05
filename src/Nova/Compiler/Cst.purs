@@ -345,10 +345,10 @@ type Lambda e =
 type IfThenElse e =
   { keyword :: SourceToken
   , cond :: Expr e
-  , then :: SourceToken
-  , true :: Expr e
-  , else :: SourceToken
-  , false :: Expr e
+  , thenKw :: SourceToken
+  , thenBranch :: Expr e
+  , elseKw :: SourceToken
+  , elseBranch :: Expr e
   }
 
 type CaseOf e =

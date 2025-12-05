@@ -73,7 +73,7 @@ traverse f lst = case lst of
 
 -- | Map with index for Lists
 listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
-listMapWithIndex f = go 0
+listMapWithIndex f list = go 0 list
   where
   go _ Nil = Nil
   go i (x : xs) = f i x : go (i + 1) xs
@@ -106,10 +106,10 @@ convertImportDecl imp = do
     Just (Tuple _ delim) -> do
       importItems <- convertImportItems delim.value
       pure importItems
-  let hiding = case imp.names of
+  let isHiding = case imp.names of
         Just (Tuple (Just _) _) -> true
         _ -> false
-  pure { moduleName, alias, items, hiding }
+  pure { moduleName, alias, items, hiding: isHiding }
 
 -- | Convert CST Import items to AST ImportItems
 convertImportItems :: CstSeparatedImport -> Either String (List Ast.ImportItem)
@@ -148,7 +148,7 @@ convertDataMembers (Just (Cst.DataEnumerated delim)) =
 
 -- | Convert list of CST declarations to AST declarations
 convertDeclarations :: List (Cst.Declaration Void) -> Either String (List Ast.Declaration)
-convertDeclarations = traverse convertDeclaration
+convertDeclarations decls = traverse convertDeclaration decls
 
 -- | Convert a single CST declaration to AST
 convertDeclaration :: Cst.Declaration Void -> Either String Ast.Declaration
@@ -305,7 +305,7 @@ convertValueBinding vbf = do
   params <- traverse convertBinder vbf.binders
   case vbf.guarded of
     Cst.Unconditional _ wh -> do
-      body <- convertExpr wh.expr
+      body <- convertWhereExpr wh
       pure { name, parameters: params, body, guards: Nil, typeSignature: Nothing }
     Cst.Guarded guardedExprs -> do
       -- For guarded expressions, use the first one as body and rest as guards
@@ -314,10 +314,45 @@ convertValueBinding vbf = do
         (g : _) -> pure { name, parameters: params, body: g.body, guards, typeSignature: Nothing }
         Nil -> Left "Empty guarded expression"
 
+-- | Convert a Where clause, wrapping the expression in ExprLet if there are bindings
+convertWhereExpr :: Cst.Where Void -> Either String Ast.Expr
+convertWhereExpr wh = do
+  expr <- convertExpr wh.expr
+  case wh.bindings of
+    Nothing -> pure expr
+    Just (Tuple _ bindings) -> do
+      letBinds <- convertWhereBindings bindings
+      pure $ Ast.ExprLet letBinds expr
+
+-- | Convert where clause bindings to let bindings
+convertWhereBindings :: List (Cst.LetBinding Void) -> Either String (List Ast.LetBind)
+convertWhereBindings bindings = do
+  -- Filter out type signatures and convert the rest
+  let valueBindings = List.mapMaybe getValueBinding bindings
+  traverse convertLetBind valueBindings
+  where
+    getValueBinding :: Cst.LetBinding Void -> Maybe (Cst.ValueBindingFields Void)
+    getValueBinding (Cst.LetBindingName vbf) = Just vbf
+    getValueBinding _ = Nothing
+
+    convertLetBind :: Cst.ValueBindingFields Void -> Either String Ast.LetBind
+    convertLetBind vbf = do
+      let bindName = unwrapIdent vbf.name.name
+      bindParams <- traverse convertBinder vbf.binders
+      case vbf.guarded of
+        Cst.Unconditional _ wh -> do
+          bindBody <- convertWhereExpr wh
+          -- If there are parameters, wrap in a lambda
+          let value = case bindParams of
+                Nil -> bindBody
+                _ -> Ast.ExprLambda bindParams bindBody
+          pure { pattern: Ast.PatVar bindName, value, typeAnn: Nothing }
+        Cst.Guarded _ -> Left "Guarded where bindings not yet supported"
+
 convertGuardedExpr :: Cst.GuardedExpr Void -> Either String Ast.GuardedExpr
 convertGuardedExpr ge = do
   guards <- convertPatternGuards ge.patterns
-  body <- convertExpr ge.where.expr
+  body <- convertWhereExpr ge.where
   pure { guards, body }
 
 convertPatternGuards :: SeparatedPatternGuard -> Either String (List Ast.GuardClause)
@@ -515,7 +550,8 @@ convertRowLabel labeled = do
 convertExpr :: Cst.Expr Void -> Either String Ast.Expr
 convertExpr expr = case expr of
   Cst.ExprHole name ->
-    pure $ Ast.ExprVar ("?" <> unwrapIdent name.name)
+    -- _name variables are treated as regular variables, not typed holes
+    pure $ Ast.ExprVar (unwrapIdent name.name)
 
   Cst.ExprSection _ ->
     pure $ Ast.ExprSection "_"
@@ -614,26 +650,29 @@ convertExpr expr = case expr of
     pure $ Ast.ExprLambda params body
 
   Cst.ExprIf ite -> do
-    cond <- convertExpr ite.cond
-    thenE <- convertExpr ite."true"
-    elseE <- convertExpr ite."false"
-    pure $ Ast.ExprIf cond thenE elseE
+    condE <- convertExpr ite.cond
+    thenE <- convertExpr ite.thenBranch
+    elseE <- convertExpr ite.elseBranch
+    pure $ Ast.ExprIf condE thenE elseE
 
   Cst.ExprCase caseOf -> do
     -- Handle multiple scrutinees
     let allHeads = caseOf.head.head : (map (\(Tuple _ e) -> e) caseOf.head.tail)
     -- Check for lambda-case pattern: case _ of ...
     case allHeads of
-      (single : Nil) | isUnderscore single -> do
-        -- Convert to lambda: \x -> case x of ...
-        clauses <- traverse convertCaseBranch caseOf.branches
-        let lamParam = Ast.PatVar "$lamcase"
-        let lamBody = Ast.ExprCase (Ast.ExprVar "$lamcase") clauses
-        pure $ Ast.ExprLambda (lamParam : Nil) lamBody
-      (single : Nil) -> do
-        headE <- convertExpr single
-        clauses <- traverse convertCaseBranch caseOf.branches
-        pure $ Ast.ExprCase headE clauses
+      (single : Nil) ->
+        -- Check if single head is underscore for lambda-case
+        if isUnderscore single
+        then do
+          -- Convert to lambda: \x -> case x of ...
+          clauses <- traverse convertCaseBranch caseOf.branches
+          let lamParam = Ast.PatVar "lamcase__"
+          let lamBody = Ast.ExprCase (Ast.ExprVar "lamcase__") clauses
+          pure $ Ast.ExprLambda (lamParam : Nil) lamBody
+        else do
+          headE <- convertExpr single
+          clauses <- traverse convertCaseBranch caseOf.branches
+          pure $ Ast.ExprCase headE clauses
       multiple -> do
         es <- traverse convertExpr multiple
         clauses <- traverse convertCaseBranch caseOf.branches

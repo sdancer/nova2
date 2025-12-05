@@ -29,7 +29,7 @@ instance showTCError :: Show TCError where
 
 -- | Map with index for Lists
 listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
-listMapWithIndex f = go 0
+listMapWithIndex f list = go 0 list
   where
   go _ Nil = Nil
   go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)

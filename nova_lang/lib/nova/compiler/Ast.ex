@@ -37,78 +37,78 @@ defmodule Nova.Compiler.Ast do
 
 
 
-  def kind_to_string(:kind_function) do
+  def kind_to_string(:KindFunction) do
     "function"
   end
 
-  def kind_to_string(:kind_data_type) do
+  def kind_to_string(:KindDataType) do
     "datatype"
   end
 
-  def kind_to_string(:kind_type_alias) do
+  def kind_to_string(:KindTypeAlias) do
     "typealias"
   end
 
-  def kind_to_string(:kind_type_class) do
+  def kind_to_string(:KindTypeClass) do
     "typeclass"
   end
 
-  def kind_to_string(:kind_instance) do
+  def kind_to_string(:KindInstance) do
     "instance"
   end
 
-  def kind_to_string(:kind_foreign_import) do
+  def kind_to_string(:KindForeignImport) do
     "foreign"
   end
 
 
 
   def get_decl_kind(({:decl_function, _})) do
-    :kind_function
+    :KindFunction
   end
 
   def get_decl_kind(({:decl_data_type, _})) do
-    :kind_data_type
+    :KindDataType
   end
 
   def get_decl_kind(({:decl_newtype, _})) do
-    :kind_data_type
+    :KindDataType
   end
 
   def get_decl_kind(({:decl_type_alias, _})) do
-    :kind_type_alias
+    :KindTypeAlias
   end
 
   def get_decl_kind(({:decl_type_class, _})) do
-    :kind_type_class
+    :KindTypeClass
   end
 
   def get_decl_kind(({:decl_type_class_instance, _})) do
-    :kind_instance
+    :KindInstance
   end
 
   def get_decl_kind(({:decl_foreign_import, _})) do
-    :kind_foreign_import
+    :KindForeignImport
   end
 
   def get_decl_kind(({:decl_type_sig, _})) do
-    :kind_function
+    :KindFunction
   end
 
   def get_decl_kind(({:decl_type, _})) do
-    :kind_type_alias
+    :KindTypeAlias
   end
 
   def get_decl_kind(({:decl_module, _})) do
-    :kind_function
+    :KindFunction
   end
 
   def get_decl_kind(({:decl_import, _})) do
-    :kind_function
+    :KindFunction
   end
 
   def get_decl_kind(({:decl_infix, _})) do
-    :kind_function
+    :KindFunction
   end
 
 

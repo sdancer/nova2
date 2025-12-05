@@ -19,6 +19,13 @@ defmodule Nova.Runtime do
   def left(x), do: {:left, x}
   def right(x), do: {:right, x}
 
+  # Either bind (for do-notation desugaring)
+  def bind({:left, err}, _f), do: {:left, err}
+  def bind({:right, x}, f), do: f.(x)
+  # Maybe bind
+  def bind(:nothing, _f), do: :nothing
+  def bind({:just, x}, f), do: f.(x)
+
   # Semigroup append - works for both strings and lists
   def append(a, b) when is_binary(a) and is_binary(b), do: a <> b
   def append(a, b) when is_list(a) and is_list(b), do: a ++ b
@@ -42,23 +49,54 @@ defmodule Nova.Runtime do
   # Identity
   def identity(x), do: x
 
-  # Const
+  # Const - curried version for 1-arity call
+  def const(a), do: fn _b -> a end
   def const_(a, _b), do: a
+
+  # Maybe predicates
+  def is_just({:just, _}), do: true
+  def is_just(:nothing), do: false
+  def is_nothing(:nothing), do: true
+  def is_nothing({:just, _}), do: false
+
+  # 1-arity from_maybe (curried version) - for use in code like `from_maybe(default).(maybe_val)`
+  def from_maybe(default) when not is_tuple(default) or elem(default, 0) != :just do
+    fn
+      :nothing -> default
+      {:just, x} -> x
+    end
+  end
 
   # Function composition
   def compose(f, g), do: fn x -> f.(g.(x)) end
 
   # Foldable - support both curried (f.(a).(b)) and uncurried (f.(a, b)) styles
-  def foldr(f, acc, []), do: acc
+  def foldr(_f, acc, []), do: acc
+  def foldr(_f, acc, :nil), do: acc
+  def foldr(_f, acc, nil), do: acc
   def foldr(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> f.(h, foldr(f, acc, t))
       {:arity, 1} -> f.(h).(foldr(f, acc, t))
     end
   end
+  def foldr(f, acc, {:cons, h, t}) do
+    case :erlang.fun_info(f, :arity) do
+      {:arity, 2} -> f.(h, foldr(f, acc, t))
+      {:arity, 1} -> f.(h).(foldr(f, acc, t))
+    end
+  end
 
-  def foldl(f, acc, []), do: acc
+  def foldl(_f, acc, []), do: acc
+  def foldl(_f, acc, :nil), do: acc
+  def foldl(_f, acc, nil), do: acc
   def foldl(f, acc, [h | t]) do
+    case :erlang.fun_info(f, :arity) do
+      {:arity, 2} -> foldl(f, f.(acc, h), t)
+      {:arity, 1} -> foldl(f, f.(acc).(h), t)
+    end
+  end
+  def foldl(f, acc, {:cons, h, t}) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> foldl(f, f.(acc, h), t)
       {:arity, 1} -> foldl(f, f.(acc).(h), t)
@@ -85,8 +123,13 @@ defmodule Nova.Runtime do
   end
 
   # Array/List functions
+  # 1-arity map (curried version) - for use like map(f).(list)
+  def map(f) when is_function(f, 1), do: fn list -> map(f, list) end
   def map(f, []), do: []
   def map(f, [h | t]), do: [f.(h) | map(f, t)]
+  # Map over PureScript-style linked lists
+  def map(_f, :nil), do: :nil
+  def map(f, {:cons, h, t}), do: {:cons, f.(h), map(f, t)}
   # Map over Maybe
   def map(_f, :nothing), do: :nothing
   def map(f, {:just, x}), do: {:just, f.(x)}
@@ -263,18 +306,20 @@ defmodule Nova.Array do
   def from_foldable(:nil), do: []
   def from_foldable({:cons, h, t}), do: [h | from_foldable(t)]
   def from_foldable(list) when is_list(list), do: list  # Already an Elixir list
-end
 
-defmodule Nova.List do
-  # PureScript List operations (Cons/Nil based)
-  # Note: `nil` is reserved in Elixir, using unquote trick
-  def unquote(:nil)(), do: :nil
-  def cons(x, xs), do: {:cons, x, xs}
-  def from_foldable(list) when is_list(list) do
-    Elixir.List.foldr(list, :nil, fn x, acc -> {:cons, x, acc} end)
+  # nub - remove duplicates (using Ord)
+  def nub(list), do: Enum.uniq(list)
+
+  # nub_by_eq - remove duplicates using custom equality function
+  def nub_by_eq(eq_fn, list) do
+    Enum.reduce(list, [], fn x, acc ->
+      if Enum.any?(acc, fn y -> eq_fn.(x).(y) end) do
+        acc
+      else
+        acc ++ [x]
+      end
+    end)
   end
-  def from_foldable(:nil), do: :nil
-  def from_foldable({:cons, _, _} = l), do: l
 end
 
 defmodule Nova.Map do
@@ -322,6 +367,7 @@ defmodule Nova.Set do
   def from_foldable(list), do: MapSet.new(list)
   def to_unfoldable(set), do: MapSet.to_list(set)
   def size(set), do: MapSet.size(set)
+  def is_empty(set), do: MapSet.size(set) == 0
   def find_min(set) do
     case MapSet.to_list(set) do
       [] -> :nothing
@@ -356,6 +402,20 @@ defmodule Nova.String do
   def split(pattern, s) when is_binary(pattern), do: String.split(s, pattern)
   def join_with(sep, list), do: Enum.join(list, sep)
   def replace_all({:pattern, p}, {:replacement, r}, s), do: String.replace(s, p, r)
+  # 2-arg version for curried calls
+  def replace_all({:pattern, p}, s) when is_binary(s), do: fn {:replacement, r} -> String.replace(s, p, r) end
+  def replace_all({:pattern, p}, {:replacement, r}), do: fn s -> String.replace(s, p, r) end
+
+  # index_of - find index of pattern in string
+  def index_of({:pattern, p}, s) do
+    case :binary.match(s, p) do
+      {idx, _} -> {:just, idx}
+      :nomatch -> :nothing
+    end
+  end
+
+  # to_upper - convert to uppercase
+  def to_upper(s), do: String.upcase(s)
   def pattern(p), do: {:pattern, p}
   def replacement(r), do: {:replacement, r}
   def last_index_of({:pattern, p}, s) do

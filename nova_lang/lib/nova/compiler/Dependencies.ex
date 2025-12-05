@@ -129,7 +129,7 @@ defmodule Nova.Compiler.Dependencies do
   def get_do_statements_deps(stmts) do
     
       go = Nova.Runtime.fix2(fn go -> fn remaining -> fn bound -> case remaining do
-        :nil_ -> Nova.Set.empty
+        :nil -> Nova.Set.empty
         ([stmt | rest]) -> case stmt do
             {:do_let, binds} -> 
                 deps = get_let_binds_deps(binds)
@@ -170,7 +170,7 @@ defmodule Nova.Compiler.Dependencies do
   def get_bound_names(pat) do
     case pat do
       {:pat_var, name} -> Nova.Set.singleton(name)
-      :pat_wildcard -> Nova.Set.empty
+      :PatWildcard -> Nova.Set.empty
       {:pat_lit, _} -> Nova.Set.empty
       {:pat_con, _, pats} -> Nova.Runtime.foldl((fn acc -> fn p -> Nova.Set.union(acc, (get_bound_names(p))) end end), Nova.Set.empty, pats)
       {:pat_record, fields} -> Nova.Runtime.foldl((fn acc -> fn ({:tuple, _, p}) -> Nova.Set.union(acc, (get_bound_names(p))) end end), Nova.Set.empty, fields)
@@ -274,7 +274,19 @@ defmodule Nova.Compiler.Dependencies do
 
 
   def get_affected(graph, decl_id) do
-    go.((Nova.Set.singleton(decl_id))).(Nova.Set.empty)
+    
+      go = Nova.Runtime.fix2(fn go -> fn to_process -> fn visited -> case Nova.Set.find_min(to_process) do
+        :nothing -> visited
+        {:just, id} -> if Nova.Set.member(id, visited) do
+            go.((Nova.Set.delete(id, to_process))).(visited)
+          else
+            
+              dependents = get_dependents(graph, id)
+              new_to_process = Nova.Set.union((Nova.Set.delete(id, to_process)), (Nova.Set.difference(dependents, visited)))
+              go.(new_to_process).((Nova.Set.insert(id, visited)))
+          end
+      end  end end end)
+      go.((Nova.Set.singleton(decl_id))).(Nova.Set.empty)
   end
 
 

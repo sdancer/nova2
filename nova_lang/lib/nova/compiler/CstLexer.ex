@@ -21,6 +21,8 @@ defmodule Nova.Compiler.CstLexer do
 
   # import Nova.Compiler.CstLayout
 
+  # import Nova.Compiler.CstLayout
+
   # @type lex_state :: %{input: string(), chars: array()(char()), pos: int(), line: int(), column: int()}
 
 
@@ -37,16 +39,16 @@ defmodule Nova.Compiler.CstLexer do
 
 
 
-  def is_indented() do
-    fn $lamcase -> case $lamcase do
-      :lyt_let -> true
-      :lyt_let_stmt -> true
-      :lyt_where -> true
-      :lyt_of -> true
-      :lyt_do -> true
-      :lyt_ado -> true
+  def is_indented(lyt) do
+    case lyt do
+      :LytLet -> true
+      :LytLetStmt -> true
+      :LytWhere -> true
+      :LytOf -> true
+      :LytDo -> true
+      :LytAdo -> true
       _ -> false
-    end end
+    end
   end
 
 
@@ -57,47 +59,59 @@ defmodule Nova.Compiler.CstLexer do
 
 
 
-  def close_layouts() do
-    fn auto_p0 -> close_layouts_go([], auto_p0) end
+  def close_layouts(stack) do
+    close_layouts_go([], stack)
   end
 
 
 
-  def close_layouts_go(acc, :nil_) do
+  def close_layouts_go(acc, :nil) do
     acc
   end
 
   def close_layouts_go(acc, ([{:tuple, pos, lyt} | rest])) do
-    cond do
-      (is_indented(lyt)) ->
-        
-  end_tok = lyt_token(pos, (Cst.tok_layout_end(pos.column)))
-  close_layouts_go((Nova.Runtime.append(acc, ([end_tok | []]))), rest)
-      (true) ->
-        close_layouts_go(acc, rest)
+    if is_indented(lyt) do
+      
+        end_tok = lyt_token(pos, (Cst.tok_layout_end(pos.column)))
+        close_layouts_go((Nova.Runtime.append(acc, ([end_tok | []]))), rest)
+    else
+      close_layouts_go(acc, rest)
     end
+  end
+
+
+
+  def call_insert_layout(tok, pos, stk) do
+    CstLayout.insert_layout(tok, pos, stk)
   end
 
 
 
   def insert_layout_go(stack, toks, acc) do
     case toks do
-      :nil_ -> Nova.Runtime.append(acc, close_layouts(stack))
+      :nil -> Nova.Runtime.append(acc, close_layouts(stack))
       ([tok | rest]) -> 
           next_pos = case rest do
             ([next | _]) -> next.range.start
-            :nil_ -> %{line: (tok.range.end_.line + 1), column: 1}
+            :nil -> %{line: (tok.range.end_.line + 1), column: 1}
           end
-          new_toks = Nova.Runtime.map((&Nova.Runtime.fst/1), output_tokens)
-          {:tuple, new_stack, output_tokens} = insert_layout.(tok).(next_pos).(stack)
-          insert_layout_go(new_stack, rest, (Nova.Runtime.append(acc, new_toks)))
+          case call_insert_layout(tok, next_pos, stack) do
+  {:tuple, new_stack, output_tokens} -> 
+      new_toks = Nova.Runtime.map((&Nova.Runtime.fst/1), output_tokens)
+      insert_layout_go(new_stack, rest, (Nova.Runtime.append(acc, new_toks)))
+end
     end
   end
 
 
 
   def insert_layout_tokens(tokens) do
-    insert_layout_go(init_stack, tokens, [])
+    
+      get_root_layout = fn _ -> CstLayout.root_layout_delim end
+      
+  init_pos = %{line: 1, column: 1}
+  init_stack = [{:tuple, init_pos, (get_root_layout.(%{}))} | []]
+  insert_layout_go(init_stack, tokens, [])
   end
 
 
@@ -139,42 +153,51 @@ defmodule Nova.Compiler.CstLexer do
     end
   ?- -> case peek_at(state, 1) do
       {:just, ?-} -> 
-          state_prime = skip_line_comment.((advance(state, 2)))
+          state_prime = skip_line_comment((advance(state, 2)))
           lex_token(state_prime)
-      _ -> lex_operator.(state)
+      _ -> lex_operator(state)
     end
   ?{ -> case peek_at(state, 1) do
       {:just, ?-} -> 
-          state_prime = skip_block_comment.((advance(state, 2))).(1)
+          state_prime = skip_block_comment((advance(state, 2)), 1)
           lex_token(state_prime)
-      _ -> lex_delimiter.(state)
+      _ -> lex_delimiter(state)
     end
   ?" -> case peek_at(state, 1) do
       {:just, ?"} -> case peek_at(state, 2) do
-          {:just, ?"} -> lex_raw_string.(state)
-          _ -> lex_string.(state)
+          {:just, ?"} -> lex_raw_string(state)
+          _ -> lex_string(state)
         end
-      _ -> lex_string.(state)
+      _ -> lex_string(state)
     end
-  ?' -> lex_char.(state)
-  _ ->
-    cond do
-      is_digit(c) -> lex_number.(state)
-      is_ident_start(c) -> lex_ident_or_keyword.(state)
-      is_upper(c) -> lex_upper_identifier.(state)
-      is_operator_char(c) -> lex_operator.(state)
-    end
-  ?( -> lex_delimiter.(state)
-  ?) -> lex_delimiter.(state)
-  ?[ -> lex_delimiter.(state)
-  ?] -> lex_delimiter.(state)
-  ?} -> lex_delimiter.(state)
-  ?, -> lex_delimiter.(state)
-  ?` -> lex_delimiter.(state)
-  ?; -> lex_delimiter.(state)
-  ?_ -> lex_underscore.(state)
+  ?' -> lex_char(state)
+  ?( -> lex_delimiter(state)
+  ?) -> lex_delimiter(state)
+  ?[ -> lex_delimiter(state)
+  ?] -> lex_delimiter(state)
+  ?} -> lex_delimiter(state)
+  ?, -> lex_delimiter(state)
+  ?` -> lex_delimiter(state)
+  ?; -> lex_delimiter(state)
+  ?_ -> lex_underscore(state)
   ?@ -> {:just, ({:tuple, (make_token(Cst.tok_at, state)), (advance(state, 1))})}
-  _ -> lex_token((advance(state, 1)))
+  _ -> if is_digit(c) do
+      lex_number(state)
+    else
+      if is_ident_start(c) do
+        lex_ident_or_keyword(state)
+      else
+        if is_upper(c) do
+          lex_upper_identifier(state)
+        else
+          if is_operator_char(c) do
+            lex_operator(state)
+          else
+            lex_token((advance(state, 1)))
+          end
+        end
+      end
+    end
 end
   end
   end
@@ -212,13 +235,13 @@ end
 
 
   def is_ident_start(c) do
-    ((is_lower(c) or c) == ?_)
+    (is_lower(c) or ((c == ?_)))
   end
 
 
 
   def is_ident_char(c) do
-    ((((is_alpha_num(c) or c) == ?_) or c) == ?')
+    ((is_alpha_num(c) or ((c == ?_))) or ((c == ?')))
   end
 
 
@@ -242,13 +265,13 @@ end
 
 
   def advance(state, n) do
-    state.(%{pos: (state.pos + n), column: (state.column + n)})
+    %{state | pos: (state.pos + n), column: (state.column + n)}
   end
 
 
 
   def advance_newline(state) do
-    state.(%{line: (state.line + 1), column: 1})
+    %{state | line: (state.line + 1), column: 1}
   end
 
 
@@ -257,7 +280,7 @@ end
     
       col = state.column
       next_tab = (((((((col - 1)) / 8) + 1)) * 8) + 1)
-      state.(%{pos: (state.pos + 1), column: next_tab})
+      %{state | pos: (state.pos + 1), column: next_tab}
   end
 
 
@@ -273,4 +296,355 @@ end
   end
 
 
+
+  def lex_ident_or_keyword(state) do
+    
+      start_state = state
+      {:tuple, name, state_prime} = consume_ident(state, "")
+      tok = if Nova.Array.elem(name, keywords()) do
+        make_keyword_token(name, start_state, state_prime)
+      else
+        make_ident_token(name, start_state, state_prime)
+      end
+      {:just, ({:tuple, tok, state_prime})}
+  end
+
+
+
+  def make_keyword_token(name, start_state, end_state) do
+    
+      token = case name do
+        "forall" -> Cst.tok_forall
+        _ -> Cst.tok_lower_name(:nothing, name)
+      end
+      make_token_range(token, start_state, end_state)
+  end
+
+
+
+  def make_ident_token(name, start_state, end_state) do
+    make_token_range((Cst.tok_lower_name(:nothing, name)), start_state, end_state)
+  end
+
+
+
+  def lex_upper_identifier(state) do
+    
+      start_state = state
+      {:tuple, name, state_prime} = consume_upper_ident(state, "")
+      result = case peek(state_prime) do
+        {:just, ?.} -> 
+            state_prime_prime = advance(state_prime, 1)
+            check_qualified_chain(name, state_prime_prime)
+        _ -> {:tuple, (Cst.tok_upper_name(:nothing, name)), state_prime}
+      end
+      {:tuple, tok, final_state} = result
+      {:just, ({:tuple, (make_token_range(tok, start_state, final_state)), final_state})}
+  end
+
+
+
+  def check_qualified_chain(prefix, state) do
+    case peek(state) do
+      {:just, c} -> if is_upper(c) do
+          
+            {:tuple, name, state_prime} = consume_upper_ident(state, "")
+            full_prefix = Nova.Runtime.append(Nova.Runtime.append(prefix, "."), name)
+            case peek(state_prime) do
+  {:just, ?.} -> check_qualified_chain(full_prefix, (advance(state_prime, 1)))
+  _ -> {:tuple, (Cst.tok_upper_name(({:just, prefix}), name)), state_prime}
+end
+        else
+          if is_lower(c) do
+            
+              {:tuple, name, state_prime} = consume_ident(state, "")
+              {:tuple, (Cst.tok_lower_name(({:just, prefix}), name)), state_prime}
+          else
+            if is_operator_char(c) do
+              
+                {:tuple, op, state_prime} = consume_operator(state, "")
+                {:tuple, (Cst.tok_operator(({:just, prefix}), op)), state_prime}
+            else
+              {:tuple, (Cst.tok_upper_name(:nothing, prefix)), state}
+            end
+          end
+        end
+      _ -> {:tuple, (Cst.tok_upper_name(:nothing, prefix)), state}
+    end
+  end
+
+
+
+  def consume_ident(state, acc) do
+    case peek(state) do
+      {:just, c} -> if is_ident_char(c) do
+          consume_ident((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+        else
+          {:tuple, acc, state}
+        end
+      _ -> {:tuple, acc, state}
+    end
+  end
+
+
+
+  def consume_upper_ident(state, acc) do
+    case peek(state) do
+      {:just, c} -> if (is_alpha_num(c) or ((c == ?_))) do
+          consume_upper_ident((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+        else
+          {:tuple, acc, state}
+        end
+      _ -> {:tuple, acc, state}
+    end
+  end
+
+
+
+  def lex_operator(state) do
+    
+      start_state = state
+      {:tuple, op, state_prime} = consume_operator(state, "")
+      tok = case op do
+        "::" -> Cst.tok_double_colon
+        "=" -> Cst.tok_equals
+        "|" -> Cst.tok_pipe
+        "." -> Cst.tok_dot
+        "\\" -> Cst.tok_backslash
+        "->" -> Cst.tok_right_arrow
+        "<-" -> Cst.tok_left_arrow
+        "=>" -> Cst.tok_right_fat_arrow
+        "@" -> Cst.tok_at
+        _ -> Cst.tok_operator(:nothing, op)
+      end
+      {:just, ({:tuple, (make_token_range(tok, start_state, state_prime)), state_prime})}
+  end
+
+
+
+  def consume_operator(state, acc) do
+    case peek(state) do
+      {:just, c} -> if is_operator_char(c) do
+          consume_operator((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+        else
+          {:tuple, acc, state}
+        end
+      _ -> {:tuple, acc, state}
+    end
+  end
+
+
+
+  def lex_delimiter(state) do
+      case peek(state) do
+    :nothing -> :nothing
+    {:just, c} ->
+            tok = case c do
+              ?( -> Cst.tok_left_paren
+              ?) -> Cst.tok_right_paren
+              ?[ -> Cst.tok_left_square
+              ?] -> Cst.tok_right_square
+              ?{ -> Cst.tok_left_brace
+              ?} -> Cst.tok_right_brace
+              ?, -> Cst.tok_comma
+              ?` -> Cst.tok_tick
+              ?; -> Cst.tok_comma
+              _ -> Cst.tok_comma
+            end
+      {:just, ({:tuple, (make_token(tok, state)), (advance(state, 1))})}
+  end
+  end
+
+
+
+  def lex_underscore(state) do
+    
+      start_state = state
+      state_prime = advance(state, 1)
+      case peek(state_prime) do
+  {:just, c} -> if is_ident_char(c) do
+      
+        {:tuple, name, state_prime_prime} = consume_ident(state_prime, "")
+        {:just, ({:tuple, (make_token_range((Cst.tok_hole(name)), start_state, state_prime_prime)), state_prime_prime})}
+    else
+      {:just, ({:tuple, (make_token(Cst.tok_underscore, state)), state_prime})}
+    end
+  _ -> {:just, ({:tuple, (make_token(Cst.tok_underscore, state)), state_prime})}
+end
+  end
+
+
+
+  def lex_number(state) do
+    
+      make_int_result = fn int_part -> fn start_state -> fn end_state -> 
+        int_val = Cst.small_int((Nova.Runtime.from_maybe(0, (Nova.String.to_int(int_part)))))
+        {:just, ({:tuple, (make_token_range((Cst.tok_int(int_part, int_val)), start_state, end_state)), end_state})} end end end
+      
+  start_state = state
+  case consume_number(state, "") do
+  {:tuple, int_part, after_int} -> case peek(after_int) do
+      {:just, ?.} -> case peek_at(after_int, 1) do
+          {:just, c} -> if is_digit(c) do
+              
+                after_dot = advance(after_int, 1)
+                case consume_number(after_dot, "") do
+  {:tuple, frac_part, after_frac} -> 
+      num_str = Nova.Runtime.append(Nova.Runtime.append(int_part, "."), frac_part)
+      case Nova.String.to_float(num_str) do
+  {:just, n} -> {:just, ({:tuple, (make_token_range((Cst.tok_number(num_str, n)), start_state, after_frac)), after_frac})}
+  :nothing -> make_int_result.(int_part).(start_state).(after_int)
+end
+end
+            else
+              make_int_result.(int_part).(start_state).(after_int)
+            end
+          _ -> make_int_result.(int_part).(start_state).(after_int)
+        end
+      _ -> make_int_result.(int_part).(start_state).(after_int)
+    end
+end
+  end
+
+
+
+  def consume_number(state, acc) do
+    case peek(state) do
+      {:just, c} -> if is_digit(c) do
+          consume_number((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+        else
+          if (c == ?_) do
+            consume_number((advance(state, 1)), acc)
+          else
+            {:tuple, acc, state}
+          end
+        end
+      _ -> {:tuple, acc, state}
+    end
+  end
+
+
+
+  def lex_string(state) do
+    
+      start_state = state
+      after_open = advance(state, 1)
+      case consume_string(after_open, "") do
+  {:tuple, content, after_content} -> 
+      after_close = advance(after_content, 1)
+      {:just, ({:tuple, (make_token_range((Cst.tok_string(content, content)), start_state, after_close)), after_close})}
+end
+  end
+
+
+
+  def consume_string(state, acc) do
+    case peek(state) do
+      :nothing -> {:tuple, acc, state}
+      {:just, ?"} -> {:tuple, acc, state}
+      {:just, ?\\} -> case peek_at(state, 1) do
+          {:just, ?n} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, "\n")))
+          {:just, ?t} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, "\t")))
+          {:just, ?r} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, "")))
+          {:just, ?"} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, "\"")))
+          {:just, ?\\} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, "\\")))
+          {:just, c} -> consume_string((advance(state, 2)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+          :nothing -> {:tuple, acc, state}
+        end
+      {:just, ?\n} -> {:tuple, acc, state}
+      {:just, c} -> consume_string((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+    end
+  end
+
+
+
+  def lex_raw_string(state) do
+    
+      start_state = state
+      after_open = advance(state, 3)
+      case consume_raw_string(after_open, "") do
+  {:tuple, content, after_content} -> 
+      after_close = advance(after_content, 3)
+      {:just, ({:tuple, (make_token_range((Cst.tok_raw_string(content)), start_state, after_close)), after_close})}
+end
+  end
+
+
+
+  def consume_raw_string(state, acc) do
+    case peek(state) do
+      :nothing -> {:tuple, acc, state}
+      {:just, ?"} -> case peek_at(state, 1) do
+          {:just, ?"} -> case peek_at(state, 2) do
+              {:just, ?"} -> {:tuple, acc, state}
+              _ -> consume_raw_string((advance(state, 1)), (Nova.Runtime.append(acc, "\"")))
+            end
+          _ -> consume_raw_string((advance(state, 1)), (Nova.Runtime.append(acc, "\"")))
+        end
+      {:just, ?\n} -> 
+          state_prime = advance_newline((advance(state, 1)))
+          consume_raw_string(state_prime, (Nova.Runtime.append(acc, "\n")))
+      {:just, c} -> consume_raw_string((advance(state, 1)), (Nova.Runtime.append(acc, Nova.String.singleton(c))))
+    end
+  end
+
+
+
+  def lex_char(state) do
+    
+      parse_char_content = fn s -> case peek(s) do
+        {:just, ?\\} -> case peek_at(s, 1) do
+            {:just, ?n} -> {:tuple, ?\n, (advance(s, 2))}
+            {:just, ?t} -> {:tuple, ?\t, (advance(s, 2))}
+            {:just, ?r} -> {:tuple, ?\r, (advance(s, 2))}
+            {:just, ?'} -> {:tuple, ?', (advance(s, 2))}
+            {:just, ?\\} -> {:tuple, ?\\, (advance(s, 2))}
+            {:just, c} -> {:tuple, c, (advance(s, 2))}
+            :nothing -> {:tuple, ??, s}
+          end
+        {:just, c} -> {:tuple, c, (advance(s, 1))}
+        :nothing -> {:tuple, ??, s}
+      end end
+      
+  start_state = state
+  after_open = advance(state, 1)
+  case parse_char_content.(after_open) do
+  {:tuple, ch, after_char} -> 
+      after_close = advance(after_char, 1)
+      {:just, ({:tuple, (make_token_range((Cst.tok_char((Nova.String.singleton(ch)), ch)), start_state, after_close)), after_close})}
+end
+  end
+
+
+
+  def skip_line_comment(state) do
+    case peek(state) do
+      :nothing -> state
+      {:just, ?\n} -> state
+      {:just, ?\r} -> state
+      {:just, _} -> skip_line_comment((advance(state, 1)))
+    end
+  end
+
+
+
+  def skip_block_comment(state, 0) do
+    state
+  end
+
+  def skip_block_comment(state, depth) do
+    case peek(state) do
+      :nothing -> state
+      {:just, ?{} -> case peek_at(state, 1) do
+          {:just, ?-} -> skip_block_comment((advance(state, 2)), ((depth + 1)))
+          _ -> skip_block_comment((advance(state, 1)), depth)
+        end
+      {:just, ?-} -> case peek_at(state, 1) do
+          {:just, ?}} -> skip_block_comment((advance(state, 2)), ((depth - 1)))
+          _ -> skip_block_comment((advance(state, 1)), depth)
+        end
+      {:just, ?\n} -> skip_block_comment((advance_newline((advance(state, 1)))), depth)
+      {:just, _} -> skip_block_comment((advance(state, 1)), depth)
+    end
+  end
 end

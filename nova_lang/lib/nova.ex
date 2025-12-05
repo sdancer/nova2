@@ -28,7 +28,7 @@ defmodule Nova do
       tokens = Nova.Compiler.Tokenizer.tokenize(dep_src)
       case Nova.Compiler.Parser.parse_module(tokens) do
         {:left, _} -> []
-        {:right, {:tuple, mod, _rest}} -> mod.declarations
+        {:right, {:tuple, mod, _rest}} -> Nova.List.to_list(mod.declarations)
       end
     end)
 
@@ -41,8 +41,9 @@ defmodule Nova do
         {:error, {:parse, err}}
 
       {:right, {:tuple, mod, _rest}} ->
-        # Type check
-        all_decls = dep_decls ++ mod.declarations
+        # Type check - convert linked list to Elixir list
+        mod_decls = Nova.List.to_list(mod.declarations)
+        all_decls = dep_decls ++ mod_decls
         env = Nova.Compiler.Types.empty_env()
 
         case Nova.Compiler.TypeChecker.check_module(env, all_decls) do
@@ -61,8 +62,9 @@ defmodule Nova do
   Compile a pre-parsed module AST to Elixir code.
   """
   def compile_module(mod, dep_decls \\ []) do
-    # Type check
-    all_decls = dep_decls ++ mod.declarations
+    # Type check - convert linked list to Elixir list
+    mod_decls = Nova.List.to_list(mod.declarations)
+    all_decls = dep_decls ++ mod_decls
     env = Nova.Compiler.Types.empty_env()
 
     case Nova.Compiler.TypeChecker.check_module(env, all_decls) do

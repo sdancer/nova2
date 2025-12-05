@@ -18,6 +18,10 @@ import Data.Int as Int
 import Data.Enum (fromEnum)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..))
 
+-- | Helper to concat-map over a List returning an Array
+listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
+
 -- WebAssembly Text Format (WAT) Code Generation
 -- Generates runnable WASM with JS runtime imports
 
@@ -323,10 +327,6 @@ patternVars (PatList pats) = listConcatMap patternVars pats
 patternVars (PatCons hd tl) = patternVars hd <> patternVars tl
 patternVars (PatAs name pat) = [name] <> patternVars pat
 patternVars (PatParens p) = patternVars p
-
--- | Helper: concatMap for List returning Array
-listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
-listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
 
 -- | A group of function clauses with same name/arity
 type FunctionGroup =

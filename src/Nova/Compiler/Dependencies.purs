@@ -269,18 +269,18 @@ getDependenciesOf graph declId = case Map.lookup declId graph.forward of
 -- | Get all transitively affected declarations when a declaration changes
 -- | This includes direct dependents and their dependents, recursively
 getAffected :: DependencyGraph -> DeclId -> Set DeclId
-getAffected graph declId = go (Set.singleton declId) Set.empty
-  where
-    go toProcess visited =
-      case Set.findMin toProcess of
-        Nothing -> visited
-        Just id ->
-          if Set.member id visited
-          then go (Set.delete id toProcess) visited
-          else
-            let dependents = getDependents graph id
-                newToProcess = Set.union (Set.delete id toProcess) (Set.difference dependents visited)
-            in go newToProcess (Set.insert id visited)
+getAffected graph declId =
+  let go toProcess visited =
+        case Set.findMin toProcess of
+          Nothing -> visited
+          Just id ->
+            if Set.member id visited
+            then go (Set.delete id toProcess) visited
+            else
+              let dependents = getDependents graph id
+                  newToProcess = Set.union (Set.delete id toProcess) (Set.difference dependents visited)
+              in go newToProcess (Set.insert id visited)
+  in go (Set.singleton declId) Set.empty
 
 -- | Topological sort of declarations (for type checking order)
 -- | Returns declarations in dependency order (dependencies before dependents)

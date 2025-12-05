@@ -13,6 +13,11 @@ defmodule Nova.Dependencies do
   # Dependency Extraction
   # ============================================================================
 
+  # Convert PureScript-style linked list to Elixir list
+  defp to_list(:nil), do: []
+  defp to_list({:cons, h, t}), do: [h | to_list(t)]
+  defp to_list(list) when is_list(list), do: list
+
   @doc """
   Extract all free names referenced by a declaration.
   These are names that need to be resolved from the environment.
@@ -21,16 +26,16 @@ defmodule Nova.Dependencies do
     case decl do
       {:decl_function, f} ->
         body_deps = get_expr_deps(f.body)
-        guard_deps = Enum.reduce(f.guards, MapSet.new(), fn g, acc ->
+        guard_deps = Enum.reduce(to_list(f.guards), MapSet.new(), fn g, acc ->
           MapSet.union(acc, get_guarded_expr_deps(g))
         end)
-        param_names = Enum.reduce(f.parameters, MapSet.new(), fn p, acc ->
+        param_names = Enum.reduce(to_list(f.parameters), MapSet.new(), fn p, acc ->
           MapSet.union(acc, get_bound_names(p))
         end)
         MapSet.difference(MapSet.union(body_deps, guard_deps), param_names)
 
       {:decl_data_type, d} ->
-        Enum.reduce(d.constructors, MapSet.new(), fn c, acc ->
+        Enum.reduce(to_list(d.constructors), MapSet.new(), fn c, acc ->
           MapSet.union(acc, get_constructor_deps(c))
         end)
 
@@ -38,13 +43,13 @@ defmodule Nova.Dependencies do
         get_type_expr_deps(a.ty)
 
       {:decl_type_class, c} ->
-        Enum.reduce(c.methods, MapSet.new(), fn m, acc ->
+        Enum.reduce(to_list(c.methods), MapSet.new(), fn m, acc ->
           MapSet.union(acc, get_type_expr_deps(m.ty))
         end)
 
       {:decl_type_class_instance, i} ->
         ty_deps = get_type_expr_deps(i.ty)
-        method_deps = Enum.reduce(i.methods, MapSet.new(), fn m, acc ->
+        method_deps = Enum.reduce(to_list(i.methods), MapSet.new(), fn m, acc ->
           MapSet.union(acc, get_expr_deps(m.body))
         end)
         MapSet.union(ty_deps, method_deps)
@@ -59,7 +64,7 @@ defmodule Nova.Dependencies do
         get_type_expr_deps(t.type_signature)
 
       {:decl_module, m} ->
-        Enum.reduce(m.declarations, MapSet.new(), fn d, acc ->
+        Enum.reduce(to_list(m.declarations), MapSet.new(), fn d, acc ->
           MapSet.union(acc, get_dependencies(d))
         end)
 
@@ -73,7 +78,7 @@ defmodule Nova.Dependencies do
 
   # Get dependencies from a data constructor
   defp get_constructor_deps(c) do
-    Enum.reduce(c.fields, MapSet.new(), fn field, acc ->
+    Enum.reduce(to_list(c.fields), MapSet.new(), fn field, acc ->
       MapSet.union(acc, get_type_expr_deps(field.ty))
     end)
   end
@@ -86,14 +91,14 @@ defmodule Nova.Dependencies do
       {:ty_expr_app, t1, t2} -> MapSet.union(get_type_expr_deps(t1), get_type_expr_deps(t2))
       {:ty_expr_arrow, t1, t2} -> MapSet.union(get_type_expr_deps(t1), get_type_expr_deps(t2))
       {:ty_expr_record, fields, _row} ->
-        Enum.reduce(fields, MapSet.new(), fn {:tuple, _, t}, acc ->
+        Enum.reduce(to_list(fields), MapSet.new(), fn {:tuple, _, t}, acc ->
           MapSet.union(acc, get_type_expr_deps(t))
         end)
       {:ty_expr_for_all, _, t} -> get_type_expr_deps(t)
       {:ty_expr_constrained, cs, t} ->
-        constraint_deps = Enum.reduce(cs, MapSet.new(), fn c, acc ->
+        constraint_deps = Enum.reduce(to_list(cs), MapSet.new(), fn c, acc ->
           class_dep = MapSet.new([c.class_name])
-          type_deps = Enum.reduce(c.types, MapSet.new(), fn ct, acc2 ->
+          type_deps = Enum.reduce(to_list(c.types), MapSet.new(), fn ct, acc2 ->
             MapSet.union(acc2, get_type_expr_deps(ct))
           end)
           MapSet.union(acc, MapSet.union(class_dep, type_deps))
@@ -101,7 +106,7 @@ defmodule Nova.Dependencies do
         MapSet.union(constraint_deps, get_type_expr_deps(t))
       {:ty_expr_parens, t} -> get_type_expr_deps(t)
       {:ty_expr_tuple, ts} ->
-        Enum.reduce(ts, MapSet.new(), fn t, acc ->
+        Enum.reduce(to_list(ts), MapSet.new(), fn t, acc ->
           MapSet.union(acc, get_type_expr_deps(t))
         end)
       _ -> MapSet.new()
@@ -116,20 +121,21 @@ defmodule Nova.Dependencies do
       {:expr_lit, _} -> MapSet.new()
       {:expr_app, e1, e2} -> MapSet.union(get_expr_deps(e1), get_expr_deps(e2))
       {:expr_lambda, pats, body} ->
-        bound_names = Enum.reduce(pats, MapSet.new(), fn p, acc ->
+        bound_names = Enum.reduce(to_list(pats), MapSet.new(), fn p, acc ->
           MapSet.union(acc, get_bound_names(p))
         end)
         MapSet.difference(get_expr_deps(body), bound_names)
       {:expr_let, binds, body} ->
-        bind_deps = get_let_binds_deps(binds)
-        bound_names = Enum.reduce(binds, MapSet.new(), fn b, acc ->
+        binds_list = to_list(binds)
+        bind_deps = get_let_binds_deps(binds_list)
+        bound_names = Enum.reduce(binds_list, MapSet.new(), fn b, acc ->
           MapSet.union(acc, get_bound_names(b.pattern))
         end)
         MapSet.difference(MapSet.union(bind_deps, get_expr_deps(body)), bound_names)
       {:expr_if, c, t, e} ->
         MapSet.union(get_expr_deps(c), MapSet.union(get_expr_deps(t), get_expr_deps(e)))
       {:expr_case, scrutinee, clauses} ->
-        clause_deps = Enum.reduce(clauses, MapSet.new(), fn c, acc ->
+        clause_deps = Enum.reduce(to_list(clauses), MapSet.new(), fn c, acc ->
           MapSet.union(acc, get_case_clause_deps(c))
         end)
         MapSet.union(get_expr_deps(scrutinee), clause_deps)
@@ -139,16 +145,16 @@ defmodule Nova.Dependencies do
       {:expr_unary_op, op, e} ->
         MapSet.union(MapSet.new([op]), get_expr_deps(e))
       {:expr_list, es} ->
-        Enum.reduce(es, MapSet.new(), fn e, acc -> MapSet.union(acc, get_expr_deps(e)) end)
+        Enum.reduce(to_list(es), MapSet.new(), fn e, acc -> MapSet.union(acc, get_expr_deps(e)) end)
       {:expr_tuple, es} ->
-        Enum.reduce(es, MapSet.new(), fn e, acc -> MapSet.union(acc, get_expr_deps(e)) end)
+        Enum.reduce(to_list(es), MapSet.new(), fn e, acc -> MapSet.union(acc, get_expr_deps(e)) end)
       {:expr_record, fields} ->
-        Enum.reduce(fields, MapSet.new(), fn {:tuple, _, e}, acc ->
+        Enum.reduce(to_list(fields), MapSet.new(), fn {:tuple, _, e}, acc ->
           MapSet.union(acc, get_expr_deps(e))
         end)
       {:expr_record_access, e, _} -> get_expr_deps(e)
       {:expr_record_update, e, fields} ->
-        field_deps = Enum.reduce(fields, MapSet.new(), fn {:tuple, _, v}, acc ->
+        field_deps = Enum.reduce(to_list(fields), MapSet.new(), fn {:tuple, _, v}, acc ->
           MapSet.union(acc, get_expr_deps(v))
         end)
         MapSet.union(get_expr_deps(e), field_deps)
@@ -178,11 +184,12 @@ defmodule Nova.Dependencies do
   end
 
   defp get_do_statements_deps(stmts) do
-    {deps, _bound} = Enum.reduce(stmts, {MapSet.new(), MapSet.new()}, fn stmt, {acc_deps, bound} ->
+    {deps, _bound} = Enum.reduce(to_list(stmts), {MapSet.new(), MapSet.new()}, fn stmt, {acc_deps, bound} ->
       case stmt do
         {:do_let, binds} ->
-          deps = get_let_binds_deps(binds)
-          new_bound = Enum.reduce(binds, bound, fn b, acc ->
+          binds_list = to_list(binds)
+          deps = get_let_binds_deps(binds_list)
+          new_bound = Enum.reduce(binds_list, bound, fn b, acc ->
             MapSet.union(acc, get_bound_names(b.pattern))
           end)
           {MapSet.union(acc_deps, MapSet.difference(deps, bound)), new_bound}
@@ -201,7 +208,7 @@ defmodule Nova.Dependencies do
   end
 
   defp get_guarded_expr_deps(g) do
-    guard_deps = Enum.reduce(g.guards, MapSet.new(), fn gc, acc ->
+    guard_deps = Enum.reduce(to_list(g.guards), MapSet.new(), fn gc, acc ->
       MapSet.union(acc, get_guard_clause_deps(gc))
     end)
     MapSet.union(guard_deps, get_expr_deps(g.body))
@@ -224,13 +231,13 @@ defmodule Nova.Dependencies do
       :pat_wildcard -> MapSet.new()
       {:pat_lit, _} -> MapSet.new()
       {:pat_con, _, pats} ->
-        Enum.reduce(pats, MapSet.new(), fn p, acc -> MapSet.union(acc, get_bound_names(p)) end)
+        Enum.reduce(to_list(pats), MapSet.new(), fn p, acc -> MapSet.union(acc, get_bound_names(p)) end)
       {:pat_record, fields} ->
-        Enum.reduce(fields, MapSet.new(), fn {:tuple, _, p}, acc ->
+        Enum.reduce(to_list(fields), MapSet.new(), fn {:tuple, _, p}, acc ->
           MapSet.union(acc, get_bound_names(p))
         end)
       {:pat_list, pats} ->
-        Enum.reduce(pats, MapSet.new(), fn p, acc -> MapSet.union(acc, get_bound_names(p)) end)
+        Enum.reduce(to_list(pats), MapSet.new(), fn p, acc -> MapSet.union(acc, get_bound_names(p)) end)
       {:pat_cons, p1, p2} -> MapSet.union(get_bound_names(p1), get_bound_names(p2))
       {:pat_as, name, p} -> MapSet.put(get_bound_names(p), name)
       {:pat_parens, p} -> get_bound_names(p)

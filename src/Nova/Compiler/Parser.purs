@@ -54,8 +54,8 @@ expectKeyword tokens expected =
     Just t ->
       if t.tokenType == TokKeyword && t.value == expected
       then success expected (Array.drop 1 ts)
-      else failure $ "Expected keyword '" <> expected <> "'"
-    Nothing -> failure $ "Expected keyword '" <> expected <> "'"
+      else failure ("Expected keyword '" <> expected <> "'")
+    Nothing -> failure ("Expected keyword '" <> expected <> "'")
 
 expectIdentifier :: Array Token -> String -> ParseResult String
 expectIdentifier tokens expected =
@@ -64,8 +64,8 @@ expectIdentifier tokens expected =
     Just t ->
       if t.tokenType == TokIdentifier && t.value == expected
       then success expected (Array.drop 1 ts)
-      else failure $ "Expected identifier '" <> expected <> "'"
-    Nothing -> failure $ "Expected identifier '" <> expected <> "'"
+      else failure ("Expected identifier '" <> expected <> "'")
+    Nothing -> failure ("Expected identifier '" <> expected <> "'")
 
 expectOperator :: Array Token -> String -> ParseResult String
 expectOperator tokens expected =
@@ -74,8 +74,8 @@ expectOperator tokens expected =
     Just t ->
       if t.tokenType == TokOperator && t.value == expected
       then success expected (Array.drop 1 ts)
-      else failure $ "Expected operator '" <> expected <> "'"
-    Nothing -> failure $ "Expected operator '" <> expected <> "'"
+      else failure ("Expected operator '" <> expected <> "'")
+    Nothing -> failure ("Expected operator '" <> expected <> "'")
 
 expectDelimiter :: Array Token -> String -> ParseResult String
 expectDelimiter tokens expected =
@@ -84,8 +84,8 @@ expectDelimiter tokens expected =
     Just t ->
       if t.tokenType == TokDelimiter && t.value == expected
       then success expected (Array.drop 1 ts)
-      else failure $ "Expected delimiter '" <> expected <> "'"
-    Nothing -> failure $ "Expected delimiter '" <> expected <> "'"
+      else failure ("Expected delimiter '" <> expected <> "'")
+    Nothing -> failure ("Expected delimiter '" <> expected <> "'")
 
 expectColon :: Array Token -> ParseResult String
 expectColon tokens =
@@ -1805,8 +1805,8 @@ parseImport tokens = do
   Tuple modName rest' <- parseQualifiedIdentifierName rest
   let Tuple alias rest'' = parseImportAlias rest'
   Tuple result rest''' <- parseImportSelectors rest''
-  let Tuple items hiding = result
-  success (Ast.DeclImport { moduleName: modName, alias: alias, items: List.fromFoldable items, hiding: hiding }) (dropNewlines rest''')
+  let Tuple items isHiding = result
+  success (Ast.DeclImport { moduleName: modName, alias: alias, items: List.fromFoldable items, hiding: isHiding }) (dropNewlines rest''')
 
 parseImportAlias :: Array Token -> Tuple (Maybe String) (Array Token)
 parseImportAlias tokens =

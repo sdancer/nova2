@@ -702,11 +702,18 @@ defmodule Nova.NamespaceService do
       {:decl_data_type, d} ->
         # Data types add constructor types - return the first one as representative
         case d.constructors do
+          {:cons, c, _} ->
+            case Nova.Compiler.Types.lookup_env(env, c.name) do
+              {:just, scheme} -> scheme
+              :nothing -> nil
+            end
           [c | _] ->
             case Nova.Compiler.Types.lookup_env(env, c.name) do
               {:just, scheme} -> scheme
               :nothing -> nil
             end
+          :nil -> nil
+          nil -> nil
           [] -> nil
         end
 
@@ -819,7 +826,8 @@ defmodule Nova.NamespaceService do
         {:decl_data_type, d} ->
           # Add both the type name and all constructor names
           acc = MapSet.put(acc, d.name)
-          Enum.reduce(d.constructors, acc, fn c, a ->
+          constructors = Nova.List.to_list(d.constructors)
+          Enum.reduce(constructors, acc, fn c, a ->
             MapSet.put(a, c.name)
           end)
 
@@ -840,7 +848,8 @@ defmodule Nova.NamespaceService do
 
   # For type classes, add method names to the name_index so dependencies can be resolved
   defp add_method_names_to_index(index, {:decl_type_class, tc}, decl_id) do
-    Enum.reduce(tc.methods, index, fn method, acc ->
+    methods = Nova.List.to_list(tc.methods)
+    Enum.reduce(methods, index, fn method, acc ->
       Map.put(acc, method.name, decl_id)
     end)
   end

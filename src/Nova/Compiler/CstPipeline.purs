@@ -6,26 +6,26 @@ import Data.Either (Either)
 import Data.Tuple (Tuple(..), fst)
 import Data.Void (Void)
 import Nova.Compiler.Cst as Cst
-import Nova.Compiler.CstLexer (lexModule)
-import Nova.Compiler.CstParser (runParser, parseModule)
-import Nova.Compiler.CstToAst (convertModule)
+import Nova.Compiler.CstLexer as Lexer
+import Nova.Compiler.CstParser as Parser
+import Nova.Compiler.CstToAst as CstToAst
 import Nova.Compiler.Ast as Ast
 
 -- | Parse source code using the CST pipeline and convert to AST
 parseModuleCst :: String -> Either String Ast.Module
 parseModuleCst source = do
-  let tokens = lexModule source
-  cstResult <- runParser parseModule tokens
+  let tokens = Lexer.lexModule source
+  cstResult <- Parser.runParser Parser.parseModule tokens
   let cstMod = fst cstResult
-  convertModule cstMod
+  CstToAst.convertModule cstMod
 
 -- | Parse source code to CST only (for debugging)
 parseModuleToCst :: String -> Either String (Cst.Module Void)
 parseModuleToCst source = do
-  let tokens = lexModule source
-  cstResult <- runParser parseModule tokens
+  let tokens = Lexer.lexModule source
+  cstResult <- Parser.runParser Parser.parseModule tokens
   pure (fst cstResult)
 
 -- | Lex source code to tokens (for debugging)
 lexSource :: String -> List Cst.SourceToken
-lexSource = lexModule
+lexSource = Lexer.lexModule

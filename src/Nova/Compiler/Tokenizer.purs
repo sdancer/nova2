@@ -62,15 +62,15 @@ isDelimiter c = c `Array.elem` ['(', ')', '{', '}', '[', ']', ',', ';']
 
 -- | Is alphabetic
 isAlpha :: Char -> Boolean
-isAlpha c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+isAlpha c = ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))
 
 -- | Is digit
 isDigit :: Char -> Boolean
-isDigit c = c >= '0' && c <= '9'
+isDigit c = (c >= '0') && (c <= '9')
 
 -- | Is alphanumeric or underscore/quote (for identifiers)
 isIdentChar :: Char -> Boolean
-isIdentChar c = isAlpha c || isDigit c || c == '_' || c == '\''
+isIdentChar c = isAlpha c || isDigit c || (c == '_') || (c == '\'')
 
 -- | Tokenizer state
 -- | Note: We use chars (Array Char) for O(1) head access on BEAM VM
@@ -139,7 +139,7 @@ nextToken state = do
     _ | isDigit c -> tokenizeNumber state
 
     -- Identifier or keyword
-    _ | isAlpha c || c == '_' -> tokenizeIdentifier state
+    _ | isAlpha c || (c == '_') -> tokenizeIdentifier state
 
     -- Operator
     _ | isOperatorChar c -> tokenizeOperator state
