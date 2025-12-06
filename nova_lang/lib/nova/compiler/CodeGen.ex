@@ -300,6 +300,7 @@ end
       go = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {({:decl_function, func}), acc} -> Nova.Set.insert(func.name, acc)
         {({:decl_data_type, dt}), acc} -> Nova.Runtime.foldr((fn con -> fn s -> Nova.Set.insert(con.name, s) end end), acc, dt.constructors)
+        {({:decl_newtype, nt}), acc} -> Nova.Set.insert(nt.constructor, acc)
         {_, acc} -> acc
       end end end
       Nova.Runtime.foldr(go, Nova.Set.empty, decls)
@@ -315,6 +316,7 @@ end
       end end end)
       get_ctor_arities = Nova.Runtime.fix(fn get_ctor_arities -> fn auto_arg0 -> case auto_arg0 do
         ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Nova.Runtime.map((fn con -> %{name: con.name, arity: Nova.List.length(con.fields)} end), dt.constructors)))
+        ({:decl_newtype, nt}) -> [%{name: nt.constructor, arity: 1}]
         _ -> []
       end end end)
       resolve_arity = Nova.Runtime.fix2(fn resolve_arity -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do

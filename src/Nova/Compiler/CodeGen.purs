@@ -149,12 +149,13 @@ patternVars (PatCons hd tl) = Set.union (patternVars hd) (patternVars tl)
 patternVars (PatAs name pat) = Set.insert name (patternVars pat)
 patternVars (PatParens p) = patternVars p
 
--- | Collect function names from declarations (includes data constructors)
+-- | Collect function names from declarations (includes data constructors and newtypes)
 collectModuleFuncs :: Array Declaration -> Set String
 collectModuleFuncs decls = foldr go Set.empty decls
   where
     go (DeclFunction func) acc = Set.insert func.name acc
     go (DeclDataType dt) acc = foldr (\con s -> Set.insert con.name s) acc dt.constructors
+    go (DeclNewtype nt) acc = Set.insert nt.constructor acc
     go _ acc = acc
 
 -- | Collect function arities from declarations
@@ -171,6 +172,7 @@ collectFuncArities decls =
     getCtorArities :: Declaration -> Array { name :: String, arity :: Int }
     getCtorArities (DeclDataType dt) =
       Array.fromFoldable (map (\con -> { name: con.name, arity: List.length con.fields }) dt.constructors)
+    getCtorArities (DeclNewtype nt) = [{ name: nt.constructor, arity: 1 }]  -- Newtypes always have arity 1
     getCtorArities _ = []
 
     -- Build initial arity map from direct arities and constructors
