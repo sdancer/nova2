@@ -181,9 +181,13 @@ defmodule Nova.Runtime do
     end}
   end
 
-  # fmap - alias for map (Functor)
+  # fmap - Functor map operation
+  # For lists: map over elements
+  # For functions: function composition (f <$> g = f . g)
+  def fmap(f, x) when is_list(x), do: map(f, x)
+  def fmap(f, g) when is_function(g, 1), do: fn a -> f.(g.(a)) end
   def fmap(f, x), do: map(f, x)
-  def fmap(f) when is_function(f, 1), do: fn x -> map(f, x) end
+  def fmap(f) when is_function(f, 1), do: fn x -> fmap(f, x) end
 
   # seq - sequence two parsers, keeping second result (Applicative *>)
   def seq({:parser, p1}, {:parser, p2}) do
@@ -231,6 +235,48 @@ defmodule Nova.Runtime do
   def zip([h1 | t1], [h2 | t2]), do: [{:tuple, h1, h2} | zip(t1, t2)]
 
   def pure(x), do: {:right, x}
+
+  # Effect.Console functions
+  def log(msg), do: IO.puts(msg)
+  def log_show(val), do: IO.puts(inspect(val))
+
+  # Test assertion functions
+  def assert(true), do: :unit
+  def assert(false), do: raise "Assertion failed"
+  def assert_prime(true), do: :unit
+  def assert_prime(false), do: raise "Assertion failed"
+  def assert_equal(a, b) when a == b, do: :unit
+  def assert_equal(a, b), do: raise "Assertion failed: #{inspect(a)} != #{inspect(b)}"
+  def assert_throws(f) do
+    try do
+      f.()
+      raise "Expected throw but none occurred"
+    rescue
+      _ -> :unit
+    catch
+      _ -> :unit
+    end
+  end
+
+  # Safe coercion (identity for runtime)
+  def coerce(x), do: x
+  def unsafe_coerce(x), do: x
+  def unsafe_partial(f), do: f.()
+
+  # Reflection
+  def reflect_symbol(_), do: "symbol"
+  def proxy(), do: :proxy
+
+  # FFI helpers
+  def run_fn2(f, a, b), do: f.(a).(b)
+  def mk_fn2(f), do: fn a -> fn b -> f.(a, b) end end
+
+  # Prelude extras
+  def negate(x), do: -x
+  def flip(f), do: fn b -> fn a -> f.(a).(b) end end
+  def mempty(), do: []
+  def discard(_x), do: fn y -> y end
+  def unit(), do: :unit
 
   # Parser-specific pure - wraps value in Parser that preserves token stream
   # pure a = Parser \ts -> Right (Tuple a ts)

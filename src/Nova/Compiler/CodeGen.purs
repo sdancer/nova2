@@ -12,6 +12,8 @@ import Data.String.CodeUnits as SCU
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Foldable (foldr, foldl)
+import Data.Map (Map)
+import Data.Map as Map
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
 
 -- | Code generation context
@@ -139,11 +141,70 @@ collectModuleFuncs decls = foldr go Set.empty decls
     go _ acc = acc
 
 -- | Collect function arities from declarations
+-- For 0-parameter functions, we inspect the body to determine the result arity
 collectFuncArities :: Array Declaration -> Array { name :: String, arity :: Int }
-collectFuncArities decls = Array.mapMaybe go decls
-  where
-    go (DeclFunction func) = Just { name: func.name, arity: List.length func.parameters }
-    go _ = Nothing
+collectFuncArities decls =
+  let
+    -- Get direct arities from function declarations (for non-zero param functions)
+    getDirectArity :: Declaration -> Maybe { name :: String, arity :: Int }
+    getDirectArity (DeclFunction func) = Just { name: func.name, arity: List.length func.parameters }
+    getDirectArity _ = Nothing
+
+    -- Get constructor arities from data type declarations
+    getCtorArities :: Declaration -> Array { name :: String, arity :: Int }
+    getCtorArities (DeclDataType dt) =
+      Array.fromFoldable (map (\con -> { name: con.name, arity: List.length con.fields }) dt.constructors)
+    getCtorArities _ = []
+
+    -- Build initial arity map from direct arities and constructors
+    directArities = Array.mapMaybe getDirectArity decls
+    ctorArities = Array.concatMap getCtorArities decls
+    arityMap = Map.fromFoldable (map (\r -> Tuple r.name r.arity) (directArities <> ctorArities))
+
+    -- Resolve arity for 0-param functions by inspecting their body
+    resolveArity :: Map String Int -> Declaration -> Maybe { name :: String, arity :: Int }
+    resolveArity amap (DeclFunction func) =
+      let paramCount = List.length func.parameters
+      in if paramCount > 0
+         then Just { name: func.name, arity: paramCount }
+         else case func.body of
+           -- If body is just a variable, look up its arity
+           ExprVar refName ->
+             case Map.lookup refName amap of
+               Just refArity -> Just { name: func.name, arity: refArity }
+               Nothing -> Just { name: func.name, arity: 0 }
+
+           -- If body is an application: f arg
+           ExprApp (ExprVar refName) _ ->
+             case Map.lookup refName amap of
+               Just refArity | refArity > 0 -> Just { name: func.name, arity: refArity - 1 }
+               _ ->
+                 -- Check known 1-arity Prelude functions
+                 let isKnown1Arity = refName == "pure" || refName == "return" ||
+                                     refName == "Just" || refName == "Left" || refName == "Right" ||
+                                     refName == "show" || refName == "log" || refName == "not" ||
+                                     isDataConstructor refName
+                     -- Check known 2-arity functions (with 1 arg, result is 1-arity)
+                     isKnown2Arity = refName == "map" || refName == "bind" ||
+                                     refName == "foldl" || refName == "foldr" || refName == "filter"
+                 in if isKnown1Arity
+                    then Just { name: func.name, arity: 0 }
+                    else if isKnown2Arity
+                    then Just { name: func.name, arity: 1 }
+                    -- Default: assume fully saturated (arity 0)
+                    else Just { name: func.name, arity: 0 }
+
+           -- Qualified function application: Module.func arg
+           ExprApp (ExprQualified _ fn) _ ->
+             let isKnown2Arity = fn == "filter" || fn == "map" || fn == "foldl" ||
+                                 fn == "foldr" || fn == "insert" || fn == "lookup"
+             in Just { name: func.name, arity: if isKnown2Arity then 1 else 0 }
+
+           -- Default: 0 arity for other expressions
+           _ -> Just { name: func.name, arity: 0 }
+    resolveArity _ _ = Nothing
+
+  in Array.mapMaybe (resolveArity arityMap) decls <> ctorArities
 
 -- | Look up the arity of a function
 lookupArity :: String -> GenCtx -> Maybe Int

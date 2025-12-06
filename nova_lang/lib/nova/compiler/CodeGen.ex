@@ -23,6 +23,10 @@ defmodule Nova.Compiler.CodeGen do
 
   # import Data.Foldable
 
+  # import Data.Map
+
+  # import Data.Map
+
   # import Nova.Compiler.Ast
 
   # @type gen_ctx :: %{module_funcs: set()(string()), locals: set()(string()), func_arities: array()(%{name: string(), arity: int()}), local_arities: array()(%{name: string(), arity: int()})}
@@ -277,11 +281,56 @@ defmodule Nova.Compiler.CodeGen do
 
   def collect_func_arities(decls) do
     
-      go = fn auto_arg0 -> case auto_arg0 do
+      get_direct_arity = Nova.Runtime.fix(fn get_direct_arity -> fn auto_arg0 -> case auto_arg0 do
         ({:decl_function, func}) -> {:just, %{name: func.name, arity: Nova.List.length(func.parameters)}}
         _ -> :nothing
-      end end
-      Nova.Array.map_maybe(go, decls)
+      end end end)
+      get_ctor_arities = Nova.Runtime.fix(fn get_ctor_arities -> fn auto_arg0 -> case auto_arg0 do
+        ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Nova.Runtime.map((fn con -> %{name: con.name, arity: Nova.List.length(con.fields)} end), dt.constructors)))
+        _ -> []
+      end end end)
+      resolve_arity = Nova.Runtime.fix2(fn resolve_arity -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {amap, ({:decl_function, func})} -> 
+  param_count = Nova.List.length(func.parameters)
+  if (param_count > 0) do
+  {:just, %{name: func.name, arity: param_count}}
+else
+  case func.body do
+    {:expr_var, ref_name} -> case Nova.Map.lookup(ref_name, amap) do
+        {:just, ref_arity} -> {:just, %{name: func.name, arity: ref_arity}}
+        :nothing -> {:just, %{name: func.name, arity: 0}}
+      end
+    {:expr_app, ({:expr_var, ref_name}), _} -> case Nova.Map.lookup(ref_name, amap) do
+        {:just, ref_arity} when (ref_arity > 0) -> {:just, %{name: func.name, arity: (ref_arity - 1)}}
+        _ -> 
+            is_known1_arity = (((((((((ref_name == "pure") or (ref_name == "return")) or (ref_name == "Just")) or (ref_name == "Left")) or (ref_name == "Right")) or (ref_name == "show")) or (ref_name == "log")) or (ref_name == "not")) or is_data_constructor(ref_name))
+            is_known2_arity = (((((ref_name == "map") or (ref_name == "bind")) or (ref_name == "foldl")) or (ref_name == "foldr")) or (ref_name == "filter"))
+            if is_known1_arity do
+  {:just, %{name: func.name, arity: 0}}
+else
+  if is_known2_arity do
+    {:just, %{name: func.name, arity: 1}}
+  else
+    {:just, %{name: func.name, arity: 0}}
+  end
+end
+      end
+    {:expr_app, ({:expr_qualified, _, fn_}), _} -> 
+        is_known2_arity = ((((((fn_ == "filter") or (fn_ == "map")) or (fn_ == "foldl")) or (fn_ == "foldr")) or (fn_ == "insert")) or (fn_ == "lookup"))
+        {:just, %{name: func.name, arity: if is_known2_arity do
+  1
+else
+  0
+end}}
+    _ -> {:just, %{name: func.name, arity: 0}}
+  end
+end
+        {_, _} -> :nothing
+      end end end end)
+      direct_arities = Nova.Array.map_maybe(get_direct_arity, decls)
+      ctor_arities = Nova.Array.concat_map(get_ctor_arities, decls)
+      arity_map = Nova.Map.from_foldable((Nova.Runtime.map((fn r -> {:tuple, r.name, r.arity} end), (Nova.Runtime.append(direct_arities, ctor_arities)))))
+      Nova.Runtime.append(Nova.Array.map_maybe((resolve_arity.(arity_map)), decls), ctor_arities)
   end
 
 
