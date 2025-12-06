@@ -957,70 +957,23 @@ substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprForAll _ t) = substi
 substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprConstrained _ t) = substituteTypeExpr aliasMap paramAliasMap paramSubst t
 
 -- | Convert a TypeExpr to a Type using the variable mapping
+-- | NOTE: This function only handles primitive type conversions.
+-- | For type alias resolution, use typeExprToTypeWithAllAliases with proper alias maps.
 typeExprToType :: Map.Map String TVar -> TypeExpr -> Type
 typeExprToType varMap (TyExprVar name) =
   case Map.lookup name varMap of
     Just tv -> TyVar tv
     Nothing -> TyCon (mkTCon name [])  -- Assume it's a type constructor
 typeExprToType varMap (TyExprCon name) =
-  -- Handle well-known type aliases
+  -- Only handle truly primitive cases - type alias resolution happens elsewhere
   case name of
     -- Type wildcard/hole - use a special placeholder type var
     "_" -> TyVar (mkTVar (-999) "_")
     -- PureScript uses Boolean, we use Bool internally
     "Boolean" -> tBool
-    "TCon" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "args" (tArray tTypeHolder)], row: Nothing }
-    "TVar" -> TyRecord { fields: Map.fromFoldable [Tuple "id" tInt, Tuple "name" tString], row: Nothing }
-    "Token" -> TyRecord { fields: Map.fromFoldable [Tuple "tokenType" (TyCon (mkTCon "TokenType" [])), Tuple "value" tString, Tuple "line" tInt, Tuple "column" tInt, Tuple "pos" tInt], row: Nothing }
-    -- Type aliases from Types.purs
-    "Subst" -> TyCon (mkTCon "Map" [tInt, tTypeHolder])
-    "Env" -> TyRecord { fields: Map.fromFoldable [Tuple "bindings" (TyCon (mkTCon "Map" [tString, tSchemeHolder])), Tuple "counter" tInt, Tuple "registryLayer" (TyCon (mkTCon "Maybe" [tInt])), Tuple "namespace" (TyCon (mkTCon "Maybe" [tString]))], row: Nothing }
-    "Scheme" -> TyRecord { fields: Map.fromFoldable [Tuple "vars" (tArray tTVarHolder), Tuple "ty" tTypeHolder], row: Nothing }
-    -- FunctionDeclaration record type alias
-    "FunctionDeclaration" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "parameters" (tArray tPatternHolder), Tuple "body" tExprHolder, Tuple "guards" (tArray tGuardedExprHolder), Tuple "typeSignature" (TyCon (mkTCon "Maybe" [tTypeSigHolder])), Tuple "whereBindings" (tArray tLetBindHolder)], row: Nothing }
-    "DataConstructor" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "fields" (tArray tDataFieldHolder)], row: Nothing }
-    "DataField" -> TyRecord { fields: Map.fromFoldable [Tuple "name" (TyCon (mkTCon "Maybe" [tString])), Tuple "ty" tTypeExprHolder], row: Nothing }
-    "TypeSignature" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "constraints" (tArray tConstraintHolder), Tuple "ty" tTypeExprHolder], row: Nothing }
-    "LetBind" -> TyRecord { fields: Map.fromFoldable [Tuple "pattern" tPatternHolder, Tuple "value" tExprHolder, Tuple "typeAnn" (TyCon (mkTCon "Maybe" [tTypeExprHolder]))], row: Nothing }
-    "Ast.LetBind" -> TyRecord { fields: Map.fromFoldable [Tuple "pattern" tPatternHolder, Tuple "value" tExprHolder, Tuple "typeAnn" (TyCon (mkTCon "Maybe" [tTypeExprHolder]))], row: Nothing }
-    "CaseClause" -> TyRecord { fields: Map.fromFoldable [Tuple "pattern" tPatternHolder, Tuple "guard" (TyCon (mkTCon "Maybe" [tExprHolder])), Tuple "body" tExprHolder], row: Nothing }
-    "Ast.CaseClause" -> TyRecord { fields: Map.fromFoldable [Tuple "pattern" tPatternHolder, Tuple "guard" (TyCon (mkTCon "Maybe" [tExprHolder])), Tuple "body" tExprHolder], row: Nothing }
-    "GuardedExpr" -> TyRecord { fields: Map.fromFoldable [Tuple "guards" (tArray tGuardClauseHolder), Tuple "body" tExprHolder], row: Nothing }
-    "Ast.GuardedExpr" -> TyRecord { fields: Map.fromFoldable [Tuple "guards" (tArray tGuardClauseHolder), Tuple "body" tExprHolder], row: Nothing }
-    "GuardClause" -> TyCon (mkTCon "GuardClause" [])  -- GuardClause is an ADT with constructors GuardExpr and GuardPat
-    "Ast.GuardClause" -> TyCon (mkTCon "GuardClause" [])
-    "Constraint" -> TyRecord { fields: Map.fromFoldable [Tuple "className" tString, Tuple "types" (tArray tTypeExprHolder)], row: Nothing }
-    "Ast.Constraint" -> TyRecord { fields: Map.fromFoldable [Tuple "className" tString, Tuple "types" (tArray tTypeExprHolder)], row: Nothing }
-    "TypeAlias" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "ty" tTypeExprHolder], row: Nothing }
-    "Ast.TypeAlias" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "ty" tTypeExprHolder], row: Nothing }
-    "DataType" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "constructors" (tArray tDataConstructorHolder)], row: Nothing }
-    "Ast.DataType" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "constructors" (tArray tDataConstructorHolder)], row: Nothing }
-    "DataConstructor" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "fields" (tArray tDataFieldHolder), Tuple "isRecord" tBool], row: Nothing }
-    "Ast.DataConstructor" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "fields" (tArray tDataFieldHolder), Tuple "isRecord" tBool], row: Nothing }
-    "ImportDeclaration" -> TyRecord { fields: Map.fromFoldable [Tuple "moduleName" tString, Tuple "alias" (TyCon (mkTCon "Maybe" [tString])), Tuple "items" (tArray (TyCon (mkTCon "ImportItem" []))), Tuple "hiding" tBool], row: Nothing }
-    "ModuleDeclaration" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString], row: Nothing }
-    "GenCtx" -> TyRecord { fields: Map.fromFoldable [Tuple "moduleFuncs" (TyCon (mkTCon "Set" [tString])), Tuple "locals" (TyCon (mkTCon "Set" [tString]))], row: Nothing }
-    "Module" -> TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "declarations" (tArray (TyCon (mkTCon "Declaration" [])))], row: Nothing }
-    -- TypeAliasInfo from Types.purs
-    "TypeAliasInfo" -> TyRecord { fields: Map.fromFoldable [Tuple "params" (tArray tString), Tuple "body" tTypeExprHolder], row: Nothing }
-    -- TypeInfo from Types.purs
-    "TypeInfo" -> TyRecord { fields: Map.fromFoldable [Tuple "arity" tInt, Tuple "constructors" (tArray tString)], row: Nothing }
+    -- All other types are treated as type constructors
+    -- Type alias expansion should be done via typeExprToTypeWithAllAliases
     _ -> TyCon (mkTCon name [])
-  where
-    -- Avoid circular dependency with tType
-    tTypeHolder = TyCon (mkTCon "Type" [])
-    tTVarHolder = TyRecord { fields: Map.fromFoldable [Tuple "id" tInt, Tuple "name" tString], row: Nothing }
-    tSchemeHolder = TyRecord { fields: Map.fromFoldable [Tuple "vars" (tArray tTVarHolder), Tuple "ty" tTypeHolder], row: Nothing }
-    tPatternHolder = TyCon (mkTCon "Pattern" [])
-    tExprHolder = TyCon (mkTCon "Expr" [])
-    tTypeSigHolder = TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "typeVars" (tArray tString), Tuple "constraints" (tArray tConstraintHolder), Tuple "ty" tTypeExprHolder], row: Nothing }
-    tLetBindHolder = TyRecord { fields: Map.fromFoldable [Tuple "pattern" tPatternHolder, Tuple "value" tExprHolder, Tuple "typeAnn" (TyCon (mkTCon "Maybe" [tTypeExprHolder]))], row: Nothing }
-    tGuardedExprHolder = TyRecord { fields: Map.fromFoldable [Tuple "guards" (tArray tGuardClauseHolder), Tuple "body" tExprHolder], row: Nothing }
-    tGuardClauseHolder = TyCon (mkTCon "GuardClause" [])  -- ADT not a record
-    tDataFieldHolder = TyRecord { fields: Map.fromFoldable [Tuple "label" tString, Tuple "ty" tTypeExprHolder], row: Nothing }
-    tDataConstructorHolder = TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "fields" (tArray tDataFieldHolder), Tuple "isRecord" tBool], row: Nothing }
-    tTypeExprHolder = TyCon (mkTCon "TypeExpr" [])
-    tConstraintHolder = TyRecord { fields: Map.fromFoldable [Tuple "className" tString, Tuple "types" (tArray tTypeExprHolder)], row: Nothing }
 typeExprToType varMap (TyExprApp f arg) =
   case typeExprToType varMap f of
     TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToType varMap arg) }

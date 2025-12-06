@@ -34,4 +34,10 @@ defmodule Data.Array do
   def drop_while(f, xs), do: Nova.Array.drop_while(f, xs)
   def span(f, xs), do: Nova.Array.span(f, xs)
   def partition(f, xs), do: Nova.Array.partition(f, xs)
+  def intercalate(sep, xs), do: Nova.Array.intercalate(sep, xs)
+  def nub(xs), do: Nova.Array.nub(xs)
+  def sort(xs), do: Nova.Array.sort(xs)
+  def elem_index(x, xs), do: Nova.Array.elem_index(x, xs)
+  def find_index(f, xs), do: Nova.Array.find_index(f, xs)
+  def unzip(xs), do: Nova.Array.unzip(xs)
 end

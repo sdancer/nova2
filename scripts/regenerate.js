@@ -292,10 +292,22 @@ for (const path of sortedLibModules) {
   }
 }
 
+// Modules with known CodeGen issues that need manual fixes
+// These modules define functions with the same name as prelude functions (e.g., map, pure)
+// which confuses the code generator's resolution logic
+const SKIP_REGENERATE = ['CstParser'];
+
 console.log('\n=== Compiling Compiler Modules (auto-sorted) ===');
 for (const path of sortedCompilerModules) {
   const name = getShortName(path);
   const deps = moduleDeps[path] || [];
+
+  // Skip modules with known CodeGen issues
+  if (SKIP_REGENERATE.includes(name)) {
+    console.log('Skipping', name, '(manually maintained due to CodeGen limitations)');
+    continue;
+  }
+
   console.log('Compiling', name + '...');
   if (deps.length > 0) {
     console.log('  Dependencies:', deps.map(d => getShortName(d)).join(', '));

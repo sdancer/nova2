@@ -459,6 +459,99 @@ defmodule Nova.Array do
       end
     end)
   end
+
+  # find_index - find index of first element matching predicate
+  def find_index(f, list) do
+    case Enum.find_index(list, f) do
+      nil -> :nothing
+      idx -> {:just, idx}
+    end
+  end
+
+  # sort - sort a list using default ordering
+  def sort(list), do: Enum.sort(list)
+
+  # unzip - convert list of tuples to tuple of lists
+  def unzip(list) do
+    {as, bs} = Enum.unzip(Enum.map(list, fn {:tuple, a, b} -> {a, b} end))
+    {:tuple, as, bs}
+  end
+
+  # intercalate - join list with separator
+  def intercalate(sep, list), do: Enum.join(list, sep)
+
+  # any/all - predicates for lists
+  def any(f, list), do: Enum.any?(list, f)
+  def all(f, list), do: Enum.all?(list, f)
+
+  # concat - flatten one level of nesting
+  def concat(lists), do: List.flatten(lists, [])
+
+  # concat_map - map then flatten
+  def concat_map(f, list), do: Enum.flat_map(list, f)
+
+  # head/tail - list accessors
+  def head([h | _]), do: {:just, h}
+  def head([]), do: :nothing
+  def tail([_ | t]), do: {:just, t}
+  def tail([]), do: :nothing
+
+  # reverse - reverse a list
+  def reverse(list), do: Enum.reverse(list)
+
+  # take/drop - slice operations
+  def take(n, list), do: Enum.take(list, n)
+  def drop(n, list), do: Enum.drop(list, n)
+
+  # cons/snoc - list construction
+  def cons(x, list), do: [x | list]
+  def snoc(list, x), do: list ++ [x]
+
+  # elem - membership test
+  def elem(x, list), do: Enum.member?(list, x)
+
+  # find - find first matching element
+  def find(f, list) do
+    case Enum.find(list, f) do
+      nil -> :nothing
+      x -> {:just, x}
+    end
+  end
+
+  # null - empty check
+  def null([]), do: true
+  def null(_), do: false
+
+  # replicate - create list of n copies of x
+  def replicate(n, x), do: List.duplicate(x, n)
+
+  # nub - remove duplicates
+  def nub(list), do: Enum.uniq(list)
+
+  # sort_by - sort by key function
+  def sort_by(f, list), do: Enum.sort_by(list, f)
+
+  # zip_with - combine two lists with function
+  def zip_with(f, l1, l2), do: Enum.zip_with(l1, l2, fn a, b -> f.(a).(b) end)
+
+  # lookup - look up key in list of pairs
+  def lookup(k, list) do
+    case Enum.find(list, fn {:tuple, key, _} -> key == k end) do
+      nil -> :nothing
+      {:tuple, _, v} -> {:just, v}
+    end
+  end
+
+  # insert/delete/member - map-like operations for association lists
+  def insert(k, v, list), do: [{:tuple, k, v} | Enum.reject(list, fn {:tuple, key, _} -> key == k end)]
+  def delete(k, list), do: Enum.reject(list, fn {:tuple, key, _} -> key == k end)
+  def member(k, list), do: Enum.any?(list, fn {:tuple, key, _} -> key == k end)
+
+  # singleton - create a single-element list
+  def singleton(x), do: [x]
+
+  # empty - empty list
+  def empty(), do: []
 end
 
 defmodule Nova.Map do
