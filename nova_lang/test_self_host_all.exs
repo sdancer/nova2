@@ -33,8 +33,8 @@ results = Enum.map(modules, fn mod ->
           IO.puts("PARSE ERROR: #{inspect(err)}")
           {:parse_error, mod, err}
         {:right, ast} ->
-          # Generate code
-          code = Nova.Compiler.CodeGen.gen_module(ast)
+          # Generate code (gen_module returns a function that takes the AST)
+          code = Nova.Compiler.CodeGen.gen_module().(ast)
           lines = String.split(code, "\n") |> length()
 
           # Compare with existing

@@ -1,5 +1,11 @@
 defmodule Nova.Compiler.RefEq do
+  # import Prelude
+
+  # import Data.List
+
   # import Nova.Compiler.Ast
+
+
 
   def ref_eq_expr(({:expr_var, a}), ({:expr_var, b})) do
     (a == b)

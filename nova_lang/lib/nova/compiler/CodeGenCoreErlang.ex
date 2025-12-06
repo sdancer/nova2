@@ -245,7 +245,7 @@ end
         end end end end)
         go.([]).(items) end
       
-  bind_map = Nova.Map.from_foldable((Nova.Array.map_maybe((fn b -> (Nova.Runtime.map((fn n -> {:tuple, n, b} end))).(get_pattern_var_name(b.pattern)) end), binds)))
+  bind_map = Nova.Map.from_foldable((Nova.Array.map_maybe((fn b -> (fn auto_p0 -> Nova.Runtime.map((fn n -> {:tuple, n, b} end), auto_p0) end).(get_pattern_var_name(b.pattern)) end), binds)))
   bind_names = Nova.Set.from_foldable((Nova.Map.keys(bind_map)))
   deps = Nova.Runtime.map((fn b -> 
     name = Nova.Runtime.from_maybe("", (get_pattern_var_name(b.pattern)))
@@ -379,7 +379,7 @@ end)), func_defs), "\nend\n")
   def gen_merged_function(ctx, group) do
     
       arity = group.arity
-      param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_P", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((arity - 1))))
+      param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_P", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((arity - 1))))
       params_str = Nova.Runtime.intercalate(", ", param_names)
       case_clauses = Nova.Runtime.map((fn auto_p0 -> gen_function_clause_as_case(ctx, param_names, auto_p0) end), group.clauses)
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(atom(group.name), "/"), Nova.Runtime.show(arity)), " =\n"), "  fun ("), params_str), ") ->\n"), "    case {"), params_str), "} of\n"), Nova.Runtime.intercalate("\n", case_clauses)), "\n"), "    end")
@@ -585,7 +585,7 @@ else
       else
         case get_prelude_func(name) do
           {:just, info} -> 
-              param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_Pf", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((info.arity - 1))))
+              param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_Pf", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((info.arity - 1))))
               params_str = Nova.Runtime.intercalate(", ", param_names)
               Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fun (", params_str), ") -> call "), atom(info.mod_)), ":"), atom(info.func)), "("), params_str), ")")
           :nothing -> if Nova.Set.member(name, ctx.module_funcs) do
@@ -595,7 +595,7 @@ else
   Nova.Runtime.append(Nova.Runtime.append("apply ", atom(name)), "/0()")
 else
   
-    param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_Mf", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((arity - 1))))
+    param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_Mf", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((arity - 1))))
     params_str = Nova.Runtime.intercalate(", ", param_names)
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fun (", params_str), ") -> apply "), atom(name)), "/"), Nova.Runtime.show(arity)), "("), params_str), ")")
 end
@@ -654,7 +654,7 @@ else
   else
     
       remaining = (declared_arity - num_args)
-      param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_Pc", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((remaining - 1))))
+      param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_Pc", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((remaining - 1))))
       params_str = Nova.Runtime.intercalate(", ", param_names)
       all_args = Nova.Runtime.intercalate(", ", (Nova.Runtime.append(Nova.Runtime.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args), param_names)))
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fun (", params_str), ") -> apply "), atom(name)), "/"), Nova.Runtime.show(declared_arity)), "("), all_args), ")")
@@ -833,7 +833,7 @@ end
             arity = Nova.List.length(pats)
             pat_result = gen_pats_with_counter((Nova.Array.from_foldable(pats)), 0)
             ctx_with_params = Nova.Runtime.foldr((&add_locals_from_pattern/2), ctx, pats)
-            param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_L", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((arity - 1))))
+            param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_L", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((arity - 1))))
             pat_tuple = Nova.Runtime.append(Nova.Runtime.append("{", Nova.Runtime.intercalate(", ", pat_result.strs)), "}")
             body_code = gen_expr(ctx_with_params, body)
             params_str = Nova.Runtime.intercalate(", ", param_names)
@@ -962,7 +962,7 @@ end end end
         [] -> ""
         [single] -> gen_letrec_def.(ctx_prime).(single)
         multiple -> 
-            param_names = (Nova.Runtime.map((fn i -> Nova.Runtime.append("_L", Nova.Runtime.show(i)) end))).(Nova.Array.range(0, ((group.arity - 1))))
+            param_names = (fn auto_p0 -> Nova.Runtime.map((fn i -> Nova.Runtime.append("_L", Nova.Runtime.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((group.arity - 1))))
             params_str = Nova.Runtime.intercalate(", ", param_names)
             case_clauses = Nova.Runtime.map((gen_letrec_clause_as_case.(ctx_prime).(param_names)), multiple)
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(atom(group.name), "/"), Nova.Runtime.show(group.arity)), " = fun ("), params_str), ") ->\n"), "      case {"), params_str), "} of\n"), Nova.Runtime.intercalate("\n", case_clauses)), "\n"), "      end")
@@ -971,7 +971,7 @@ end end end
   is_lambda_bind = fn b -> (get_lambda_arity(b.value) > 0) end
   func_binds = Nova.Array.filter(is_lambda_bind, binds)
   value_binds = Nova.Array.filter((fn auto_c -> ((&Kernel.not/1)).((is_lambda_bind).(auto_c)) end), binds)
-  letrec_funcs = Nova.Array.map_maybe((fn b -> (Nova.Runtime.map((fn n -> %{name: n, arity: get_lambda_arity(b.value)} end))).(get_pattern_var_name(b.pattern)) end), func_binds)
+  letrec_funcs = Nova.Array.map_maybe((fn b -> (fn auto_p0 -> Nova.Runtime.map((fn n -> %{name: n, arity: get_lambda_arity(b.value)} end), auto_p0) end).(get_pattern_var_name(b.pattern)) end), func_binds)
   value_names = Nova.Set.from_foldable((Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), value_binds)))
   func_names = Nova.Set.from_foldable((Nova.Runtime.map(& &1.name, letrec_funcs)))
   ctx_with_funcs = %{ctx | module_funcs: Nova.Runtime.foldr((fn f -> fn s -> Nova.Set.insert(f.name, s) end end), ctx.module_funcs, letrec_funcs), func_arities: Nova.Runtime.append(ctx.func_arities, letrec_funcs)}
@@ -1393,7 +1393,7 @@ end
       is_upper = fn c -> ((c >= ?A) and (c <= ?Z)) end
       to_lower = fn c -> Nova.Runtime.from_maybe(c, (Nova.String.char_at(0, (Nova.String.to_lower((Nova.String.singleton(c))))))) end
       convert_char = fn c -> if is_upper.(c) do
-        [?_, to_lower.(c)]
+        [?_, Nova.Runtime.to_lower(c)]
       else
         [c]
       end end

@@ -33,16 +33,43 @@ defmodule Nova.Compiler.CstParser do
   end
 
   # instance Functor parser()
+  def map(f, ({:parser, p})) do
+    {:parser, fn ts -> case p.(ts) do
+      {:left, err} -> {:left, err}
+      {:right, ({:tuple, a, rest})} -> {:right, ({:tuple, (f.(a)), rest})}
+    end end}
+  end
 
   # instance Apply parser()
+  def apply(({:parser, pf}), ({:parser, pa})) do
+    {:parser, fn ts -> case pf.(ts) do
+      {:left, err} -> {:left, err}
+      {:right, ({:tuple, f, rest})} -> case pa.(rest) do
+          {:left, err} -> {:left, err}
+          {:right, ({:tuple, a, rest_prime})} -> {:right, ({:tuple, (f.(a)), rest_prime})}
+        end
+    end end}
+  end
 
   # instance Applicative parser()
+  def pure(a) do
+    {:parser, fn ts -> {:right, ({:tuple, a, ts})} end}
+  end
 
   # instance Bind parser()
+  def bind(({:parser, pa}), f) do
+    {:parser, fn ts -> case pa.(ts) do
+      {:left, err} -> {:left, err}
+      {:right, ({:tuple, a, rest})} -> run_parser((f.(a))).(rest)
+    end end}
+  end
 
   # instance Monad parser()
 
   # instance Lazy (parser()(a))
+  def defer(f) do
+    {:parser, fn ts -> run_parser((f.(:unit))).(ts) end}
+  end
 
   # infixl 3 alt as <|>
 

@@ -31,8 +31,8 @@ defmodule Nova.Compiler.Ast do
 
 
 
-  def make_decl_id(namespace, kind, name, version) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(namespace, ":"), kind_to_string(kind)), ":"), name), ":"), Nova.Runtime.show(version))
+  def make_decl_id(namespace, kind, name, _version) do
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(namespace, ":"), kind_to_string(kind)), ":"), name), ":0")
   end
 
 

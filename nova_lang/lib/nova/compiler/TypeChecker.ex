@@ -37,6 +37,15 @@ defmodule Nova.Compiler.TypeChecker do
   def not_implemented(arg0), do: {:not_implemented, arg0}
 
   # instance Show tcerror()
+  def show(({:unify_err, e})) do
+    Nova.Runtime.append("Unification error: ", Nova.Runtime.show(e))
+  end
+  def show(({:unbound_variable, v})) do
+    Nova.Runtime.append("Unbound variable: ", v)
+  end
+  def show(({:not_implemented, s})) do
+    Nova.Runtime.append("Not implemented: ", s)
+  end
 
 
 
@@ -75,8 +84,8 @@ defmodule Nova.Compiler.TypeChecker do
       env_free = Nova.Compiler.Types.free_type_vars_env(env)
       ty_free = Nova.Compiler.Types.free_type_vars(ty)
       free_ids = Nova.Set.to_unfoldable((Nova.Set.difference(ty_free, env_free)))
-      vars = Nova.Runtime.map((fn i -> Nova.Compiler.Types.mk_tvar(i, (Nova.Runtime.append("t", Nova.Runtime.show(i)))) end), free_ids)
-      Nova.Compiler.Types.mk_scheme(vars, ty)
+      vars = Nova.Runtime.map((fn i -> Nova.Compiler.Types.mk_tvar(i).((Nova.Runtime.append("t", Nova.Runtime.show(i)))) end), free_ids)
+      Nova.Compiler.Types.mk_scheme(vars).(ty)
   end
 
 
@@ -469,8 +478,8 @@ end
 
   def infer_pat(env, ({:pat_var, name}), ty) do
     
-      scheme = Nova.Compiler.Types.mk_scheme([], ty)
-      env_prime = Nova.Compiler.Types.extend_env(env, name, scheme)
+      scheme = Nova.Compiler.Types.mk_scheme([]).(ty)
+      env_prime = Nova.Compiler.Types.extend_env(env, name).(scheme)
       {:right, %{env: env_prime, sub: Nova.Compiler.Types.empty_subst()}}
   end
 
@@ -525,8 +534,8 @@ end
 
   def infer_pat(env, ({:pat_as, name, pat}), ty) do
       Nova.Runtime.bind(infer_pat(env, pat, ty), fn pat_res ->
-        scheme = Nova.Compiler.Types.mk_scheme([], (Nova.Compiler.Types.apply_subst(pat_res.sub, ty)))
-        env_prime = Nova.Compiler.Types.extend_env(pat_res.env, name, scheme)
+        scheme = Nova.Compiler.Types.mk_scheme([]).((Nova.Compiler.Types.apply_subst(pat_res.sub, ty)))
+        env_prime = Nova.Compiler.Types.extend_env(pat_res.env, name).(scheme)
     {:right, %{env: env_prime, sub: pat_res.sub}}
   end)
   end
@@ -635,7 +644,7 @@ end
       add_one = fn e -> fn bind -> case bind.pattern do
         {:pat_var, name} -> 
             {:tuple, tv, e_prime} = Nova.Compiler.Types.fresh_var(e, (Nova.Runtime.append("let_", name)))
-            Nova.Compiler.Types.extend_env(e_prime, name, (Nova.Compiler.Types.mk_scheme([], ({:ty_var, tv}))))
+            Nova.Compiler.Types.extend_env(e_prime, name).((Nova.Compiler.Types.mk_scheme([]).(({:ty_var, tv}))))
         _ -> e
       end end end
       infer_binds_pass2 = Nova.Runtime.fix3(fn infer_binds_pass2 -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
@@ -647,9 +656,9 @@ end
       {:right, pat_res} -> 
           scheme = generalize(e, (Nova.Compiler.Types.apply_subst((Nova.Compiler.Types.compose_subst(pat_res.sub, val_res.sub)), val_res.ty)))
           env3 = case bind.pattern do
-            {:pat_var, name} -> Nova.Compiler.Types.extend_env((%{e | counter: pat_res.env.counter}), name, scheme)
+            {:pat_var, name} -> Nova.Compiler.Types.extend_env((%{e | counter: pat_res.env.counter}), name).(scheme)
             _ -> 
-                pat_env = Nova.Compiler.Types.apply_subst_to_env((Nova.Compiler.Types.compose_subst(pat_res.sub, val_res.sub)), pat_res.env)
+                pat_env = Nova.Compiler.Types.apply_subst_to_env((Nova.Compiler.Types.compose_subst(pat_res.sub, val_res.sub))).(pat_res.env)
                 %{pat_env | bindings: Nova.Map.union(pat_env.bindings, e.bindings)}
           end
           infer_binds_pass2.(env3).(rest).((Nova.Compiler.Types.compose_subst(pat_res.sub, (Nova.Compiler.Types.compose_subst(val_res.sub, sub)))))
@@ -746,7 +755,7 @@ end
       case infer_pat(e, clause.pattern, s_ty_prime) do
   {:left, err} -> {:left, err}
   {:right, pat_res} -> 
-      pat_env = Nova.Compiler.Types.apply_subst_to_env(pat_res.sub, pat_res.env)
+      pat_env = Nova.Compiler.Types.apply_subst_to_env(pat_res.sub).(pat_res.env)
       case infer_guard(pat_env, clause.guard) do
   {:left, err} -> {:left, err}
   {:right, guard_res} -> case infer(guard_res.env, clause.body) do
@@ -779,8 +788,8 @@ end
         [] -> func.body
         _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, func.body)
       end
-      temp_scheme = Nova.Compiler.Types.mk_scheme([], func_ty)
-      env_with_func = Nova.Compiler.Types.extend_env(env1, func.name, temp_scheme)
+      temp_scheme = Nova.Compiler.Types.mk_scheme([]).(func_ty)
+      env_with_func = Nova.Compiler.Types.extend_env(env1, func.name).(temp_scheme)
       case infer(env_with_func, expr) do
   {:left, e} -> {:left, e}
   {:right, res} ->   case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(res.sub, func_ty)), res.ty) do
@@ -789,7 +798,7 @@ end
       final_sub = Nova.Compiler.Types.compose_subst(s, res.sub)
       final_ty = Nova.Compiler.Types.apply_subst(final_sub, res.ty)
       scheme = generalize(res.env, final_ty)
-      {:right, %{scheme: scheme, env: Nova.Compiler.Types.extend_env(res.env, func.name, scheme)}}
+      {:right, %{scheme: scheme, env: Nova.Compiler.Types.extend_env(res.env, func.name).(scheme)}}
 end
 end
   end
@@ -828,11 +837,11 @@ end
   def check_type_class(env, tc) do
     
       add_method = fn e -> fn sig -> 
-        var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((e.counter + i)), v))} end end), (Nova.Array.from_foldable(tc.type_vars)))
+        var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((e.counter + i))).(v))} end end), (Nova.Array.from_foldable(tc.type_vars)))
         var_map = Nova.Map.from_foldable(var_pairs)
         method_type = type_expr_to_type(var_map, sig.ty)
-        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), var_pairs)), method_type)
-        Nova.Compiler.Types.extend_env(e, sig.name, scheme) end end
+        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), var_pairs))).(method_type)
+        Nova.Compiler.Types.extend_env(e, sig.name).(scheme) end end
       Nova.Array.foldl(add_method, env, (Nova.Array.from_foldable(tc.methods)))
   end
 
@@ -852,7 +861,7 @@ end
 
   def check_data_type_with_all_aliases(alias_map, param_alias_map, env, dt) do
     
-      type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((env.counter + i)), v))} end end), (Nova.Array.from_foldable(dt.type_vars)))
+      type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((env.counter + i))).(v))} end end), (Nova.Array.from_foldable(dt.type_vars)))
       new_counter = (env.counter + Nova.List.length(dt.type_vars))
       type_var_map = Nova.Map.from_foldable(type_var_pairs)
       env1 = %{env | counter: new_counter}
@@ -860,8 +869,8 @@ end
       result_type = {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, type_args))}
       add_constructor = fn e -> fn con -> 
         con_type = build_constructor_type_with_all_aliases(alias_map, param_alias_map, type_var_map, con.fields, result_type)
-        con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs)), con_type)
-        Nova.Compiler.Types.extend_env(e, con.name, con_scheme) end end
+        con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs))).(con_type)
+        Nova.Compiler.Types.extend_env(e, con.name).(con_scheme) end end
       Nova.Array.foldl(add_constructor, env1, (Nova.Array.from_foldable(dt.constructors)))
   end
 
@@ -875,7 +884,7 @@ end
 
   def check_newtype_with_all_aliases(alias_map, param_alias_map, env, nt) do
     
-      type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((env.counter + i)), v))} end end), (Nova.Array.from_foldable(nt.type_vars)))
+      type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((env.counter + i))).(v))} end end), (Nova.Array.from_foldable(nt.type_vars)))
       new_counter = (env.counter + Nova.List.length(nt.type_vars))
       type_var_map = Nova.Map.from_foldable(type_var_pairs)
       env1 = %{env | counter: new_counter}
@@ -883,8 +892,8 @@ end
       result_type = {:ty_con, (Nova.Compiler.Types.mk_tcon(nt.name, type_args))}
       wrapped_ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, type_var_map, nt.wrapped_type)
       con_type = Nova.Compiler.Types.t_arrow(wrapped_ty, result_type)
-      con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs)), con_type)
-      Nova.Compiler.Types.extend_env(env1, nt.constructor, con_scheme)
+      con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs))).(con_type)
+      Nova.Compiler.Types.extend_env(env1, nt.constructor).(con_scheme)
   end
 
 
@@ -1023,7 +1032,7 @@ end
 
   def type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, ({:ty_expr_for_all, vars, t})) do
     
-      var_list = Nova.Array.map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1))), name))} end end), (Nova.Array.from_foldable(vars)))
+      var_list = Nova.Array.map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1)))).(name))} end end), (Nova.Array.from_foldable(vars)))
       new_var_map = Nova.Map.union((Nova.Map.from_foldable(var_list)), var_map)
       type_expr_to_type_with_all_aliases(alias_map, param_alias_map, new_var_map, t)
   end
@@ -1126,7 +1135,7 @@ end
 
   def type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, ({:ty_expr_for_all, vars, t})) do
     
-      var_list = Nova.Array.map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1))), name))} end end), (Nova.Array.from_foldable(vars)))
+      var_list = Nova.Array.map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1)))).(name))} end end), (Nova.Array.from_foldable(vars)))
       new_var_map = Nova.Map.union((Nova.Map.from_foldable(var_list)), var_map)
       type_expr_to_type_with_env(env, alias_map, param_alias_map, new_var_map, t)
   end
@@ -1248,7 +1257,7 @@ end
       t_type_sig_holder = {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "name", Nova.Compiler.Types.t_string()}, {:tuple, "typeVars", (Nova.Compiler.Types.t_array(Nova.Compiler.Types.t_string()))}, {:tuple, "constraints", (Nova.Compiler.Types.t_array(t_constraint_holder))}, {:tuple, "ty", t_type_expr_holder}]), row: :nothing}}
       t_data_constructor_holder = {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "name", Nova.Compiler.Types.t_string()}, {:tuple, "fields", (Nova.Compiler.Types.t_array(t_data_field_holder))}, {:tuple, "isRecord", Nova.Compiler.Types.t_bool()}]), row: :nothing}}
       case name do
-  "_" -> {:ty_var, (Nova.Compiler.Types.mk_tvar((-999), "_"))}
+  "_" -> {:ty_var, (Nova.Compiler.Types.mk_tvar((-999)).("_"))}
   "Boolean" -> Nova.Compiler.Types.t_bool()
   "TCon" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "name", Nova.Compiler.Types.t_string()}, {:tuple, "args", (Nova.Compiler.Types.t_array(t_type_holder))}]), row: :nothing}}
   "TVar" -> {:ty_record, %{fields: Nova.Map.from_foldable([{:tuple, "id", Nova.Compiler.Types.t_int()}, {:tuple, "name", Nova.Compiler.Types.t_string()}]), row: :nothing}}
@@ -1312,7 +1321,7 @@ end
 
   def type_expr_to_type(var_map, ({:ty_expr_for_all, vars, t})) do
     
-      var_list = list_map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1))), name))} end end), vars)
+      var_list = list_map_with_index((fn i -> fn name -> {:tuple, name, (Nova.Compiler.Types.mk_tvar((-((i + 1)))).(name))} end end), vars)
       new_var_map = Nova.Map.union((Nova.Map.from_foldable(var_list)), var_map)
       type_expr_to_type(new_var_map, t)
   end
@@ -1334,8 +1343,8 @@ end
   def check_type_alias(env, ta) do
     
       ty = type_expr_to_type(Nova.Map.empty, ta.ty)
-      scheme = Nova.Compiler.Types.mk_scheme([], ty)
-      Nova.Compiler.Types.extend_env(env, ta.name, scheme)
+      scheme = Nova.Compiler.Types.mk_scheme([]).(ty)
+      Nova.Compiler.Types.extend_env(env, ta.name).(scheme)
   end
 
 
@@ -1372,7 +1381,7 @@ end
 
 
   def process_import_decl(registry, env, imp) do
-    case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
+    case Nova.Compiler.Types.lookup_module(registry).(imp.module_name) do
       :nothing -> env
       {:just, exports} -> 
           env_with_qualified = case imp.alias_ do
@@ -1385,10 +1394,10 @@ end
                 Nova.Compiler.Types.merge_exports_to_env_with_prefix(env, exports, last_part)
           end
           if imp.hiding do
-  Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+  Nova.Compiler.Types.merge_exports_to_env(env_with_qualified).(exports)
 else
   if Nova.List.null(imp.items) do
-    Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+    Nova.Compiler.Types.merge_exports_to_env(env_with_qualified).(exports)
   else
     Nova.Runtime.foldl((fn auto_p0 -> fn auto_p1 -> import_item(exports, auto_p0, auto_p1) end end), env_with_qualified, imp.items)
   end
@@ -1401,17 +1410,17 @@ end
   def import_item(exports, env, item) do
     case item do
       {:import_value, name} -> case Nova.Map.lookup(name, exports.values) do
-          {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name, scheme)
+          {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name).(scheme)
           :nothing -> case Nova.Map.lookup(name, exports.constructors) do
-              {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name, scheme)
+              {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name).(scheme)
               :nothing -> env
             end
         end
       {:import_type, type_name, spec} -> case Nova.Map.lookup(type_name, exports.types) do
           :nothing -> env
           {:just, type_info} -> case spec do
-              :import_all -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, type_info.constructors)
-              {:import_some, ctor_names} -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, (Nova.Array.from_foldable(ctor_names)))
+              :import_all -> Nova.Compiler.Types.merge_type_export(env).(exports).(type_name).(type_info.constructors)
+              {:import_some, ctor_names} -> Nova.Compiler.Types.merge_type_export(env).(exports).(type_name).((Nova.Array.from_foldable(ctor_names)))
               :import_none -> env
             end
         end
@@ -1423,7 +1432,7 @@ end
   def collect_imported_aliases(registry, decls) do
     
       collect_from_import = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {acc, ({:decl_import, imp})} -> case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
+        {acc, ({:decl_import, imp})} -> case Nova.Compiler.Types.lookup_module(registry).(imp.module_name) do
   :nothing -> acc
   {:just, exports} -> Nova.Map.union(acc, exports.type_aliases)
 end
@@ -1439,7 +1448,7 @@ end
       alias_map = collect_type_aliases(decls)
       param_alias_map = collect_param_type_aliases(decls)
       add_constructor_placeholder = fn dt -> fn exp -> fn ctor -> 
-        type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(i, v))} end end), (Nova.Array.from_foldable(dt.type_vars)))
+        type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(i).(v))} end end), (Nova.Array.from_foldable(dt.type_vars)))
         type_var_map = Nova.Map.from_foldable(type_var_pairs)
         result_type = if Nova.List.null(dt.type_vars) do
           {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, []))}
@@ -1447,7 +1456,7 @@ end
           {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, (Nova.Runtime.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs))))}
         end
         ctor_type = build_constructor_type_with_aliases(alias_map, type_var_map, ctor.fields, result_type)
-        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs)), ctor_type)
+        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Nova.Runtime.snd/1), type_var_pairs))).(ctor_type)
         %{exp | constructors: Nova.Map.insert(ctor.name, scheme, exp.constructors)} end end end
       collect_export = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {exp, ({:decl_data_type, dt})} -> 
@@ -1460,7 +1469,7 @@ end
   ty = type_expr_to_type(Nova.Map.empty, fi.type_signature)
   free_vars = Nova.Array.from_foldable((Nova.Set.to_unfoldable((Nova.Compiler.Types.free_type_vars(ty)))))
   tvars = Nova.Runtime.map((fn id -> %{id: id, name: Nova.Runtime.append("a", Nova.Runtime.show(id))} end), free_vars)
-  scheme = Nova.Compiler.Types.mk_scheme(tvars, ty)
+  scheme = Nova.Compiler.Types.mk_scheme(tvars).(ty)
   %{exp | values: Nova.Map.insert(fi.function_name, scheme, exp.values)}
         {exp, _} -> exp
       end end end
@@ -1573,16 +1582,16 @@ end
         {:decl_function, func} -> case func.type_signature do
             {:just, sig} -> 
                 ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, Nova.Map.empty, sig.ty)
-                scheme = Nova.Compiler.Types.mk_scheme([], ty)
-                Nova.Compiler.Types.extend_env(e, func.name, scheme)
+                scheme = Nova.Compiler.Types.mk_scheme([]).(ty)
+                Nova.Compiler.Types.extend_env(e, func.name).(scheme)
             :nothing -> case Nova.Map.lookup(func.name, sig_map) do
                 {:just, ty_expr} -> 
                     ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, Nova.Map.empty, ty_expr)
-                    scheme = Nova.Compiler.Types.mk_scheme([], ty)
-                    Nova.Compiler.Types.extend_env(e, func.name, scheme)
+                    scheme = Nova.Compiler.Types.mk_scheme([]).(ty)
+                    Nova.Compiler.Types.extend_env(e, func.name).(scheme)
                 :nothing -> 
                     {:tuple, tv, e_prime} = Nova.Compiler.Types.fresh_var(e, (Nova.Runtime.append("fn_", func.name)))
-                    Nova.Compiler.Types.extend_env(e_prime, func.name, (Nova.Compiler.Types.mk_scheme([], ({:ty_var, tv}))))
+                    Nova.Compiler.Types.extend_env(e_prime, func.name).((Nova.Compiler.Types.mk_scheme([]).(({:ty_var, tv}))))
               end
           end
         _ -> e

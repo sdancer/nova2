@@ -84,8 +84,9 @@ defmodule Nova.Runtime do
   # Identity
   def identity(x), do: x
 
-  # Const - curried version for 1-arity call
+  # Const - curried version for 1-arity call, and direct 2-arg version for code that calls const(a, b)
   def const(a), do: fn _b -> a end
+  def const(a, _b), do: a
   def const_(a, _b), do: a
 
   # Maybe predicates
@@ -147,6 +148,8 @@ defmodule Nova.Runtime do
     end
   end
 
+  # 1-arity fold_m (curried version) - for use like fold_m(f).(acc).(list)
+  def fold_m(f) when is_function(f), do: fn acc -> fn list -> fold_m(f, acc, list) end end
   def fold_m(f, acc, []), do: {:right, acc}
   def fold_m(f, acc, [h | t]) do
     result = case :erlang.fun_info(f, :arity) do
@@ -245,6 +248,10 @@ defmodule Nova.Runtime do
   def assert(false), do: raise "Assertion failed"
   def assert_prime(true), do: :unit
   def assert_prime(false), do: raise "Assertion failed"
+  # PureScript's assertEqual takes { expected, actual } record
+  def assert_equal(%{expected: expected, actual: actual}) when expected == actual, do: :unit
+  def assert_equal(%{expected: expected, actual: actual}), do: raise "Assertion failed: expected #{inspect(expected)}, got #{inspect(actual)}"
+  # Also support two-argument form
   def assert_equal(a, b) when a == b, do: :unit
   def assert_equal(a, b), do: raise "Assertion failed: #{inspect(a)} != #{inspect(b)}"
   def assert_throws(f) do

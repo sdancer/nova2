@@ -14,7 +14,8 @@ import Data.Set as Set
 import Data.Foldable (foldr, foldl)
 import Data.Map (Map)
 import Data.Map as Map
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..), ImportDeclaration, ImportItem(..))
+import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv)
 
 -- | Code generation context
 type GenCtx =
@@ -22,10 +23,26 @@ type GenCtx =
   , locals :: Set String       -- Local variables (params, let-bindings)
   , funcArities :: Array { name :: String, arity :: Int }  -- Module function arities
   , localArities :: Array { name :: String, arity :: Int }  -- Local function arities (from let bindings)
+  , imports :: Map String String  -- Map from imported name -> source module name
+  , typeEnv :: Maybe Env  -- Type environment for arity lookups
   }
 
 emptyCtx :: GenCtx
-emptyCtx = { moduleFuncs: Set.empty, locals: Set.empty, funcArities: [], localArities: [] }
+emptyCtx = { moduleFuncs: Set.empty, locals: Set.empty, funcArities: [], localArities: [], imports: Map.empty, typeEnv: Nothing }
+
+-- | Compute arity from a type by counting arrows
+typeArity :: Type -> Int
+typeArity (TyCon c) | c.name == "Fun" = case c.args of
+  [_, ret] -> 1 + typeArity ret
+  _ -> 0
+typeArity _ = 0
+
+-- | Look up function arity from type environment
+lookupTypeArity :: String -> GenCtx -> Maybe Int
+lookupTypeArity name ctx = do
+  env <- ctx.typeEnv
+  scheme <- lookupEnv env name
+  pure (typeArity scheme.ty)
 
 -- | Look up arity of a local variable (lambda)
 lookupLocalArity :: String -> GenCtx -> Maybe Int
@@ -179,26 +196,16 @@ collectFuncArities decls =
              case Map.lookup refName amap of
                Just refArity | refArity > 0 -> Just { name: func.name, arity: refArity - 1 }
                _ ->
-                 -- Check known 1-arity Prelude functions
-                 let isKnown1Arity = refName == "pure" || refName == "return" ||
-                                     refName == "Just" || refName == "Left" || refName == "Right" ||
-                                     refName == "show" || refName == "log" || refName == "not" ||
+                 -- Check known 1-arity data constructors only
+                 let isKnown1Arity = refName == "Just" || refName == "Left" || refName == "Right" ||
                                      isDataConstructor refName
-                     -- Check known 2-arity functions (with 1 arg, result is 1-arity)
-                     isKnown2Arity = refName == "map" || refName == "bind" ||
-                                     refName == "foldl" || refName == "foldr" || refName == "filter"
                  in if isKnown1Arity
                     then Just { name: func.name, arity: 0 }
-                    else if isKnown2Arity
-                    then Just { name: func.name, arity: 1 }
                     -- Default: assume fully saturated (arity 0)
                     else Just { name: func.name, arity: 0 }
 
-           -- Qualified function application: Module.func arg
-           ExprApp (ExprQualified _ fn) _ ->
-             let isKnown2Arity = fn == "filter" || fn == "map" || fn == "foldl" ||
-                                 fn == "foldr" || fn == "insert" || fn == "lookup"
-             in Just { name: func.name, arity: if isKnown2Arity then 1 else 0 }
+           -- Qualified function application: Module.func arg - assume fully saturated
+           ExprApp (ExprQualified _ _) _ -> Just { name: func.name, arity: 0 }
 
            -- Default: 0 arity for other expressions
            _ -> Just { name: func.name, arity: 0 }
@@ -206,18 +213,137 @@ collectFuncArities decls =
 
   in Array.mapMaybe (resolveArity arityMap) decls <> ctorArities
 
+-- | Collect imported names from declarations
+-- | Maps each imported name to its source module
+-- | Merges explicit imports with auto-injected prelude imports
+-- | Explicit imports take precedence over prelude imports
+collectImports :: Array Declaration -> Map String String
+collectImports decls =
+  let explicitImports = foldr go Map.empty decls
+  -- Explicit imports take precedence, so merge prelude first then explicit
+  in Map.union explicitImports preludeImports
+  where
+    go (DeclImport imp) acc =
+      if imp.hiding
+      then acc  -- Skip hiding imports for now
+      else foldr (addItem imp.moduleName) acc imp.items
+    go _ acc = acc
+
+    addItem :: String -> ImportItem -> Map String String -> Map String String
+    addItem modName (ImportValue name) acc = Map.insert name modName acc
+    addItem modName (ImportType name _) acc = Map.insert name modName acc
+
+-- | Translate a PureScript module name to an Elixir module for imports
+-- | Maps standard library modules to Nova.Runtime
+translateImportModule :: String -> String
+translateImportModule "Prelude" = "Nova.Runtime"
+translateImportModule "Data.Foldable" = "Nova.Runtime"
+translateImportModule "Data.List" = "Nova.Runtime"
+translateImportModule "Data.Array" = "Nova.Runtime"
+translateImportModule "Data.String" = "Nova.Runtime"
+translateImportModule "Data.String.CodeUnits" = "Nova.Runtime"
+translateImportModule "Data.Maybe" = "Nova.Runtime"
+translateImportModule "Data.Either" = "Nova.Runtime"
+translateImportModule "Data.Tuple" = "Nova.Runtime"
+translateImportModule "Data.Map" = "Nova.Runtime"
+translateImportModule "Data.Set" = "Nova.Runtime"
+translateImportModule modName = modName  -- Keep other modules as-is
+
+-- | Get the arity of an imported function
+-- | This is a heuristic based on common library functions
+getImportedFuncArity :: String -> Int
+getImportedFuncArity name = case name of
+  -- Monadic functions
+  "pure" -> 1
+  "bind" -> 2
+  -- Function combinators
+  "const" -> 2
+  "identity" -> 1
+  "flip" -> 3
+  "compose" -> 2
+  -- Common single-argument functions
+  "show" -> 1
+  "length" -> 1
+  "head" -> 1
+  "tail" -> 1
+  "null" -> 1
+  "reverse" -> 1
+  "concat" -> 1
+  "sum" -> 1
+  "product" -> 1
+  "maximum" -> 1
+  "minimum" -> 1
+  "fromMaybe" -> 2
+  "maybe" -> 3
+  -- Common two-argument functions
+  "map" -> 2
+  "filter" -> 2
+  "foldl" -> 3
+  "foldr" -> 3
+  "foldMap" -> 2
+  "elem" -> 2
+  "find" -> 2
+  "findIndex" -> 2
+  "take" -> 2
+  "drop" -> 2
+  "lookup" -> 2
+  "insert" -> 3
+  "delete" -> 2
+  "member" -> 2
+  "singleton" -> 1
+  "empty" -> 0
+  "cons" -> 2
+  "snoc" -> 2
+  "append" -> 2
+  "intercalate" -> 2
+  "replicate" -> 2
+  "concatMap" -> 2
+  "any" -> 2
+  "all" -> 2
+  "zipWith" -> 3
+  "zip" -> 2
+  "unzip" -> 1
+  "sortBy" -> 2
+  "sort" -> 1
+  "nub" -> 1
+  "union" -> 2
+  "intersect" -> 2
+  "difference" -> 2
+  "fst" -> 1
+  "snd" -> 1
+  -- String functions
+  "split" -> 2
+  "joinWith" -> 2
+  "trim" -> 1
+  "toLower" -> 1
+  "toUpper" -> 1
+  "contains" -> 2
+  "indexOf" -> 2
+  "replaceAll" -> 3
+  "charAt" -> 2
+  "toCharArray" -> 1
+  "fromCharArray" -> 1
+  -- Default to arity 1
+  _ -> 1
+
 -- | Look up the arity of a function
 lookupArity :: String -> GenCtx -> Maybe Int
 lookupArity name ctx = map _.arity (Array.find (\f -> f.name == name) ctx.funcArities)
 
 -- | Generate Elixir code from a module
 genModule :: Module -> String
-genModule mod =
+genModule = genModuleWithEnv Nothing
+
+-- | Generate Elixir code from a module with an optional type environment
+genModuleWithEnv :: Maybe Env -> Module -> String
+genModuleWithEnv maybeEnv mod =
   let decls = Array.fromFoldable mod.declarations
       ctx = { moduleFuncs: collectModuleFuncs decls
             , funcArities: collectFuncArities decls
             , locals: Set.empty
             , localArities: []
+            , imports: collectImports decls
+            , typeEnv: maybeEnv
             }
   in "defmodule " <> elixirModuleName mod.name <> " do\n" <>
      intercalate "\n\n" (map (genDeclaration ctx) decls) <>
@@ -239,7 +365,7 @@ genDeclaration _ (DeclTypeSig _) = ""  -- Type sigs are comments in Elixir
 genDeclaration _ (DeclInfix inf) = genInfix inf
 genDeclaration _ (DeclForeignImport fi) = genForeignImport fi
 genDeclaration _ (DeclTypeClass tc) = genTypeClass tc
-genDeclaration _ (DeclTypeClassInstance inst) = genTypeClassInstance inst
+genDeclaration ctx (DeclTypeClassInstance inst) = genTypeClassInstance ctx inst
 genDeclaration _ _ = "  # unsupported declaration"
 
 -- | Generate foreign import - delegates to an Elixir FFI module
@@ -254,7 +380,8 @@ genForeignImport fi =
       aliasName = case fi.alias of
         Just a -> snakeCase a
         Nothing -> funcName
-  in "  def " <> aliasName <> "(arg), do: " <> ffiModule <> "." <> funcName <> "(arg)"
+      -- Return a function reference so it works with curried application syntax f.(x)
+  in "  def " <> aliasName <> "(), do: &" <> ffiModule <> "." <> funcName <> "/1"
 
 -- | Generate function definition
 genFunction :: GenCtx -> FunctionDeclaration -> String
@@ -690,16 +817,42 @@ isAstConstructor name = Array.elem name
   , "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized"
   ]
 
--- | Check if a name is a prelude function that maps to Nova.Runtime
-isPreludeFunc :: String -> Boolean
-isPreludeFunc name = Array.elem name
-  [ "show", "map", "foldl", "foldr", "foldM", "filter"
-  , "intercalate", "identity", "const", "compose"
-  , "pure", "otherwise", "length", "zip", "tuple"
-  , "just", "nothing", "left", "right"
-  , "fromMaybe", "maybe", "either", "isJust", "isNothing"
-  , "fst", "snd"  -- Tuple accessors
+-- | Check if a function is a known prelude function by checking the imports context
+-- | This uses ctx.imports which includes auto-injected prelude imports
+isImportedPreludeFunc :: GenCtx -> String -> Boolean
+isImportedPreludeFunc ctx name =
+  -- Must NOT be a local variable, module function, or data constructor
+  not (Set.member name ctx.locals) &&
+  not (Set.member name ctx.moduleFuncs) &&
+  not (isDataConstructor name) &&
+  case Map.lookup name ctx.imports of
+    Just srcMod -> translateImportModule srcMod == "Nova.Runtime"
+    Nothing -> false
+
+-- | List of known prelude function names for auto-injection
+-- | These will be auto-injected as "Prelude" imports for all modules
+preludeFuncNames :: Array String
+preludeFuncNames =
+  [ -- Monadic functions
+    "pure", "bind"
+    -- Function combinators
+  , "const", "identity", "flip", "compose"
+    -- Show, length, basic list functions
+  , "show", "length", "head", "tail", "null", "reverse", "concat"
+  , "sum", "product", "maximum", "minimum", "fromMaybe", "maybe"
+  , "map", "filter", "foldl", "foldr", "foldMap", "elem", "find"
+  , "findIndex", "take", "drop", "lookup", "insert", "delete", "member"
+  , "singleton", "empty", "cons", "snoc", "append", "intercalate"
+  , "replicate", "concatMap", "any", "all", "zipWith", "zip", "unzip"
+  , "sortBy", "sort", "nub", "union", "intersect", "difference"
+  , "fst", "snd", "split", "joinWith", "trim", "toLower", "toUpper"
+  , "contains", "indexOf", "replaceAll", "charAt", "toCharArray", "fromCharArray"
   ]
+
+-- | Auto-injected prelude imports
+-- | Maps function names to "Prelude" module for all modules
+preludeImports :: Map String String
+preludeImports = foldr (\name acc -> Map.insert name "Prelude" acc) Map.empty preludeFuncNames
 
 -- | Check if a name is a nullary (zero-argument) data constructor
 -- | These should be represented as atoms in Elixir
@@ -924,6 +1077,8 @@ genExpr' ctx _ (ExprVar name) =
     "False" -> "false"
     "not" -> "(&Kernel.not/1)"  -- PureScript's not is a function
     "mod" -> "(&rem/2)"  -- PureScript's mod is Elixir's rem (only when not local)
+    "unit" -> ":unit"  -- PureScript Unit value
+    "intToString" -> "(&to_string/1)"  -- FFI helper for Int to String conversion
     "__guarded__" -> ":__guarded__"  -- Placeholder for guarded where functions
     _ ->
       -- Handle qualified names (e.g., Array.elem from backtick syntax)
@@ -955,15 +1110,22 @@ genExpr' ctx _ (ExprVar name) =
               else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
       else if isUnifyModuleFunc name
       then "(&Nova.Compiler.Unify." <> snakeCase name <> "/" <> show (unifyModuleFuncArity name) <> ")"
-      else if isPreludeFunc name
-      then "(&Nova.Runtime." <> snakeCase name <> "/1)"
-      -- Handle AST constructors used as functions (e.g., PatVar, ExprVar)
-      else if isAstConstructor name
-      then "(&Nova.Compiler.Ast." <> snakeCase name <> "/1)"
-      -- Handle other data constructors as function references
-      else if isDataConstructor name && not (isNullaryConstructor name)
-      then "(&" <> snakeCase name <> "/1)"
-      else snakeCase name
+      -- Check if this is an imported function and resolve to the target module
+      else case Map.lookup name ctx.imports of
+        Just srcMod ->
+          let targetMod = translateImportModule srcMod
+              -- First try type-based arity lookup, then fall back to hardcoded
+              funcArity = fromMaybe (getImportedFuncArity name) (lookupTypeArity name ctx)
+          in "(&" <> targetMod <> "." <> snakeCase name <> "/" <> show funcArity <> ")"
+        Nothing ->
+          -- Handle AST constructors used as functions (e.g., PatVar, ExprVar)
+          if isAstConstructor name
+          then "(&Nova.Compiler.Ast." <> snakeCase name <> "/1)"
+          -- Handle other data constructors as function references
+          else if isDataConstructor name && not (isNullaryConstructor name)
+          then "(&" <> snakeCase name <> "/1)"
+          -- Fallback for any remaining variables - just use the name
+          else snakeCase name
 genExpr' _ _ (ExprQualified mod name) =
   -- Check if this is an AST constructor used as a function value
   -- These need to be wrapped in lambdas because Elixir doesn't support
@@ -1036,7 +1198,19 @@ genExpr' ctx indent (ExprApp f arg) =
                   then snakeCase n <> "(" <> argsS <> ")"
                   else if numArgs < arity
                   then genPartialApp (snakeCase n) argsS numArgs arity
-                  else snakeCase n <> "(" <> argsS <> ")"  -- More args than expected
+                  else if arity == 0
+                  then
+                    -- Arity 0 with args means arity lookup was wrong (e.g., point-free functions)
+                    -- Just call with all args directly
+                    snakeCase n <> "(" <> argsS <> ")"
+                  else
+                    -- More args than expected and arity > 0 - function returns a function
+                    -- We need curried application: func(arg1, arg2).(arg3).(arg4)
+                    let directArgs = Array.take arity exprs
+                        curriedArgs = Array.drop arity exprs
+                        directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                        funcCall = snakeCase n <> "(" <> directArgsStr <> ")"
+                    in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
              Nothing ->
                -- Unknown arity, just generate the call
                snakeCase n <> "(" <> argsS <> ")"
@@ -1048,7 +1222,15 @@ genExpr' ctx indent (ExprApp f arg) =
               then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
               else if numArgs < arity
               then genPartialApp ("Nova.Compiler.Types." <> snakeCase n) argsS numArgs arity
-              else "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
+              else if arity == 0
+              then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
+              else
+                -- More args than expected - function returns a function
+                let directArgs = Array.take arity exprs
+                    curriedArgs = Array.drop arity exprs
+                    directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                    funcCall = "Nova.Compiler.Types." <> snakeCase n <> "(" <> directArgsStr <> ")"
+                in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
       else if isUnifyModuleFunc n
       then let arity = unifyModuleFuncArity n
                numArgs = length exprs
@@ -1056,9 +1238,33 @@ genExpr' ctx indent (ExprApp f arg) =
               then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
               else if numArgs < arity
               then genPartialApp ("Nova.Compiler.Unify." <> snakeCase n) argsS numArgs arity
-              else "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"  -- More args than expected
-      else if isPreludeFunc n
-      then "Nova.Runtime." <> snakeCase n <> "(" <> argsS <> ")"
+              else if arity == 0
+              then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
+              else
+                -- More args than expected - function returns a function
+                let directArgs = Array.take arity exprs
+                    curriedArgs = Array.drop arity exprs
+                    directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                    funcCall = "Nova.Compiler.Unify." <> snakeCase n <> "(" <> directArgsStr <> ")"
+                in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
+      else if isImportedPreludeFunc c n
+      then
+        -- Function is imported from prelude (or auto-injected), call with proper arity handling
+        let funcArity = getImportedFuncArity n
+            numArgs = length exprs
+        in if numArgs == funcArity
+           then "Nova.Runtime." <> snakeCase n <> "(" <> argsS <> ")"
+           else if numArgs < funcArity
+           then genPartialApp ("Nova.Runtime." <> snakeCase n) argsS numArgs funcArity
+           else if funcArity == 0
+           then "Nova.Runtime." <> snakeCase n <> "(" <> argsS <> ")"
+           else
+             -- More args than expected - function returns a function
+             let directArgs = Array.take funcArity exprs
+                 curriedArgs = Array.drop funcArity exprs
+                 directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                 funcCall = "Nova.Runtime." <> snakeCase n <> "(" <> directArgsStr <> ")"
+             in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
       else
         -- For local variables (lambdas), use chained application for curried calls
         -- f a b -> f.(a).(b)
@@ -1975,11 +2181,17 @@ genTypeClass tc =
 -- | Generate type class instance
 -- For derived instances, we just emit a comment because Elixir's
 -- native operators (==, etc.) handle structural equality
-genTypeClassInstance :: TypeClassInstance -> String
-genTypeClassInstance inst =
-  if inst.derived
-  then "  # derive instance " <> inst.className <> " " <> genTypeExpr inst.ty
-  else "  # instance " <> inst.className <> " " <> genTypeExpr inst.ty
+-- For explicit instances, generate the method implementations as functions
+genTypeClassInstance :: GenCtx -> TypeClassInstance -> String
+genTypeClassInstance ctx inst =
+  let comment = if inst.derived
+                then "  # derive instance " <> inst.className <> " " <> genTypeExpr inst.ty
+                else "  # instance " <> inst.className <> " " <> genTypeExpr inst.ty
+      -- Generate method implementations from the instance body
+      methodsCode = intercalate "\n" (Array.fromFoldable (map (genFunction ctx) inst.methods))
+  in if List.null inst.methods
+     then comment
+     else comment <> "\n" <> methodsCode
 
 -- | Generate infix declaration (just a comment - metadata only)
 genInfix :: InfixDecl -> String

@@ -24,6 +24,18 @@ defmodule Nova.Compiler.Unify do
   def record_field_mismatch(arg0), do: {:record_field_mismatch, arg0}
 
   # instance Show unify_error()
+  def show(({:occurs_check, v, t})) do
+    Nova.Runtime.append(Nova.Runtime.append("Occurs check: ", v.name), " in type")
+  end
+  def show(({:type_mismatch, t1, t2})) do
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Type mismatch: ", show_type(t1)), " vs "), show_type(t2))
+  end
+  def show(({:arity_mismatch, name, n1, n2})) do
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Arity mismatch for ", name), ": "), Nova.Runtime.show(n1)), " vs "), Nova.Runtime.show(n2))
+  end
+  def show(({:record_field_mismatch, f})) do
+    Nova.Runtime.append("Record field mismatch: ", f)
+  end
 
 
 
@@ -56,7 +68,7 @@ defmodule Nova.Compiler.Unify do
           (occurs(v, t)) ->
             {:left, ({:occurs_check, v, t})}
           (true) ->
-            {:right, (Nova.Compiler.Types.single_subst(v, t))}
+            {:right, (Nova.Compiler.Types.single_subst(v).(t))}
         end
     end
   end
@@ -197,7 +209,7 @@ defmodule Nova.Compiler.Unify do
 
 
   def unify_many(ts1, ts2) do
-    Nova.Runtime.fold_m((&unify_step/2), Nova.Compiler.Types.empty_subst(), (Nova.Runtime.zip(ts1, ts2)))
+    Nova.Runtime.fold_m((&unify_step/2)).(Nova.Compiler.Types.empty_subst()).((Nova.Runtime.zip(ts1, ts2)))
   end
 
 
@@ -217,6 +229,6 @@ defmodule Nova.Compiler.Unify do
   def unify_records(r1, r2) do
     
       keys1 = Nova.Map.keys(r1.fields)
-      Nova.Runtime.fold_m((fn auto_p0 -> fn auto_p1 -> unify_field(r1.fields, r2.fields, auto_p0, auto_p1) end end), Nova.Compiler.Types.empty_subst(), keys1)
+      Nova.Runtime.fold_m((fn auto_p0 -> fn auto_p1 -> unify_field(r1.fields, r2.fields, auto_p0, auto_p1) end end)).(Nova.Compiler.Types.empty_subst()).(keys1)
   end
 end

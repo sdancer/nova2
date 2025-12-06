@@ -3,6 +3,7 @@ const codegen = require('../output/Nova.Compiler.CodeGen/index.js');
 const cstPipeline = require('../output/Nova.Compiler.CstPipeline/index.js');
 const types = require('../output/Nova.Compiler.Types/index.js');
 const tc = require('../output/Nova.Compiler.TypeChecker/index.js');
+const Maybe = require('../output/Data.Maybe/index.js');
 
 // Helper to convert PureScript List (Cons/Nil) to JS Array
 function listToArray(list) {
@@ -33,40 +34,103 @@ function mapSize(map) {
 const base = './src/Nova/Compiler/';
 const lib = './lib/';
 
-// Library modules (compiled first, used as dependencies)
-// Order matters - modules with no deps first, then those that depend on them
-const libModuleDeps = {
-  [lib + 'Data/Maybe.purs']: [],
-  [lib + 'Data/Tuple.purs']: [],
-  [lib + 'Data/Either.purs']: [],
-  [lib + 'Data/Char.purs']: [],
-  [lib + 'Data/List.purs']: [lib + 'Data/Maybe.purs', lib + 'Data/Tuple.purs'],
-  [lib + 'Data/Array.purs']: [lib + 'Data/Maybe.purs', lib + 'Data/Tuple.purs'],
-  [lib + 'Data/String.purs']: [lib + 'Data/Maybe.purs'],
-  [lib + 'Data/Map.purs']: [lib + 'Data/Maybe.purs', lib + 'Data/Tuple.purs'],
-  [lib + 'Data/Set.purs']: [lib + 'Data/Maybe.purs'],
-  [lib + 'Data/Foldable.purs']: [lib + 'Data/Maybe.purs'],
-};
+// ============================================================================
+// Auto-discovery of module dependencies
+// ============================================================================
 
-// Module dependency graph
-const moduleDeps = {
-  [base + 'Ast.purs']: [],
-  [base + 'Types.purs']: [base + 'Ast.purs'],
-  [base + 'Cst.purs']: [],
-  [base + 'CstLayout.purs']: [base + 'Cst.purs'],
-  [base + 'CstLexer.purs']: [base + 'Cst.purs', base + 'CstLayout.purs'],
-  [base + 'CstParser.purs']: [base + 'Cst.purs'],
-  [base + 'CstToAst.purs']: [base + 'Cst.purs', base + 'Ast.purs'],
-  [base + 'CstPipeline.purs']: [base + 'Cst.purs', base + 'Ast.purs', base + 'CstLexer.purs', base + 'CstParser.purs', base + 'CstToAst.purs'],
-  [base + 'Tokenizer.purs']: [],
-  [base + 'Parser.purs']: [base + 'Ast.purs', base + 'Tokenizer.purs'],
-  [base + 'Unify.purs']: [base + 'Types.purs'],
-  [base + 'TypeChecker.purs']: [base + 'Ast.purs', base + 'Types.purs', base + 'Unify.purs'],
-  [base + 'CodeGen.purs']: [base + 'Ast.purs'],
-  [base + 'CodeGenCoreErlang.purs']: [base + 'Ast.purs'],
-  [base + 'CodeGenWasmSimple.purs']: [base + 'Ast.purs'],
-  [base + 'Dependencies.purs']: [base + 'Ast.purs'],
-};
+// Parse import statements from a PureScript source file
+// Returns array of imported module names
+function extractImports(source) {
+  const imports = [];
+  const lines = source.split('\n');
+  for (const line of lines) {
+    // Match: import ModuleName or import ModuleName (...)
+    const match = line.match(/^import\s+([\w.]+)/);
+    if (match) {
+      imports.push(match[1]);
+    }
+  }
+  return imports;
+}
+
+// Convert module name to file path
+// e.g., "Nova.Compiler.Ast" -> "./src/Nova/Compiler/Ast.purs"
+// e.g., "Data.List" -> "./lib/Data/List.purs"
+function moduleToPath(modName, isLibContext) {
+  // Library modules
+  if (modName.startsWith('Data.') || modName === 'Prelude') {
+    const path = lib + modName.replace(/\./g, '/') + '.purs';
+    if (fs.existsSync(path)) {
+      return path;
+    }
+  }
+  // Compiler modules
+  if (modName.startsWith('Nova.Compiler.')) {
+    const path = base + modName.replace('Nova.Compiler.', '').replace(/\./g, '/') + '.purs';
+    if (fs.existsSync(path)) {
+      return path;
+    }
+  }
+  return null; // External module, not in our project
+}
+
+// Discover dependencies for a module by parsing its imports
+// Only returns dependencies that are in our project (lib/ or src/)
+function discoverDependencies(path, isLibModule = false) {
+  if (!fs.existsSync(path)) {
+    return [];
+  }
+  const source = fs.readFileSync(path, 'utf8');
+  const imports = extractImports(source);
+  const deps = [];
+
+  for (const modName of imports) {
+    const depPath = moduleToPath(modName, isLibModule);
+    if (depPath && depPath !== path) {
+      deps.push(depPath);
+    }
+  }
+  return deps;
+}
+
+// Build dependency graph automatically from all modules
+function buildDependencyGraph(modulePaths, isLibModules = false) {
+  const graph = {};
+  for (const path of modulePaths) {
+    graph[path] = discoverDependencies(path, isLibModules);
+  }
+  return graph;
+}
+
+// Topologically sort modules based on dependencies
+function topologicalSort(graph) {
+  const sorted = [];
+  const visited = new Set();
+  const visiting = new Set();
+
+  function visit(path) {
+    if (visited.has(path)) return;
+    if (visiting.has(path)) {
+      console.warn('  Warning: Circular dependency detected involving', path);
+      return;
+    }
+    visiting.add(path);
+    const deps = graph[path] || [];
+    for (const dep of deps) {
+      if (graph[dep] !== undefined) { // Only visit deps in our graph
+        visit(dep);
+      }
+    }
+    visiting.delete(path);
+    visited.add(path);
+    sorted.push(path);
+  }
+
+  for (const path of Object.keys(graph)) {
+    visit(path);
+  }
+  return sorted;
+}
 
 // Cache for parsed and type-checked modules
 const moduleCache = {};
@@ -86,12 +150,17 @@ function getModuleName(path) {
   return match ? 'Nova.Compiler.' + match[1] : path;
 }
 
+// Dependency graphs - auto-discovered at startup
+let libModuleDeps = {};
+let moduleDeps = {};
+
 // Parse and type-check a module, caching the result
 function parseAndCheckModule(path, isLibModule = false) {
   if (moduleCache[path]) {
     return moduleCache[path];
   }
 
+  // Use auto-discovered dependencies
   const deps = isLibModule ? (libModuleDeps[path] || []) : (moduleDeps[path] || []);
   const src = fs.readFileSync(path, 'utf8');
   const result = cstPipeline.parseModuleCst(src);
@@ -146,60 +215,73 @@ function compile(name, path) {
     return null;
   }
 
-  const code = codegen.genModule(result.mod);
+  // Pass the type environment for proper arity lookups (wrapped in Just)
+  const maybeEnv = new Maybe.Just(result.env);
+  const code = codegen.genModuleWithEnv(maybeEnv)(result.mod);
   console.log('  Generated', code.split('\n').length, 'lines');
   return code;
 }
 
-const modules = [
-  // Core types
-  ['Ast', base + 'Ast.purs'],
-  ['Types', base + 'Types.purs'],
+// ============================================================================
+// Discover all modules and their dependencies
+// ============================================================================
 
-  // CST types and lexer/parser
-  ['Cst', base + 'Cst.purs'],
-  ['CstLayout', base + 'CstLayout.purs'],
-  ['CstLexer', base + 'CstLexer.purs'],
-  ['CstParser', base + 'CstParser.purs'],
-  ['CstToAst', base + 'CstToAst.purs'],
-  ['CstPipeline', base + 'CstPipeline.purs'],
+// Find all .purs files in a directory
+function findPursFiles(dir) {
+  const files = [];
+  if (!fs.existsSync(dir)) return files;
 
-  // Legacy parser (still needed for some things)
-  ['Tokenizer', base + 'Tokenizer.purs'],
-  ['Parser', base + 'Parser.purs'],
+  function walk(currentDir) {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const path = currentDir + '/' + entry.name;
+      if (entry.isDirectory()) {
+        walk(path);
+      } else if (entry.name.endsWith('.purs')) {
+        // Normalize path to use ./ prefix
+        files.push(path.replace(/^\.\//, './'));
+      }
+    }
+  }
+  walk(dir);
+  return files;
+}
 
-  // Type system
-  ['Unify', base + 'Unify.purs'],
-  ['TypeChecker', base + 'TypeChecker.purs'],
+// Helper to get short module name from path (for display and output file naming)
+function getShortName(path) {
+  const match = path.match(/\/(\w+)\.purs$/);
+  return match ? match[1] : path;
+}
 
-  // Code generation
-  ['CodeGen', base + 'CodeGen.purs'],
-  ['CodeGenCoreErlang', base + 'CodeGenCoreErlang.purs'],
-  ['CodeGenWasmSimple', base + 'CodeGenWasmSimple.purs'],
+// ============================================================================
+// Main compilation flow
+// ============================================================================
 
-  // Utilities
-  ['Dependencies', base + 'Dependencies.purs'],
-];
+console.log('=== Discovering Module Dependencies ===');
 
-// Library modules to compile first (provides exports for compiler modules)
-// Order matters - base types first, then modules that depend on them
-const libModules = [
-  ['Data.Maybe', lib + 'Data/Maybe.purs'],
-  ['Data.Tuple', lib + 'Data/Tuple.purs'],
-  ['Data.Either', lib + 'Data/Either.purs'],
-  ['Data.Char', lib + 'Data/Char.purs'],
-  ['Data.List', lib + 'Data/List.purs'],
-  ['Data.Array', lib + 'Data/Array.purs'],
-  ['Data.String', lib + 'Data/String.purs'],
-  ['Data.Map', lib + 'Data/Map.purs'],
-  ['Data.Set', lib + 'Data/Set.purs'],
-  ['Data.Foldable', lib + 'Data/Foldable.purs'],
-];
+// Find all library and compiler module files
+const libFiles = findPursFiles('./lib/Data');
+const compilerFiles = findPursFiles('./src/Nova/Compiler');
 
-// Compile library modules first and build libRegistry
-console.log('=== Compiling Library Modules ===');
-for (const [name, path] of libModules) {
+console.log('Found', libFiles.length, 'library modules');
+console.log('Found', compilerFiles.length, 'compiler modules');
+
+// Auto-discover dependencies
+libModuleDeps = buildDependencyGraph(libFiles, true);
+moduleDeps = buildDependencyGraph(compilerFiles, false);
+
+// Topologically sort modules
+const sortedLibModules = topologicalSort(libModuleDeps);
+const sortedCompilerModules = topologicalSort(moduleDeps);
+
+console.log('\n=== Compiling Library Modules (auto-sorted) ===');
+for (const path of sortedLibModules) {
+  const name = getModuleName(path);
   console.log('Compiling library', name + '...');
+  const deps = libModuleDeps[path] || [];
+  if (deps.length > 0) {
+    console.log('  Dependencies:', deps.map(d => getShortName(d)).join(', '));
+  }
   const result = parseAndCheckModule(path, true);
   if (result) {
     // Register in libRegistry for use by compiler modules
@@ -210,13 +292,27 @@ for (const [name, path] of libModules) {
   }
 }
 
-console.log('\n=== Compiling Compiler Modules ===');
-for (const [name, path] of modules) {
-  const code = compile(name, path);
-  if (code) {
-    fs.writeFileSync('./output/' + name + '.ex', code);
-    // Also copy to nova_lang for running
-    fs.writeFileSync('./nova_lang/lib/nova/compiler/' + name + '.ex', code);
+console.log('\n=== Compiling Compiler Modules (auto-sorted) ===');
+for (const path of sortedCompilerModules) {
+  const name = getShortName(path);
+  const deps = moduleDeps[path] || [];
+  console.log('Compiling', name + '...');
+  if (deps.length > 0) {
+    console.log('  Dependencies:', deps.map(d => getShortName(d)).join(', '));
   }
+
+  const result = parseAndCheckModule(path);
+  if (!result) {
+    continue;
+  }
+
+  // Pass the type environment for proper arity lookups (wrapped in Just)
+  const maybeEnv = new Maybe.Just(result.env);
+  const code = codegen.genModuleWithEnv(maybeEnv)(result.mod);
+  console.log('  Generated', code.split('\n').length, 'lines');
+
+  fs.writeFileSync('./output/' + name + '.ex', code);
+  // Also copy to nova_lang for running
+  fs.writeFileSync('./nova_lang/lib/nova/compiler/' + name + '.ex', code);
 }
 console.log('Done!');

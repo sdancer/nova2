@@ -104,8 +104,8 @@ defmodule PursTestRunner do
 
   defp generate_elixir(ast) do
     try do
-      # Generate module code
-      code = Nova.Compiler.CodeGen.gen_module(ast)
+      # Generate module code (gen_module returns a function that takes the AST)
+      code = Nova.Compiler.CodeGen.gen_module().(ast)
       {:ok, code}
     rescue
       e -> {:error, Exception.format(:error, e)}
@@ -181,9 +181,15 @@ defmodule PursTestRunner do
     # Data.Show imports
     |> String.replace(~r/\(show\)\.\(/, "(&Nova.Runtime.show/1).(")
     |> String.replace(~r/(?<!Runtime\.)(?<!&)show\.\(/, "Nova.Runtime.show(")
-    # Control.Assert imports
+    # Control.Assert / Test.Assert imports
+    # Both camelCase (from imports) and snake_case (from codegen) patterns
     |> String.replace(~r/(?<!Runtime\.)assert\.\(/, "Nova.Runtime.assert(")
     |> String.replace(~r/(?<!Runtime\.)assertEqual\.\(/, "Nova.Runtime.assert_equal(")
+    |> String.replace(~r/(?<!Runtime\.)assert_equal\.\(/, "Nova.Runtime.assert_equal(")
+    |> String.replace(~r/(?<!Runtime\.)assertPrime\.\(/, "Nova.Runtime.assert_prime(")
+    |> String.replace(~r/(?<!Runtime\.)assert_prime\.\(/, "Nova.Runtime.assert_prime(")
+    |> String.replace(~r/(?<!Runtime\.)assertThrows\.\(/, "Nova.Runtime.assert_throws(")
+    |> String.replace(~r/(?<!Runtime\.)assert_throws\.\(/, "Nova.Runtime.assert_throws(")
     # Data.Function imports
     |> String.replace(~r/(?<!Runtime\.)flip\.\(/, "Nova.Runtime.flip(")
     |> String.replace(~r/(?<!Runtime\.)const\.\(/, "Nova.Runtime.const_(")
@@ -193,6 +199,13 @@ defmodule PursTestRunner do
     |> String.replace(~r/(?<!Runtime\.)coerce\.\(/, "Nova.Runtime.coerce(")
     # Unit
     |> String.replace(~r/(?<!Runtime\.)\bunit\b(?!\.)/, "Nova.Runtime.unit()")
+    # FFI functions (Data.Function.Uncurried, Partial.Unsafe)
+    |> String.replace(~r/(?<!Runtime\.)unsafePartial\.\(/, "Nova.Runtime.unsafe_partial(")
+    |> String.replace(~r/(?<!Runtime\.)unsafe_partial\.\(/, "Nova.Runtime.unsafe_partial(")
+    |> String.replace(~r/(?<!Runtime\.)runFn2\.\(/, "Nova.Runtime.run_fn2(")
+    |> String.replace(~r/(?<!Runtime\.)run_fn2\.\(/, "Nova.Runtime.run_fn2(")
+    |> String.replace(~r/(?<!Runtime\.)mkFn2\.\(/, "Nova.Runtime.mk_fn2(")
+    |> String.replace(~r/(?<!Runtime\.)mk_fn2\.\(/, "Nova.Runtime.mk_fn2(")
     # Type class methods that may be imported from Prelude
     |> String.replace(~r/\(pure\)\.\(/, "(&Nova.Runtime.pure/1).(")
     |> String.replace(~r/(?<!Runtime\.)pure\.\(/, "Nova.Runtime.pure(")

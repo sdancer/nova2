@@ -127,6 +127,15 @@ The Nova MCP server (`nova mcp`) exposes the compiler as a service for AI agents
 
 **Available MCP tools:** create_namespace, delete_namespace, list_namespaces, add_declaration, update_declaration, remove_declaration, list_declarations, get_declaration, validate_namespace, get_type, get_diagnostics, get_completions, add_import, list_imports, load_file, compile_file, compile_namespace, load_compiler_core, compile_compiler, validate_compiler
 
+## Development Philosophy
+
+**Root Cause Analysis Over Quick Fixes:** Since this is a compiler project, always investigate and fix the root cause of problems rather than applying band-aid patches or workarounds. For example:
+- If generated code has issues, fix the code generator (CodeGen.purs) rather than patching the output
+- If tests fail due to missing runtime functions, add proper implementations rather than test-specific hacks
+- Time is not a constraint - thoroughness and correctness are more important than speed
+
+**No Workarounds in Test Runners:** Test infrastructure should execute generated code as-is. Never add string replacements, regex patches, or injected code to make tests pass. If tests fail, the fix belongs in the compiler source.
+
 ## Backlog & Known Issues
 
 See `BACKLOG.md` for:

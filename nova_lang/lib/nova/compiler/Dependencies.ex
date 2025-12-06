@@ -249,7 +249,7 @@ defmodule Nova.Compiler.Dependencies do
         :nothing -> acc
         {:just, dependents} -> Nova.Map.insert(dep_id, (Nova.Set.delete(decl_id, dependents)), acc)
       end end end), graph.reverse, deps_array)
-      reverse_prime = Nova.Map.delete(decl_id, reverse)
+      reverse_prime = Nova.Map.delete(decl_id, (&Nova.Runtime.reverse/1))
       %{forward: forward, reverse: reverse_prime}
   end
 

@@ -51,9 +51,10 @@ type ManagedDecl =
   }
 
 -- | Generate a DeclId from components
+-- Version is ignored for now (always 0) to avoid needing Show typeclass
 makeDeclId :: String -> DeclKind -> String -> Int -> DeclId
-makeDeclId namespace kind name version =
-  namespace <> ":" <> kindToString kind <> ":" <> name <> ":" <> show version
+makeDeclId namespace kind name _version =
+  namespace <> ":" <> kindToString kind <> ":" <> name <> ":0"
 
 -- | Convert DeclKind to string for DeclId
 kindToString :: DeclKind -> String

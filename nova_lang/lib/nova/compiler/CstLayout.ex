@@ -124,7 +124,7 @@ end
           end
         _ -> state
       end end end
-      indented_p = Nova.Runtime.const((&is_indented/1))
+      indented_p = fn auto_p0 -> Nova.Runtime.const((&is_indented/1), auto_p0) end
       in_p = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {_, :lyt_let} -> false
         {_, :lyt_ado} -> false
