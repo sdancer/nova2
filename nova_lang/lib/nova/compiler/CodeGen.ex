@@ -973,6 +973,10 @@ end
       "Data.Tuple" -> true
       "Data.Map" -> true
       "Data.Set" -> true
+      "Effect" -> true
+      "Effect.Console" -> true
+      "Test.Assert" -> true
+      "Control.Assert" -> true
       _ -> false
     end
   end
