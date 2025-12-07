@@ -1262,9 +1262,18 @@ end))), fn pat_bind ->
 
 
   def parse_expr_parens() do
-    Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(wrapped(tok_left_paren(), parse_expr(), tok_right_paren()), fn w ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_parens(w)))
-  end) end)
+    
+      parse_expr_op_section =    Nova.Runtime.bind(tok_left_paren(), fn _ ->
+     Nova.Runtime.bind(tok_operator(), fn op ->
+       Nova.Runtime.bind(tok_right_paren(), fn _ ->
+         Nova.Runtime.pure((Nova.Compiler.Cst.expr_op_name(op)))
+       end)
+     end)
+   end)
+      parse_expr_parens_normal = Control.Lazy.defer(fn _ ->    Nova.Runtime.bind(wrapped(tok_left_paren(), parse_expr(), tok_right_paren()), fn w ->
+     Nova.Runtime.pure((Nova.Compiler.Cst.expr_parens(w)))
+   end) end)
+      Control.Lazy.defer(fn _ -> Nova.Runtime.alt(parse_expr_op_section, parse_expr_parens_normal) end)
   end
 
 

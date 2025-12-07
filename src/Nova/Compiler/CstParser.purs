@@ -902,10 +902,21 @@ parseRecordFieldFull = Control.Lazy.defer \_ -> do
 parseRecordPun :: Parser (Cst.RecordLabeled (Cst.Expr Void))
 parseRecordPun = Cst.RecordPun <$> tokLowerName
 
+-- | Parse operator section like (+) or parenthesized expression
 parseExprParens :: Parser (Cst.Expr Void)
-parseExprParens = Control.Lazy.defer \_ -> do
-  w <- wrapped tokLeftParen parseExpr tokRightParen
-  pure (Cst.ExprParens w)
+parseExprParens = Control.Lazy.defer \_ -> parseExprOpSection <|> parseExprParensNormal
+  where
+    -- | Parse operator section: ( operator ) -> ExprOpName
+    parseExprOpSection = do
+      _ <- tokLeftParen
+      op <- tokOperator
+      _ <- tokRightParen
+      pure (Cst.ExprOpName op)
+
+    -- | Parse normal parenthesized expression
+    parseExprParensNormal = Control.Lazy.defer \_ -> do
+      w <- wrapped tokLeftParen parseExpr tokRightParen
+      pure (Cst.ExprParens w)
 
 -- ============================================================================
 -- Binder (Pattern) Parsers
