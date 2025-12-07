@@ -24,7 +24,7 @@ defmodule Nova.Compiler.CstParser do
   # @type parse_result :: either()(string())((tuple()(a)(token_stream())))
 
   # Newtype: Parser
-  def parser(arg0), do: {:'parser', arg0}
+  def parser(arg0), do: {:parser, arg0}
 
 
 
@@ -113,7 +113,7 @@ defmodule Nova.Compiler.CstParser do
 
 
   def token(expected) do
-    satisfy((fn __x__ -> (__x__ == expected) end))
+    satisfy((fn x__ -> (x__ == expected) end))
   end
 
 

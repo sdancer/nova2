@@ -951,14 +951,14 @@ end end end
         arity = get_lambda_arity(bind.value)
         val = gen_expr_letrec(ctx_prime, bind.value)
         Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(atom(bind_name), "/"), Prelude.show(arity)), " = "), val) end end
-      gen_letrec_clause_as_case = Nova.Runtime.fix3(fn gen_letrec_clause_as_case -> fn ctx_prime -> fn _param_names -> fn bind -> case bind.value do
+      gen_letrec_clause_as_case = Nova.Runtime.fix3(fn gen_letrec_clause_as_case -> fn ctx_prime -> fn param_names_prime -> fn bind -> case bind.value do
         {:expr_lambda, pats, body} -> 
             pats_result = gen_pats_with_counter((Nova.Array.from_foldable(pats)), 0)
             ctx_with_params = Data.Foldable.foldr((&add_locals_from_pattern/2), ctx_prime, pats)
             pat_tuple = Nova.Runtime.append(Nova.Runtime.append("{", Data.Array.intercalate(", ", pats_result.strs)), "}")
             body_str = gen_expr(ctx_with_params, body)
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("        <", pat_tuple), "> when 'true' -> "), body_str)
-        {:expr_parens, e} -> gen_letrec_clause_as_case.(ctx_prime).(_param_names).((%{bind | value: e}))
+        {:expr_parens, e} -> gen_letrec_clause_as_case.(ctx_prime).(param_names_prime).((%{bind | value: e}))
         _ -> Nova.Runtime.append("        <_W0> when 'true' -> ", gen_expr(ctx_prime, bind.value))
       end  end end end end)
       gen_letrec_def_grouped = fn ctx_prime -> fn group -> case group.binds do

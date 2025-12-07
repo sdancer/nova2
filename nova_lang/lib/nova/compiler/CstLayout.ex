@@ -228,14 +228,14 @@ end end
               if is_top_decl(tok_pos, stk_prime) do
                 (push_stack.(tok_pos).(:lyt_top_decl)).(state_prime)
               end
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).(state_prime)
+            state_prime -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).(state_prime)
           end
         {:tok_lower_name, :nothing, "class"} -> case (insert_default).(state) do
             ({:tuple, stk_prime, _}) = state_prime ->
               if is_top_decl(tok_pos, stk_prime) do
                 (push_stack.(tok_pos).(:lyt_top_decl_head)).(state_prime)
               end
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).(state_prime)
+            state_prime -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).(state_prime)
           end
         {:tok_lower_name, :nothing, "where"} -> case stack do
             [{:tuple, _, :lyt_top_decl_head} | stk_prime] -> (insert_start.(:lyt_where)).((insert_token.(src)).({:tuple, stk_prime, (Data.Tuple.snd(state))}))
@@ -247,9 +247,9 @@ end end
             {:tuple, ([{:tuple, pos1, lyt} | stk_prime]), acc_prime} -> if is_indented(lyt) do
                 (insert_token.(src)).((insert_end.(pos1.column)).({:tuple, stk_prime, acc_prime}))
               else
-                (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
+                (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state))
               end
-            _ -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
+            _ -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state))
           end
         {:tok_lower_name, :nothing, "let"} -> (insert_kw_property.(let_next)).(state)
         {:tok_lower_name, _, "do"} -> (insert_kw_property.((insert_start.(:lyt_do)))).(state)
@@ -257,12 +257,12 @@ end end
         {:tok_lower_name, :nothing, "case"} -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_case)))).(state)
         {:tok_lower_name, :nothing, "of"} -> case collapse.(indented_p).(state) do
             {:tuple, ([{:tuple, _, :lyt_case} | stk_prime]), acc_prime} -> (push_stack.(next_pos).(:lyt_case_binders)).((insert_start.(:lyt_of)).((insert_token.(src)).({:tuple, stk_prime, acc_prime})))
-            state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state_prime))
+            state_prime -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state_prime))
           end
         {:tok_lower_name, :nothing, "if"} -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_if)))).(state)
         {:tok_lower_name, :nothing, "then"} -> case (collapse.(indented_p)).(state) do
             {:tuple, ([{:tuple, _, :lyt_if} | stk_prime]), acc_prime} -> (push_stack.(tok_pos).(:lyt_then)).((insert_token.(src)).({:tuple, stk_prime, acc_prime}))
-            _ -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
+            _ -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state))
           end
         {:tok_lower_name, :nothing, "else"} -> case (collapse.(indented_p)).(state) do
             {:tuple, ([{:tuple, _, :lyt_then} | stk_prime]), acc_prime} -> (insert_token.(src)).({:tuple, stk_prime, acc_prime})
@@ -271,7 +271,7 @@ end end
                   if is_top_decl(tok_pos, stk_prime) do
                     (insert_token.(src)).(state_prime)
                   end
-                state_prime -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_token.(src)).((insert_sep).(state_prime)))
+                state_prime -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_token.(src)).((insert_sep).(state_prime)))
               end
           end
         :tok_forall -> (insert_kw_property.((push_stack.(tok_pos).(:lyt_forall)))).(state)
@@ -303,11 +303,11 @@ end end
         :tok_left_paren -> (push_stack.(tok_pos).(:lyt_paren)).((insert_default).(state))
         :tok_left_brace -> (push_stack.(tok_pos).(:lyt_property)).((push_stack.(tok_pos).(:lyt_brace)).((insert_default).(state)))
         :tok_left_square -> (push_stack.(tok_pos).(:lyt_square)).((insert_default).(state))
-        :tok_right_paren -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_paren) end))).((collapse.(indented_p)).(state)))
-        :tok_right_brace -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_brace) end))).((pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((collapse.(indented_p)).(state))))
-        :tok_right_square -> (insert_token.(src)).((pop_stack.((fn __x__ -> (__x__ == :lyt_square) end))).((collapse.(indented_p)).(state)))
-        {:tok_string, _, _} -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
-        {:tok_lower_name, :nothing, _} -> (pop_stack.((fn __x__ -> (__x__ == :lyt_property) end))).((insert_default).(state))
+        :tok_right_paren -> (insert_token.(src)).((pop_stack.((fn x__ -> (x__ == :lyt_paren) end))).((collapse.(indented_p)).(state)))
+        :tok_right_brace -> (insert_token.(src)).((pop_stack.((fn x__ -> (x__ == :lyt_brace) end))).((pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((collapse.(indented_p)).(state))))
+        :tok_right_square -> (insert_token.(src)).((pop_stack.((fn x__ -> (x__ == :lyt_square) end))).((collapse.(indented_p)).(state)))
+        {:tok_string, _, _} -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state))
+        {:tok_lower_name, :nothing, _} -> (pop_stack.((fn x__ -> (x__ == :lyt_property) end))).((insert_default).(state))
         {:tok_operator, _, _} -> (insert_token.(src)).((insert_sep).((collapse.(offside_end_p)).(state)))
         _ -> (insert_default).(state)
       end end

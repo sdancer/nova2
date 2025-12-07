@@ -909,7 +909,7 @@ genLetBindsWithBody ctx binds body =
     -- Generate a letrec clause as a case clause
     -- Extracts patterns from the lambda and generates a case clause
     genLetrecClauseAsCase :: CoreCtx -> Array String -> LetBind -> String
-    genLetrecClauseAsCase ctx' _paramNames bind =
+    genLetrecClauseAsCase ctx' paramNames' bind =
       case bind.value of
         ExprLambda pats body ->
           let patsResult = genPatsWithCounter (Array.fromFoldable pats) 0
@@ -917,7 +917,7 @@ genLetBindsWithBody ctx binds body =
               ctxWithParams = foldr addLocalsFromPattern ctx' pats
               bodyStr = genExpr ctxWithParams body
           in "        <" <> patTuple <> "> when 'true' -> " <> bodyStr
-        ExprParens e -> genLetrecClauseAsCase ctx' _paramNames (bind { value = e })
+        ExprParens e -> genLetrecClauseAsCase ctx' paramNames' (bind { value = e })
         _ ->
           -- Shouldn't happen - we only call this for lambda bindings
           "        <_W0> when 'true' -> " <> genExpr ctx' bind.value

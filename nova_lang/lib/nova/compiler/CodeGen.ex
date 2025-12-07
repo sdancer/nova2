@@ -1734,11 +1734,11 @@ end
   case l do
   _ ->
     cond do
-      is_underscore.(l) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (__x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ") end")
+      is_underscore.(l) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn x__ -> (x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ") end")
       true -> case r do
       _ ->
         cond do
-          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
+          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " x__) end")
           true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
@@ -1793,7 +1793,7 @@ end
   _ -> case r do
       _ ->
         cond do
-          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
+          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " x__) end")
           true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
@@ -1902,16 +1902,16 @@ end
   def gen_expr_prime(_, _, ({:expr_section, op})) do
     case Nova.String.strip_prefix((Nova.String.pattern(".")), op) do
       {:just, field} -> Nova.Runtime.append("& &1.", snake_case(field))
-      :nothing -> Nova.Runtime.append(Nova.Runtime.append("fn __x__, __y__ -> (__x__ ", gen_bin_op(op)), " __y__) end")
+      :nothing -> Nova.Runtime.append(Nova.Runtime.append("fn x__, y__ -> (x__ ", gen_bin_op(op)), " y__) end")
     end
   end
 
   def gen_expr_prime(ctx, _, ({:expr_section_left, expr, op})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, expr)), " "), gen_bin_op(op)), " __x__) end")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn x__ -> (", gen_expr_prime(ctx, 0, expr)), " "), gen_bin_op(op)), " x__) end")
   end
 
   def gen_expr_prime(ctx, _, ({:expr_section_right, op, expr})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (__x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, expr)), ") end")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn x__ -> (x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, expr)), ") end")
   end
 
 
@@ -2899,7 +2899,7 @@ end
 
 
   def gen_newtype(nt) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  # Newtype: ", nt.name), "\n"), "  def "), snake_case(nt.constructor)), "(arg0), do: {:'"), snake_case(nt.constructor)), "', arg0}")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  # Newtype: ", nt.name), "\n"), "  def "), snake_case(nt.constructor)), "(arg0), do: {:"), snake_case(nt.constructor)), ", arg0}")
   end
 
 

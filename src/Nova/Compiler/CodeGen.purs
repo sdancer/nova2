@@ -1507,12 +1507,12 @@ genExpr' ctx _ (ExprBinOp op l r) =
         _ -> false
   in case l of
     _ | isUnderscore l ->
-      -- Left section: (_ op r) -> fn __x__ -> __x__ op r end
-      "fn __x__ -> (__x__ " <> genBinOp op <> " " <> genExpr' ctx 0 r <> ") end"
+      -- Left section: (_ op r) -> fn x__ -> x__ op r end
+      "fn x__ -> (x__ " <> genBinOp op <> " " <> genExpr' ctx 0 r <> ") end"
     _ -> case r of
       _ | isUnderscore r ->
-        -- Right section: (l op _) -> fn __x__ -> l op __x__ end
-        "fn __x__ -> (" <> genExpr' ctx 0 l <> " " <> genBinOp op <> " __x__) end"
+        -- Right section: (l op _) -> fn x__ -> l op x__ end
+        "fn x__ -> (" <> genExpr' ctx 0 l <> " " <> genBinOp op <> " x__) end"
       _ ->
         -- Normal binary operation
         -- Check if this is a backtick function call (contains . or starts with uppercase)
@@ -1586,15 +1586,15 @@ genExpr' _ _ (ExprSection op) =
   -- Check if it's a record accessor (.field) vs a binary operator section
   case String.stripPrefix (String.Pattern ".") op of
     Just field -> "& &1." <> snakeCase field  -- Record accessor: .id -> & &1.id
-    Nothing -> "fn __x__, __y__ -> (__x__ " <> genBinOp op <> " __y__) end"  -- Binary operator section: (+) -> fn x, y -> x + y
+    Nothing -> "fn x__, y__ -> (x__ " <> genBinOp op <> " y__) end"  -- Binary operator section: (+) -> fn x, y -> x + y
 
 -- Left section: (1 +) => fn x -> 1 + x  (using infix syntax)
 genExpr' ctx _ (ExprSectionLeft expr op) =
-  "fn __x__ -> (" <> genExpr' ctx 0 expr <> " " <> genBinOp op <> " __x__) end"
+  "fn x__ -> (" <> genExpr' ctx 0 expr <> " " <> genBinOp op <> " x__) end"
 
 -- Right section: (+ 1) => fn x -> x + 1  (using infix syntax)
 genExpr' ctx _ (ExprSectionRight op expr) =
-  "fn __x__ -> (__x__ " <> genBinOp op <> " " <> genExpr' ctx 0 expr <> ") end"
+  "fn x__ -> (x__ " <> genBinOp op <> " " <> genExpr' ctx 0 expr <> ") end"
 
 -- | Generate literal
 genLiteral :: Literal -> String
@@ -2294,7 +2294,7 @@ genDataType dt =
 genNewtype :: NewtypeDecl -> String
 genNewtype nt =
   "  # Newtype: " <> nt.name <> "\n" <>
-  "  def " <> snakeCase nt.constructor <> "(arg0), do: {:'" <> snakeCase nt.constructor <> "', arg0}"
+  "  def " <> snakeCase nt.constructor <> "(arg0), do: {:" <> snakeCase nt.constructor <> ", arg0}"
 
 -- | Generate type class declaration (just a comment in Elixir)
 genTypeClass :: TypeClass -> String

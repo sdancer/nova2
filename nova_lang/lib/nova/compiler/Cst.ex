@@ -66,19 +66,19 @@ defmodule Nova.Compiler.Cst do
   # @type source_token :: %{range: source_range(), leading_comments: list()(string()), trailing_comments: list()(string()), value: token()}
 
   # Newtype: Ident
-  def ident(arg0), do: {:'ident', arg0}
+  def ident(arg0), do: {:ident, arg0}
 
   # Newtype: Proper
-  def proper(arg0), do: {:'proper', arg0}
+  def proper(arg0), do: {:proper, arg0}
 
   # Newtype: Label
-  def label(arg0), do: {:'label', arg0}
+  def label(arg0), do: {:label, arg0}
 
   # Newtype: Operator
-  def operator(arg0), do: {:'operator', arg0}
+  def operator(arg0), do: {:operator, arg0}
 
   # Newtype: ModuleName
-  def module_name(arg0), do: {:'module_name', arg0}
+  def module_name(arg0), do: {:module_name, arg0}
 
   # @type name :: %{token: source_token(), name: a}
 
