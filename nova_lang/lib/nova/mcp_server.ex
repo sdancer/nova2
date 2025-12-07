@@ -1352,7 +1352,7 @@ defmodule Nova.MCPServer do
 
         case Nova.Compiler.Parser.parse_module(tokens) do
           {:right, {:tuple, mod, _rest}} ->
-            code = Nova.Compiler.CodeGen.gen_module(mod)
+            code = Nova.Compiler.CodeGen.gen_module().(mod)
             {:ok, %{
               module_name: mod.name,
               elixir_code: code,
@@ -1384,7 +1384,7 @@ defmodule Nova.MCPServer do
             end)
 
             mod = %{name: namespace, declarations: declarations}
-            code = Nova.Compiler.CodeGen.gen_module(mod)
+            code = Nova.Compiler.CodeGen.gen_module().(mod)
 
             {:ok, %{
               namespace: namespace,
@@ -1399,7 +1399,7 @@ defmodule Nova.MCPServer do
 
       mod ->
         # Use the pre-loaded module AST directly
-        code = Nova.Compiler.CodeGen.gen_module(mod)
+        code = Nova.Compiler.CodeGen.gen_module().(mod)
 
         {:ok, %{
           namespace: namespace,

@@ -17,6 +17,11 @@ import Nova.Compiler.Types as Types
 import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl)
 import Nova.Compiler.Unify (UnifyError, unify)
 
+-- | FFI helper for converting Int to String
+-- This avoids shadowing issues when a local 'show' instance is defined
+intToString :: Int -> String
+intToString = show
+
 -- | Type checking error
 data TCError
   = UnifyErr UnifyError
@@ -53,7 +58,7 @@ generalize env ty =
   let envFree = freeTypeVarsEnv env
       tyFree = freeTypeVars ty
       freeIds = Set.toUnfoldable (Set.difference tyFree envFree) :: Array Int
-      vars = map (\i -> mkTVar i ("t" <> show i)) freeIds
+      vars = map (\i -> mkTVar i ("t" <> intToString i)) freeIds
   in mkScheme vars ty
 
 -- | Infer type of a literal
@@ -1133,7 +1138,7 @@ extractExports decls =
       -- Foreign imports have explicit type signatures, so we can add them
       let ty = typeExprToType Map.empty fi.typeSignature
           freeVars = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
-          tvars = map (\id -> { id: id, name: "a" <> show id }) freeVars
+          tvars = map (\id -> { id: id, name: "a" <> intToString id }) freeVars
           scheme = mkScheme tvars ty
       in exp { values = Map.insert fi.functionName scheme exp.values }
     collectExport exp _ = exp
@@ -1328,7 +1333,7 @@ mergeMultiClauseFunctions decls = goMerge decls []
               -- All clauses should have same number of parameters
               numParams = List.length first.parameters
               -- Create fresh parameter names
-              paramNames = map (\i -> "__arg" <> show i) (List.range 0 (numParams - 1))
+              paramNames = map (\i -> "__arg" <> intToString i) (List.range 0 (numParams - 1))
               paramPats = map PatVar paramNames
               paramVars = map ExprVar paramNames
               -- Build case clauses from each function clause
@@ -1359,7 +1364,7 @@ mergeMultiClauseFunctions decls = goMerge decls []
     clauseToTupleCase _ func =
       let n = List.length func.parameters
           -- Use "Tuple" for 2 params, "Tuple3" for 3, etc. to match PureScript conventions
-          tupName = if n == 2 then "Tuple" else "Tuple" <> show n
+          tupName = if n == 2 then "Tuple" else "Tuple" <> intToString n
       in if n > 1
          then Just { pattern: PatCon tupName func.parameters, body: func.body, guard: Nothing }
          else clauseToCaseClause Nil func

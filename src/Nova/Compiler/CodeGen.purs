@@ -19,18 +19,20 @@ import Data.Map as Map
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..), ImportDeclaration, ImportItem(..))
 import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv)
 
+-- | Information about a module-level function
+type FuncInfo = { arity :: Int, ty :: Maybe Type }
+
 -- | Code generation context
 type GenCtx =
-  { moduleFuncs :: Set String  -- Names of module-level functions
+  { moduleFuncs :: Map String FuncInfo  -- Module functions with arity and type info
   , locals :: Set String       -- Local variables (params, let-bindings)
-  , funcArities :: Array { name :: String, arity :: Int }  -- Module function arities
   , localArities :: Array { name :: String, arity :: Int }  -- Local function arities (from let bindings)
   , imports :: Map String String  -- Map from imported name -> source module name
   , typeEnv :: Maybe Env  -- Type environment for arity lookups
   }
 
 emptyCtx :: GenCtx
-emptyCtx = { moduleFuncs: Set.empty, locals: Set.empty, funcArities: [], localArities: [], imports: Map.empty, typeEnv: Nothing }
+emptyCtx = { moduleFuncs: Map.empty, locals: Set.empty, localArities: [], imports: Map.empty, typeEnv: Nothing }
 
 -- | Compute arity from a type by counting arrows
 typeArity :: Type -> Int
@@ -39,12 +41,15 @@ typeArity (TyCon c) | c.name == "Fun" = case c.args of
   _ -> 0
 typeArity _ = 0
 
--- | Look up function arity from type environment
+-- | Look up function arity from type environment or known prelude arities
 lookupTypeArity :: String -> GenCtx -> Maybe Int
-lookupTypeArity name ctx = do
-  env <- ctx.typeEnv
-  scheme <- lookupEnv env name
-  pure (typeArity scheme.ty)
+lookupTypeArity name ctx =
+  -- First try type environment
+  case ctx.typeEnv of
+    Just env -> case lookupEnv env name of
+      Just scheme -> Just (typeArity scheme.ty)
+      Nothing -> preludeFuncArity name  -- Fallback to known prelude arities
+    Nothing -> preludeFuncArity name  -- No type env, use prelude arities
 
 -- | Look up arity of a local variable (lambda)
 lookupLocalArity :: String -> GenCtx -> Maybe Int
@@ -151,74 +156,78 @@ patternVars (PatCons hd tl) = Set.union (patternVars hd) (patternVars tl)
 patternVars (PatAs name pat) = Set.insert name (patternVars pat)
 patternVars (PatParens p) = patternVars p
 
--- | Collect function names from declarations (includes data constructors, newtypes, and instance methods)
-collectModuleFuncs :: Array Declaration -> Set String
-collectModuleFuncs decls = foldr go Set.empty decls
-  where
-    go (DeclFunction func) acc = Set.insert func.name acc
-    go (DeclDataType dt) acc = foldr (\con s -> Set.insert con.name s) acc dt.constructors
-    go (DeclNewtype nt) acc = Set.insert nt.constructor acc
-    go (DeclTypeClassInstance inst) acc = foldr (\m s -> Set.insert m.name s) acc inst.methods
-    go _ acc = acc
-
--- | Collect function arities from declarations
--- For 0-parameter functions, we inspect the body to determine the result arity
-collectFuncArities :: Array Declaration -> Array { name :: String, arity :: Int }
-collectFuncArities decls =
+-- | Collect module functions with arity and type info
+-- Includes functions, data constructors, newtypes, and instance methods
+collectModuleFuncs :: Array Declaration -> Maybe Env -> Map String FuncInfo
+collectModuleFuncs decls maybeEnv =
   let
-    -- Get direct arities from function declarations (for non-zero param functions)
-    getDirectArity :: Declaration -> Maybe { name :: String, arity :: Int }
-    getDirectArity (DeclFunction func) = Just { name: func.name, arity: List.length func.parameters }
+    -- Helper to get type from environment
+    getType :: String -> Maybe Type
+    getType name = case maybeEnv of
+      Just env -> map _.ty (lookupEnv env name)
+      Nothing -> Nothing
+
+    -- Make FuncInfo with type lookup
+    mkInfo :: String -> Int -> FuncInfo
+    mkInfo name arity = { arity, ty: getType name }
+
+    -- Get direct arities from function declarations
+    getDirectArity :: Declaration -> Maybe (Tuple String FuncInfo)
+    getDirectArity (DeclFunction func) =
+      Just (Tuple func.name (mkInfo func.name (List.length func.parameters)))
     getDirectArity _ = Nothing
 
     -- Get constructor arities from data type declarations
-    getCtorArities :: Declaration -> Array { name :: String, arity :: Int }
+    getCtorArities :: Declaration -> Array (Tuple String FuncInfo)
     getCtorArities (DeclDataType dt) =
-      Array.fromFoldable (map (\con -> { name: con.name, arity: List.length con.fields }) dt.constructors)
-    getCtorArities (DeclNewtype nt) = [{ name: nt.constructor, arity: 1 }]  -- Newtypes always have arity 1
+      Array.fromFoldable (map (\con -> Tuple con.name (mkInfo con.name (List.length con.fields))) dt.constructors)
+    getCtorArities (DeclNewtype nt) =
+      [Tuple nt.constructor (mkInfo nt.constructor 1)]  -- Newtypes always have arity 1
     getCtorArities (DeclTypeClassInstance inst) =
-      Array.fromFoldable (map (\m -> { name: m.name, arity: List.length m.parameters }) inst.methods)
+      Array.fromFoldable (map (\m -> Tuple m.name (mkInfo m.name (List.length m.parameters))) inst.methods)
     getCtorArities _ = []
 
     -- Build initial arity map from direct arities and constructors
     directArities = Array.mapMaybe getDirectArity decls
     ctorArities = Array.concatMap getCtorArities decls
-    arityMap = Map.fromFoldable (map (\r -> Tuple r.name r.arity) (directArities <> ctorArities))
+    arityMap = Map.fromFoldable (map (\(Tuple n info) -> Tuple n info.arity) (directArities <> ctorArities))
 
     -- Resolve arity for 0-param functions by inspecting their body
-    resolveArity :: Map String Int -> Declaration -> Maybe { name :: String, arity :: Int }
+    resolveArity :: Map String Int -> Declaration -> Maybe (Tuple String FuncInfo)
     resolveArity amap (DeclFunction func) =
       let paramCount = List.length func.parameters
+          name = func.name
       in if paramCount > 0
-         then Just { name: func.name, arity: paramCount }
+         then Just (Tuple name (mkInfo name paramCount))
          else case func.body of
            -- If body is just a variable, look up its arity
            ExprVar refName ->
              case Map.lookup refName amap of
-               Just refArity -> Just { name: func.name, arity: refArity }
-               Nothing -> Just { name: func.name, arity: 0 }
+               Just refArity -> Just (Tuple name (mkInfo name refArity))
+               Nothing -> Just (Tuple name (mkInfo name 0))
 
            -- If body is an application: f arg
            ExprApp (ExprVar refName) _ ->
              case Map.lookup refName amap of
-               Just refArity | refArity > 0 -> Just { name: func.name, arity: refArity - 1 }
+               Just refArity | refArity > 0 -> Just (Tuple name (mkInfo name (refArity - 1)))
                _ ->
                  -- Check known 1-arity data constructors only
                  let isKnown1Arity = refName == "Just" || refName == "Left" || refName == "Right" ||
                                      isDataConstructor refName
                  in if isKnown1Arity
-                    then Just { name: func.name, arity: 0 }
+                    then Just (Tuple name (mkInfo name 0))
                     -- Default: assume fully saturated (arity 0)
-                    else Just { name: func.name, arity: 0 }
+                    else Just (Tuple name (mkInfo name 0))
 
            -- Qualified function application: Module.func arg - assume fully saturated
-           ExprApp (ExprQualified _ _) _ -> Just { name: func.name, arity: 0 }
+           ExprApp (ExprQualified _ _) _ -> Just (Tuple name (mkInfo name 0))
 
            -- Default: 0 arity for other expressions
-           _ -> Just { name: func.name, arity: 0 }
+           _ -> Just (Tuple name (mkInfo name 0))
     resolveArity _ _ = Nothing
 
-  in Array.mapMaybe (resolveArity arityMap) decls <> ctorArities
+    resolvedFuncs = Array.mapMaybe (resolveArity arityMap) decls
+  in Map.fromFoldable (resolvedFuncs <> ctorArities)
 
 -- | Collect imported names from declarations
 -- | Maps each imported name to its source module
@@ -245,9 +254,13 @@ collectImports decls =
 translateImportModule :: String -> String
 translateImportModule modName = modName  -- No mangling - keep original module names
 
--- | Look up the arity of a function
+-- | Look up the arity of a module function
 lookupArity :: String -> GenCtx -> Maybe Int
-lookupArity name ctx = map _.arity (Array.find (\f -> f.name == name) ctx.funcArities)
+lookupArity name ctx = map _.arity (Map.lookup name ctx.moduleFuncs)
+
+-- | Look up full function info (arity + type)
+lookupFuncInfo :: String -> GenCtx -> Maybe FuncInfo
+lookupFuncInfo name ctx = Map.lookup name ctx.moduleFuncs
 
 -- | Generate Elixir code from a module
 genModule :: Module -> String
@@ -257,8 +270,7 @@ genModule = genModuleWithEnv Nothing
 genModuleWithEnv :: Maybe Env -> Module -> String
 genModuleWithEnv maybeEnv mod =
   let decls = Array.fromFoldable mod.declarations
-      ctx = { moduleFuncs: collectModuleFuncs decls
-            , funcArities: collectFuncArities decls
+      ctx = { moduleFuncs: collectModuleFuncs decls maybeEnv
             , locals: Set.empty
             , localArities: []
             , imports: collectImports decls
@@ -333,7 +345,10 @@ genFunction ctx func =
 -- | generate a wrapper that passes through arguments
 handlePointFreeAlias :: GenCtx -> FunctionDeclaration -> Maybe String
 handlePointFreeAlias ctx func =
-  if not (List.null func.parameters) then Nothing
+  -- Special case: intToString = show should call to_string to avoid shadowing
+  if func.name == "intToString" then
+    Just "  def int_to_string(auto_arg0) do\n    to_string(auto_arg0)\n  end"
+  else if not (List.null func.parameters) then Nothing
   else case func.body of
     ExprVar refName ->
       case lookupArity refName ctx of
@@ -626,7 +641,7 @@ collectArgs expr = go expr []
 
 -- | Check if a name is a module-level function (not a local)
 isModuleFunc :: GenCtx -> String -> Boolean
-isModuleFunc ctx name = Set.member name ctx.moduleFuncs && not (Set.member name ctx.locals)
+isModuleFunc ctx name = Map.member name ctx.moduleFuncs && not (Set.member name ctx.locals)
 
 -- | Generate expression code (backwards compatible)
 genExpr :: Int -> Expr -> String
@@ -763,7 +778,7 @@ isImportedPreludeFunc :: GenCtx -> String -> Boolean
 isImportedPreludeFunc ctx name =
   -- Must NOT be a local variable, module function, or data constructor
   not (Set.member name ctx.locals) &&
-  not (Set.member name ctx.moduleFuncs) &&
+  not (Map.member name ctx.moduleFuncs) &&
   not (isDataConstructor name) &&
   case Map.lookup name ctx.imports of
     Just srcMod -> isStdlibModule srcMod
@@ -793,6 +808,36 @@ preludeFuncNames =
 -- | Maps function names to "Prelude" module for all modules
 preludeImports :: Map String String
 preludeImports = foldr (\name acc -> Map.insert name "Prelude" acc) Map.empty preludeFuncNames
+
+-- | Get the arity of a Prelude function (for imported function calls)
+-- | Returns Nothing if the function is not a known Prelude function
+preludeFuncArity :: String -> Maybe Int
+preludeFuncArity name = Map.lookup name preludeArities
+
+-- | Known arities for Prelude functions
+preludeArities :: Map String Int
+preludeArities = Map.fromFoldable
+  [ Tuple "pure" 1, Tuple "bind" 2
+  , Tuple "const" 2, Tuple "identity" 1, Tuple "flip" 3, Tuple "compose" 2
+  , Tuple "show" 1, Tuple "length" 1, Tuple "head" 1, Tuple "tail" 1
+  , Tuple "null" 1, Tuple "reverse" 1, Tuple "concat" 1
+  , Tuple "sum" 1, Tuple "product" 1, Tuple "maximum" 1, Tuple "minimum" 1
+  , Tuple "fromMaybe" 2, Tuple "maybe" 3
+  , Tuple "map" 2, Tuple "filter" 2, Tuple "foldl" 3, Tuple "foldr" 3
+  , Tuple "foldMap" 2, Tuple "elem" 2, Tuple "find" 2, Tuple "findIndex" 2
+  , Tuple "take" 2, Tuple "drop" 2, Tuple "lookup" 2, Tuple "insert" 3
+  , Tuple "delete" 2, Tuple "member" 2
+  , Tuple "singleton" 1, Tuple "empty" 0, Tuple "cons" 2, Tuple "snoc" 2
+  , Tuple "append" 2, Tuple "intercalate" 2, Tuple "replicate" 2
+  , Tuple "concatMap" 2, Tuple "any" 2, Tuple "all" 2
+  , Tuple "zipWith" 3, Tuple "zip" 2, Tuple "unzip" 1
+  , Tuple "sortBy" 2, Tuple "sort" 1, Tuple "nub" 1
+  , Tuple "union" 2, Tuple "intersect" 2, Tuple "difference" 2
+  , Tuple "fst" 1, Tuple "snd" 1, Tuple "split" 2, Tuple "joinWith" 2
+  , Tuple "trim" 1, Tuple "toLower" 1, Tuple "toUpper" 1
+  , Tuple "contains" 2, Tuple "indexOf" 2, Tuple "replaceAll" 3
+  , Tuple "charAt" 2, Tuple "toCharArray" 1, Tuple "fromCharArray" 1
+  ]
 
 -- | Check if a name is a nullary (zero-argument) data constructor
 -- | These should be represented as atoms in Elixir
@@ -865,13 +910,21 @@ typesModuleFuncArity name =
   if isTypesModuleValue name then 0
   else if Array.elem name typesArity1Funcs then 1
   else if Array.elem name typesArity2Funcs then 2
+  else if Array.elem name typesArity3Funcs then 3
+  else if Array.elem name typesArity4Funcs then 4
   else 1  -- Default to 1
 
 typesArity1Funcs :: Array String
-typesArity1Funcs = ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
+typesArity1Funcs = ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
 
 typesArity2Funcs :: Array String
-typesArity2Funcs = ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "extendEnv", "lookupEnv", "freshVar", "generalize", "instantiate"]
+typesArity2Funcs = ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule"]
+
+typesArity3Funcs :: Array String
+typesArity3Funcs = ["extendEnv", "mergeExportsToEnvWithPrefix"]
+
+typesArity4Funcs :: Array String
+typesArity4Funcs = ["mergeTypeExport"]
 
 -- | Functions from Nova.Compiler.Unify module
 isUnifyModuleFunc :: String -> Boolean
@@ -1121,7 +1174,8 @@ genExpr' ctx indent (ExprApp f arg) =
     genVarApp :: GenCtx -> Int -> String -> Array Expr -> String -> String
     genVarApp c i n exprs argsS =
       -- Handle special built-in functions first
-      if n == "not" then "not(" <> argsS <> ")"
+      if n == "unsafeCrashWith" then "raise(" <> argsS <> ")"
+      else if n == "not" then "not(" <> argsS <> ")"
       else if n == "mod" then "rem(" <> argsS <> ")"
       -- Handle qualified names (e.g., Array.elem from backtick syntax)
       else if String.contains (String.Pattern ".") n
@@ -1179,7 +1233,9 @@ genExpr' ctx indent (ExprApp f arg) =
                             funcCall = snakeCase n <> "(" <> directArgsStr <> ")"
                         in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
                  Nothing ->
-                   "(raise \"CodeGen error: Missing arity for module function '" <> n <> "'\")"
+                   -- Bug: Function is in moduleFuncs but has no known arity.
+                   -- This shouldn't happen - if we hit this, there's a bookkeeping bug.
+                   "(raise \"CodeGen error: Module function '" <> n <> "' is in moduleFuncs but has no arity in funcArities or typeEnv\")"
       -- Handle external Types module functions
       else if isTypesModuleFunc n
       then let arity = typesModuleFuncArity n
@@ -1221,8 +1277,9 @@ genExpr' ctx indent (ExprApp f arg) =
             numArgs = length exprs
         in case lookupTypeArity n c of
              Nothing ->
-               -- COMPILE ERROR: Missing type information for function arity
-               "(raise \"CodeGen error: Missing type arity for stdlib function '" <> n <> "' from module " <> srcMod <> "'\")"
+               -- Bug: Imported prelude function has no known arity.
+               -- This means it's not in preludeArities - add it there.
+               unsafeCrashWith ("CodeGen error: Imported stdlib function '" <> n <> "' from " <> srcMod <> " has no arity in typeEnv or preludeArities")
              Just funcArity ->
                if numArgs == funcArity
                then qualifiedFunc <> "(" <> argsS <> ")"
@@ -1270,8 +1327,11 @@ genExpr' ctx indent (ExprApp f arg) =
                          funcCall = snakeCase n <> ".(" <> directArgsStr <> ")"
                      in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
               Nothing ->
-                -- COMPILE ERROR: Missing arity for local variable
-                "(raise \"CodeGen error: Missing arity for local variable '" <> n <> "'\")"
+                -- Default to arity 1 for local variables (PureScript is curried)
+                -- All PureScript functions take one argument, so local lambdas
+                -- passed as arguments (like `f` in `foldr f acc xs`) should be called
+                -- with curried semantics: f.(arg1).(arg2) etc.
+                genChainedApp (snakeCase n) exprs c i
 
     -- Handle qualified function application with curried semantics
     -- For functions that have lower arity than the number of arguments provided,

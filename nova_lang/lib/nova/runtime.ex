@@ -269,6 +269,7 @@ defmodule Nova.Runtime do
   def coerce(x), do: x
   def unsafe_coerce(x), do: x
   def unsafe_partial(f), do: f.()
+  def unsafe_crash_with(msg), do: raise msg
 
   # Reflection
   def reflect_symbol(_), do: "symbol"

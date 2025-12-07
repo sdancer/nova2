@@ -93,9 +93,9 @@ defmodule Nova.Compiler.Tokenizer do
     
       go = Nova.Runtime.fix2(fn go -> fn state -> fn acc -> case next_token(state) do
         :nothing -> Nova.Array.reverse(acc)
-        {:just, ({:tuple, tok, state_prime})} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+        {:just, ({:tuple, tok, state_prime})} -> go.(state_prime).((Nova.Array.cons(tok, acc)))
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.((init_state(source))).([])
   end
 
 

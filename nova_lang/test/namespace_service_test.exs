@@ -511,7 +511,7 @@ defmodule Nova.NamespaceServiceTest do
         ]
       }
 
-      generated = Nova.Compiler.CodeGen.gen_module(module)
+      generated = Nova.Compiler.CodeGen.gen_module().(module)
 
       assert generated =~ "defmodule Test.Example do"
       assert generated =~ "def add(x, y) do"

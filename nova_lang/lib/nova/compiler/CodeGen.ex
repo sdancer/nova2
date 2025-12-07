@@ -38,12 +38,14 @@ defmodule Nova.Compiler.CodeGen do
 
   # import Nova.Compiler.Types
 
-  # @type gen_ctx :: %{module_funcs: set()(string()), locals: set()(string()), func_arities: array()(%{name: string(), arity: int()}), local_arities: array()(%{name: string(), arity: int()}), imports: map()(string())(string()), type_env: maybe()(env())}
+  # @type func_info :: %{arity: int(), ty: maybe()(type())}
+
+  # @type gen_ctx :: %{module_funcs: map()(string())(func_info()), locals: set()(string()), local_arities: array()(%{name: string(), arity: int()}), imports: map()(string())(string()), type_env: maybe()(env())}
 
 
 
   def empty_ctx() do
-    %{module_funcs: Nova.Set.empty, locals: Nova.Set.empty, func_arities: [], local_arities: [], imports: Nova.Map.empty, type_env: :nothing}
+    %{module_funcs: Nova.Map.empty, locals: Nova.Set.empty, local_arities: [], imports: Nova.Map.empty, type_env: :nothing}
   end
 
 
@@ -65,11 +67,13 @@ end
 
 
   def lookup_type_arity(name, ctx) do
-      Nova.Runtime.bind(ctx.type_env, fn env ->
-    Nova.Runtime.bind(Nova.Compiler.Types.lookup_env(env, name), fn scheme ->
-      Prelude.pure((type_arity(scheme.ty)))
-    end)
-  end)
+    case ctx.type_env do
+      {:just, env} -> case Nova.Compiler.Types.lookup_env(env, name) do
+          {:just, scheme} -> {:just, (type_arity(scheme.ty))}
+          :nothing -> prelude_func_arity(name)
+        end
+      :nothing -> prelude_func_arity(name)
+    end
   end
 
 
@@ -302,63 +306,60 @@ end
 
 
 
-  def collect_module_funcs(decls) do
+  def collect_module_funcs(decls, maybe_env) do
     
-      go = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {({:decl_function, func}), acc} -> Nova.Set.insert(func.name, acc)
-        {({:decl_data_type, dt}), acc} -> Data.Foldable.foldr((fn con -> fn s -> Nova.Set.insert(con.name, s) end end), acc, dt.constructors)
-        {({:decl_newtype, nt}), acc} -> Nova.Set.insert(nt.constructor, acc)
-        {({:decl_type_class_instance, inst}), acc} -> Data.Foldable.foldr((fn m -> fn s -> Nova.Set.insert(m.name, s) end end), acc, inst.methods)
-        {_, acc} -> acc
-      end end end
-      Data.Foldable.foldr(go, Nova.Set.empty, decls)
-  end
-
-
-
-  def collect_func_arities(decls) do
-    
+      get_type = Nova.Runtime.fix(fn get_type -> fn auto_arg0 -> case auto_arg0 do
+        name -> case maybe_env do
+  {:just, env} -> Prelude.map(& &1.ty, (Nova.Compiler.Types.lookup_env(env, name)))
+  :nothing -> :nothing
+end
+      end end end)
+      mk_info = Nova.Runtime.fix2(fn mk_info -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {name, arity} -> %{arity: arity, ty: get_type.(name)}
+      end end end end)
       get_direct_arity = Nova.Runtime.fix(fn get_direct_arity -> fn auto_arg0 -> case auto_arg0 do
-        ({:decl_function, func}) -> {:just, %{name: func.name, arity: Nova.List.length(func.parameters)}}
+        ({:decl_function, func}) -> {:just, ({:tuple, func.name, (mk_info.(func.name).((Nova.List.length(func.parameters))))})}
         _ -> :nothing
       end end end)
       get_ctor_arities = Nova.Runtime.fix(fn get_ctor_arities -> fn auto_arg0 -> case auto_arg0 do
-        ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Prelude.map((fn con -> %{name: con.name, arity: Nova.List.length(con.fields)} end), dt.constructors)))
-        ({:decl_newtype, nt}) -> [%{name: nt.constructor, arity: 1}]
-        ({:decl_type_class_instance, inst}) -> Nova.Array.from_foldable((Prelude.map((fn m -> %{name: m.name, arity: Nova.List.length(m.parameters)} end), inst.methods)))
+        ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Prelude.map((fn con -> {:tuple, con.name, (mk_info.(con.name).((Nova.List.length(con.fields))))} end), dt.constructors)))
+        ({:decl_newtype, nt}) -> [{:tuple, nt.constructor, (mk_info.(nt.constructor).(1))}]
+        ({:decl_type_class_instance, inst}) -> Nova.Array.from_foldable((Prelude.map((fn m -> {:tuple, m.name, (mk_info.(m.name).((Nova.List.length(m.parameters))))} end), inst.methods)))
         _ -> []
       end end end)
       resolve_arity = Nova.Runtime.fix2(fn resolve_arity -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {amap, ({:decl_function, func})} -> 
   param_count = Nova.List.length(func.parameters)
+  name = func.name
   if (param_count > 0) do
-  {:just, %{name: func.name, arity: param_count}}
+  {:just, ({:tuple, name, (mk_info.(name).(param_count))})}
 else
   case func.body do
     {:expr_var, ref_name} -> case Nova.Map.lookup(ref_name, amap) do
-        {:just, ref_arity} -> {:just, %{name: func.name, arity: ref_arity}}
-        :nothing -> {:just, %{name: func.name, arity: 0}}
+        {:just, ref_arity} -> {:just, ({:tuple, name, (mk_info.(name).(ref_arity))})}
+        :nothing -> {:just, ({:tuple, name, (mk_info.(name).(0))})}
       end
     {:expr_app, ({:expr_var, ref_name}), _} -> case Nova.Map.lookup(ref_name, amap) do
-        {:just, ref_arity} when (ref_arity > 0) -> {:just, %{name: func.name, arity: (ref_arity - 1)}}
+        {:just, ref_arity} when (ref_arity > 0) -> {:just, ({:tuple, name, (mk_info.(name).(((ref_arity - 1))))})}
         _ -> 
             is_known1_arity = ((((ref_name == "Just") or (ref_name == "Left")) or (ref_name == "Right")) or is_data_constructor(ref_name))
             if is_known1_arity do
-  {:just, %{name: func.name, arity: 0}}
+  {:just, ({:tuple, name, (mk_info.(name).(0))})}
 else
-  {:just, %{name: func.name, arity: 0}}
+  {:just, ({:tuple, name, (mk_info.(name).(0))})}
 end
       end
-    {:expr_app, ({:expr_qualified, _, _}), _} -> {:just, %{name: func.name, arity: 0}}
-    _ -> {:just, %{name: func.name, arity: 0}}
+    {:expr_app, ({:expr_qualified, _, _}), _} -> {:just, ({:tuple, name, (mk_info.(name).(0))})}
+    _ -> {:just, ({:tuple, name, (mk_info.(name).(0))})}
   end
 end
         {_, _} -> :nothing
       end end end end)
       direct_arities = Nova.Array.map_maybe(get_direct_arity, decls)
       ctor_arities = Nova.Array.concat_map(get_ctor_arities, decls)
-      arity_map = Nova.Map.from_foldable((Prelude.map((fn r -> {:tuple, r.name, r.arity} end), (Nova.Runtime.append(direct_arities, ctor_arities)))))
-      Nova.Runtime.append(Nova.Array.map_maybe(((raise "CodeGen error: Missing arity for local variable 'resolveArity'")), decls), ctor_arities)
+      arity_map = Nova.Map.from_foldable((Prelude.map((fn ({:tuple, n, info}) -> {:tuple, n, info.arity} end), (Nova.Runtime.append(direct_arities, ctor_arities)))))
+      resolved_funcs = Nova.Array.map_maybe((resolve_arity.(arity_map)), decls)
+      Nova.Map.from_foldable((Nova.Runtime.append(resolved_funcs, ctor_arities)))
   end
 
 
@@ -373,7 +374,7 @@ end
         {({:decl_import, imp}), acc} -> if imp.hiding do
   acc
 else
-  Data.Foldable.foldr(((raise "CodeGen error: Missing arity for local variable 'addItem'")), acc, imp.items)
+  Data.Foldable.foldr((add_item.(imp.module_name)), acc, imp.items)
 end
         {_, acc} -> acc
       end end end
@@ -391,7 +392,13 @@ end
 
 
   def lookup_arity(name, ctx) do
-    Prelude.map(& &1.arity, (Nova.Array.find((fn f -> (f.name == name) end), ctx.func_arities)))
+    Prelude.map(& &1.arity, (Nova.Map.lookup(name, ctx.module_funcs)))
+  end
+
+
+
+  def lookup_func_info(name, ctx) do
+    Nova.Map.lookup(name, ctx.module_funcs)
   end
 
 
@@ -406,7 +413,7 @@ end
     
       decls = Nova.Array.from_foldable(mod_.declarations)
       header = "# This file was auto-generated by the Nova compiler.\n# Do not edit this file manually.\n\n"
-      ctx = %{module_funcs: collect_module_funcs(decls), func_arities: collect_func_arities(decls), locals: Nova.Set.empty, local_arities: [], imports: collect_imports(decls), type_env: maybe_env}
+      ctx = %{module_funcs: collect_module_funcs(decls, maybe_env), locals: Nova.Set.empty, local_arities: [], imports: collect_imports(decls), type_env: maybe_env}
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(header, "defmodule "), elixir_module_name(mod_.name)), " do\n"), Data.Array.intercalate("\n\n", (Prelude.map((fn auto_p0 -> gen_declaration(ctx, auto_p0) end), decls)))), "\nend\n")
   end
 
@@ -501,35 +508,39 @@ end
 
 
   def handle_point_free_alias(ctx, func) do
-    if not((Nova.List.null(func.parameters))) do
-      :nothing
+    if (func.name == "intToString") do
+      {:just, "  def int_to_string(auto_arg0) do\n    to_string(auto_arg0)\n  end"}
     else
-      case func.body do
-        {:expr_var, ref_name} -> case lookup_arity(ref_name, ctx) do
-            {:just, arity} when (arity > 0) -> 
-                arg_names = Prelude.map((fn i -> Nova.Runtime.append("auto_arg", Prelude.show(i)) end), (Nova.Array.range(0, ((arity - 1)))))
-                args_str = Data.Array.intercalate(", ", arg_names)
-                {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "("), args_str), ") do\n    "), snake_case(ref_name)), "("), args_str), ")\n  end"))}
-            _ -> :nothing
-          end
-        _ -> case func.body do
-            {:expr_app, ({:expr_qualified, mod_, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
-                
-                  arg_code = gen_expr_ctx(ctx, 0, arg)
-                  func_name = translate_qualified(mod_, fn_)
-                  {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), func_name), "("), arg_code), ", auto_arg0)\n  end"))}
-              else
-                :nothing
-              end
-            {:expr_app, ({:expr_var, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
-                
-                  arg_code = gen_expr_ctx(ctx, 0, arg)
-                  {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), snake_case(fn_)), "("), arg_code), ", auto_arg0)\n  end"))}
-              else
-                :nothing
-              end
-            _ -> :nothing
-          end
+      if not((Nova.List.null(func.parameters))) do
+        :nothing
+      else
+        case func.body do
+          {:expr_var, ref_name} -> case lookup_arity(ref_name, ctx) do
+              {:just, arity} when (arity > 0) -> 
+                  arg_names = Prelude.map((fn i -> Nova.Runtime.append("auto_arg", Prelude.show(i)) end), (Nova.Array.range(0, ((arity - 1)))))
+                  args_str = Data.Array.intercalate(", ", arg_names)
+                  {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "("), args_str), ") do\n    "), snake_case(ref_name)), "("), args_str), ")\n  end"))}
+              _ -> :nothing
+            end
+          _ -> case func.body do
+              {:expr_app, ({:expr_qualified, mod_, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
+                  
+                    arg_code = gen_expr_ctx(ctx, 0, arg)
+                    func_name = translate_qualified(mod_, fn_)
+                    {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), func_name), "("), arg_code), ", auto_arg0)\n  end"))}
+                else
+                  :nothing
+                end
+              {:expr_app, ({:expr_var, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
+                  
+                    arg_code = gen_expr_ctx(ctx, 0, arg)
+                    {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), snake_case(fn_)), "("), arg_code), ", auto_arg0)\n  end"))}
+                else
+                  :nothing
+                end
+              _ -> :nothing
+            end
+        end
       end
     end
   end
@@ -560,7 +571,7 @@ end
   :nothing -> Nova.Runtime.append(ind(indent), "nil")
   {:just, %{head: first_guard, tail: rest_guards}} -> 
       pat_guards = Nova.Array.filter(is_pat_guard, (Nova.Array.from_foldable(first_guard.guards)))
-      expr_guards = Nova.Array.filter((fn g -> not(((raise "CodeGen error: Missing arity for local variable 'isPatGuard'"))) end), (Nova.Array.from_foldable(first_guard.guards)))
+      expr_guards = Nova.Array.filter((fn g -> not((is_pat_guard.(g))) end), (Nova.Array.from_foldable(first_guard.guards)))
       if Nova.Array.null(pat_guards) do
   
     guard_clauses = Prelude.map((fn auto_p0 -> gen_guarded_expr_for_cond(ctx, ((indent + 1)), auto_p0) end), guards)
@@ -581,7 +592,7 @@ end
       end end
       
   pat_guards = Nova.Array.filter(is_pat_guard, (Nova.Array.from_foldable(first_guard.guards)))
-  expr_guards = Nova.Array.filter((fn g -> not(((raise "CodeGen error: Missing arity for local variable 'isPatGuard'"))) end), (Nova.Array.from_foldable(first_guard.guards)))
+  expr_guards = Nova.Array.filter((fn g -> not((is_pat_guard.(g))) end), (Nova.Array.from_foldable(first_guard.guards)))
   case pat_guards do
   [{:guard_pat, pat, scrutinee_expr}] -> 
       scrutinee = gen_expr_ctx(ctx, 0, scrutinee_expr)
@@ -666,7 +677,7 @@ end
       end end
       
   pat_guards = Nova.Array.filter(is_pat_guard, (Nova.Array.from_foldable(ge.guards)))
-  expr_guards = Nova.Array.filter((fn g -> not(((raise "CodeGen error: Missing arity for local variable 'isPatGuard'"))) end), (Nova.Array.from_foldable(ge.guards)))
+  expr_guards = Nova.Array.filter((fn g -> not((is_pat_guard.(g))) end), (Nova.Array.from_foldable(ge.guards)))
   body_expr = gen_expr_ctx(ctx, 0, ge.body)
   indent_str = repeat_str(indent, " ")
   if Nova.Array.null(pat_guards) do
@@ -869,16 +880,16 @@ end
   def collect_args(expr) do
     
       go = Nova.Runtime.fix2(fn go -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {({:expr_app, f, a}), acc} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+        {({:expr_app, f, a}), acc} -> go.(f).(([a | acc]))
         {f, acc} -> %{func: f, args: acc}
       end end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(expr).([])
   end
 
 
 
   def is_module_func(ctx, name) do
-    (Nova.Set.member(name, ctx.module_funcs) and not((Nova.Set.member(name, ctx.locals))))
+    (Nova.Map.member(name, ctx.module_funcs) and not((Nova.Set.member(name, ctx.locals))))
   end
 
 
@@ -963,7 +974,7 @@ end
 
 
   def is_imported_prelude_func(ctx, name) do
-    (((not((Nova.Set.member(name, ctx.locals))) and not((Nova.Set.member(name, ctx.module_funcs)))) and not((is_data_constructor(name)))) and case Nova.Map.lookup(name, ctx.imports) do
+    (((not((Nova.Set.member(name, ctx.locals))) and not((Nova.Map.member(name, ctx.module_funcs)))) and not((is_data_constructor(name)))) and case Nova.Map.lookup(name, ctx.imports) do
   {:just, src_mod} -> is_stdlib_module(src_mod)
   :nothing -> false
 end)
@@ -979,6 +990,18 @@ end)
 
   def prelude_imports() do
     Data.Foldable.foldr((fn name -> fn acc -> Nova.Map.insert(name, "Prelude", acc) end end), Nova.Map.empty, prelude_func_names())
+  end
+
+
+
+  def prelude_func_arity(name) do
+    Nova.Map.lookup(name, prelude_arities())
+  end
+
+
+
+  def prelude_arities() do
+    Nova.Map.from_foldable([{:tuple, "pure", 1}, {:tuple, "bind", 2}, {:tuple, "const", 2}, {:tuple, "identity", 1}, {:tuple, "flip", 3}, {:tuple, "compose", 2}, {:tuple, "show", 1}, {:tuple, "length", 1}, {:tuple, "head", 1}, {:tuple, "tail", 1}, {:tuple, "null", 1}, {:tuple, "reverse", 1}, {:tuple, "concat", 1}, {:tuple, "sum", 1}, {:tuple, "product", 1}, {:tuple, "maximum", 1}, {:tuple, "minimum", 1}, {:tuple, "fromMaybe", 2}, {:tuple, "maybe", 3}, {:tuple, "map", 2}, {:tuple, "filter", 2}, {:tuple, "foldl", 3}, {:tuple, "foldr", 3}, {:tuple, "foldMap", 2}, {:tuple, "elem", 2}, {:tuple, "find", 2}, {:tuple, "findIndex", 2}, {:tuple, "take", 2}, {:tuple, "drop", 2}, {:tuple, "lookup", 2}, {:tuple, "insert", 3}, {:tuple, "delete", 2}, {:tuple, "member", 2}, {:tuple, "singleton", 1}, {:tuple, "empty", 0}, {:tuple, "cons", 2}, {:tuple, "snoc", 2}, {:tuple, "append", 2}, {:tuple, "intercalate", 2}, {:tuple, "replicate", 2}, {:tuple, "concatMap", 2}, {:tuple, "any", 2}, {:tuple, "all", 2}, {:tuple, "zipWith", 3}, {:tuple, "zip", 2}, {:tuple, "unzip", 1}, {:tuple, "sortBy", 2}, {:tuple, "sort", 1}, {:tuple, "nub", 1}, {:tuple, "union", 2}, {:tuple, "intersect", 2}, {:tuple, "difference", 2}, {:tuple, "fst", 1}, {:tuple, "snd", 1}, {:tuple, "split", 2}, {:tuple, "joinWith", 2}, {:tuple, "trim", 1}, {:tuple, "toLower", 1}, {:tuple, "toUpper", 1}, {:tuple, "contains", 2}, {:tuple, "indexOf", 2}, {:tuple, "replaceAll", 3}, {:tuple, "charAt", 2}, {:tuple, "toCharArray", 1}, {:tuple, "fromCharArray", 1}])
   end
 
 
@@ -1017,7 +1040,15 @@ end)
         if Nova.Array.elem(name, types_arity2_funcs()) do
           2
         else
-          1
+          if Nova.Array.elem(name, types_arity3_funcs()) do
+            3
+          else
+            if Nova.Array.elem(name, types_arity4_funcs()) do
+              4
+            else
+              1
+            end
+          end
         end
       end
     end
@@ -1026,13 +1057,25 @@ end)
 
 
   def types_arity1_funcs() do
-    ["singleSubst", "mkTVar", "mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
+    ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
   end
 
 
 
   def types_arity2_funcs() do
-    ["composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "extendEnv", "lookupEnv", "freshVar", "generalize", "instantiate"]
+    ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule"]
+  end
+
+
+
+  def types_arity3_funcs() do
+    ["extendEnv", "mergeExportsToEnvWithPrefix"]
+  end
+
+
+
+  def types_arity4_funcs() do
+    ["mergeTypeExport"]
   end
 
 
@@ -1223,7 +1266,7 @@ end
                         else
                           Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/"), Prelude.show(type_arity)), ")")
                         end
-                      :nothing -> (raise "CodeGen error: Missing arity for local variable 'unsafeCrashWith'")
+                      :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing arity for module function ref '", name), "'")))
                     end
                 end
               else
@@ -1241,7 +1284,7 @@ end
                   else
                     case Nova.Map.lookup(name, ctx.imports) do
                       {:just, src_mod} -> case lookup_type_arity(name, ctx) do
-                          :nothing -> (raise "CodeGen error: Missing arity for local variable 'unsafeCrashWith'")
+                          :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing type arity for imported function '", name), "' from module "), src_mod), "'")))
                           {:just, func_arity} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", src_mod), "."), snake_case(name)), "/"), Prelude.show(func_arity)), ")")
                         end
                       :nothing -> if is_ast_constructor(name) do
@@ -1305,17 +1348,20 @@ end
 
   def gen_expr_prime(ctx, indent, ({:expr_app, f, arg})) do
     
-      gen_var_app = fn c -> fn i -> fn n -> fn exprs -> fn args_s -> if (n == "not") do
-        Nova.Runtime.append(Nova.Runtime.append("not(", args_s), ")")
+      gen_var_app = fn c -> fn i -> fn n -> fn exprs -> fn args_s -> if (n == "unsafeCrashWith") do
+        Nova.Runtime.append(Nova.Runtime.append("raise(", args_s), ")")
       else
-        if (n == "mod") do
-          Nova.Runtime.append(Nova.Runtime.append("rem(", args_s), ")")
+        if (n == "not") do
+          Nova.Runtime.append(Nova.Runtime.append("not(", args_s), ")")
         else
-          if Nova.String.contains((Nova.String.pattern(".")), n) do
-            
-              parts = Nova.String.split((Nova.String.pattern(".")), n)
-              len = Nova.Array.length(parts)
-              if (len > 1) do
+          if (n == "mod") do
+            Nova.Runtime.append(Nova.Runtime.append("rem(", args_s), ")")
+          else
+            if Nova.String.contains((Nova.String.pattern(".")), n) do
+              
+                parts = Nova.String.split((Nova.String.pattern(".")), n)
+                len = Nova.Array.length(parts)
+                if (len > 1) do
   
     mod_parts = Nova.Array.take(((len - 1)), parts)
     func_name = case Nova.Array.last(parts) do
@@ -1326,15 +1372,15 @@ end
 else
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
 end
-          else
-            if is_data_constructor(n) do
-              gen_constructor_app(c, i, n, exprs)
             else
-              if is_module_func(c, n) do
-                case lookup_arity(n, c) do
-                  {:just, arity} -> 
-                      num_args = Data.Array.length(exprs)
-                      if (num_args == arity) do
+              if is_data_constructor(n) do
+                gen_constructor_app(c, i, n, exprs)
+              else
+                if is_module_func(c, n) do
+                  case lookup_arity(n, c) do
+                    {:just, arity} -> 
+                        num_args = Data.Array.length(exprs)
+                        if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1352,10 +1398,10 @@ else
     end
   end
 end
-                  :nothing -> case lookup_type_arity(n, c) do
-                      {:just, type_arity} -> 
-                          num_args = Data.Array.length(exprs)
-                          if (num_args == type_arity) do
+                    :nothing -> case lookup_type_arity(n, c) do
+                        {:just, type_arity} -> 
+                            num_args = Data.Array.length(exprs)
+                            if (num_args == type_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), "("), args_s), ")")
 else
   if (num_args < type_arity) do
@@ -1369,15 +1415,15 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                      :nothing -> Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Missing arity for module function '", n), "'\")")
-                    end
-                end
-              else
-                if is_types_module_func(n) do
-                  
-                    arity = types_module_func_arity(n)
-                    num_args = Data.Array.length(exprs)
-                    if (num_args == arity) do
+                        :nothing -> Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Module function '", n), "' is in moduleFuncs but has no arity in funcArities or typeEnv\")")
+                      end
+                  end
+                else
+                  if is_types_module_func(n) do
+                    
+                      arity = types_module_func_arity(n)
+                      num_args = Data.Array.length(exprs)
+                      if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(n)), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1395,12 +1441,12 @@ else
     end
   end
 end
-                else
-                  if is_unify_module_func(n) do
-                    
-                      arity = unify_module_func_arity(n)
-                      num_args = Data.Array.length(exprs)
-                      if (num_args == arity) do
+                  else
+                    if is_unify_module_func(n) do
+                      
+                        arity = unify_module_func_arity(n)
+                        num_args = Data.Array.length(exprs)
+                        if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Unify.", snake_case(n)), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1418,14 +1464,14 @@ else
     end
   end
 end
-                  else
-                    if is_imported_prelude_func(c, n) do
-                      
-                        src_mod = Data.Maybe.from_maybe("Prelude", (get_import_source_module(c, n)))
-                        num_args = Data.Array.length(exprs)
-                        qualified_func = Nova.Runtime.append(Nova.Runtime.append(src_mod, "."), snake_case(n))
-                        case lookup_type_arity(n, c) do
-  :nothing -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Missing type arity for stdlib function '", n), "' from module "), src_mod), "'\")")
+                    else
+                      if is_imported_prelude_func(c, n) do
+                        
+                          src_mod = Data.Maybe.from_maybe("Prelude", (get_import_source_module(c, n)))
+                          num_args = Data.Array.length(exprs)
+                          qualified_func = Nova.Runtime.append(Nova.Runtime.append(src_mod, "."), snake_case(n))
+                          case lookup_type_arity(n, c) do
+  :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Imported stdlib function '", n), "' from "), src_mod), " has no arity in typeEnv or preludeArities")))
   {:just, func_arity} -> if (num_args == func_arity) do
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(qualified_func, "("), args_s), ")")
     else
@@ -1445,11 +1491,11 @@ end
       end
     end
 end
-                    else
-                      case lookup_local_arity(n, c) do
-                        {:just, local_arity} -> 
-                            num_args = Data.Array.length(exprs)
-                            if (num_args == local_arity) do
+                      else
+                        case lookup_local_arity(n, c) do
+                          {:just, local_arity} -> 
+                              num_args = Data.Array.length(exprs)
+                              if (num_args == local_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
 else
   if (num_args < local_arity) do
@@ -1463,10 +1509,10 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                        :nothing -> case lookup_type_arity(n, c) do
-                            {:just, type_arity} -> 
-                                num_args = Data.Array.length(exprs)
-                                if (num_args == type_arity) do
+                          :nothing -> case lookup_type_arity(n, c) do
+                              {:just, type_arity} -> 
+                                  num_args = Data.Array.length(exprs)
+                                  if (num_args == type_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
 else
   if (num_args < type_arity) do
@@ -1480,8 +1526,9 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                            :nothing -> Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Missing arity for local variable '", n), "'\")")
-                          end
+                              :nothing -> gen_chained_app((snake_case(n)), exprs, c, i)
+                            end
+                        end
                       end
                     end
                   end
@@ -1511,8 +1558,8 @@ end end end end end end
   gen_arg = fn a -> gen_expr_prime(ctx, indent, a) end
   args_str = Data.Array.intercalate(", ", (Prelude.map(gen_arg, args)))
   case func do
-  {:expr_var, name} -> (raise "CodeGen error: Missing arity for local variable 'genVarApp'")
-  {:expr_qualified, m, n} -> (raise "CodeGen error: Missing arity for local variable 'genQualifiedApp'")
+  {:expr_var, name} -> gen_var_app.(ctx).(indent).(name).(args).(args_str)
+  {:expr_qualified, m, n} -> gen_qualified_app.(ctx).(indent).(m).(n).(args)
   {:expr_lambda, _, _} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
   _ -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
 end
@@ -1525,12 +1572,12 @@ end
         {:just, %{head: p, tail: rest}} -> if Nova.List.null(rest) do
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn ", gen_pattern(p)), " -> "), gen_expr_prime(c, i, b)), " end")
           else
-            Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn ", gen_pattern(p)), " -> "), (raise "CodeGen error: Missing arity for local variable 'genCurriedLambda'")), " end")
+            Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn ", gen_pattern(p)), " -> "), gen_curried_lambda.(c).(i).(rest).(b)), " end")
           end
       end  end end end end end)
       
   ctx_with_params = Data.Foldable.foldr((&add_locals_from_pattern/2), ctx, pats)
-  (raise "CodeGen error: Missing arity for local variable 'genCurriedLambda'")
+  gen_curried_lambda.(ctx_with_params).(indent).(pats).(body)
   end
 
   def gen_expr_prime(ctx, indent, ({:expr_let, binds, body})) do
@@ -1611,12 +1658,12 @@ end
   case l do
   _ ->
     cond do
-      (raise "CodeGen error: Missing arity for local variable 'isUnderscore'") -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (__x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ") end")
+      is_underscore.(l) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (__x__ ", gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ") end")
       true -> case r do
       _ ->
         cond do
-          (raise "CodeGen error: Missing arity for local variable 'isUnderscore'") -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
-          true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or (raise "CodeGen error: Missing arity for local variable 'isUpperCase'")) do
+          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
+          true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
               
@@ -1641,7 +1688,7 @@ end
           Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ")")
         end
         end
-      _ -> if (Nova.String.contains((Nova.String.pattern(".")), op) or (raise "CodeGen error: Missing arity for local variable 'isUpperCase'")) do
+      _ -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
               
@@ -1670,8 +1717,8 @@ end
   _ -> case r do
       _ ->
         cond do
-          (raise "CodeGen error: Missing arity for local variable 'isUnderscore'") -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
-          true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or (raise "CodeGen error: Missing arity for local variable 'isUpperCase'")) do
+          is_underscore.(r) -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fn __x__ -> (", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " __x__) end")
+          true -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
               
@@ -1696,7 +1743,7 @@ end
           Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, 0, l)), " "), gen_bin_op(op)), " "), gen_expr_prime(ctx, 0, r)), ")")
         end
         end
-      _ -> if (Nova.String.contains((Nova.String.pattern(".")), op) or (raise "CodeGen error: Missing arity for local variable 'isUpperCase'")) do
+      _ -> if (Nova.String.contains((Nova.String.pattern(".")), op) or is_upper_case.((Nova.String.take(1, op)))) do
           
             func_call = if Nova.String.contains((Nova.String.pattern(".")), op) do
               
@@ -1746,14 +1793,14 @@ end
     
       collect_record_access_chain = Nova.Runtime.fix(fn collect_record_access_chain -> fn auto_arg0 -> case auto_arg0 do
         ({:expr_record_access, inner, f}) -> 
-  result = (raise "CodeGen error: Missing arity for local variable 'collectRecordAccessChain'")
+  result = collect_record_access_chain.(inner)
   %{result | fields: Nova.Array.snoc(result.fields, f)}
         e -> %{base: e, fields: []}
       end end end)
       case rec do
   {:expr_var, "_"} -> Nova.Runtime.append("& &1.", snake_case(field))
   {:expr_section, "_"} -> Nova.Runtime.append("& &1.", snake_case(field))
-  {:expr_record_access, _inner, _inner_field} -> case (raise "CodeGen error: Missing arity for local variable 'collectRecordAccessChain'") do
+  {:expr_record_access, _inner, _inner_field} -> case collect_record_access_chain.(rec) do
       %{base: {:expr_var, "_"}, fields: fields} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("& &1.", Data.Array.intercalate(".", (Prelude.map((&snake_case/1), fields)))), "."), snake_case(field))
       %{base: {:expr_section, "_"}, fields: fields} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("& &1.", Data.Array.intercalate(".", (Prelude.map((&snake_case/1), fields)))), "."), snake_case(field))
       _ -> Nova.Runtime.append(Nova.Runtime.append(gen_expr_prime(ctx, 0, rec), "."), snake_case(field))
@@ -1852,7 +1899,7 @@ end
         {n, :nothing} -> false
         {n, ({:just, e})} -> contains_var(n, e)
       end end end
-      (contains_var(name, scrut) or Nova.List.any((fn cl -> (contains_var(name, cl.body) or (raise "CodeGen error: Missing arity for local variable 'containsVarInMaybeExpr'")) end), clauses))
+      (contains_var(name, scrut) or Nova.List.any((fn cl -> (contains_var(name, cl.body) or contains_var_in_maybe_expr.(name).(cl.guard)) end), clauses))
   end
 
   def contains_var(name, ({:expr_do, stmts})) do
@@ -1941,16 +1988,16 @@ end
         {:just, %{head: b, tail: rest}} -> 
             name = get_bind_name(b)
             case name do
-  :nothing -> (raise "CodeGen error: Missing arity for local variable 'go'")
+  :nothing -> go.(rest).((Nova.Array.snoc(acc, [b])))
   {:just, n} -> 
       spanned = Nova.Array.span((fn b_prime -> (get_bind_name(b_prime) == {:just, n}) end), rest)
       same = spanned.init
       different = spanned.rest
       group = Nova.Array.cons(b, same)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(different).((Nova.Array.snoc(acc, group)))
 end
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(binds).([])
   end
 
 
@@ -1963,10 +2010,10 @@ end
       end end
       all_names = Nova.Array.map_maybe(group_name, groups)
       group_deps = fn grp -> 
-        self_name = (raise "CodeGen error: Missing arity for local variable 'groupName'")
+        self_name = group_name.(grp)
         used_names = Nova.Array.concat_map((fn b -> get_used_vars(b.value) end), grp)
         Nova.Array.filter((fn n -> (({:just, n} != self_name) and Nova.Array.elem(n, all_names)) end), used_names) end
-      group_info = Prelude.map((fn g -> %{group: g, name: (raise "CodeGen error: Missing arity for local variable 'groupName'"), deps: (raise "CodeGen error: Missing arity for local variable 'groupDeps'")} end), groups)
+      group_info = Prelude.map((fn g -> %{group: g, name: group_name.(g), deps: group_deps.(g)} end), groups)
       topo_sort_bind_groups(all_names, group_info, [])
   end
 
@@ -2113,13 +2160,13 @@ end
 
 
   def list_concat_map(f, lst) do
-    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, (raise "CodeGen error: Missing arity for local variable 'f'")) end end), [], lst)
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
   end
 
 
 
   def list_concat_map_array(f, lst) do
-    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, (raise "CodeGen error: Missing arity for local variable 'f'")) end end), [], lst)
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
   end
 
 
@@ -2457,7 +2504,7 @@ end
   def expr_to_pattern(({:expr_record, fields})) do
     
       gen_record_fields = fn fs -> Nova.Runtime.append(Nova.Runtime.append("{", Data.Array.intercalate(", ", (Nova.Array.from_foldable((Prelude.map((fn ({:tuple, k, v}) -> Nova.Runtime.append(Nova.Runtime.append(snake_case(k), ": "), expr_to_pattern(v)) end), fs)))))), "}") end
-      Nova.Runtime.append("%", (raise "CodeGen error: Missing arity for local variable 'genRecordFields'"))
+      Nova.Runtime.append("%", gen_record_fields.(fields))
   end
 
   def expr_to_pattern(({:expr_parens, e})) do
@@ -2495,7 +2542,7 @@ end
 
 
   def should_group(same_pat, cl) do
-    (clause_has_guard(cl) and (raise "CodeGen error: Missing arity for local variable 'samePat'"))
+    (clause_has_guard(cl) and same_pat.(cl.pattern))
   end
 
 
@@ -2624,12 +2671,12 @@ end
     
       add_bind_vars_from_expr = Nova.Runtime.fix2(fn add_bind_vars_from_expr -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {({:expr_var, v}), c} -> %{c | locals: Nova.Set.insert(v, c.locals)}
-        {({:expr_app, f, arg}), c} -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'")
-        {({:expr_record, fields}), c} -> Data.Foldable.foldr((fn ({:tuple, _, e}) -> fn acc -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'") end end), c, fields)
-        {({:expr_parens, e}), c} -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'")
+        {({:expr_app, f, arg}), c} -> add_bind_vars_from_expr.(f).((add_bind_vars_from_expr.(arg).(c)))
+        {({:expr_record, fields}), c} -> Data.Foldable.foldr((fn ({:tuple, _, e}) -> fn acc -> add_bind_vars_from_expr.(e).(acc) end end), c, fields)
+        {({:expr_parens, e}), c} -> add_bind_vars_from_expr.(e).(c)
         {_, c} -> c
       end end end end)
-      add_bind_vars = fn %{pat: pat} -> fn c -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'") end end
+      add_bind_vars = fn %{pat: pat} -> fn c -> add_bind_vars_from_expr.(pat).(c) end end
       
   ctx_with_pat = add_locals_from_pattern(clause.pattern, ctx)
   body_vars = free_vars_expr(clause.body)
@@ -2664,9 +2711,9 @@ end
     
       add_bind_vars_from_expr = Nova.Runtime.fix2(fn add_bind_vars_from_expr -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {({:expr_var, v}), c} -> %{c | locals: Nova.Set.insert(v, c.locals)}
-        {({:expr_app, f, arg}), c} -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'")
-        {({:expr_record, fields}), c} -> Data.Foldable.foldr((fn ({:tuple, _, e}) -> fn acc -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'") end end), c, fields)
-        {({:expr_parens, e}), c} -> (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'")
+        {({:expr_app, f, arg}), c} -> add_bind_vars_from_expr.(f).((add_bind_vars_from_expr.(arg).(c)))
+        {({:expr_record, fields}), c} -> Data.Foldable.foldr((fn ({:tuple, _, e}) -> fn acc -> add_bind_vars_from_expr.(e).(acc) end end), c, fields)
+        {({:expr_parens, e}), c} -> add_bind_vars_from_expr.(e).(c)
         {_, c} -> c
       end end end end)
       case Nova.Array.uncons(pat_binds) do
@@ -2680,7 +2727,7 @@ end
   {:just, %{head: pb, tail: rest_binds}} -> 
       pat_str = expr_to_pattern(pb.pat)
       expr_str = gen_expr_prime(ctx, indent, pb.expr)
-      ctx_with_bind = (raise "CodeGen error: Missing arity for local variable 'addBindVarsFromExpr'")
+      ctx_with_bind = add_bind_vars_from_expr.(pb.pat).(ctx)
       inner_code = gen_pattern_bind_chain(ctx_with_bind, ((indent + 1)), rest_binds, conds, body)
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(ind(indent), "case "), expr_str), " do\n"), ind(((indent + 1)))), pat_str), " -> "), inner_code), "\n"), ind(((indent + 1)))), "_ -> nil\n"), ind(indent)), "end")
 end
@@ -2726,23 +2773,23 @@ end
     
       is_maybe_func = fn name -> ((((((((((((((((name == "peek") or (name == "peekAt")) or (name == "charAt")) or (name == "head")) or (name == "tail")) or (name == "last")) or (name == "init")) or (name == "find")) or (name == "findIndex")) or (name == "elemIndex")) or (name == "lookup")) or (name == "index")) or (name == "uncons")) or (name == "fromString")) or (name == "stripPrefix")) or (name == "stripSuffix")) end
       is_either_func = fn name -> ((((((((((((Nova.String.contains((Nova.String.pattern("parse")), (Nova.String.to_lower(name))) or Nova.String.contains((Nova.String.pattern("unify")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("expect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("collect")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("infer")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("check")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("instantiate")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("generalize")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("lookup")), (Nova.String.to_lower(name)))) or Nova.String.contains((Nova.String.pattern("convert")), (Nova.String.to_lower(name)))) or (name == "traverse")) or (name == "success")) or (name == "failure")) end
-      classify_func = fn name -> if (raise "CodeGen error: Missing arity for local variable 'isMaybeFunc'") do
+      classify_func = fn name -> if is_maybe_func.(name) do
         0
       else
-        if (raise "CodeGen error: Missing arity for local variable 'isEitherFunc'") do
+        if is_either_func.(name) do
           1
         else
           2
         end
       end end
       go = Nova.Runtime.fix(fn go -> fn auto_arg0 -> case auto_arg0 do
-        ({:expr_var, name}) -> (raise "CodeGen error: Missing arity for local variable 'classifyFunc'")
-        ({:expr_qualified, _, name}) -> (raise "CodeGen error: Missing arity for local variable 'classifyFunc'")
-        ({:expr_app, f, _}) -> (raise "CodeGen error: Missing arity for local variable 'go'")
-        ({:expr_parens, e}) -> (raise "CodeGen error: Missing arity for local variable 'go'")
+        ({:expr_var, name}) -> classify_func.(name)
+        ({:expr_qualified, _, name}) -> classify_func.(name)
+        ({:expr_app, f, _}) -> go.(f)
+        ({:expr_parens, e}) -> go.(e)
         _ -> 2
       end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(expr)
   end
 
 
@@ -2766,9 +2813,9 @@ end
         args = Data.Array.intercalate(", ", params)
         Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(con.name)), "("), args), "), do: %{__type__: :"), snake_case(con.name)), ", "), fields), "}") end
       gen_constructor = fn con -> if con.is_record do
-        (raise "CodeGen error: Missing arity for local variable 'genRecordConstructor'")
+        gen_record_constructor.(con)
       else
-        (raise "CodeGen error: Missing arity for local variable 'genTupleConstructor'")
+        gen_tuple_constructor.(con)
       end end
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  # Data type: ", dt.name), "\n"), Data.Array.intercalate("\n", (Nova.Array.from_foldable((Prelude.map(gen_constructor, dt.constructors))))))
   end
@@ -2960,12 +3007,12 @@ end
       else
         ""
       end
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(rest).((not(is_upper))).((Nova.Runtime.append(Nova.Runtime.append(acc, prefix), lower)))
 end
       end end end end end)
       
-  without_primes = (raise "CodeGen error: Missing arity for local variable 'handlePrimes'")
-  result = (raise "CodeGen error: Missing arity for local variable 'go'")
+  without_primes = handle_primes.(s)
+  result = go.((Nova.String.to_code_point_array(without_primes))).(false).("")
   escape_reserved(result)
   end
 
@@ -2975,7 +3022,7 @@ end
     
       elixir_reserved = ["nil", "true", "false", "do", "end", "if", "else", "unless", "case", "cond", "when", "and", "or", "not", "in", "fn", "def", "defp", "defmodule", "defstruct", "defmacro", "defimpl", "defprotocol", "defexception", "defdelegate", "defguard", "import", "require", "use", "alias", "for", "with", "quote", "unquote", "receive", "try", "catch", "rescue", "after", "raise", "throw", "exit", "super", "spawn", "send", "self", "mod", "rem", "div", "abs", "max", "min"]
       is_reserved = fn word -> Nova.Array.elem(word, elixir_reserved) end
-      if (raise "CodeGen error: Missing arity for local variable 'isReserved'") do
+      if is_reserved.(s) do
   Nova.Runtime.append(s, "_")
 else
   s

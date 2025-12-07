@@ -95,7 +95,7 @@ defmodule Nova.Compiler.CstToAst do
   def traverse(f, lst) do
     case lst do
       [] -> {:right, []}
-      ([head | tail]) ->     Nova.Runtime.bind((raise "CodeGen error: Missing arity for local variable 'f'"), fn h ->
+      ([head | tail]) ->     Nova.Runtime.bind(f.(head), fn h ->
       Nova.Runtime.bind(traverse(f, tail), fn t ->
         ((&Prelude.pure/1)).([h | t])
       end)
@@ -109,9 +109,9 @@ defmodule Nova.Compiler.CstToAst do
     
       go = Nova.Runtime.fix2(fn go -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {_, []} -> []
-        {i, ([x | xs])} -> [(raise "CodeGen error: Missing arity for local variable 'f'") | (raise "CodeGen error: Missing arity for local variable 'go'")]
+        {i, ([x | xs])} -> [f.(i).(x) | go.(((i + 1))).(xs)]
       end end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(0).(list)
   end
 
 
@@ -812,7 +812,7 @@ end
             if should_pop do
    case output do
   ([right | [left | rest_output]]) ->     combined = Nova.Compiler.Ast.expr_bin_op(top_op, left, right)
-  (raise "CodeGen error: Missing arity for local variable 'popHigherPrec'")
+  pop_higher_prec.(([combined | rest_output])).(rest_ops).(prec).(is_right_assoc)
   _ -> {:left, "Not enough operands for operator"}
 end
 else
@@ -826,21 +826,21 @@ end
 end
         {output, ([op | rest_ops])} -> case output do
   ([right | [left | rest_output]]) ->     combined = Nova.Compiler.Ast.expr_bin_op(op, left, right)
-  (raise "CodeGen error: Missing arity for local variable 'reduceAll'")
+  reduce_all.(([combined | rest_output])).(rest_ops)
   _ -> {:left, "Not enough operands for operator"}
 end
       end end end end)
       go = Nova.Runtime.fix3(fn go -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
-        {output, op_stack, []} -> (raise "CodeGen error: Missing arity for local variable 'reduceAll'")
+        {output, op_stack, []} -> reduce_all.(output).(op_stack)
         {output, op_stack, ([({:tuple, op, expr}) | rest])} -> new_prec = operator_precedence(op)
 is_right_assoc = operator_is_right_assoc(op)
-Nova.Runtime.bind((raise "CodeGen error: Missing arity for local variable 'popHigherPrec'"), fn result ->
+Nova.Runtime.bind(pop_higher_prec.(output).(op_stack).(new_prec).(is_right_assoc), fn result ->
     new_output = result.output
     new_op_stack = result.op_stack
-  (raise "CodeGen error: Missing arity for local variable 'go'")
+  go.(([expr | new_output])).(([op | new_op_stack])).(rest)
 end)
       end end end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(([first_expr | []])).([]).(ops)
   end
 
 

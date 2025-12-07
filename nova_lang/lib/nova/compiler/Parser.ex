@@ -206,12 +206,12 @@ end
   case Nova.Array.head(ts) do
   {:just, t} -> case t.token_type do
       :tok_number -> if Nova.String.contains((Nova.String.pattern(".")), t.value) do
-          success((Nova.Compiler.Ast.lit_number(((raise "CodeGen error: Missing arity for local variable 'readNumber'")))), (Nova.Array.drop(1, ts)))
+          success((Nova.Compiler.Ast.lit_number((read_number.(t.value)))), (Nova.Array.drop(1, ts)))
         else
-          success((Nova.Compiler.Ast.lit_int(((raise "CodeGen error: Missing arity for local variable 'readInt'")))), (Nova.Array.drop(1, ts)))
+          success((Nova.Compiler.Ast.lit_int((read_int.(t.value)))), (Nova.Array.drop(1, ts)))
         end
       :tok_string -> success((Nova.Compiler.Ast.lit_string(t.value)), (Nova.Array.drop(1, ts)))
-      :tok_char -> success((Nova.Compiler.Ast.lit_char(((raise "CodeGen error: Missing arity for local variable 'firstChar'")))), (Nova.Array.drop(1, ts)))
+      :tok_char -> success((Nova.Compiler.Ast.lit_char((first_char.(t.value)))), (Nova.Array.drop(1, ts)))
       :tok_identifier -> if (t.value == "true") do
           success((Nova.Compiler.Ast.lit_bool(true)), (Nova.Array.drop(1, ts)))
         else
@@ -246,33 +246,33 @@ end
     
       go = Nova.Runtime.fix(fn go -> fn ps -> case Nova.Array.head(ps) do
         :nothing -> failure("No parser succeeded")
-        {:just, p} -> case (raise "CodeGen error: Missing arity for local variable 'p'") do
+        {:just, p} -> case p.(tokens) do
             {:right, result} -> {:right, result}
-            {:left, _} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+            {:left, _} -> go.((Nova.Array.drop(1, ps)))
           end
       end  end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(parsers)
   end
 
   def parse_many(parser, tokens) do
     
-      go = Nova.Runtime.fix2(fn go -> fn toks -> fn acc -> case (raise "CodeGen error: Missing arity for local variable 'parser'") do
-        {:right, ({:tuple, result, rest})} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+      go = Nova.Runtime.fix2(fn go -> fn toks -> fn acc -> case parser.(toks) do
+        {:right, ({:tuple, result, rest})} -> go.(rest).((Nova.Array.snoc(acc, result)))
         {:left, _} -> success(acc, toks)
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(tokens).([])
   end
 
   def parse_separated(parser, separator, tokens) do
-    case (raise "CodeGen error: Missing arity for local variable 'parser'") do
+    case parser.(tokens) do
       {:left, err} -> {:left, err}
       {:right, ({:tuple, first, rest})} -> parse_separated_rest(parser, separator, rest, [first])
     end
   end
 
   def parse_separated_rest(parser, separator, tokens, acc) do
-    case (raise "CodeGen error: Missing arity for local variable 'separator'") do
-      {:right, ({:tuple, _, rest})} -> case (raise "CodeGen error: Missing arity for local variable 'parser'") do
+    case separator.(tokens) do
+      {:right, ({:tuple, _, rest})} -> case parser.(rest) do
           {:right, ({:tuple, item, rest_prime})} -> parse_separated_rest(parser, separator, rest_prime, (Nova.Array.snoc(acc, item)))
           {:left, _} -> failure("Expected item after separator")
         end
@@ -297,7 +297,7 @@ end
                 :nothing -> failure("Expected identifier")
               end
             _ -> case Nova.Array.head(parts) do
-                {:just, first} -> if not(((raise "CodeGen error: Missing arity for local variable 'isUpperCase'"))) do
+                {:just, first} -> if not((is_upper_case.(first))) do
                     
                       base_expr = Nova.Compiler.Ast.expr_var(first)
                       fields = Nova.Array.drop(1, parts)
@@ -329,14 +329,14 @@ end
         {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "::")) do
             failure("Not consuming top-level type signature")
           else
-            (raise "CodeGen error: Missing arity for local variable 'parseQualifiedIdentifierInner'")
+            parse_qualified_identifier_inner.(tokens_prime)
           end
-        _ -> (raise "CodeGen error: Missing arity for local variable 'parseQualifiedIdentifierInner'")
+        _ -> parse_qualified_identifier_inner.(tokens_prime)
       end
     else
-      (raise "CodeGen error: Missing arity for local variable 'parseQualifiedIdentifierInner'")
+      parse_qualified_identifier_inner.(tokens_prime)
     end
-  _ -> (raise "CodeGen error: Missing arity for local variable 'parseQualifiedIdentifierInner'")
+  _ -> parse_qualified_identifier_inner.(tokens_prime)
 end
   end
 
@@ -359,7 +359,7 @@ end
           :nothing -> failure("Expected identifier")
         end
       _ -> case Nova.Array.head(parts) do
-          {:just, first} -> if not(((raise "CodeGen error: Missing arity for local variable 'isUpperCase'"))) do
+          {:just, first} -> if not((is_upper_case.(first))) do
               
                 base_expr = Nova.Compiler.Ast.expr_var(first)
                 fields = Nova.Array.drop(1, parts)
@@ -532,7 +532,7 @@ end
               end
        case Nova.Array.length(args) do
   0 -> success(base, rest_prime)
-  _ -> success(((raise "CodeGen error: Missing arity for local variable 'foldTypeApp'")), rest_prime)
+  _ -> success((fold_type_app.(base).(args)), rest_prime)
 end
      end)
    end)
@@ -693,7 +693,7 @@ end
         :nothing -> false
       end end
       Nova.Runtime.bind(parse_qualified_constructor_name(tokens), fn {:tuple, name, rest} ->
-  if (raise "CodeGen error: Missing arity for local variable 'isCapital'") do
+  if is_capital.(name) do
    Nova.Runtime.bind(parse_many((&parse_simple_pattern/1), rest), fn {:tuple, args, rest_prime} ->
    case Nova.Array.length(args) do
   0 -> success((Nova.Compiler.Ast.pat_con(name, [])), rest_prime)
@@ -845,7 +845,7 @@ end
       
   ts = skip_newlines(tokens)
   case Nova.Array.head(ts) do
-  {:just, t} -> if ((t.token_type == :tok_identifier) and (raise "CodeGen error: Missing arity for local variable 'isCapital'")) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and is_capital.(t.value)) do
       case Nova.Array.head((Nova.Array.drop(1, ts))) do
         {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == ".")) do
                   Nova.Runtime.bind(parse_qualified_constructor_name(ts), fn {:tuple, name, rest} ->
@@ -970,7 +970,7 @@ end
       is_composition_op = fn op -> ((((op == "<<<") or (op == ">>>")) or (op == ">>")) or (op == ">>=")) end
       Nova.Runtime.bind(parse_logical_expression(tokens), fn {:tuple, left, rest} ->
   case Nova.Array.head(rest) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isCompositionOp'")) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_composition_op.(t.value)) do
          Nova.Runtime.bind(parse_composition_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
      success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime)
    end)
@@ -989,7 +989,7 @@ end)
       parse_logical_rest = Nova.Runtime.fix2(fn parse_logical_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
         {:just, t} -> if ((t.token_type == :tok_operator) and (((t.value == "&&") or (t.value == "||")))) do
                   Nova.Runtime.bind(parse_cons_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
-        (raise "CodeGen error: Missing arity for local variable 'parseLogicalRest'")
+        parse_logical_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
       end)
           else
             success(left, rest)
@@ -997,7 +997,7 @@ end)
         _ -> success(left, rest)
       end  end end end)
       Nova.Runtime.bind(parse_cons_expression(tokens), fn {:tuple, left, rest} ->
-  (raise "CodeGen error: Missing arity for local variable 'parseLogicalRest'")
+  parse_logical_rest.(left).(rest)
 end)
   end
 
@@ -1027,7 +1027,7 @@ end
 Nova.Runtime.bind(parse_additive_expression(tokens_prime), fn {:tuple, left, rest} ->
     rest_prime = skip_newlines(rest)
   case Nova.Array.head(rest_prime) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isComparisonOp'")) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_comparison_op.(t.value)) do
             rest_prime_prime = skip_newlines((Nova.Array.drop(1, rest_prime)))
    Nova.Runtime.bind(parse_comparison_expression(rest_prime_prime), fn {:tuple, right, rest_prime_prime_prime} ->
      success((Nova.Compiler.Ast.expr_bin_op(t.value, left, right)), rest_prime_prime_prime)
@@ -1046,9 +1046,9 @@ end)
     
       is_additive_op = fn op -> ((((op == "+") or (op == "-")) or (op == "++")) or (op == "<>")) end
       parse_additive_rest = Nova.Runtime.fix2(fn parse_additive_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
-        {:just, t} -> if ((t.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isAdditiveOp'")) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and is_additive_op.(t.value)) do
                   Nova.Runtime.bind(parse_multiplicative_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
-        (raise "CodeGen error: Missing arity for local variable 'parseAdditiveRest'")
+        parse_additive_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
       end)
           else
             success(left, rest)
@@ -1056,7 +1056,7 @@ end)
         _ -> success(left, rest)
       end  end end end)
       Nova.Runtime.bind(parse_multiplicative_expression(tokens), fn {:tuple, left, rest} ->
-  (raise "CodeGen error: Missing arity for local variable 'parseAdditiveRest'")
+  parse_additive_rest.(left).(rest)
 end)
   end
 
@@ -1066,9 +1066,9 @@ end)
     
       is_mult_op = fn op -> ((op == "*") or (op == "/")) end
       parse_mult_rest = Nova.Runtime.fix2(fn parse_mult_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
-        {:just, t} -> if ((t.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isMultOp'")) do
+        {:just, t} -> if ((t.token_type == :tok_operator) and is_mult_op.(t.value)) do
                   Nova.Runtime.bind(parse_backtick_expression((Nova.Array.drop(1, rest))), fn {:tuple, right, rest_prime} ->
-        (raise "CodeGen error: Missing arity for local variable 'parseMultRest'")
+        parse_mult_rest.((Nova.Compiler.Ast.expr_bin_op(t.value, left, right))).(rest_prime)
       end)
           else
             success(left, rest)
@@ -1076,7 +1076,7 @@ end)
         _ -> success(left, rest)
       end  end end end)
       Nova.Runtime.bind(parse_backtick_expression(tokens), fn {:tuple, left, rest} ->
-  (raise "CodeGen error: Missing arity for local variable 'parseMultRest'")
+  parse_mult_rest.(left).(rest)
 end)
   end
 
@@ -1088,7 +1088,7 @@ end)
         {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ".")) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
               {:just, t_prime} -> if (t_prime.token_type == :tok_identifier) do
-                  (raise "CodeGen error: Missing arity for local variable 'parseBacktickQualified'")
+                  parse_backtick_qualified.((Nova.Runtime.append(Nova.Runtime.append(name, "."), t_prime.value))).((Nova.Array.drop(2, toks)))
                 else
                   success((Nova.Compiler.Ast.expr_var(name)), toks)
                 end
@@ -1101,7 +1101,7 @@ end)
       end  end end end)
       parse_backtick_fn = fn toks -> case Nova.Array.head(toks) do
         {:just, t} -> if (t.token_type == :tok_identifier) do
-            (raise "CodeGen error: Missing arity for local variable 'parseBacktickQualified'")
+            parse_backtick_qualified.(t.value).((Nova.Array.drop(1, toks)))
           else
             failure("Expected identifier in backtick expression")
           end
@@ -1109,12 +1109,12 @@ end)
       end end
       parse_backtick_rest = Nova.Runtime.fix2(fn parse_backtick_rest -> fn left -> fn rest -> case Nova.Array.head(rest) do
         {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "`")) do
-                  Nova.Runtime.bind((raise "CodeGen error: Missing arity for local variable 'parseBacktickFn'"), fn {:tuple, fn_, rest_prime} ->
+                  Nova.Runtime.bind(parse_backtick_fn.((Nova.Array.drop(1, rest))), fn {:tuple, fn_, rest_prime} ->
         case Nova.Array.head(rest_prime) do
   {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "`")) do
          Nova.Runtime.bind(parse_unary_expression((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
           result = Nova.Compiler.Ast.expr_app((Nova.Compiler.Ast.expr_app(fn_, left)), right)
-     (raise "CodeGen error: Missing arity for local variable 'parseBacktickRest'")
+     parse_backtick_rest.(result).(rest_prime_prime)
    end)
     else
       failure("Expected closing backtick")
@@ -1128,7 +1128,7 @@ end
         _ -> success(left, rest)
       end  end end end)
       Nova.Runtime.bind(parse_unary_expression(tokens), fn {:tuple, left, rest} ->
-  (raise "CodeGen error: Missing arity for local variable 'parseBacktickRest'")
+  parse_backtick_rest.(left).(rest)
 end)
   end
 
@@ -1138,7 +1138,7 @@ end)
     
       is_unary_op = fn op -> (((op == "-") or (op == "+")) or (op == "!")) end
       case Nova.Array.head(tokens) do
-  {:just, t} -> if ((t.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isUnaryOp'")) do
+  {:just, t} -> if ((t.token_type == :tok_operator) and is_unary_op.(t.value)) do
          Nova.Runtime.bind(parse_unary_expression((Nova.Array.drop(1, tokens))), fn {:tuple, expr, rest} ->
      success((Nova.Compiler.Ast.expr_unary_op(t.value, expr)), rest)
    end)
@@ -1158,7 +1158,7 @@ end
         {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == ".")) do
             case Nova.Array.head((Nova.Array.drop(1, toks))) do
               {:just, fld} -> if (fld.token_type == :tok_identifier) do
-                  (raise "CodeGen error: Missing arity for local variable 'maybeParseRecordAccess'")
+                  maybe_parse_record_access.((Nova.Compiler.Ast.expr_record_access(expr, fld.value))).((Nova.Array.drop(2, toks)))
                 else
                   success(expr, toks)
                 end
@@ -1171,12 +1171,12 @@ end
       end  end end end)
       case Nova.Array.head(tokens) do
   {:just, first_tok} ->   Nova.Runtime.bind(parse_term(tokens), fn {:tuple, fn_, rest} ->
-    Nova.Runtime.bind((raise "CodeGen error: Missing arity for local variable 'maybeParseRecordAccess'"), fn {:tuple, fn_prime, rest_prime} ->
+    Nova.Runtime.bind(maybe_parse_record_access.(fn_).(rest), fn {:tuple, fn_prime, rest_prime} ->
       Nova.Runtime.bind(maybe_parse_record_update(fn_prime, rest_prime), fn {:tuple, fn_prime_prime, rest_prime_prime} ->
                 {:tuple, args, rest_prime_prime_prime} = collect_application_args(rest_prime_prime, [], first_tok.column)
         case Nova.Array.length(args) do
   0 -> success(fn_prime_prime, rest_prime_prime_prime)
-  _ -> success(((raise "CodeGen error: Missing arity for local variable 'foldApp'")), rest_prime_prime_prime)
+  _ -> success((fold_app.(fn_prime_prime).(args)), rest_prime_prime_prime)
 end
       end)
     end)
@@ -1208,7 +1208,7 @@ end
   tokens_prime = skip_newlines(tokens)
   case Nova.Array.head(tokens_prime) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-      case (raise "CodeGen error: Missing arity for local variable 'isRecordUpdate'") do
+      case is_record_update.((Nova.Array.drop(1, tokens_prime))) do
         true ->      Nova.Runtime.bind(parse_record_update_fields((Nova.Array.drop(1, tokens_prime))), fn {:tuple, updates, rest} ->
        Nova.Runtime.bind(expect_delimiter(rest, "}"), fn {:tuple, _, rest_prime} ->
          maybe_parse_record_update((Nova.Compiler.Ast.expr_record_update(expr, (Nova.List.from_foldable(updates)))), rest_prime)
@@ -1249,7 +1249,7 @@ end
         go = Nova.Runtime.fix2(fn go -> fn toks_prime -> fn depth -> case Nova.Array.head(toks_prime) do
           :nothing -> false
           {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
-              (raise "CodeGen error: Missing arity for local variable 'go'")
+              go.((Nova.Array.drop(1, toks_prime))).(((depth + 1)))
             else
               if ((t.token_type == :tok_delimiter) and (t.value == "}")) do
                 if (depth == 1) do
@@ -1262,14 +1262,14 @@ end
                     _ -> false
                   end
                 else
-                  (raise "CodeGen error: Missing arity for local variable 'go'")
+                  go.((Nova.Array.drop(1, toks_prime))).(((depth - 1)))
                 end
               else
-                (raise "CodeGen error: Missing arity for local variable 'go'")
+                go.((Nova.Array.drop(1, toks_prime))).(depth)
               end
             end
         end  end end end)
-        (raise "CodeGen error: Missing arity for local variable 'go'") end
+        go.(toks).(1) end
       is_continuation_token = fn t -> ((t.token_type == :tok_delimiter) and ((((t.value == "[") or (t.value == "(")) or (t.value == "{")))) end
       looks_like_binding = fn toks -> case Nova.Array.head(toks) do
         {:just, t1} -> if (t1.token_type == :tok_identifier) do
@@ -1283,7 +1283,7 @@ end
             end
           else
             if ((t1.token_type == :tok_delimiter) and (t1.value == "{")) do
-              (raise "CodeGen error: Missing arity for local variable 'looksLikeRecordBinding'")
+              looks_like_record_binding.((Nova.Array.drop(1, toks)))
             else
               false
             end
@@ -1295,10 +1295,10 @@ end
       
         rest = skip_newlines((Nova.Array.drop(1, tokens)))
         case Nova.Array.head(rest) do
-  {:just, t_prime} -> if (raise "CodeGen error: Missing arity for local variable 'looksLikeBinding'") do
+  {:just, t_prime} -> if looks_like_binding.(rest) do
       {:tuple, acc, rest}
     else
-      if ((t_prime.column > 1) and (raise "CodeGen error: Missing arity for local variable 'isContinuationToken'")) do
+      if ((t_prime.column > 1) and is_continuation_token.(t_prime)) do
         case parse_term(rest) do
           {:right, ({:tuple, arg, rest_prime})} -> collect_application_args(rest_prime, (Nova.Array.snoc(acc, arg)), base)
           {:left, _} -> {:tuple, acc, rest}
@@ -1584,7 +1584,7 @@ end
       rest
     else
       if (t_prime.token_type == :tok_newline) do
-        (raise "CodeGen error: Missing arity for local variable 'skipToNextLetLine'")
+        skip_to_next_let_line.(rest)
       else
         rest
       end
@@ -1592,7 +1592,7 @@ end
   _ -> rest
 end
           else
-            (raise "CodeGen error: Missing arity for local variable 'skipToNextLetLine'")
+            skip_to_next_let_line.((Nova.Array.drop(1, toks)))
           end
         _ -> toks
       end  end end)
@@ -1601,11 +1601,11 @@ end
   {:just, t} -> if ((t.token_type == :tok_keyword) and (t.value == "in")) do
       success(acc, toks_prime)
     else
-      if (raise "CodeGen error: Missing arity for local variable 'isTypeSignatureLine'") do
-        (raise "CodeGen error: Missing arity for local variable 'collectLetBindings'")
+      if is_type_signature_line.(toks_prime) do
+        collect_let_bindings.((skip_to_next_let_line.(toks_prime))).(acc)
       else
         case parse_binding(toks_prime) do
-          {:right, ({:tuple, bind, rest})} -> (raise "CodeGen error: Missing arity for local variable 'collectLetBindings'")
+          {:right, ({:tuple, bind, rest})} -> collect_let_bindings.(rest).((Nova.Array.snoc(acc, bind)))
           {:left, _} -> success(acc, toks_prime)
         end
       end
@@ -1615,7 +1615,7 @@ end  end end end)
       tokens_prime = skip_newlines(tokens)
 Nova.Runtime.bind(expect_keyword(tokens_prime, "let"), fn {:tuple, _, rest} ->
     rest_prime = skip_newlines(rest)
-  Nova.Runtime.bind((raise "CodeGen error: Missing arity for local variable 'collectLetBindings'"), fn {:tuple, bindings, rest_prime_prime} ->
+  Nova.Runtime.bind(collect_let_bindings.(rest_prime).([]), fn {:tuple, bindings, rest_prime_prime} ->
         rest_prime_prime_prime = skip_newlines(rest_prime_prime)
     Nova.Runtime.bind(expect_keyword(rest_prime_prime_prime, "in"), fn {:tuple, _, rest4} ->
             rest5 = skip_newlines(rest4)
@@ -1658,21 +1658,21 @@ end
       {:tuple, (Nova.Array.reverse(acc)), toks_prime}
     else
       case parse_simple_pattern(toks_prime) do
-        {:right, ({:tuple, pat, rest})} -> (raise "CodeGen error: Missing arity for local variable 'collectParams'")
+        {:right, ({:tuple, pat, rest})} -> collect_params.(rest).((Nova.Array.cons(pat, acc)))
         {:left, _} -> {:tuple, (Nova.Array.reverse(acc)), toks_prime}
       end
     end
   _ -> case parse_simple_pattern(toks_prime) do
-      {:right, ({:tuple, pat, rest})} -> (raise "CodeGen error: Missing arity for local variable 'collectParams'")
+      {:right, ({:tuple, pat, rest})} -> collect_params.(rest).((Nova.Array.cons(pat, acc)))
       {:left, _} -> {:tuple, (Nova.Array.reverse(acc)), toks_prime}
     end
 end  end end end)
       case Nova.Array.head(tokens) do
-  {:just, t} -> if ((t.token_type == :tok_identifier) and not(((raise "CodeGen error: Missing arity for local variable 'isUpperCase'")))) do
+  {:just, t} -> if ((t.token_type == :tok_identifier) and not((is_upper_case.(t.value)))) do
       
         name = t.value
         rest = Nova.Array.drop(1, tokens)
-        {:tuple, params, rest_prime} = (raise "CodeGen error: Missing arity for local variable 'collectParams'")
+        {:tuple, params, rest_prime} = collect_params.(rest).([])
         case Nova.Array.length(params) do
   0 -> failure("Not a function binding")
   _ -> case expect_operator(rest_prime, "=") do
@@ -1748,7 +1748,7 @@ end
         rest_after_body = skip_newlines(rest)
     case Nova.Array.head(rest_after_body) do
   {:just, t_prime} -> if ((t_prime.token_type == :tok_operator) and (t_prime.value == "|")) do
-      (raise "CodeGen error: Missing arity for local variable 'parseAdditionalGuard'")
+      parse_additional_guard.(rest_after_body).(pat).(clause_indent).(new_acc)
     else
       parse_case_clauses_at(rest, clause_indent, new_acc)
     end
@@ -1775,7 +1775,7 @@ end  end end end end end)
     end
   {:just, t} -> if (((t.token_type == :tok_operator) and (t.value == "|")) and (Nova.Array.length(acc) > 0)) do
       case Nova.Array.last(acc) do
-        {:just, prev_clause} -> (raise "CodeGen error: Missing arity for local variable 'parseAdditionalGuard'")
+        {:just, prev_clause} -> parse_additional_guard.(tokens_prime).(prev_clause.pattern).(indent).(acc)
         :nothing -> failure("Internal error: no previous clause")
       end
     else
@@ -1790,7 +1790,7 @@ end  end end end end end)
                 rest_prime = skip_newlines(rest)
                 case Nova.Array.head(rest_prime) do
   {:just, t2} -> if ((t2.token_type == :tok_operator) and (t2.value == "|")) do
-      (raise "CodeGen error: Missing arity for local variable 'parseAdditionalGuard'")
+      parse_additional_guard.(rest_prime).(clause.pattern).(indent).((Nova.Array.snoc(acc, clause)))
     else
       parse_case_clauses_at(rest, indent, (Nova.Array.snoc(acc, clause)))
     end
@@ -1838,9 +1838,9 @@ case Nova.Array.head(tokens_prime) do
       Nova.Runtime.bind(parse_expression(body_tokens), fn {:tuple, body, remaining} ->
         case skip_newlines(remaining) do
   [] -> success(%{pattern: pat, guard: guard, body: body}, (drop_newlines(rest_prime_prime_prime)))
-  _ -> case (raise "CodeGen error: Missing arity for local variable 'hasMoreGuards'") do
+  _ -> case has_more_guards.(remaining) do
       true -> success(%{pattern: pat, guard: guard, body: body}, (Nova.Runtime.append(remaining, rest_prime_prime_prime)))
-      false -> case (raise "CodeGen error: Missing arity for local variable 'isClosingDelimiter'") do
+      false -> case is_closing_delimiter.(remaining) do
           true -> success(%{pattern: pat, guard: guard, body: body}, (Nova.Runtime.append(remaining, rest_prime_prime_prime)))
           false -> failure("Unexpected tokens after case-clause body")
         end
@@ -1885,7 +1885,7 @@ end
       {:just, g} -> success(g, rest)
       :nothing -> failure("No guard")
     end
-  _ -> success(((raise "CodeGen error: Missing arity for local variable 'foldGuards'")), rest)
+  _ -> success((fold_guards.(guards)), rest)
 end
 end)
   end
@@ -1915,18 +1915,18 @@ end
         ({:pat_con, c, args}) -> Data.Foldable.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, (Nova.Compiler.Ast.expr_var(c)), (Prelude.map(pattern_to_expr, args)))
         ({:pat_lit, l}) -> Nova.Compiler.Ast.expr_lit(l)
         :pat_wildcard -> Nova.Compiler.Ast.expr_var("_")
-        ({:pat_record, fields}) -> Nova.Compiler.Ast.expr_record((Prelude.map((fn ({:tuple, k, p}) -> {:tuple, k, ((raise "CodeGen error: Missing arity for local variable 'patternToExpr'"))} end), fields)))
-        ({:pat_cons, h, t}) -> Nova.Compiler.Ast.expr_bin_op(":", ((raise "CodeGen error: Missing arity for local variable 'patternToExpr'")), ((raise "CodeGen error: Missing arity for local variable 'patternToExpr'")))
-        ({:pat_as, n, p}) -> (raise "CodeGen error: Missing arity for local variable 'patternToExpr'")
+        ({:pat_record, fields}) -> Nova.Compiler.Ast.expr_record((Prelude.map((fn ({:tuple, k, p}) -> {:tuple, k, (pattern_to_expr.(p))} end), fields)))
+        ({:pat_cons, h, t}) -> Nova.Compiler.Ast.expr_bin_op(":", (pattern_to_expr.(h)), (pattern_to_expr.(t)))
+        ({:pat_as, n, p}) -> pattern_to_expr.(p)
         ({:pat_list, ps}) -> Nova.Compiler.Ast.expr_list((Prelude.map(pattern_to_expr, ps)))
-        ({:pat_parens, p}) -> Nova.Compiler.Ast.expr_parens(((raise "CodeGen error: Missing arity for local variable 'patternToExpr'")))
+        ({:pat_parens, p}) -> Nova.Compiler.Ast.expr_parens((pattern_to_expr.(p)))
       end end end)
       try_pattern_bind = fn toks ->    Nova.Runtime.bind(parse_pattern(toks), fn {:tuple, pat, rest} ->
           rest_prime = skip_newlines(rest)
      case Nova.Array.head(rest_prime) do
   {:just, t} -> if ((t.token_type == :tok_operator) and (t.value == "<-")) do
          Nova.Runtime.bind(parse_logical_expression((Nova.Array.drop(1, rest_prime))), fn {:tuple, expr, rest_prime_prime} ->
-     success((Nova.Compiler.Ast.expr_bin_op("<-", ((raise "CodeGen error: Missing arity for local variable 'patternToExpr'")), expr)), rest_prime_prime)
+     success((Nova.Compiler.Ast.expr_bin_op("<-", (pattern_to_expr.(pat)), expr)), rest_prime_prime)
    end)
     else
       failure("Not a pattern bind")
@@ -1935,7 +1935,7 @@ end
 end
    end) end
       tokens_prime = skip_newlines(tokens)
-case (raise "CodeGen error: Missing arity for local variable 'tryPatternBind'") do
+case try_pattern_bind.(tokens_prime) do
   {:right, result} -> {:right, result}
   {:left, _} -> parse_logical_expression(tokens_prime)
 end
@@ -2028,7 +2028,7 @@ end
       case parse_pattern(tokens) do
   {:right, ({:tuple, _, rest})} -> case Nova.Array.head(tokens) do
       {:just, pat_tok} -> 
-          {:tuple, _, rest_prime} = (raise "CodeGen error: Missing arity for local variable 'maybeParseGuardIndented'")
+          {:tuple, _, rest_prime} = maybe_parse_guard_indented.(pat_tok.column).(rest)
           case expect_operator(rest_prime, "->") do
   {:right, _} -> true
   {:left, _} -> false
@@ -2272,19 +2272,19 @@ end
               {:just, close_tok} -> if ((close_tok.token_type == :tok_delimiter) and (close_tok.value == ")")) do
                   success((Nova.Compiler.Ast.import_value((Nova.Runtime.append(Nova.Runtime.append("(", op_tok.value), ")")))), (Nova.Array.drop(3, tokens)))
                 else
-                  (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+                  parse_normal_import_item.(tokens)
                 end
-              _ -> (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+              _ -> parse_normal_import_item.(tokens)
             end
           else
-            (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+            parse_normal_import_item.(tokens)
           end
-        _ -> (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+        _ -> parse_normal_import_item.(tokens)
       end
     else
-      (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+      parse_normal_import_item.(tokens)
     end
-  _ -> (raise "CodeGen error: Missing arity for local variable 'parseNormalImportItem'")
+  _ -> parse_normal_import_item.(tokens)
 end
   end
 
@@ -2468,12 +2468,12 @@ end)
             success(acc, toks)
           else
             case parse_type_atom(toks) do
-              {:right, ({:tuple, ty, rest})} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+              {:right, ({:tuple, ty, rest})} -> go.(rest).((Nova.Array.snoc(acc, ty)))
               {:left, _} -> success(acc, toks)
             end
           end
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(tokens).([])
   end
 
 
@@ -2596,7 +2596,7 @@ end
    end) end end
       extract_class_name = Nova.Runtime.fix(fn extract_class_name -> fn auto_arg0 -> case auto_arg0 do
         ({:ty_expr_con, name}) -> name
-        ({:ty_expr_app, fn_, _}) -> (raise "CodeGen error: Missing arity for local variable 'extractClassName'")
+        ({:ty_expr_app, fn_, _}) -> extract_class_name.(fn_)
         _ -> "Unknown"
       end end end)
       {:tuple, tokens_prime, derived} = case Nova.Array.head(tokens) do
@@ -2617,11 +2617,11 @@ Nova.Runtime.bind(expect_keyword(tokens_prime, "instance"), fn {:tuple, _, rest}
       Nova.Runtime.bind(parse_type(rest_prime_prime), fn {:tuple, ty, rest_prime_prime_prime} ->
         case expect_keyword(rest_prime_prime_prime, "where") do
   {:right, ({:tuple, _, rest4})} ->   Nova.Runtime.bind(parse_many((&parse_function_declaration_raw/1), rest4), fn {:tuple, methods, rest5} ->
-        class_name = (raise "CodeGen error: Missing arity for local variable 'extractClassName'")
+        class_name = extract_class_name.(ty)
     success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: Nova.List.from_foldable(methods), derived: derived})), rest5)
   end)
   {:left, _} -> if derived do
-            class_name = (raise "CodeGen error: Missing arity for local variable 'extractClassName'")
+            class_name = extract_class_name.(ty)
    success((Nova.Compiler.Ast.decl_type_class_instance(%{class_name: class_name, ty: ty, methods: [], derived: derived})), rest_prime_prime_prime)
     else
       failure("Expected 'where' clause for non-derived instance")
@@ -2629,14 +2629,14 @@ Nova.Runtime.bind(expect_keyword(tokens_prime, "instance"), fn {:tuple, _, rest}
 end
       end)
           else
-            (raise "CodeGen error: Missing arity for local variable 'parseUnnamedInstance'")
+            parse_unnamed_instance.(rest_prime).(derived)
           end
-        _ -> (raise "CodeGen error: Missing arity for local variable 'parseUnnamedInstance'")
+        _ -> parse_unnamed_instance.(rest_prime).(derived)
       end
     else
-      (raise "CodeGen error: Missing arity for local variable 'parseUnnamedInstance'")
+      parse_unnamed_instance.(rest_prime).(derived)
     end
-  _ -> (raise "CodeGen error: Missing arity for local variable 'parseUnnamedInstance'")
+  _ -> parse_unnamed_instance.(rest_prime).(derived)
 end
 end)
   end
@@ -2694,13 +2694,13 @@ end
             {:tuple, acc, toks}
           else
             if (t.token_type == :tok_newline) do
-              (raise "CodeGen error: Missing arity for local variable 'go'")
+              go.((Nova.Array.drop(1, toks))).(acc)
             else
-              (raise "CodeGen error: Missing arity for local variable 'go'")
+              go.((Nova.Array.drop(1, toks))).((Nova.Array.snoc(acc, t)))
             end
           end
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(tokens).([])
   end
 
 
@@ -2765,14 +2765,14 @@ end
         case Nova.Array.head(toks_prime) do
   {:just, tok} -> if ((tok.token_type == :tok_operator) and (tok.value == "|")) do
          Nova.Runtime.bind(parse_one_guarded_expr((Nova.Array.drop(1, toks_prime))), fn {:tuple, guard, rest} ->
-     (raise "CodeGen error: Missing arity for local variable 'parseGuardedExprsAcc'")
+     parse_guarded_exprs_acc.(rest).((Nova.Array.snoc(acc, guard)))
    end)
     else
       success(acc, toks_prime)
     end
   _ -> success(acc, toks_prime)
 end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'parseGuardedExprsAcc'")
+      parse_guarded_exprs_acc.(tokens).([])
   end
 
 
@@ -2883,7 +2883,7 @@ end
       Nova.Runtime.bind(parse_guard_expr_app(tokens), fn {:tuple, left, rest} ->
     rest_prime = skip_newlines(rest)
   case Nova.Array.head(rest_prime) do
-  {:just, tok} -> if ((tok.token_type == :tok_operator) and (raise "CodeGen error: Missing arity for local variable 'isComparisonOp'")) do
+  {:just, tok} -> if ((tok.token_type == :tok_operator) and is_comparison_op.(tok.value)) do
          Nova.Runtime.bind(parse_guard_expr_app((Nova.Array.drop(1, rest_prime))), fn {:tuple, right, rest_prime_prime} ->
      success((Nova.Compiler.Ast.expr_bin_op(tok.value, left, right)), rest_prime_prime)
    end)
@@ -3070,7 +3070,7 @@ end
       toks
     else
       if (t_prime.token_type == :tok_newline) do
-        (raise "CodeGen error: Missing arity for local variable 'skipToNextLine'")
+        skip_to_next_line.(rest)
       else
         rest
       end
@@ -3078,17 +3078,17 @@ end
   _ -> rest
 end
           else
-            (raise "CodeGen error: Missing arity for local variable 'skipToNextLine'")
+            skip_to_next_line.((Nova.Array.drop(1, toks)))
           end
       end  end end)
       tokens_prime = skip_newlines(tokens)
 case Nova.Array.head(tokens_prime) do
   {:just, t} -> if (t.column >= where_col) do
-         case (raise "CodeGen error: Missing arity for local variable 'isTypeSignatureLine'") do
-  true ->     rest = (raise "CodeGen error: Missing arity for local variable 'skipToNextLine'")
+         case is_type_signature_line.(tokens_prime) do
+  true ->     rest = skip_to_next_line.(tokens_prime)
   collect_where_bindings(rest, where_col, acc)
   false ->   Nova.Runtime.bind(parse_function_declaration_raw(tokens_prime), fn {:tuple, fun, rest} ->
-        binding = %{pattern: Nova.Compiler.Ast.pat_var(fun.name), value: (raise "CodeGen error: Missing arity for local variable 'wrapLambda'"), type_ann: :nothing}
+        binding = %{pattern: Nova.Compiler.Ast.pat_var(fun.name), value: wrap_lambda.((Nova.Array.from_foldable(fun.parameters))).(fun.body), type_ann: :nothing}
     collect_where_bindings(rest, where_col, (Nova.Array.snoc(acc, binding)))
   end)
 end

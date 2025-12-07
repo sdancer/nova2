@@ -59,7 +59,7 @@ defmodule InfixOperatorTest do
 
       {:ok, result} = Nova.compile(code)
       # Should compile without error and produce proper nested calls
-      assert result =~ "Nova.Runtime.show"
+      assert result =~ "Prelude.show"
     end
   end
 
@@ -72,7 +72,7 @@ defmodule InfixOperatorTest do
 
       {:ok, result} = Nova.compile(code)
       # x # show is equivalent to show x
-      assert result =~ "Nova.Runtime.show(x)"
+      assert result =~ "Prelude.show(x)"
     end
   end
 

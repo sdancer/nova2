@@ -137,15 +137,15 @@ defmodule Nova.Compiler.Dependencies do
             {:do_let, binds} -> 
                 deps = get_let_binds_deps(binds)
                 new_bound = Data.Foldable.foldl((fn acc -> fn b -> Nova.Set.union(acc, (get_bound_names(b.pattern))) end end), bound, binds)
-                Nova.Set.union((Nova.Set.difference(deps, bound)), ((raise "CodeGen error: Missing arity for local variable 'go'")))
+                Nova.Set.union((Nova.Set.difference(deps, bound)), (go.(rest).(new_bound)))
             {:do_bind, pat, e} -> 
                 deps = get_expr_deps(e)
                 new_bound = Nova.Set.union(bound, (get_bound_names(pat)))
-                Nova.Set.union((Nova.Set.difference(deps, bound)), ((raise "CodeGen error: Missing arity for local variable 'go'")))
-            {:do_expr, e} -> Nova.Set.union((Nova.Set.difference((get_expr_deps(e)), bound)), ((raise "CodeGen error: Missing arity for local variable 'go'")))
+                Nova.Set.union((Nova.Set.difference(deps, bound)), (go.(rest).(new_bound)))
+            {:do_expr, e} -> Nova.Set.union((Nova.Set.difference((get_expr_deps(e)), bound)), (go.(rest).(bound)))
           end
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(stmts).(Nova.Set.empty)
   end
 
 
@@ -201,7 +201,7 @@ defmodule Nova.Compiler.Dependencies do
         :nothing -> acc
         {:just, md} -> 
             deps = get_dependencies(md.decl)
-            resolved_deps = Nova.Set.map_maybe((fn name -> (raise "CodeGen error: Missing arity for local variable 'resolveName'") end), deps)
+            resolved_deps = Nova.Set.map_maybe((fn name -> resolve_name.(md.meta.namespace).(name) end), deps)
             Nova.Map.insert(id, resolved_deps, acc)
       end end end), Nova.Map.empty, ids)
       reverse = build_reverse_edges(forward)
@@ -252,7 +252,7 @@ defmodule Nova.Compiler.Dependencies do
         :nothing -> acc
         {:just, dependents} -> Nova.Map.insert(dep_id, (Nova.Set.delete(decl_id, dependents)), acc)
       end end end), graph.reverse, deps_array)
-      reverse_prime = Nova.Map.delete(decl_id, (raise "CodeGen error: Missing type arity for imported function 'reverse' from module Prelude'"))
+      reverse_prime = Nova.Map.delete(decl_id, (&Prelude.reverse/1))
       %{forward: forward, reverse: reverse_prime}
   end
 
@@ -281,15 +281,15 @@ defmodule Nova.Compiler.Dependencies do
       go = Nova.Runtime.fix2(fn go -> fn to_process -> fn visited -> case Nova.Set.find_min(to_process) do
         :nothing -> visited
         {:just, id} -> if Nova.Set.member(id, visited) do
-            (raise "CodeGen error: Missing arity for local variable 'go'")
+            go.((Nova.Set.delete(id, to_process))).(visited)
           else
             
               dependents = get_dependents(graph, id)
               new_to_process = Nova.Set.union((Nova.Set.delete(id, to_process)), (Nova.Set.difference(dependents, visited)))
-              (raise "CodeGen error: Missing arity for local variable 'go'")
+              go.(new_to_process).((Nova.Set.insert(id, visited)))
           end
       end  end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.((Nova.Set.singleton(decl_id))).(Nova.Set.empty)
   end
 
 
@@ -313,12 +313,12 @@ defmodule Nova.Compiler.Dependencies do
   :nothing -> false
   {:just, n} -> (((n == 0) and not((Nova.Array.elem(d, result)))) and not((Nova.Array.elem(d, queue))))
 end end), dependents))
-            (raise "CodeGen error: Missing arity for local variable 'go'")
+            go.(new_in_degree).((Nova.Array.snoc(result, id))).(new_queue)
       end  end end end end)
       initial_queue = Nova.Array.filter((fn id -> case Nova.Map.lookup(id, initial_in_degree) do
         :nothing -> false
         {:just, n} -> (n == 0)
       end end), ids)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(initial_in_degree).([]).(initial_queue)
   end
 end

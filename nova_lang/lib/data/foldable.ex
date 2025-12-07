@@ -1,7 +1,8 @@
 defmodule Data.Foldable do
   @moduledoc "Data.Foldable - foldable functions for collections"
 
-  defdelegate foldl(f, acc, xs), to: Nova.Array
+  # Use Nova.Runtime.foldl which handles maps, lists, and linked lists
+  defdelegate foldl(f, acc, xs), to: Nova.Runtime
   defdelegate foldr(f, acc, xs), to: Nova.Array
   defdelegate fold_m(f, acc, xs), to: Nova.Runtime
   defdelegate foldl_m(f, acc, xs), to: Nova.Runtime, as: :fold_m

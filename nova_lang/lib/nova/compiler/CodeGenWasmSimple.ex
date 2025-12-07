@@ -37,7 +37,7 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
 
 
   def list_concat_map(f, lst) do
-    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, (raise "CodeGen error: Missing arity for local variable 'f'")) end end), [], lst)
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
   end
 
   # @type lifted_lambda :: %{id: int(), expr: expr(), params: array()(string()), free_vars: array()(string()), body: expr()}
@@ -261,7 +261,7 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
 
 
   def list_concat_map_do(f, lst) do
-    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, (raise "CodeGen error: Missing arity for local variable 'f'")) end end), [], lst)
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
   end
 
 
@@ -476,18 +476,18 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
     
       collect_do_lambdas = Nova.Runtime.fix3(fn collect_do_lambdas -> fn auto_arg0 -> fn auto_arg1 -> fn auto_arg2 -> case {auto_arg0, auto_arg1, auto_arg2} do
         {_, [], st} -> st
-        {b, ([({:do_expr, e}) | rest]), st} -> (raise "CodeGen error: Missing arity for local variable 'collectDoLambdas'")
+        {b, ([({:do_expr, e}) | rest]), st} -> collect_do_lambdas.(b).(rest).((collect_lambdas(b, e, st)))
         {b, ([({:do_bind, pat, e}) | rest]), st} -> 
   pat_vars = Nova.Set.from_foldable((pattern_vars(pat)))
-  (raise "CodeGen error: Missing arity for local variable 'collectDoLambdas'")
+  collect_do_lambdas.((Nova.Set.union(b, pat_vars))).(rest).((collect_lambdas(b, e, st)))
         {b, ([({:do_let, binds}) | rest]), st} -> 
   binds_arr = Nova.Array.from_foldable(binds)
   bind_names = Nova.Set.from_foldable((Nova.Array.concat_map((fn bn -> pattern_vars(bn.pattern) end), binds_arr)))
   st_prime = Nova.Array.foldl((fn s -> fn bn -> collect_lambdas(b, bn.value, s) end end), st, binds_arr)
   b_prime = Nova.Set.union(b, bind_names)
-  (raise "CodeGen error: Missing arity for local variable 'collectDoLambdas'")
+  collect_do_lambdas.(b_prime).(rest).(st_prime)
       end end end end end)
-      (raise "CodeGen error: Missing arity for local variable 'collectDoLambdas'")
+      collect_do_lambdas.(bound).(stmts).(state)
   end
 
   def collect_lambdas(bound, ({:expr_typed, e, _}), state) do

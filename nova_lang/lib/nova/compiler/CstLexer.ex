@@ -113,7 +113,7 @@ end
       get_root_layout = fn _ -> Nova.Compiler.CstLayout.root_layout_delim end
       
   init_pos = %{line: 1, column: 1}
-  init_stack = [{:tuple, init_pos, ((raise "CodeGen error: Missing arity for local variable 'getRootLayout'"))} | []]
+  init_stack = [{:tuple, init_pos, (get_root_layout.(%{}))} | []]
   insert_layout_go(init_stack, tokens, [])
   end
 
@@ -492,15 +492,15 @@ end
       num_str = Nova.Runtime.append(Nova.Runtime.append(int_part, "."), frac_part)
       case Nova.String.to_float(num_str) do
   {:just, n} -> {:just, ({:tuple, (make_token_range((Nova.Compiler.Cst.tok_number(num_str, n)), start_state, after_frac)), after_frac})}
-  :nothing -> (raise "CodeGen error: Missing arity for local variable 'makeIntResult'")
+  :nothing -> make_int_result.(int_part).(start_state).(after_int)
 end
 end
             else
-              (raise "CodeGen error: Missing arity for local variable 'makeIntResult'")
+              make_int_result.(int_part).(start_state).(after_int)
             end
-          _ -> (raise "CodeGen error: Missing arity for local variable 'makeIntResult'")
+          _ -> make_int_result.(int_part).(start_state).(after_int)
         end
-      _ -> (raise "CodeGen error: Missing arity for local variable 'makeIntResult'")
+      _ -> make_int_result.(int_part).(start_state).(after_int)
     end
 end
   end
@@ -607,7 +607,7 @@ end
       
   start_state = state
   after_open = advance(state, 1)
-  case (raise "CodeGen error: Missing arity for local variable 'parseCharContent'") do
+  case parse_char_content.(after_open) do
   {:tuple, ch, after_char} -> 
       after_close = advance(after_char, 1)
       {:just, ({:tuple, (make_token_range((Nova.Compiler.Cst.tok_char((Nova.String.singleton(ch)), ch)), start_state, after_close)), after_close})}

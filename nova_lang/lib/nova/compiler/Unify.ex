@@ -71,7 +71,7 @@ defmodule Nova.Compiler.Unify do
           (occurs(v, t)) ->
             {:left, ({:occurs_check, v, t})}
           (true) ->
-            {:right, (Nova.Compiler.Types.single_subst(v).(t))}
+            {:right, (Nova.Compiler.Types.single_subst(v, t))}
         end
     end
   end

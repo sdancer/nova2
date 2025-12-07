@@ -174,11 +174,11 @@ defmodule Nova.Compiler.CodeGenCoreErlang do
         {:pat_wildcard, s} -> s
         {({:pat_lit, _}), s} -> s
         {({:pat_con, _, pats}), s} -> Data.Foldable.foldr(add_pattern_vars, s, pats)
-        {({:pat_record, fields}), s} -> Data.Foldable.foldr((fn ({:tuple, _, p}) -> fn acc -> (raise "CodeGen error: Missing arity for local variable 'addPatternVars'") end end), s, fields)
+        {({:pat_record, fields}), s} -> Data.Foldable.foldr((fn ({:tuple, _, p}) -> fn acc -> add_pattern_vars.(p).(acc) end end), s, fields)
         {({:pat_list, pats}), s} -> Data.Foldable.foldr(add_pattern_vars, s, pats)
-        {({:pat_cons, hd, tl}), s} -> (raise "CodeGen error: Missing arity for local variable 'addPatternVars'")
-        {({:pat_as, n, p}), s} -> (raise "CodeGen error: Missing arity for local variable 'addPatternVars'")
-        {({:pat_parens, p}), s} -> (raise "CodeGen error: Missing arity for local variable 'addPatternVars'")
+        {({:pat_cons, hd, tl}), s} -> add_pattern_vars.(hd).((add_pattern_vars.(tl).(s)))
+        {({:pat_as, n, p}), s} -> add_pattern_vars.(p).((Nova.Set.insert(n, s)))
+        {({:pat_parens, p}), s} -> add_pattern_vars.(p).(s)
       end end end end)
       case expr do
   {:expr_var, name} -> if (Nova.Set.member(name, candidates) and not((Nova.Set.member(name, bound)))) do
@@ -199,7 +199,7 @@ defmodule Nova.Compiler.CodeGenCoreErlang do
   {:expr_case, scrut, clauses} -> 
       scrut_vars = free_vars_in_expr_for(candidates, bound, scrut)
       clause_vars = Data.Foldable.foldr((fn c -> fn s -> 
-        clause_bound = (raise "CodeGen error: Missing arity for local variable 'addPatternVars'")
+        clause_bound = add_pattern_vars.(c.pattern).(bound)
         guard_vars = case c.guard do
           :nothing -> Nova.Set.empty
           {:just, g} -> free_vars_in_expr_for(candidates, clause_bound, g)
@@ -243,10 +243,10 @@ end
   if Nova.Array.null(ready) do
   Nova.Runtime.append(acc, Prelude.map(& &1.bind, remaining))
 else
-  (raise "CodeGen error: Missing arity for local variable 'go'")
+  go.((Nova.Runtime.append(acc, Prelude.map(& &1.bind, ready)))).(not_ready)
 end
         end end end end)
-        (raise "CodeGen error: Missing arity for local variable 'go'") end
+        go.([]).(items) end
       
   bind_map = Nova.Map.from_foldable((Nova.Array.map_maybe((fn b -> (fn auto_p0 -> Prelude.map((fn n -> {:tuple, n, b} end), auto_p0) end).(get_pattern_var_name(b.pattern)) end), binds)))
   bind_names = Nova.Set.from_foldable((Nova.Map.keys(bind_map)))
@@ -255,7 +255,7 @@ end
     free_vars = free_vars_in_expr_for(bind_names, Nova.Set.empty, b.value)
     local_deps = free_vars
     %{name: name, bind: b, deps: local_deps} end), binds)
-  sorted = (raise "CodeGen error: Missing arity for local variable 'kahnSort'")
+  sorted = kahn_sort.(deps)
   sorted
   end
 
@@ -267,7 +267,7 @@ end
         s1 = Nova.String.replace_all((Nova.String.pattern("\\")), (Nova.String.replacement("\\\\")), str)
         s2 = Nova.String.replace_all((Nova.String.pattern("'")), (Nova.String.replacement("\\'")), s1)
         s2 end
-      Nova.Runtime.append(Nova.Runtime.append("'", (raise "CodeGen error: Missing arity for local variable 'escapeAtom'")), "'")
+      Nova.Runtime.append(Nova.Runtime.append("'", escape_atom.(s)), "'")
   end
 
 
@@ -278,7 +278,7 @@ end
       
   first = Nova.String.take(1, name)
   rest = Nova.String.drop(1, name)
-  Nova.Runtime.append(Nova.String.to_upper(first), (raise "CodeGen error: Missing arity for local variable 'toSnake'"))
+  Nova.Runtime.append(Nova.String.to_upper(first), to_snake.(rest))
   end
 
 
@@ -307,7 +307,7 @@ end
   exports = Data.Array.intercalate(", ", (Prelude.map((fn f -> Nova.Runtime.append(Nova.Runtime.append(atom(f.name), "/"), Prelude.show(f.arity)) end), unique_funcs)))
   ctx = %{(empty_ctx(mod_name)) | module_funcs: Nova.Set.from_foldable((Prelude.map(& &1.name, unique_funcs))), func_arities: unique_funcs, imports: import_map}
   func_defs = Data.Array.intercalate("\n\n", (Prelude.map((fn auto_p0 -> gen_function_group(ctx, auto_p0) end), grouped)))
-  dt_comments = Data.Array.intercalate("\n\n", (Nova.Array.map_maybe(((raise "CodeGen error: Missing arity for local variable 'genDeclNonFunc'")), (Nova.Array.from_foldable(m.declarations)))))
+  dt_comments = Data.Array.intercalate("\n\n", (Nova.Array.map_maybe((gen_decl_non_func.(ctx)), (Nova.Array.from_foldable(m.declarations)))))
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("module ", atom(mod_name)), " ["), exports), "]\n"), "  attributes []\n"), dt_comments), (if (dt_comments == "") do
   ""
 else
@@ -607,7 +607,7 @@ end
                 {:just, src_mod} -> 
                     mod_name = translate_module_name(src_mod)
                     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("call ", atom(mod_name)), ":"), atom(name)), "()")
-                :nothing -> if (raise "CodeGen error: Missing arity for local variable 'isConstructorName'") do
+                :nothing -> if is_constructor_name.(name) do
                     atom((to_snake_case(name)))
                   else
                     core_var(name)
@@ -668,7 +668,7 @@ end
                     {:just, src_mod} -> 
                         mod_name = translate_module_name(src_mod)
                         Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("call ", atom(mod_name)), ":"), atom(name)), "("), Data.Array.intercalate(", ", (Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args)))), ")")
-                    :nothing -> if (raise "CodeGen error: Missing arity for local variable 'isConstructorName'") do
+                    :nothing -> if is_constructor_name.(name) do
                         if (Data.Array.length(args) == 0) do
                           atom((to_snake_case(name)))
                         else
@@ -958,16 +958,16 @@ end end end
             pat_tuple = Nova.Runtime.append(Nova.Runtime.append("{", Data.Array.intercalate(", ", pats_result.strs)), "}")
             body_str = gen_expr(ctx_with_params, body)
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("        <", pat_tuple), "> when 'true' -> "), body_str)
-        {:expr_parens, e} -> (raise "CodeGen error: Missing arity for local variable 'genLetrecClauseAsCase'")
+        {:expr_parens, e} -> gen_letrec_clause_as_case.(ctx_prime).(_param_names).((%{bind | value: e}))
         _ -> Nova.Runtime.append("        <_W0> when 'true' -> ", gen_expr(ctx_prime, bind.value))
       end  end end end end)
       gen_letrec_def_grouped = fn ctx_prime -> fn group -> case group.binds do
         [] -> ""
-        [single] -> (raise "CodeGen error: Missing arity for local variable 'genLetrecDef'")
+        [single] -> gen_letrec_def.(ctx_prime).(single)
         multiple -> 
             param_names = (fn auto_p0 -> Prelude.map((fn i -> Nova.Runtime.append("_L", Prelude.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((group.arity - 1))))
             params_str = Data.Array.intercalate(", ", param_names)
-            case_clauses = Prelude.map(((raise "CodeGen error: Missing arity for local variable 'genLetrecClauseAsCase'")), multiple)
+            case_clauses = Prelude.map((gen_letrec_clause_as_case.(ctx_prime).(param_names)), multiple)
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(atom(group.name), "/"), Prelude.show(group.arity)), " = fun ("), params_str), ") ->\n"), "      case {"), params_str), "} of\n"), Data.Array.intercalate("\n", case_clauses)), "\n"), "      end")
       end end end
       
@@ -1012,8 +1012,8 @@ else
   body_str
 else
   
-    grouped = (raise "CodeGen error: Missing arity for local variable 'groupByName'")
-    defs = Data.Array.intercalate("\n       ", (Prelude.map(((raise "CodeGen error: Missing arity for local variable 'genLetrecDefGrouped'")), grouped)))
+    grouped = group_by_name.(fs)
+    defs = Data.Array.intercalate("\n       ", (Prelude.map((gen_letrec_def_grouped.(ctx_with_all_binds)), grouped)))
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("letrec ", defs), "\n      in "), body_str)
 end
     end end end end)
@@ -1022,13 +1022,13 @@ end
     else
       gen_value_binds_with_body_str_sorted(ctx_with_all_binds, (topo_sort_binds(dep_values_group2)), final_body)
     end
-    after_letrec2 = (raise "CodeGen error: Missing arity for local variable 'genLetrec'")
+    after_letrec2 = gen_letrec.(func_group2).(after_dep_values2)
     after_dep_values1 = if Nova.Array.null(dep_values_group1) do
       after_letrec2
     else
       gen_value_binds_with_body_str_sorted(ctx_with_all_binds, (topo_sort_binds(dep_values_group1)), after_letrec2)
     end
-    after_letrec1 = (raise "CodeGen error: Missing arity for local variable 'genLetrec'")
+    after_letrec1 = gen_letrec.(func_group1).(after_dep_values1)
     result = if Nova.Array.null(independent_value_binds) do
       after_letrec1
     else
@@ -1395,8 +1395,8 @@ end
     
       is_upper = fn c -> ((c >= ?A) and (c <= ?Z)) end
       to_lower = fn c -> Data.Maybe.from_maybe(c, (Nova.String.char_at(0, (Nova.String.to_lower((Nova.String.singleton(c))))))) end
-      convert_char = fn c -> if (raise "CodeGen error: Missing arity for local variable 'isUpper'") do
-        [?_, (raise "CodeGen error: Missing type arity for stdlib function 'toLower' from module Prelude'")]
+      convert_char = fn c -> if is_upper.(c) do
+        [?_, Prelude.to_lower(c)]
       else
         [c]
       end end
@@ -1424,10 +1424,10 @@ end
   def collect_args(expr) do
     
       go = Nova.Runtime.fix2(fn go -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
-        {({:expr_app, f, a}), acc} -> (raise "CodeGen error: Missing arity for local variable 'go'")
+        {({:expr_app, f, a}), acc} -> go.(f).(([a | acc]))
         {f, acc} -> %{func: f, args: acc}
       end end end end)
-      (raise "CodeGen error: Missing arity for local variable 'go'")
+      go.(expr).([])
   end
 
 

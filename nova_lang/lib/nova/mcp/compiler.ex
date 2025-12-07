@@ -52,7 +52,7 @@ defmodule Nova.MCP.Compiler do
           }
 
           # Generate code
-          elixir_code = Nova.Compiler.CodeGen.gen_module(mod)
+          elixir_code = Nova.Compiler.CodeGen.gen_module().(mod)
           {:ok, elixir_code}
         end
     end

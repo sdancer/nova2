@@ -52,7 +52,7 @@ defmodule Nova do
 
           {:right, _env} ->
             # Generate Elixir code
-            elixir_code = Nova.Compiler.CodeGen.gen_module(mod)
+            elixir_code = Nova.Compiler.CodeGen.gen_module().(mod)
             {:ok, elixir_code}
         end
     end
@@ -73,7 +73,7 @@ defmodule Nova do
 
       {:right, _env} ->
         # Generate Elixir code
-        elixir_code = Nova.Compiler.CodeGen.gen_module(mod)
+        elixir_code = Nova.Compiler.CodeGen.gen_module().(mod)
         {:ok, elixir_code}
     end
   end
