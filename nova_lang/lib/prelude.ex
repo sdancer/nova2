@@ -9,8 +9,14 @@ defmodule Prelude do
   # Functor operations
   defdelegate map(f, x), to: Nova.Runtime
 
-  # Applicative operations
-  defdelegate apply(f, x), to: Nova.Runtime
+  # Applicative operations - apply a wrapped function to a wrapped value
+  def apply(f, x) when is_function(f, 1), do: f.(x)
+  def apply({:just, f}, {:just, x}), do: {:just, f.(x)}
+  def apply(:nothing, _), do: :nothing
+  def apply(_, :nothing), do: :nothing
+  def apply({:right, f}, {:right, x}), do: {:right, f.(x)}
+  def apply({:left, e}, _), do: {:left, e}
+  def apply(_, {:left, e}), do: {:left, e}
 
   # Basic operations
   defdelegate show(x), to: Nova.Runtime

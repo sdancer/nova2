@@ -534,6 +534,30 @@ end
                   {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "("), args_str), ") do\n    "), snake_case(ref_name)), "("), args_str), ")\n  end"))}
               _ -> :nothing
             end
+          _ ->
+            cond do
+              is_record_accessor_section(func.body) -> 
+                  access_path = collect_record_access_path(func.body)
+                  {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    auto_arg0"), access_path), "\n  end"))}
+              true -> case func.body do
+              {:expr_app, ({:expr_qualified, mod_, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
+                  
+                    arg_code = gen_expr_ctx(ctx, 0, arg)
+                    func_name = translate_qualified(mod_, fn_)
+                    {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), func_name), "("), arg_code), ", auto_arg0)\n  end"))}
+                else
+                  :nothing
+                end
+              {:expr_app, ({:expr_var, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
+                  
+                    arg_code = gen_expr_ctx(ctx, 0, arg)
+                    {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "(auto_arg0) do\n    "), snake_case(fn_)), "("), arg_code), ", auto_arg0)\n  end"))}
+                else
+                  :nothing
+                end
+              _ -> :nothing
+            end
+            end
           _ -> case func.body do
               {:expr_app, ({:expr_qualified, mod_, fn_}), arg} -> if is_partial_app_of_arity2(func.body) do
                   
@@ -569,6 +593,46 @@ end
 
   def is_partial_app_of_arity2(_) do
     false
+  end
+
+
+
+  def is_record_accessor_section(({:expr_var, "_"})) do
+    true
+  end
+
+  def is_record_accessor_section(({:expr_section, "_"})) do
+    true
+  end
+
+  def is_record_accessor_section(({:expr_record_access, inner, _})) do
+    is_record_accessor_section(inner)
+  end
+
+  def is_record_accessor_section(_) do
+    false
+  end
+
+
+
+  def collect_record_access_path(expr) do
+    
+      go = Nova.Runtime.fix(fn go -> fn auto_arg0 -> case auto_arg0 do
+        ({:expr_var, "_"}) -> %{fields: []}
+        ({:expr_section, "_"}) -> %{fields: []}
+        ({:expr_record_access, inner, field}) -> 
+  r = go.(inner)
+  %{fields: Nova.Array.snoc(r.fields, field)}
+        _ -> %{fields: []}
+      end end end)
+      
+  result = go.(expr)
+  fields = result.fields
+  if Nova.Array.null(fields) do
+  ""
+else
+  Nova.Runtime.append(".", Data.Array.intercalate(".", (Prelude.map((&snake_case/1), fields))))
+end
   end
 
 
@@ -1645,6 +1709,14 @@ end
 
   def gen_expr_prime(ctx, _, ({:expr_bin_op, "<*", l, r})) do
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Runtime.seq_left(", gen_expr_prime(ctx, 0, l)), ", "), gen_expr_prime(ctx, 0, r)), ")")
+  end
+
+  def gen_expr_prime(ctx, _, ({:expr_bin_op, "..", l, r})) do
+    Nova.Runtime.append(Nova.Runtime.append(gen_expr_prime(ctx, 0, l), ".."), gen_expr_prime(ctx, 0, r))
+  end
+
+  def gen_expr_prime(ctx, _, ({:expr_bin_op, "/\\", l, r})) do
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{:tuple, ", gen_expr_prime(ctx, 0, l)), ", "), gen_expr_prime(ctx, 0, r)), "}")
   end
 
   def gen_expr_prime(ctx, _, ({:expr_bin_op, op, l, r})) do

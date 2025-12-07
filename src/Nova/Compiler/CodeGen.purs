@@ -406,6 +406,11 @@ handlePointFreeAlias ctx func =
           in Just ("  def " <> snakeCase func.name <> "(" <> argsStr <> ") do\n    " <>
                    snakeCase refName <> "(" <> argsStr <> ")\n  end")
         _ -> Nothing
+    -- Handle record accessor sections: fn = _.foo.bar -> def fn(auto_arg0), do: auto_arg0.foo.bar
+    _ | isRecordAccessorSection func.body ->
+      let accessPath = collectRecordAccessPath func.body
+      in Just ("  def " <> snakeCase func.name <> "(auto_arg0) do\n    auto_arg0" <>
+               accessPath <> "\n  end")
     _ ->
       -- For partial applications like Array.filter(fn), we need to generate
       -- a function that takes the remaining arg and passes both to the function
@@ -436,6 +441,31 @@ isPartialAppOfArity2 (ExprApp (ExprQualified "Array" fn) _) =
 isPartialAppOfArity2 (ExprApp (ExprVar fn) _) =
   fn == "filter" || fn == "map" || fn == "find" || fn == "any" || fn == "all"
 isPartialAppOfArity2 _ = false
+
+-- | Check if expression is a record accessor section like _.foo.bar
+isRecordAccessorSection :: Expr -> Boolean
+isRecordAccessorSection (ExprVar "_") = true
+isRecordAccessorSection (ExprSection "_") = true
+isRecordAccessorSection (ExprRecordAccess inner _) = isRecordAccessorSection inner
+isRecordAccessorSection _ = false
+
+-- | Collect the field access path from a record accessor section
+-- | _.foo.bar -> ".foo.bar"
+collectRecordAccessPath :: Expr -> String
+collectRecordAccessPath expr =
+  let result = go expr
+      fields = result.fields
+  in if Array.null fields
+     then ""
+     else "." <> intercalate "." (map snakeCase fields)
+  where
+    go :: Expr -> { fields :: Array String }
+    go (ExprVar "_") = { fields: [] }
+    go (ExprSection "_") = { fields: [] }
+    go (ExprRecordAccess inner field) =
+      let r = go inner
+      in { fields: Array.snoc r.fields field }
+    go _ = { fields: [] }
 
 -- | Generate the body of a guarded function
 -- | When the first guard has pattern guards, generate case expressions
@@ -1459,6 +1489,14 @@ genExpr' ctx _ (ExprBinOp "*>" l r) =
 genExpr' ctx _ (ExprBinOp "<*" l r) =
   -- Applicative sequence left: x <* y = x then discard y
   "Nova.Runtime.seq_left(" <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> ")"
+
+genExpr' ctx _ (ExprBinOp ".." l r) =
+  -- Range operator: 1 .. 10 -> 1..10 (Elixir range syntax, no spaces)
+  genExpr' ctx 0 l <> ".." <> genExpr' ctx 0 r
+
+genExpr' ctx _ (ExprBinOp "/\\" l r) =
+  -- Tuple constructor: 4 /\ 4 -> {:tuple, 4, 4}
+  "{:tuple, " <> genExpr' ctx 0 l <> ", " <> genExpr' ctx 0 r <> "}"
 
 genExpr' ctx _ (ExprBinOp op l r) =
   -- Check for section syntax: (_ == x) or (x == _)

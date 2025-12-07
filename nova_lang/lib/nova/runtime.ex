@@ -42,6 +42,10 @@ defmodule Nova.Runtime do
       if is_function(next_effect, 0), do: next_effect.(), else: next_effect
     end
   end
+  # Eager IO bind - when the Effect was already executed (returns :ok or :unit)
+  # This happens when IO functions like log are called eagerly in Elixir
+  def bind(:ok, f), do: f.(:unit)
+  def bind(:unit, f), do: f.(:unit)
   # Parser bind
   def bind({:parser, pa}, f) do
     {:parser, fn ts ->
