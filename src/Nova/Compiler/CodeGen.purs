@@ -261,6 +261,11 @@ collectModuleFuncs decls maybeEnv =
     ctorArities = Array.concatMap getCtorArities decls
     arityMap = Map.fromFoldable (map (\(Tuple n info) -> Tuple n info.arity) (directArities <> ctorArities))
 
+    -- Count lambda arity by counting nested lambda parameters
+    countLambdaArity :: Expr -> Int
+    countLambdaArity (ExprLambda params body) = List.length params + countLambdaArity body
+    countLambdaArity _ = 0
+
     -- Resolve arity for 0-param functions by inspecting their body
     resolveArity :: Map String Int -> Declaration -> Maybe (Tuple String FuncInfo)
     resolveArity amap (DeclFunction func) =
@@ -269,6 +274,11 @@ collectModuleFuncs decls maybeEnv =
       in if paramCount > 0
          then Just (Tuple name (mkInfo name paramCount))
          else case func.body of
+           -- If body is a lambda, count all nested lambda parameters
+           ExprLambda params innerBody ->
+             let lambdaArity = List.length params + countLambdaArity innerBody
+             in Just (Tuple name (mkInfo name lambdaArity))
+
            -- If body is just a variable, look up its arity
            ExprVar refName ->
              case Map.lookup refName amap of
@@ -420,6 +430,17 @@ handlePointFreeAlias ctx func =
     Just "  def int_to_string(auto_arg0) do\n    to_string(auto_arg0)\n  end"
   else if not (List.null func.parameters) then Nothing
   else case func.body of
+    -- Handle lambda-bodied functions: cons = \a l r f -> body
+    -- Generate as: def cons(a, l, r, f) do body end
+    ExprLambda params innerBody ->
+      let allParams = collectLambdaParams params innerBody
+          finalBody = collectLambdaBody innerBody
+          -- Add lambda params to local context
+          ctxWithParams = foldr addLocalsFromPattern ctx allParams
+          paramStr = intercalate ", " (Array.fromFoldable (map genPattern allParams))
+          bodyStr = genExprCtx ctxWithParams 2 finalBody
+      in Just ("  def " <> snakeCase func.name <> "(" <> paramStr <> ") do\n" <>
+               bodyStr <> "\n  end")
     ExprVar refName ->
       case lookupArity refName ctx of
         Just arity | arity > 0 ->
@@ -470,6 +491,19 @@ isRecordAccessorSection (ExprVar "_") = true
 isRecordAccessorSection (ExprSection "_") = true
 isRecordAccessorSection (ExprRecordAccess inner _) = isRecordAccessorSection inner
 isRecordAccessorSection _ = false
+
+-- | Collect all parameters from nested lambda expressions
+-- | \a b -> \c -> body returns [a, b, c]
+collectLambdaParams :: List Pattern -> Expr -> List Pattern
+collectLambdaParams params (ExprLambda innerParams innerBody) =
+  params <> collectLambdaParams innerParams innerBody
+collectLambdaParams params _ = params
+
+-- | Get the innermost body from nested lambdas
+-- | \a -> \b -> body returns body
+collectLambdaBody :: Expr -> Expr
+collectLambdaBody (ExprLambda _ innerBody) = collectLambdaBody innerBody
+collectLambdaBody body = body
 
 -- | Collect the field access path from a record accessor section
 -- | _.foo.bar -> ".foo.bar"

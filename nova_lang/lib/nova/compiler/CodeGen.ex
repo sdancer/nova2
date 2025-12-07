@@ -344,6 +344,10 @@ end
   :nothing -> :nothing
 end
       end end end)
+      count_lambda_arity = Nova.Runtime.fix(fn count_lambda_arity -> fn auto_arg0 -> case auto_arg0 do
+        ({:expr_lambda, params, body}) -> (Nova.List.length(params) + count_lambda_arity.(body))
+        _ -> 0
+      end end end)
       mk_info = Nova.Runtime.fix2(fn mk_info -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {name, arity} -> %{arity: arity, ty: get_type.(name)}
       end end end end)
@@ -365,6 +369,9 @@ end
   {:just, ({:tuple, name, (mk_info.(name).(param_count))})}
 else
   case func.body do
+    {:expr_lambda, params, inner_body} -> 
+        lambda_arity = (Nova.List.length(params) + count_lambda_arity.(inner_body))
+        {:just, ({:tuple, name, (mk_info.(name).(lambda_arity))})}
     {:expr_var, ref_name} -> case Nova.Map.lookup(ref_name, amap) do
         {:just, ref_arity} -> {:just, ({:tuple, name, (mk_info.(name).(ref_arity))})}
         :nothing -> {:just, ({:tuple, name, (mk_info.(name).(0))})}
@@ -545,6 +552,13 @@ end
         :nothing
       else
         case func.body do
+          {:expr_lambda, params, inner_body} -> 
+              all_params = collect_lambda_params(params, inner_body)
+              final_body = collect_lambda_body(inner_body)
+              ctx_with_params = Data.Foldable.foldr((&add_locals_from_pattern/2), ctx, all_params)
+              param_str = Data.Array.intercalate(", ", (Nova.Array.from_foldable((Prelude.map((&gen_pattern/1), all_params)))))
+              body_str = gen_expr_ctx(ctx_with_params, 2, final_body)
+              {:just, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", snake_case(func.name)), "("), param_str), ") do\n"), body_str), "\n  end"))}
           {:expr_var, ref_name} -> case lookup_arity(ref_name, ctx) do
               {:just, arity} when (arity > 0) -> 
                   arg_names = Prelude.map((fn i -> Nova.Runtime.append("auto_arg", Prelude.show(i)) end), (Nova.Array.range(0, ((arity - 1)))))
@@ -629,6 +643,26 @@ end
 
   def is_record_accessor_section(_) do
     false
+  end
+
+
+
+  def collect_lambda_params(params, ({:expr_lambda, inner_params, inner_body})) do
+    Nova.Runtime.append(params, collect_lambda_params(inner_params, inner_body))
+  end
+
+  def collect_lambda_params(params, _) do
+    params
+  end
+
+
+
+  def collect_lambda_body(({:expr_lambda, _, inner_body})) do
+    collect_lambda_body(inner_body)
+  end
+
+  def collect_lambda_body(body) do
+    body
   end
 
 
