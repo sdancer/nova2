@@ -197,8 +197,8 @@ defmodule PursTestRunner do
     # Prelude/basic ops
     |> String.replace(~r/(?<!Runtime\.)negate\.\(/, "Nova.Runtime.negate(")
     |> String.replace(~r/(?<!Runtime\.)coerce\.\(/, "Nova.Runtime.coerce(")
-    # Unit
-    |> String.replace(~r/(?<!Runtime\.)\bunit\b(?!\.)/, "Nova.Runtime.unit()")
+    # Unit - avoid matching :unit atoms
+    |> String.replace(~r/(?<!Runtime\.)(?<!:)\bunit\b(?!\.)/, "Nova.Runtime.unit()")
     # FFI functions (Data.Function.Uncurried, Partial.Unsafe)
     |> String.replace(~r/(?<!Runtime\.)unsafePartial\.\(/, "Nova.Runtime.unsafe_partial(")
     |> String.replace(~r/(?<!Runtime\.)unsafe_partial\.\(/, "Nova.Runtime.unsafe_partial(")
@@ -209,6 +209,7 @@ defmodule PursTestRunner do
     # Type class methods that may be imported from Prelude
     |> String.replace(~r/\(pure\)\.\(/, "(&Nova.Runtime.pure/1).(")
     |> String.replace(~r/(?<!Runtime\.)pure\.\(/, "Nova.Runtime.pure(")
+    # Prelude module is now defined in lib/prelude.ex - no need for patches
     |> String.replace(~r/\(bind\)\.\(/, "(&Nova.Runtime.bind/2).(")
     |> String.replace(~r/(?<!Runtime\.)bind\.\(/, "Nova.Runtime.bind(")
     |> String.replace(~r/\(map\)\.\(/, "(&Nova.Runtime.map/2).(")

@@ -1,0 +1,5 @@
+source = File.read!("purs_tests/Console.purs")
+{:right, ast} = Nova.Compiler.CstPipeline.parse_module_cst(source)
+code = Nova.Compiler.CodeGen.gen_module().(ast)
+File.write!("/tmp/console_gen.ex", code)
+IO.puts("Written to /tmp/console_gen.ex")

@@ -1,92 +1,34 @@
+# Prelude module - provides PureScript Prelude functions for compiled code
+# This module delegates to Nova.Runtime for actual implementations
+
 defmodule Prelude do
-  @moduledoc "Prelude - standard library functions"
-
-  # Data constructors from Nova.Prelude
-  defdelegate nothing(), to: Nova.Prelude
-  defdelegate just(arg0), to: Nova.Prelude
-  defdelegate left(arg0), to: Nova.Prelude
-  defdelegate right(arg0), to: Nova.Prelude
-  defdelegate unit(), to: Nova.Prelude
-  defdelegate tuple(arg0, arg1), to: Nova.Prelude
-  defdelegate fst(t), to: Nova.Prelude
-  defdelegate snd(t), to: Nova.Prelude
-  defdelegate identity(x), to: Nova.Prelude
-  defdelegate from_maybe(def_, m), to: Nova.Prelude
-  defdelegate is_just(m), to: Nova.Prelude
-  defdelegate is_nothing(m), to: Nova.Prelude
-  defdelegate maybe(def_, f, m), to: Nova.Prelude
-  defdelegate either(f, g, e), to: Nova.Prelude
-  defdelegate is_left(e), to: Nova.Prelude
-  defdelegate is_right(e), to: Nova.Prelude
-  defdelegate otherwise(), to: Nova.Prelude
-
-  # Core runtime functions
-  defdelegate show(x), to: Nova.Runtime
-  defdelegate map(f, xs), to: Nova.Runtime
-  defdelegate filter(f, xs), to: Nova.Array
-  defdelegate length(xs), to: Nova.Array
-  defdelegate append(xs, ys), to: Nova.Runtime
-  defdelegate foldl(f, acc, xs), to: Nova.Array
-  defdelegate foldr(f, acc, xs), to: Nova.Array
-  defdelegate fold_m(f, acc, xs), to: Nova.Runtime
-  defdelegate pure(x), to: Nova.Runtime
+  # Monad operations
+  defdelegate pure(value), to: Nova.Runtime
   defdelegate bind(m, f), to: Nova.Runtime
-  defdelegate zip(xs, ys), to: Nova.Array
-  defdelegate fmap(f, x), to: Nova.Runtime
-  defdelegate alt(x, y), to: Nova.Runtime
-  defdelegate seq(x, y), to: Nova.Runtime
-  defdelegate compose(f, g), to: Nova.Runtime
+
+  # Functor operations
+  defdelegate map(f, x), to: Nova.Runtime
+
+  # Applicative operations
+  defdelegate apply(f, x), to: Nova.Runtime
+
+  # Basic operations
+  defdelegate show(x), to: Nova.Runtime
+  defdelegate identity(x), to: Nova.Runtime
   defdelegate negate(x), to: Nova.Runtime
-  defdelegate flip(f), to: Nova.Runtime
-  def const(a, _b), do: a
-  def const(a), do: fn _b -> a end
 
-  # Array functions from Nova.Array
-  defdelegate head(xs), to: Nova.Array
-  defdelegate tail(xs), to: Nova.Array
-  defdelegate reverse(xs), to: Nova.Array
-  defdelegate concat(xs), to: Nova.Array
-  defdelegate concat_map(f, xs), to: Nova.Array
-  defdelegate take(n, xs), to: Nova.Array
-  defdelegate drop(n, xs), to: Nova.Array
-  defdelegate elem(x, xs), to: Nova.Array
-  defdelegate find(f, xs), to: Nova.Array
-  defdelegate find_index(f, xs), to: Nova.Array
-  defdelegate any(f, xs), to: Nova.Array
-  defdelegate all(f, xs), to: Nova.Array
-  defdelegate zip_with(f, xs, ys), to: Nova.Array
-  defdelegate unzip(xs), to: Nova.Array
-  defdelegate sort(xs), to: Nova.Array
-  defdelegate sort_by(f, xs), to: Nova.Array
-  defdelegate nub(xs), to: Nova.Array
-  defdelegate cons(x, xs), to: Nova.Array
-  defdelegate snoc(xs, x), to: Nova.Array
-  defdelegate replicate(n, x), to: Nova.Array
-  defdelegate null(xs), to: Nova.Array
+  # const is needed by generated Nova compiler code
+  def const(x, _y), do: x
+  def const_(x, _y), do: x
+  def flip(f), do: fn a -> fn b -> f.(b).(a) end end
 
-  # Map functions from Nova.Map
-  defdelegate lookup(k, m), to: Nova.Map
-  defdelegate insert(k, v, m), to: Nova.Map
-  defdelegate delete(k, m), to: Nova.Map
-  defdelegate member(k, m), to: Nova.Map
-  def singleton(x) when is_list(x), do: x
-  def singleton(x), do: [x]
-  defdelegate empty(), to: Nova.Map
+  # Unit
+  def unit(), do: :unit
 
-  # String functions from Nova.String
-  defdelegate split(sep, s), to: Nova.String
-  defdelegate join_with(sep, xs), to: Nova.String
-  defdelegate trim(s), to: Nova.String
-  defdelegate to_lower(s), to: Nova.String
-  defdelegate to_upper(s), to: Nova.String
-  defdelegate contains(sub, s), to: Nova.String
-  defdelegate index_of(sub, s), to: Nova.String
-  defdelegate replace_all(p, r, s), to: Nova.String
-  defdelegate char_at(i, s), to: Nova.String
-  defdelegate to_char_array(s), to: Nova.String
-  defdelegate from_char_array(xs), to: Nova.String
-  defdelegate intercalate(sep, xs), to: Nova.String, as: :join_with
+  # String operations (for CodeGenCoreErlang snake_case)
+  def to_lower(c) when c >= ?A and c <= ?Z, do: c + 32
+  def to_lower(c), do: c
 
-  # seq_left - parser combinator
-  defdelegate seq_left(x, y), to: Nova.Runtime, as: :seq_l
+  # Array/List operations (for generated code)
+  def reverse(list) when is_list(list), do: Enum.reverse(list)
 end

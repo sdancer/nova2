@@ -25,6 +25,23 @@ defmodule Nova.Runtime do
   # Maybe bind
   def bind(:nothing, _f), do: :nothing
   def bind({:just, x}, f), do: f.(x)
+  # Effect bind (for IO/Effect monad - thunks)
+  # Effect is represented as a 0-arity function (thunk)
+  def bind(effect, f) when is_function(effect, 0) do
+    fn ->
+      result = effect.()
+      next_effect = f.(result)
+      if is_function(next_effect, 0), do: next_effect.(), else: next_effect
+    end
+  end
+  # Effect represented as a 1-arity function (for log etc)
+  def bind(effect, f) when is_function(effect, 1) do
+    fn ->
+      result = effect.(:unit)
+      next_effect = f.(result)
+      if is_function(next_effect, 0), do: next_effect.(), else: next_effect
+    end
+  end
   # Parser bind
   def bind({:parser, pa}, f) do
     {:parser, fn ts ->
