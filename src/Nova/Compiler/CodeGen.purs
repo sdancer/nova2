@@ -81,6 +81,28 @@ defaultKnownArities = Map.fromFoldable
   , Tuple "mkEffectFn4" 1, Tuple "mkEffectFn5" 1
   ]
 
+-- | Type class methods that should always be routed through Nova.Runtime
+-- | When a module defines instance methods (map, pure, bind, etc.), these names
+-- | conflict with the local instance definitions. We must always use Nova.Runtime.*
+-- | for these, except when they are truly local variables (function parameters).
+-- | Maps method name to its arity in Nova.Runtime
+typeClassMethodArities :: Map String Int
+typeClassMethodArities = Map.fromFoldable
+  [ Tuple "map" 2, Tuple "pure" 1, Tuple "bind" 2, Tuple "apply" 2, Tuple "alt" 2
+  , Tuple "append" 2, Tuple "mempty" 0
+  , Tuple "show" 1, Tuple "eq" 2, Tuple "compare" 2
+  , Tuple "add" 2, Tuple "sub" 2, Tuple "mul" 2, Tuple "div" 2, Tuple "negate" 1
+  , Tuple "not" 1, Tuple "disj" 2, Tuple "conj" 2, Tuple "top" 0, Tuple "bottom" 0
+  ]
+
+-- | Check if a name is a type class method that needs special handling
+isTypeClassMethod :: String -> Boolean
+isTypeClassMethod name = Map.member name typeClassMethodArities
+
+-- | Get the arity of a type class method
+typeClassMethodArity :: String -> Int
+typeClassMethodArity name = fromMaybe 1 (Map.lookup name typeClassMethodArities)
+
 -- | Compute arity from a type by counting arrows
 typeArity :: Type -> Int
 typeArity (TyCon c) | c.name == "Fun" = case c.args of
@@ -1141,6 +1163,13 @@ genExpr' ctx _ (ExprVar name) =
       -- Handle nullary data constructors as atoms (e.g., LytRoot -> :lyt_root)
       else if isNullaryConstructor name
       then ":" <> snakeCase name
+      -- Type class methods should route to Nova.Runtime even if the current module
+      -- defines instance implementations (which would otherwise shadow the call)
+      else if isTypeClassMethod name && isModuleFunc ctx name
+      then let tcArity = typeClassMethodArity name
+           in if tcArity == 0
+              then "Nova.Runtime." <> snakeCase name <> "()"
+              else "(&Nova.Runtime." <> snakeCase name <> "/" <> show tcArity <> ")"
       -- If it's a module function used as a value (not in call position),
       -- generate a function reference &func/arity
       else if isModuleFunc ctx name
@@ -1245,6 +1274,24 @@ genExpr' ctx indent (ExprApp f arg) =
       -- Handle data constructors specially
       else if isDataConstructor n
       then genConstructorApp c i n exprs
+      -- Type class methods should route to Nova.Runtime even if the current module
+      -- defines instance implementations (which would otherwise shadow the call)
+      else if isTypeClassMethod n && isModuleFunc c n
+      then
+        let qualifiedFunc = "Nova.Runtime." <> snakeCase n
+            tcArity = typeClassMethodArity n
+            numArgs = length exprs
+        in if numArgs == tcArity
+           then qualifiedFunc <> "(" <> argsS <> ")"
+           else if numArgs < tcArity
+           then genPartialApp qualifiedFunc argsS numArgs tcArity
+           else
+             -- More args than expected - function returns a function
+             let directArgs = Array.take tcArity exprs
+                 curriedArgs = Array.drop tcArity exprs
+                 directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                 funcCall = qualifiedFunc <> "(" <> directArgsStr <> ")"
+             in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
       -- Handle module-level functions (possibly with partial application)
       else if isModuleFunc c n
       then case lookupArity n c of

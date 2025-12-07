@@ -1,0 +1,5 @@
+source = File.read!("purs_tests/1110.purs")
+{:right, ast} = Nova.Compiler.CstPipeline.parse_module_cst(source)
+code = Nova.Compiler.CodeGen.gen_module().(ast)
+File.write!("/tmp/1110_gen.ex", code)
+IO.puts("Generated code saved to /tmp/1110_gen.ex")

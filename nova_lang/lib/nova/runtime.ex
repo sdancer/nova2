@@ -131,7 +131,6 @@ defmodule Nova.Runtime do
   def foldr(_f, acc, []), do: acc
   def foldr(_f, acc, :nil), do: acc
   def foldr(_f, acc, :nil_), do: acc
-  def foldr(_f, acc, nil), do: acc
   def foldr(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> f.(h, foldr(f, acc, t))
@@ -148,7 +147,6 @@ defmodule Nova.Runtime do
   def foldl(_f, acc, []), do: acc
   def foldl(_f, acc, :nil), do: acc
   def foldl(_f, acc, :nil_), do: acc
-  def foldl(_f, acc, nil), do: acc
   def foldl(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> foldl(f, f.(acc, h), t)
@@ -186,7 +184,7 @@ defmodule Nova.Runtime do
   # Array/List functions
   # 1-arity map (curried version) - for use like map(f).(list)
   def map(f) when is_function(f, 1), do: fn list -> map(f, list) end
-  def map(f, []), do: []
+  def map(_f, []), do: []
   def map(f, [h | t]), do: [f.(h) | map(f, t)]
   # Map over PureScript-style linked lists
   def map(_f, :nil), do: :nil
@@ -203,6 +201,10 @@ defmodule Nova.Runtime do
         {:right, {:tuple, a, rest}} -> {:right, {:tuple, f.(a), rest}}
       end
     end}
+  end
+  # Map over Elixir map values (for PureScript Map.map)
+  def map(f, map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {k, f.(v)} end)
   end
 
   # fmap - Functor map operation
@@ -240,18 +242,14 @@ defmodule Nova.Runtime do
   # applySecond / applyFirst - alias for seq/seq_l
   def apply_second(p1, p2), do: seq(p1, p2)
   def apply_first(p1, p2), do: seq_l(p1, p2)
-  # Map over Elixir map values (for PureScript Map.map)
-  def map(f, map) when is_map(map) do
-    Map.new(map, fn {k, v} -> {k, f.(v)} end)
-  end
 
-  def filter(f, []), do: []
+  def filter(_f, []), do: []
   def filter(f, [h | t]) do
     if f.(h), do: [h | filter(f, t)], else: filter(f, t)
   end
 
-  def intercalate(sep, []), do: ""
-  def intercalate(sep, [x]), do: x
+  def intercalate(_sep, []), do: ""
+  def intercalate(_sep, [x]), do: x
   def intercalate(sep, [h | t]), do: h <> sep <> intercalate(sep, t)
 
   def zip([], _), do: []
@@ -501,60 +499,6 @@ defmodule Nova.Array do
 
   # intercalate - join list with separator
   def intercalate(sep, list), do: Enum.join(list, sep)
-
-  # any/all - predicates for lists
-  def any(f, list), do: Enum.any?(list, f)
-  def all(f, list), do: Enum.all?(list, f)
-
-  # concat - flatten one level of nesting
-  def concat(lists), do: List.flatten(lists, [])
-
-  # concat_map - map then flatten
-  def concat_map(f, list), do: Enum.flat_map(list, f)
-
-  # head/tail - list accessors
-  def head([h | _]), do: {:just, h}
-  def head([]), do: :nothing
-  def tail([_ | t]), do: {:just, t}
-  def tail([]), do: :nothing
-
-  # reverse - reverse a list
-  def reverse(list), do: Enum.reverse(list)
-
-  # take/drop - slice operations
-  def take(n, list), do: Enum.take(list, n)
-  def drop(n, list), do: Enum.drop(list, n)
-
-  # cons/snoc - list construction
-  def cons(x, list), do: [x | list]
-  def snoc(list, x), do: list ++ [x]
-
-  # elem - membership test
-  def elem(x, list), do: Enum.member?(list, x)
-
-  # find - find first matching element
-  def find(f, list) do
-    case Enum.find(list, f) do
-      nil -> :nothing
-      x -> {:just, x}
-    end
-  end
-
-  # null - empty check
-  def null([]), do: true
-  def null(_), do: false
-
-  # replicate - create list of n copies of x
-  def replicate(n, x), do: List.duplicate(x, n)
-
-  # nub - remove duplicates
-  def nub(list), do: Enum.uniq(list)
-
-  # sort_by - sort by key function
-  def sort_by(f, list), do: Enum.sort_by(list, f)
-
-  # zip_with - combine two lists with function
-  def zip_with(f, l1, l2), do: Enum.zip_with(l1, l2, fn a, b -> f.(a).(b) end)
 
   # lookup - look up key in list of pairs
   def lookup(k, list) do

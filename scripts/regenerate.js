@@ -292,10 +292,11 @@ for (const path of sortedLibModules) {
   }
 }
 
-// Modules with known CodeGen issues that need manual fixes
-// These modules define functions with the same name as prelude functions (e.g., map, pure)
-// which confuses the code generator's resolution logic
-const SKIP_REGENERATE = ['CstParser'];
+// Modules to skip during regeneration (if any have known CodeGen issues)
+// Note: CstParser was previously skipped because it defines type class instances (Functor, etc.)
+// whose methods (map, pure, bind) conflicted with Prelude functions. This was fixed by adding
+// type class method routing in CodeGen that redirects these calls to Nova.Runtime.*
+const SKIP_REGENERATE = [];
 
 console.log('\n=== Compiling Compiler Modules (auto-sorted) ===');
 for (const path of sortedCompilerModules) {

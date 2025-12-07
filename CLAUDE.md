@@ -144,3 +144,4 @@ See `BACKLOG.md` for:
 - Future enhancements
 
 **Priority:** Continue work on parameterized type alias expansion in CstToAst.purs to complete self-hosting.
+- each warning is a waste of tokens, which means a compounding waste of money

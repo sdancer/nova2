@@ -34,7 +34,7 @@ defmodule Nova.Compiler.Unify do
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Type mismatch: ", show_type(t1)), " vs "), show_type(t2))
   end
   def show(({:arity_mismatch, name, n1, n2})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Arity mismatch for ", name), ": "), show(n1)), " vs "), show(n2))
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Arity mismatch for ", name), ": "), Nova.Runtime.show(n1)), " vs "), Nova.Runtime.show(n2))
   end
   def show(({:record_field_mismatch, f})) do
     Nova.Runtime.append("Record field mismatch: ", f)
@@ -43,11 +43,11 @@ defmodule Nova.Compiler.Unify do
 
 
   def show_type(({:ty_var, v})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(v.name, "["), show(v.id)), "]")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(v.name, "["), Nova.Runtime.show(v.id)), "]")
   end
 
   def show_type(({:ty_con, tc})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), show((Data.Array.length(tc.args)))), " args)")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), Nova.Runtime.show((Data.Array.length(tc.args)))), " args)")
   end
 
   def show_type(({:ty_record, r})) do

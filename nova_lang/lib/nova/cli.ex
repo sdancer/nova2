@@ -23,7 +23,7 @@ defmodule Nova.CLI do
     end
   end
 
-  defp start_mcp_server(opts \\ %{}) do
+  defp start_mcp_server(opts) do
     port = Map.get(opts, :port, 9999)
     shared = Map.get(opts, :shared, false)
 
@@ -53,26 +53,6 @@ defmodule Nova.CLI do
     parse_mcp_args(rest, acc)
   end
 
-  defp parse_mcp_args([], acc), do: {:mcp, acc}
-  defp parse_mcp_args(["--port", port_str | rest], acc) do
-    case Integer.parse(port_str) do
-      {port, ""} -> parse_mcp_args(rest, %{acc | port: port})
-      _ -> {:error, "Invalid port number: #{port_str}"}
-    end
-  end
-  defp parse_mcp_args(["-p", port_str | rest], acc) do
-    parse_mcp_args(["--port", port_str | rest], acc)
-  end
-  defp parse_mcp_args(["--shared" | rest], acc) do
-    parse_mcp_args(rest, %{acc | shared: true})
-  end
-  defp parse_mcp_args(["-s" | rest], acc) do
-    parse_mcp_args(rest, %{acc | shared: true})
-  end
-  defp parse_mcp_args([unknown | _], _acc) do
-    {:error, "Unknown mcp option: #{unknown}"}
-  end
-
   defp parse_args(["--help" | _], acc), do: {:help, acc}
   defp parse_args(["-h" | _], acc), do: {:help, acc}
   defp parse_args(["--version" | _], acc), do: {:version, acc}
@@ -100,6 +80,26 @@ defmodule Nova.CLI do
 
   defp parse_args([file | rest], acc) do
     parse_args(rest, %{acc | files: [file | acc.files]})
+  end
+
+  defp parse_mcp_args([], acc), do: {:mcp, acc}
+  defp parse_mcp_args(["--port", port_str | rest], acc) do
+    case Integer.parse(port_str) do
+      {port, ""} -> parse_mcp_args(rest, %{acc | port: port})
+      _ -> {:error, "Invalid port number: #{port_str}"}
+    end
+  end
+  defp parse_mcp_args(["-p", port_str | rest], acc) do
+    parse_mcp_args(["--port", port_str | rest], acc)
+  end
+  defp parse_mcp_args(["--shared" | rest], acc) do
+    parse_mcp_args(rest, %{acc | shared: true})
+  end
+  defp parse_mcp_args(["-s" | rest], acc) do
+    parse_mcp_args(rest, %{acc | shared: true})
+  end
+  defp parse_mcp_args([unknown | _], _acc) do
+    {:error, "Unknown mcp option: #{unknown}"}
   end
 
   defp compile_files(files, opts) do

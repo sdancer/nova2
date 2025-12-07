@@ -47,7 +47,7 @@ defmodule Nova.Compiler.TypeChecker do
 
   # instance Show tcerror()
   def show(({:unify_err, e})) do
-    Nova.Runtime.append("Unification error: ", show(e))
+    Nova.Runtime.append("Unification error: ", Nova.Runtime.show(e))
   end
   def show(({:unbound_variable, v})) do
     Nova.Runtime.append("Unbound variable: ", v)

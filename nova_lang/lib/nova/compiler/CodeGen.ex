@@ -62,6 +62,24 @@ defmodule Nova.Compiler.CodeGen do
 
 
 
+  def type_class_method_arities() do
+    Nova.Map.from_foldable([{:tuple, "map", 2}, {:tuple, "pure", 1}, {:tuple, "bind", 2}, {:tuple, "apply", 2}, {:tuple, "alt", 2}, {:tuple, "append", 2}, {:tuple, "mempty", 0}, {:tuple, "show", 1}, {:tuple, "eq", 2}, {:tuple, "compare", 2}, {:tuple, "add", 2}, {:tuple, "sub", 2}, {:tuple, "mul", 2}, {:tuple, "div", 2}, {:tuple, "negate", 1}, {:tuple, "not", 1}, {:tuple, "disj", 2}, {:tuple, "conj", 2}, {:tuple, "top", 0}, {:tuple, "bottom", 0}])
+  end
+
+
+
+  def is_type_class_method(name) do
+    Nova.Map.member(name, type_class_method_arities())
+  end
+
+
+
+  def type_class_method_arity(name) do
+    Data.Maybe.from_maybe(1, (Nova.Map.lookup(name, type_class_method_arities())))
+  end
+
+
+
   def type_arity(({:ty_con, c})) do
     cond do
       ((c.name == "Fun")) ->
@@ -1324,46 +1342,56 @@ end
             if is_nullary_constructor(name) do
               Nova.Runtime.append(":", snake_case(name))
             else
-              if is_module_func(ctx, name) do
-                case lookup_arity(name, ctx) do
-                  {:just, 0} -> Nova.Runtime.append(snake_case(name), "()")
-                  {:just, arity} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/"), Prelude.show(arity)), ")")
-                  :nothing -> case lookup_type_arity(name, ctx) do
-                      {:just, type_arity} -> if (type_arity == 0) do
-                          Nova.Runtime.append(snake_case(name), "()")
-                        else
-                          Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/"), Prelude.show(type_arity)), ")")
-                        end
-                      :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing arity for module function ref '", name), "'")))
-                    end
-                end
+              if (is_type_class_method(name) and is_module_func(ctx, name)) do
+                
+                  tc_arity = type_class_method_arity(name)
+                  if (tc_arity == 0) do
+  Nova.Runtime.append(Nova.Runtime.append("Nova.Runtime.", snake_case(name)), "()")
+else
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Runtime.", snake_case(name)), "/"), Prelude.show(tc_arity)), ")")
+end
               else
-                if is_types_module_func(name) do
-                  
-                    arity = types_module_func_arity(name)
-                    if (arity == 0) do
+                if is_module_func(ctx, name) do
+                  case lookup_arity(name, ctx) do
+                    {:just, 0} -> Nova.Runtime.append(snake_case(name), "()")
+                    {:just, arity} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/"), Prelude.show(arity)), ")")
+                    :nothing -> case lookup_type_arity(name, ctx) do
+                        {:just, type_arity} -> if (type_arity == 0) do
+                            Nova.Runtime.append(snake_case(name), "()")
+                          else
+                            Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/"), Prelude.show(type_arity)), ")")
+                          end
+                        :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing arity for module function ref '", name), "'")))
+                      end
+                  end
+                else
+                  if is_types_module_func(name) do
+                    
+                      arity = types_module_func_arity(name)
+                      if (arity == 0) do
   Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(name)), "()")
 else
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Types.", snake_case(name)), "/"), Prelude.show(arity)), ")")
 end
-                else
-                  if is_unify_module_func(name) do
-                    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Unify.", snake_case(name)), "/"), Prelude.show((unify_module_func_arity(name)))), ")")
                   else
-                    case Nova.Map.lookup(name, ctx.imports) do
-                      {:just, src_mod} -> case lookup_type_arity(name, ctx) do
-                          {:just, func_arity} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", src_mod), "."), snake_case(name)), "/"), Prelude.show(func_arity)), ")")
-                          :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing type arity for imported function '", name), "' from module "), src_mod), "'")))
-                        end
-                      :nothing -> if is_ast_constructor(name) do
-                          Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Ast.", snake_case(name)), "/1)")
-                        else
-                          if (is_data_constructor(name) and not((is_nullary_constructor(name)))) do
-                            Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/1)")
-                          else
-                            snake_case(name)
+                    if is_unify_module_func(name) do
+                      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Unify.", snake_case(name)), "/"), Prelude.show((unify_module_func_arity(name)))), ")")
+                    else
+                      case Nova.Map.lookup(name, ctx.imports) do
+                        {:just, src_mod} -> case lookup_type_arity(name, ctx) do
+                            {:just, func_arity} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&", src_mod), "."), snake_case(name)), "/"), Prelude.show(func_arity)), ")")
+                            :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Missing type arity for imported function '", name), "' from module "), src_mod), "'")))
                           end
-                        end
+                        :nothing -> if is_ast_constructor(name) do
+                            Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Ast.", snake_case(name)), "/1)")
+                          else
+                            if (is_data_constructor(name) and not((is_nullary_constructor(name)))) do
+                              Nova.Runtime.append(Nova.Runtime.append("(&", snake_case(name)), "/1)")
+                            else
+                              snake_case(name)
+                            end
+                          end
+                      end
                     end
                   end
                 end
@@ -1444,11 +1472,31 @@ end
               if is_data_constructor(n) do
                 gen_constructor_app(c, i, n, exprs)
               else
-                if is_module_func(c, n) do
-                  case lookup_arity(n, c) do
-                    {:just, arity} -> 
-                        num_args = Data.Array.length(exprs)
-                        if (num_args == arity) do
+                if (is_type_class_method(n) and is_module_func(c, n)) do
+                  
+                    qualified_func = Nova.Runtime.append("Nova.Runtime.", snake_case(n))
+                    tc_arity = type_class_method_arity(n)
+                    num_args = Data.Array.length(exprs)
+                    if (num_args == tc_arity) do
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(qualified_func, "("), args_s), ")")
+else
+  if (num_args < tc_arity) do
+    gen_partial_app(qualified_func, args_s, num_args, tc_arity)
+  else
+    
+      direct_args = Nova.Array.take(tc_arity, exprs)
+      curried_args = Nova.Array.drop(tc_arity, exprs)
+      direct_args_str = Data.Array.intercalate(", ", (Prelude.map((fn auto_p0 -> gen_expr_prime(c, i, auto_p0) end), direct_args)))
+      func_call = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(qualified_func, "("), direct_args_str), ")")
+      Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
+  end
+end
+                else
+                  if is_module_func(c, n) do
+                    case lookup_arity(n, c) do
+                      {:just, arity} -> 
+                          num_args = Data.Array.length(exprs)
+                          if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1466,10 +1514,10 @@ else
     end
   end
 end
-                    :nothing -> case lookup_type_arity(n, c) do
-                        {:just, type_arity} -> 
-                            num_args = Data.Array.length(exprs)
-                            if (num_args == type_arity) do
+                      :nothing -> case lookup_type_arity(n, c) do
+                          {:just, type_arity} -> 
+                              num_args = Data.Array.length(exprs)
+                              if (num_args == type_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), "("), args_s), ")")
 else
   if (num_args < type_arity) do
@@ -1483,15 +1531,15 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                        :nothing -> Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Module function '", n), "' is in moduleFuncs but has no arity in funcArities or typeEnv\")")
-                      end
-                  end
-                else
-                  if is_types_module_func(n) do
-                    
-                      arity = types_module_func_arity(n)
-                      num_args = Data.Array.length(exprs)
-                      if (num_args == arity) do
+                          :nothing -> Nova.Runtime.append(Nova.Runtime.append("(raise \"CodeGen error: Module function '", n), "' is in moduleFuncs but has no arity in funcArities or typeEnv\")")
+                        end
+                    end
+                  else
+                    if is_types_module_func(n) do
+                      
+                        arity = types_module_func_arity(n)
+                        num_args = Data.Array.length(exprs)
+                        if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(n)), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1509,12 +1557,12 @@ else
     end
   end
 end
-                  else
-                    if is_unify_module_func(n) do
-                      
-                        arity = unify_module_func_arity(n)
-                        num_args = Data.Array.length(exprs)
-                        if (num_args == arity) do
+                    else
+                      if is_unify_module_func(n) do
+                        
+                          arity = unify_module_func_arity(n)
+                          num_args = Data.Array.length(exprs)
+                          if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Unify.", snake_case(n)), "("), args_s), ")")
 else
   if (num_args < arity) do
@@ -1532,13 +1580,13 @@ else
     end
   end
 end
-                    else
-                      if is_imported_prelude_func(c, n) do
-                        
-                          src_mod = Data.Maybe.from_maybe("Prelude", (get_import_source_module(c, n)))
-                          num_args = Data.Array.length(exprs)
-                          qualified_func = Nova.Runtime.append(Nova.Runtime.append(src_mod, "."), snake_case(n))
-                          case lookup_type_arity(n, c) do
+                      else
+                        if is_imported_prelude_func(c, n) do
+                          
+                            src_mod = Data.Maybe.from_maybe("Prelude", (get_import_source_module(c, n)))
+                            num_args = Data.Array.length(exprs)
+                            qualified_func = Nova.Runtime.append(Nova.Runtime.append(src_mod, "."), snake_case(n))
+                            case lookup_type_arity(n, c) do
   :nothing -> raise((Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("CodeGen error: Imported stdlib function '", n), "' from "), src_mod), " has no arity in typeEnv or preludeArities")))
   {:just, func_arity} -> if (num_args == func_arity) do
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(qualified_func, "("), args_s), ")")
@@ -1559,11 +1607,11 @@ end
       end
     end
 end
-                      else
-                        case lookup_local_arity(n, c) do
-                          {:just, local_arity} -> 
-                              num_args = Data.Array.length(exprs)
-                              if (num_args == local_arity) do
+                        else
+                          case lookup_local_arity(n, c) do
+                            {:just, local_arity} -> 
+                                num_args = Data.Array.length(exprs)
+                                if (num_args == local_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
 else
   if (num_args < local_arity) do
@@ -1577,10 +1625,10 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                          :nothing -> case lookup_type_arity(n, c) do
-                              {:just, type_arity} -> 
-                                  num_args = Data.Array.length(exprs)
-                                  if (num_args == type_arity) do
+                            :nothing -> case lookup_type_arity(n, c) do
+                                {:just, type_arity} -> 
+                                    num_args = Data.Array.length(exprs)
+                                    if (num_args == type_arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
 else
   if (num_args < type_arity) do
@@ -1594,8 +1642,9 @@ else
       Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
   end
 end
-                              :nothing -> gen_chained_app((snake_case(n)), exprs, c, i)
-                            end
+                                :nothing -> gen_chained_app((snake_case(n)), exprs, c, i)
+                              end
+                          end
                         end
                       end
                     end
