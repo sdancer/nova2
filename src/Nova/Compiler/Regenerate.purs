@@ -158,7 +158,7 @@ topologicalSort graph = go (Array.fromFoldable (Map.keys graph)) Set.empty Set.e
     go :: Array String -> Set String -> Set String -> Array String -> Array String
     go remaining visited visiting acc =
       case Array.uncons remaining of
-        Nothing -> Array.reverse acc
+        Nothing -> acc  -- Don't reverse - deps are already in correct order
         Just { head: path, tail: rest } ->
           if Set.member path visited
           then go rest visited visiting acc

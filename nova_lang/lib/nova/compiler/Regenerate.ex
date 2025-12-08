@@ -44,7 +44,7 @@ defmodule Nova.Compiler.Regenerate do
     %{src_base: "./src/Nova/Compiler/", lib_base: "./lib/", output_dir: "./output/", target_dir: "./nova_lang/lib/nova/compiler/"}
   end
 
-  # @type module_result :: %{mod_: module(), env: env(), exports: module_exports()}
+  # @type module_result :: %{mod_: module(), env: types._env(), exports: types._module_exports()}
 
   # Data type: LogEntry
   def log_info(arg0), do: {:log_info, arg0}
@@ -149,7 +149,7 @@ end
         end
       end  end end end end end)
       go = Nova.Runtime.fix4(fn go -> fn remaining -> fn visited -> fn visiting -> fn acc -> case Nova.Array.uncons(remaining) do
-        :nothing -> Nova.Array.reverse(acc)
+        :nothing -> acc
         {:just, %{head: path, tail: rest}} -> if Nova.Set.member(path, visited) do
             go.(rest).(visited).(visiting).(acc)
           else
@@ -256,8 +256,8 @@ end
       maybe_env = {:just, result.env}
       registry_prime = Nova.Compiler.Types.register_module(acc.registry, full_mod_name, result.exports)
       code = Nova.Compiler.CodeGen.gen_module_with_registry(acc.registry, maybe_env, result.mod_)
-      written1 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.output_dir, short_name), ".ex")), code)
-      written2 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.target_dir, short_name), ".ex")), code)
+      written1 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.output_dir, short_name), ".ex"))).(code)
+      written2 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.target_dir, short_name), ".ex"))).(code)
       line_count = Nova.Array.length((Nova.String.split((Nova.String.pattern("\n")), code)))
       log_msg = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Compiled ", short_name), " ("), Prelude.show(line_count)), " lines)")
       %{registry: registry_prime, count: (acc.count + 1), logs: Nova.Array.snoc(acc.logs, (log_info(log_msg)))}
@@ -273,8 +273,8 @@ end
 
   def regenerate(fs, cfg) do
     
-      lib_files = (fs.list_files).((Nova.Runtime.append(cfg.lib_base, "Data")), ".purs")
-      compiler_files = (fs.list_files).(cfg.src_base, ".purs")
+      lib_files = (fs.list_files).((Nova.Runtime.append(cfg.lib_base, "Data"))).(".purs")
+      compiler_files = (fs.list_files).(cfg.src_base).(".purs")
       lib_deps = build_dependency_graph(fs, cfg, lib_files, true)
       compiler_deps = build_dependency_graph(fs, cfg, compiler_files, false)
       sorted_lib_modules = topological_sort(lib_deps)

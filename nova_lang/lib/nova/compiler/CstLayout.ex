@@ -12,7 +12,7 @@ defmodule Nova.Compiler.CstLayout do
 
   # import Nova.Compiler.Cst
 
-  # @type layout_stack :: list()((tuple()(source_pos())(layout_delim())))
+  # @type layout_stack :: list()((tuple()(cst._source_pos())(layout_delim())))
 
   # Data type: LayoutDelim
   def lyt_root(), do: :lyt_root

@@ -240,18 +240,30 @@ defmodule Nova.Compiler.Types do
       Nova.Set.difference((free_type_vars(s.ty)), bound_ids)
   end
 
-  # @type env :: %{bindings: map()(string())(scheme()), counter: int(), registry_layer: maybe()(int()), namespace: maybe()(string())}
+  # @type env :: %{bindings: map()(string())(scheme()), counter: int(), registry_layer: maybe()(int()), namespace: maybe()(string()), type_aliases: map()(string())(type())}
 
 
 
   def empty_env() do
-    %{bindings: builtin_prelude(), counter: 0, registry_layer: :nothing, namespace: :nothing}
+    %{bindings: builtin_prelude(), counter: 0, registry_layer: :nothing, namespace: :nothing, type_aliases: Nova.Map.empty}
   end
 
 
 
   def extend_env(env, name, scheme) do
     %{env | bindings: Nova.Map.insert(name, scheme, env.bindings)}
+  end
+
+
+
+  def extend_type_alias(env, name, ty) do
+    %{env | type_aliases: Nova.Map.insert(name, ty, env.type_aliases)}
+  end
+
+
+
+  def lookup_type_alias(env, name) do
+    Nova.Map.lookup(name, env.type_aliases)
   end
 
 

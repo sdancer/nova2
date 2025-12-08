@@ -18,21 +18,21 @@ defmodule Nova.Compiler.CstToAst do
 
   # import Nova.Compiler.Ast
 
-  # @type separated_data_ctor :: %{head: data_ctor()(void()), tail: list()((tuple()(source_token())((data_ctor()(void())))))}
+  # @type separated_data_ctor :: %{head: cst._data_ctor()(void()), tail: list()((tuple()(cst._source_token())((cst._data_ctor()(void())))))}
 
-  # @type separated_instance :: %{head: instance()(void()), tail: list()((tuple()(source_token())((instance()(void())))))}
+  # @type separated_instance :: %{head: cst._instance()(void()), tail: list()((tuple()(cst._source_token())((cst._instance()(void())))))}
 
-  # @type separated_pattern_guard :: %{head: pattern_guard()(void()), tail: list()((tuple()(source_token())((pattern_guard()(void())))))}
+  # @type separated_pattern_guard :: %{head: cst._pattern_guard()(void()), tail: list()((tuple()(cst._source_token())((cst._pattern_guard()(void())))))}
 
-  # @type separated_binder :: %{head: binder()(void()), tail: list()((tuple()(source_token())((binder()(void())))))}
+  # @type separated_binder :: %{head: cst._binder()(void()), tail: list()((tuple()(cst._source_token())((cst._binder()(void())))))}
 
-  # @type labeled_ident_type :: %{label: name()(ident()), separator: source_token(), value: type()(void())}
+  # @type labeled_ident_type :: %{label: cst._name()(cst._ident()), separator: cst._source_token(), value: cst._type()(void())}
 
-  # @type wrapped_expr :: %{open: source_token(), value: expr()(void()), close: source_token()}
+  # @type wrapped_expr :: %{open: cst._source_token(), value: cst._expr()(void()), close: cst._source_token()}
 
-  # @type cst_import_decl :: import_decl()(void())
+  # @type cst_import_decl :: cst._import_decl()(void())
 
-  # @type cst_separated_import :: %{head: import_()(void()), tail: list()((tuple()(source_token())((import_()(void())))))}
+  # @type cst_separated_import :: %{head: cst._import()(void()), tail: list()((tuple()(cst._source_token())((cst._import()(void())))))}
 
 
 
@@ -62,6 +62,15 @@ defmodule Nova.Compiler.CstToAst do
 
   def unwrap_module_name(({:module_name, s})) do
     s
+  end
+
+
+
+  def qualified_proper_name(qn) do
+    case qn.module do
+      :nothing -> unwrap_proper(qn.name)
+      {:just, mod_name} -> Nova.Runtime.append(Nova.Runtime.append(unwrap_module_name(mod_name), "."), unwrap_proper(qn.name))
+    end
   end
 
 
@@ -561,7 +570,7 @@ end
   def convert_type(ty) do
     case ty do
       {:type_var, name} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_var((unwrap_ident(name.name))))
-      {:type_constructor, qn} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_con((unwrap_proper(qn.name))))
+      {:type_constructor, qn} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_con((qualified_proper_name(qn))))
       {:type_wildcard, _} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_var("_"))
       {:type_hole, name} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_var((Nova.Runtime.append("?", unwrap_ident(name.name)))))
       {:type_string, _, s} -> ((&Prelude.pure/1)).(Nova.Compiler.Ast.ty_expr_con((Nova.Runtime.append(Nova.Runtime.append("\"", s), "\""))))
@@ -633,7 +642,7 @@ end, fn fields ->
   end)
   end
 
-  # @type labeled_label_type :: %{label: name()(label()), separator: source_token(), value: type()(void())}
+  # @type labeled_label_type :: %{label: cst._name()(cst._label()), separator: cst._source_token(), value: cst._type()(void())}
 
 
 
@@ -978,7 +987,7 @@ end, fn body_expr ->
       {:binder_named, name, _, inner} ->     Nova.Runtime.bind(convert_binder(inner), fn inner_pat ->
       ((&Prelude.pure/1)).(Nova.Compiler.Ast.pat_as((unwrap_ident(name.name)), inner_pat))
     end)
-      {:binder_constructor, qn, args} ->         name = unwrap_proper(qn.name)
+      {:binder_constructor, qn, args} ->         name = qualified_proper_name(qn)
     Nova.Runtime.bind(traverse((&convert_binder/1), args), fn arg_pats ->
       ((&Prelude.pure/1)).(Nova.Compiler.Ast.pat_con(name, arg_pats))
     end)

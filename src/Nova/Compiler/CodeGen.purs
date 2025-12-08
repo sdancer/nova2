@@ -250,8 +250,12 @@ collectModuleFuncs decls maybeEnv =
       Array.fromFoldable (map (\con -> Tuple con.name (mkInfo con.name (List.length con.fields))) dt.constructors)
     getCtorArities (DeclNewtype nt) =
       [Tuple nt.constructor (mkInfo nt.constructor 1)]  -- Newtypes always have arity 1
-    getCtorArities (DeclTypeClassInstance inst) =
-      Array.fromFoldable (map (\m -> Tuple m.name (mkInfo m.name (List.length m.parameters))) inst.methods)
+    -- NOTE: We deliberately exclude type class instance methods from moduleFuncs
+    -- because they shadow imported Prelude functions like map, bind, pure.
+    -- Instance methods are only callable through type class dispatch which we
+    -- don't support at codegen time, so calls to 'map' etc. should resolve to
+    -- the imported Prelude version (which handles polymorphic dispatch at runtime).
+    getCtorArities (DeclTypeClassInstance _inst) = []
     getCtorArities (DeclForeignImport fi) =
       -- Foreign imports: arity is based on the type signature
       let arity = countTypeArity fi.typeSignature
@@ -1012,6 +1016,9 @@ typesArity4Funcs = ["mergeTypeExport"]
 isUnifyModuleFunc :: String -> Boolean
 isUnifyModuleFunc name = Array.elem name
   [ "unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField"
+  , "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases"
+  , "unifyFieldWithAliases", "unifyStepWithAliases", "isRecordTypeAliasInMap"
+  , "unifyEnv"
   ]
 
 -- | Get the arity of an Unify module function
@@ -1023,6 +1030,13 @@ unifyModuleFuncArity name = case name of
   "occurs" -> 2
   "unifyRecords" -> 2
   "unifyField" -> 4
+  "unifyWithAliases" -> 3
+  "unifyManyWithAliases" -> 3
+  "unifyRecordsWithAliases" -> 3
+  "unifyFieldWithAliases" -> 5
+  "unifyStepWithAliases" -> 3
+  "isRecordTypeAliasInMap" -> 2
+  "unifyEnv" -> 3
   _ -> 2
 
 -- | Translate qualified module calls to Nova.* modules
@@ -1253,7 +1267,10 @@ genExpr' ctx indent (ExprApp f arg) =
     ExprVar name -> genVarApp ctx indent name args argsStr
     ExprQualified m n -> genQualifiedApp ctx indent m n args
     ExprLambda _ _ -> "(" <> genExpr' ctx indent func <> ").(" <> argsStr <> ")"
-    _ -> "(" <> genExpr' ctx indent func <> ").(" <> argsStr <> ")"
+    -- For record accesses and other complex expressions, use curried (chained) calls
+    -- because PureScript functions are always curried. E.g. fs.writeFile path content
+    -- becomes (fs.write_file).(path).(content), not (fs.write_file).(path, content)
+    _ -> genChainedApp ("(" <> genExpr' ctx indent func <> ")") args ctx indent
   where
     -- Handle function application where function is a variable
     genVarApp :: GenCtx -> Int -> String -> Array Expr -> String -> String
@@ -1406,41 +1423,10 @@ genExpr' ctx indent (ExprApp f arg) =
       else
         -- For local variables (lambdas), try to get arity from type environment
         -- or local arity tracking
-        case lookupLocalArity n c of
-          Just localArity ->
-            let numArgs = length exprs
-            in if numArgs == localArity
-               then snakeCase n <> ".(" <> argsS <> ")"  -- Local fn with exact args
-               else if numArgs < localArity
-               then genChainedApp (snakeCase n) exprs c i  -- Partial application
-               else
-                 -- More args than expected - function returns a function
-                 let directArgs = Array.take localArity exprs
-                     curriedArgs = Array.drop localArity exprs
-                     directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
-                     funcCall = snakeCase n <> ".(" <> directArgsStr <> ")"
-                 in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
-          Nothing ->
-            case lookupTypeArity n c of
-              Just typeArity ->
-                let numArgs = length exprs
-                in if numArgs == typeArity
-                   then snakeCase n <> ".(" <> argsS <> ")"  -- Local with type arity
-                   else if numArgs < typeArity
-                   then genChainedApp (snakeCase n) exprs c i  -- Partial
-                   else
-                     -- More args than expected
-                     let directArgs = Array.take typeArity exprs
-                         curriedArgs = Array.drop typeArity exprs
-                         directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
-                         funcCall = snakeCase n <> ".(" <> directArgsStr <> ")"
-                     in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
-              Nothing ->
-                -- Default to arity 1 for local variables (PureScript is curried)
-                -- All PureScript functions take one argument, so local lambdas
-                -- passed as arguments (like `f` in `foldr f acc xs`) should be called
-                -- with curried semantics: f.(arg1).(arg2) etc.
-                genChainedApp (snakeCase n) exprs c i
+        -- Local variables (lambdas in where blocks) are always curried in Elixir.
+        -- They are generated as fn a -> fn b -> ... end end, so we must
+        -- use chained calls: f.(a).(b) instead of f.(a, b)
+        genChainedApp (snakeCase n) exprs c i
 
     -- Handle qualified function application with curried semantics
     -- For functions that have lower arity than the number of arguments provided,
@@ -1485,8 +1471,8 @@ genExpr' ctx indent (ExprLet binds body) =
       groupedBinds = groupBindsByName (Array.fromFoldable binds)
       -- Then sort groups by dependencies
       sortedGroups = sortGroupsByDependencies groupedBinds
-      -- Generate code for each group
-      bindCode = intercalate "\n" (map (genBindingGroup ctx (indent + 1)) sortedGroups)
+      -- Generate code for each group (use ctxWithBinds so bindings see each other as locals)
+      bindCode = intercalate "\n" (map (genBindingGroup ctxWithBinds (indent + 1)) sortedGroups)
   in "\n" <> bindCode <> "\n" <> ind (indent + 1) <> genExpr' ctxWithBinds 0 body
 
 genExpr' ctx indent (ExprIf cond then_ else_) =

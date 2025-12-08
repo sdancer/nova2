@@ -354,7 +354,7 @@ end
       get_ctor_arities = Nova.Runtime.fix(fn get_ctor_arities -> fn auto_arg0 -> case auto_arg0 do
         ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Prelude.map((fn con -> {:tuple, con.name, (mk_info.(con.name).((Nova.List.length(con.fields))))} end), dt.constructors)))
         ({:decl_newtype, nt}) -> [{:tuple, nt.constructor, (mk_info.(nt.constructor).(1))}]
-        ({:decl_type_class_instance, inst}) -> Nova.Array.from_foldable((Prelude.map((fn m -> {:tuple, m.name, (mk_info.(m.name).((Nova.List.length(m.parameters))))} end), inst.methods)))
+        ({:decl_type_class_instance, _inst}) -> []
         ({:decl_foreign_import, fi}) -> 
   arity = count_type_arity(fi.type_signature)
   [{:tuple, fi.function_name, (mk_info.(fi.function_name).(arity))}]
@@ -1191,7 +1191,7 @@ end
 
 
   def is_unify_module_func(name) do
-    Nova.Array.elem(name, ["unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField"])
+    Nova.Array.elem(name, ["unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField", "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases", "unifyFieldWithAliases", "unifyStepWithAliases", "isRecordTypeAliasInMap", "unifyEnv"])
   end
 
 
@@ -1204,6 +1204,13 @@ end
       "occurs" -> 2
       "unifyRecords" -> 2
       "unifyField" -> 4
+      "unifyWithAliases" -> 3
+      "unifyManyWithAliases" -> 3
+      "unifyRecordsWithAliases" -> 3
+      "unifyFieldWithAliases" -> 5
+      "unifyStepWithAliases" -> 3
+      "isRecordTypeAliasInMap" -> 2
+      "unifyEnv" -> 3
       _ -> 2
     end
   end
@@ -1642,43 +1649,7 @@ end
     end
 end
                         else
-                          case lookup_local_arity(n, c) do
-                            {:just, local_arity} -> 
-                                num_args = Data.Array.length(exprs)
-                                if (num_args == local_arity) do
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
-else
-  if (num_args < local_arity) do
-    gen_chained_app((snake_case(n)), exprs, c, i)
-  else
-    
-      direct_args = Nova.Array.take(local_arity, exprs)
-      curried_args = Nova.Array.drop(local_arity, exprs)
-      direct_args_str = Data.Array.intercalate(", ", (Prelude.map((fn auto_p0 -> gen_expr_prime(c, i, auto_p0) end), direct_args)))
-      func_call = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), direct_args_str), ")")
-      Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
-  end
-end
-                            :nothing -> case lookup_type_arity(n, c) do
-                                {:just, type_arity} -> 
-                                    num_args = Data.Array.length(exprs)
-                                    if (num_args == type_arity) do
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), args_s), ")")
-else
-  if (num_args < type_arity) do
-    gen_chained_app((snake_case(n)), exprs, c, i)
-  else
-    
-      direct_args = Nova.Array.take(type_arity, exprs)
-      curried_args = Nova.Array.drop(type_arity, exprs)
-      direct_args_str = Data.Array.intercalate(", ", (Prelude.map((fn auto_p0 -> gen_expr_prime(c, i, auto_p0) end), direct_args)))
-      func_call = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(snake_case(n), ".("), direct_args_str), ")")
-      Data.Foldable.foldl((fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(acc, ".("), gen_expr_prime(c, i, arg)), ")") end end), func_call, curried_args)
-  end
-end
-                                :nothing -> gen_chained_app((snake_case(n)), exprs, c, i)
-                              end
-                          end
+                          gen_chained_app((snake_case(n)), exprs, c, i)
                         end
                       end
                     end
@@ -1712,7 +1683,7 @@ end end end end end end
   {:expr_var, name} -> gen_var_app.(ctx).(indent).(name).(args).(args_str)
   {:expr_qualified, m, n} -> gen_qualified_app.(ctx).(indent).(m).(n).(args)
   {:expr_lambda, _, _} -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
-  _ -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ").("), args_str), ")")
+  _ -> gen_chained_app((Nova.Runtime.append(Nova.Runtime.append("(", gen_expr_prime(ctx, indent, func)), ")")), args, ctx, indent)
 end
   end
 
@@ -1736,7 +1707,7 @@ end
       ctx_with_binds = Data.Foldable.foldr((fn b -> fn c -> add_locals_from_pattern(b.pattern, c) end end), ctx, binds)
       grouped_binds = group_binds_by_name((Nova.Array.from_foldable(binds)))
       sorted_groups = sort_groups_by_dependencies(grouped_binds)
-      bind_code = Data.Array.intercalate("\n", (Prelude.map((fn auto_p0 -> gen_binding_group(ctx, ((indent + 1)), auto_p0) end), sorted_groups)))
+      bind_code = Data.Array.intercalate("\n", (Prelude.map((fn auto_p0 -> gen_binding_group(ctx_with_binds, ((indent + 1)), auto_p0) end), sorted_groups)))
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("\n", bind_code), "\n"), ind(((indent + 1)))), gen_expr_prime(ctx_with_binds, 0, body))
   end
 

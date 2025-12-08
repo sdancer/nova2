@@ -148,6 +148,7 @@ type Env =
   , counter :: Int
   , registryLayer :: Maybe Int  -- placeholder for registry reference
   , namespace :: Maybe String
+  , typeAliases :: Map String Type  -- type alias name -> expanded type (for record aliases)
   }
 
 emptyEnv :: Env
@@ -156,11 +157,20 @@ emptyEnv =
   , counter: 0
   , registryLayer: Nothing
   , namespace: Nothing
+  , typeAliases: Map.empty
   }
 
 -- | Extend environment with a new binding
 extendEnv :: Env -> String -> Scheme -> Env
 extendEnv env name scheme = env { bindings = Map.insert name scheme env.bindings }
+
+-- | Extend environment with a type alias (name -> expanded Type)
+extendTypeAlias :: Env -> String -> Type -> Env
+extendTypeAlias env name ty = env { typeAliases = Map.insert name ty env.typeAliases }
+
+-- | Lookup a type alias by name
+lookupTypeAlias :: Env -> String -> Maybe Type
+lookupTypeAlias env name = Map.lookup name env.typeAliases
 
 -- | Lookup a scheme by name
 lookupEnv :: Env -> String -> Maybe Scheme

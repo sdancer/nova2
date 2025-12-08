@@ -15,7 +15,7 @@ import Data.String as String
 import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo)
 import Nova.Compiler.Types as Types
 import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl)
-import Nova.Compiler.Unify (UnifyError, unify)
+import Nova.Compiler.Unify (UnifyError, unify, unifyWithAliases)
 
 -- | FFI helper for converting Int to String
 -- This avoids shadowing issues when a local 'show' instance is defined
@@ -72,6 +72,10 @@ inferLit (LitBool _) = tBool
 -- | Result record for type inference
 type InferResult = { ty :: Type, sub :: Subst, env :: Env }
 
+-- | Unify with type aliases from environment
+unifyEnv :: Env -> Type -> Type -> Either UnifyError Subst
+unifyEnv env = unifyWithAliases env.typeAliases
+
 -- | Infer type of an expression (Algorithm W)
 infer :: Env -> Expr -> Either TCError InferResult
 
@@ -118,7 +122,7 @@ infer env (ExprApp f arg) =
             Right r2 ->
               let Tuple tv env3 = freshVar r2.env "r"
                   resultTy = TyVar tv
-              in case unify (applySubst r2.sub r1.ty) (tArrow r2.ty resultTy) of
+              in case unifyEnv env3 (applySubst r2.sub r1.ty) (tArrow r2.ty resultTy) of
                 Left ue -> Left (UnifyErr ue)
                 Right s3 ->
                   let sub = composeSubst s3 (composeSubst r2.sub r1.sub)
@@ -154,7 +158,7 @@ infer env (ExprIf cond then_ else_) =
   case infer env cond of
     Left e -> Left e
     Right condRes ->
-      case unify condRes.ty tBool of
+      case unifyEnv condRes.env condRes.ty tBool of
         Left ue -> Left (UnifyErr ue)
         Right _ ->
           case infer condRes.env then_ of
@@ -163,7 +167,7 @@ infer env (ExprIf cond then_ else_) =
               case infer thenRes.env else_ of
                 Left e -> Left e
                 Right elseRes ->
-                  case unify (applySubst elseRes.sub thenRes.ty) elseRes.ty of
+                  case unifyEnv elseRes.env (applySubst elseRes.sub thenRes.ty) elseRes.ty of
                     Left ue -> Left (UnifyErr ue)
                     Right s ->
                       Right { ty: applySubst s elseRes.ty, sub: composeSubst s elseRes.sub, env: elseRes.env }
@@ -191,7 +195,7 @@ infer env (ExprBinOp op l r) =
             Left e -> Left e
             Right rRes ->
               let Tuple resTv env4 = freshVar rRes.env "binop"
-              in case unify (applySubst (composeSubst rRes.sub lRes.sub) opInst.ty) (tArrow lRes.ty (tArrow rRes.ty (TyVar resTv))) of
+              in case unifyEnv env4 (applySubst (composeSubst rRes.sub lRes.sub) opInst.ty) (tArrow lRes.ty (tArrow rRes.ty (TyVar resTv))) of
                 Left ue -> Left (UnifyErr ue)
                 Right s4 ->
                   let sub = composeSubst s4 (composeSubst rRes.sub lRes.sub)
@@ -225,7 +229,7 @@ infer env (ExprRecordAccess rec field) =
       let Tuple resultTv env2 = freshVar recRes.env "field"
           Tuple rowTv env3 = freshVar env2 "row"
           expectedRec = TyRecord { fields: Map.singleton field (TyVar resultTv), row: Just rowTv }
-      in case unify recRes.ty expectedRec of
+      in case unifyEnv env3 recRes.ty expectedRec of
         Left ue -> Left (UnifyErr ue)
         Right s2 ->
           let sub = composeSubst s2 recRes.sub
@@ -241,6 +245,28 @@ infer env (ExprUnaryOp op e) = inferUnaryOp env op e
 
 infer env (ExprDo stmts) = inferDo env (Array.fromFoldable stmts)
 
+-- ExprSection is a record accessor section like (.field) or operator section like (+)
+-- For record accessor: (.field) :: forall r a. { field :: a | r } -> a
+-- For operator section: just look up the operator as a variable
+infer env (ExprSection name) =
+  if String.take 1 name == "."
+  then
+    -- Record accessor section (.field)
+    let field = String.drop 1 name
+        Tuple resultTv env1 = freshVar env "field"
+        Tuple rowTv env2 = freshVar env1 "row"
+        inputType = TyRecord { fields: Map.singleton field (TyVar resultTv), row: Just rowTv }
+        resultType = TyVar resultTv
+        sectionType = tArrow inputType resultType
+    in Right { ty: sectionType, sub: Map.empty, env: env2 }
+  else
+    -- Operator section - just look it up as a variable
+    case Map.lookup name env.bindings of
+      Nothing -> Left (UnboundVariable name)
+      Just scheme ->
+        let { ty, env: env2 } = instantiate env scheme
+        in Right { ty, sub: Map.empty, env: env2 }
+
 infer _ _ = Left (NotImplemented "expression form")
 
 -- | Infer record update: rec { field = value, ... }
@@ -255,7 +281,7 @@ inferRecordUpdate env rec updates = do
   let Tuple rowVar env2 = freshVar updateRes.env "row"
       updateFields = Map.fromFoldable updateRes.tys
       expectedRec = TyRecord { fields: updateFields, row: Just rowVar }
-  case unify (applySubst updateRes.sub recRes.ty) expectedRec of
+  case unifyEnv env2 (applySubst updateRes.sub recRes.ty) expectedRec of
     Left ue -> Left (UnifyErr ue)
     Right s ->
       -- Result is the original record type with substitutions applied
@@ -270,13 +296,13 @@ inferUnaryOp env op e =
     "-" -> do
       -- Numeric negation: Int -> Int (don't look up binary -)
       res <- infer env e
-      case unify res.ty tInt of
+      case unifyEnv res.env res.ty tInt of
         Left ue -> Left (UnifyErr ue)
         Right s -> Right { ty: tInt, sub: composeSubst s res.sub, env: res.env }
     "!" -> do
       -- Boolean negation: Bool -> Bool
       res <- infer env e
-      case unify res.ty tBool of
+      case unifyEnv res.env res.ty tBool of
         Left ue -> Left (UnifyErr ue)
         Right s -> Right { ty: tBool, sub: composeSubst s res.sub, env: res.env }
     _ ->
@@ -287,7 +313,7 @@ inferUnaryOp env op e =
           let opInst = instantiate env scheme
           res <- infer opInst.env e
           let Tuple resTv env2 = freshVar res.env "unary"
-          case unify opInst.ty (tArrow res.ty (TyVar resTv)) of
+          case unifyEnv env2 opInst.ty (tArrow res.ty (TyVar resTv)) of
             Left ue -> Left (UnifyErr ue)
             Right s ->
               let sub = composeSubst s res.sub
@@ -357,7 +383,7 @@ inferElemsGo e eTy (Cons expr rest) sub =
   case infer e expr of
     Left err -> Left err
     Right res ->
-      case unify (applySubst res.sub eTy) res.ty of
+      case unifyEnv res.env (applySubst res.sub eTy) res.ty of
         Left ue -> Left (UnifyErr ue)
         Right s2 -> inferElemsGo res.env (applySubst s2 eTy) rest (composeSubst s2 (composeSubst res.sub sub))
 
@@ -392,7 +418,7 @@ inferPat env PatWildcard _ =
 
 inferPat env (PatLit lit) ty =
   let litTy = inferLit lit
-  in case unify ty litTy of
+  in case unifyEnv env ty litTy of
     Left ue -> Left (UnifyErr ue)
     Right s -> Right { env, sub: s }
 
@@ -437,7 +463,7 @@ inferRecordPatGo ty e Nil fieldTypes sub = do
   -- Build expected record type and unify
   let Tuple rowVar e' = freshVar e "row"
       expectedRec = TyRecord { fields: fieldTypes, row: Just rowVar }
-  case unify (applySubst sub ty) expectedRec of
+  case unifyEnv e' (applySubst sub ty) expectedRec of
     Left ue -> Left (UnifyErr ue)
     Right s -> Right { env: e', sub: composeSubst s sub }
 inferRecordPatGo ty e (Cons (Tuple label pat) rest) fieldTypes sub = do
@@ -459,7 +485,7 @@ inferListPat env pats ty = do
   let Tuple elemVar env1 = freshVar env "elem"
       elemTy = TyVar elemVar
   -- Unify ty with Array elemTy
-  case unify ty (tArray elemTy) of
+  case unifyEnv env1 ty (tArray elemTy) of
     Left ue -> Left (UnifyErr ue)
     Right s1 -> do
       -- Infer each element pattern with the element type
@@ -478,7 +504,7 @@ inferConsPat env hdPat tlPat ty = do
   let Tuple elemVar env1 = freshVar env "elem"
       elemTy = TyVar elemVar
   -- Unify ty with Array elemTy
-  case unify ty (tArray elemTy) of
+  case unifyEnv env1 ty (tArray elemTy) of
     Left ue -> Left (UnifyErr ue)
     Right s1 -> do
       let elemTy' = applySubst s1 elemTy
@@ -493,7 +519,7 @@ inferConsPat env hdPat tlPat ty = do
 -- | Helper for inferConPats
 inferConPatsGo :: Type -> Env -> Type -> List Pattern -> Subst -> Either TCError PatResult
 inferConPatsGo resultTy e ty Nil sub =
-  case unify ty resultTy of
+  case unifyEnv e ty resultTy of
     Left ue -> Left (UnifyErr ue)
     Right s -> Right { env: e, sub: composeSubst s sub }
 inferConPatsGo resultTy e ty (Cons p rest) sub =
@@ -620,7 +646,7 @@ inferClausesGo sTy rTy e (Cons clause rest) sub =
             case infer guardRes.env clause.body of
               Left err -> Left err
               Right bodyRes ->
-                case unify (applySubst bodyRes.sub rTy') bodyRes.ty of
+                case unifyEnv bodyRes.env (applySubst bodyRes.sub rTy') bodyRes.ty of
                   Left ue -> Left (UnifyErr ue)
                   Right s ->
                     let newSub = composeSubst s (composeSubst bodyRes.sub (composeSubst guardRes.sub (composeSubst patRes.sub sub)))
@@ -650,7 +676,7 @@ checkFunction env func =
     Left e -> Left e
     Right res -> do
       -- Unify inferred type with the placeholder
-      case unify (applySubst res.sub funcTy) res.ty of
+      case unifyEnv res.env (applySubst res.sub funcTy) res.ty of
         Left ue -> Left (UnifyErr ue)
         Right s ->
           let finalSub = composeSubst s res.sub
@@ -1011,7 +1037,9 @@ checkTypeAlias env ta =
   -- Convert the type expression to an actual Type and store it
   let ty = typeExprToType Map.empty ta.ty
       scheme = mkScheme [] ty
-  in extendEnv env ta.name scheme
+      -- Also add to typeAliases map for unification of record types
+      env' = extendEnv env ta.name scheme
+  in Types.extendTypeAlias env' ta.name ty
 
 -- | Type check a module with two-pass approach for forward references
 -- Pass 1: Process data types, type aliases, and collect function signatures
@@ -1068,8 +1096,14 @@ processImportDecl registry env imp =
           -- Import everything EXCEPT the listed items (qualified access already added)
           mergeExportsToEnv envWithQualified exports
         else if List.null imp.items then
-          -- Empty import list - import everything unqualified too
-          mergeExportsToEnv envWithQualified exports
+          -- Empty import list
+          case imp.alias of
+            Just _ ->
+              -- With alias and no items: only qualified access (e.g., import X as Y)
+              envWithQualified
+            Nothing ->
+              -- No alias and no items: qualified + unqualified (e.g., import X)
+              mergeExportsToEnv envWithQualified exports
         else
           -- Import only specified items unqualified (qualified access already added)
           foldl (importItem exports) envWithQualified imp.items
@@ -1165,7 +1199,22 @@ collectImportedAliases registry decls =
     collectFromImport acc (DeclImport imp) =
       case lookupModule registry imp.moduleName of
         Nothing -> acc
-        Just exports -> Map.union acc exports.typeAliases
+        Just exports ->
+          let aliases = exports.typeAliases
+              -- Add unqualified aliases
+              acc1 = Map.union acc aliases
+              -- Add qualified aliases with the import prefix
+              prefix = case imp.alias of
+                Just alias -> alias
+                Nothing ->
+                  -- Use last component of module name if no alias
+                  case String.lastIndexOf (String.Pattern ".") imp.moduleName of
+                    Nothing -> imp.moduleName
+                    Just idx -> String.drop (idx + 1) imp.moduleName
+              -- Add aliases with prefix, e.g., "Cst.SourcePos"
+              addWithPrefix m (Tuple name info) = Map.insert (prefix <> "." <> name) info m
+              acc2 = Array.foldl addWithPrefix acc1 (Map.toUnfoldable aliases)
+          in acc2
     collectFromImport acc _ = acc
 
 -- | Extract exports from a module's declarations
@@ -1186,6 +1235,22 @@ extractExports decls =
       in Array.foldl (addConstructorPlaceholder dt) exp1 (Array.fromFoldable dt.constructors)
     collectExport exp (DeclTypeAlias ta) =
       exp { typeAliases = Map.insert ta.name { params: Array.fromFoldable ta.typeVars, body: ta.ty } exp.typeAliases }
+    collectExport exp (DeclNewtype nt) =
+      -- Newtypes export both a type and its constructor
+      let typeInfo = { arity: List.length nt.typeVars
+                     , constructors: [nt.constructor]
+                     }
+          exp1 = exp { types = Map.insert nt.name typeInfo exp.types }
+          -- Build constructor type: wrappedType -> NewtypeName a b ...
+          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) (Array.fromFoldable nt.typeVars)
+          typeVarMap = Map.fromFoldable typeVarPairs
+          resultType = if List.null nt.typeVars
+                       then TyCon (mkTCon nt.name [])
+                       else TyCon (mkTCon nt.name (map (\(Tuple _ tv) -> TyVar tv) typeVarPairs))
+          wrappedTy = typeExprToTypeWithAllAliases aliasMap paramAliasMap typeVarMap nt.wrappedType
+          ctorType = tArrow wrappedTy resultType
+          scheme = mkScheme (map snd typeVarPairs) ctorType
+      in exp1 { constructors = Map.insert nt.constructor scheme exp1.constructors }
     collectExport exp (DeclFunction func) =
       -- Functions need their types inferred, so we can't add them pre-typecheck
       -- They would be added after type checking

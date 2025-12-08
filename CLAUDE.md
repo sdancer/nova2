@@ -145,3 +145,4 @@ See `BACKLOG.md` for:
 
 **Priority:** Continue work on parameterized type alias expansion in CstToAst.purs to complete self-hosting.
 - each warning is a waste of tokens, which means a compounding waste of money
+- don't add a map for methods from prelude, we aren't hardcoding prelude but injecting everything to the context as imports

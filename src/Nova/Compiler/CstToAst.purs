@@ -52,6 +52,12 @@ unwrapOperator (Cst.Operator s) = s
 unwrapModuleName :: Cst.ModuleName -> String
 unwrapModuleName (Cst.ModuleName s) = s
 
+-- | Get fully qualified name from a QualifiedName, e.g., "Cst.TokLowerName" or just "TokLowerName"
+qualifiedProperName :: Cst.QualifiedName Cst.Proper -> String
+qualifiedProperName qn = case qn.module of
+  Nothing -> unwrapProper qn.name
+  Just modName -> unwrapModuleName modName <> "." <> unwrapProper qn.name
+
 extractTypeVar :: Cst.TypeVarBinding Void -> String
 extractTypeVar (Cst.TypeVarKinded wrapped) = unwrapIdent wrapped.value.label.name
 extractTypeVar (Cst.TypeVarName name) = unwrapIdent name.name
@@ -499,7 +505,7 @@ convertType ty = case ty of
     pure $ Ast.TyExprVar (unwrapIdent name.name)
 
   Cst.TypeConstructor qn ->
-    pure $ Ast.TyExprCon (unwrapProper qn.name)
+    pure $ Ast.TyExprCon (qualifiedProperName qn)
 
   Cst.TypeWildcard _ ->
     pure $ Ast.TyExprVar "_"
@@ -943,7 +949,7 @@ convertBinder binder = case binder of
     pure $ Ast.PatAs (unwrapIdent name.name) innerPat
 
   Cst.BinderConstructor qn args -> do
-    let name = unwrapProper qn.name
+    let name = qualifiedProperName qn
     argPats <- traverse convertBinder args
     pure $ Ast.PatCon name argPats
 

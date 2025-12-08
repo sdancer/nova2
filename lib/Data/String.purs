@@ -78,9 +78,9 @@ stripPrefix prefix s = stripPrefixImpl prefix s
 
 foreign import stripPrefixImpl :: String -> String -> Maybe String
 
--- Last index of pattern
-lastIndexOf :: String -> String -> Maybe Int
-lastIndexOf pattern s = lastIndexOfImpl pattern s
+-- Last index of pattern (Pattern version for PureScript API compatibility)
+lastIndexOf :: Pattern -> String -> Maybe Int
+lastIndexOf (Pattern pat) s = lastIndexOfImpl pat s
 
 foreign import lastIndexOfImpl :: String -> String -> Maybe Int
 

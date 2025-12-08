@@ -47,7 +47,7 @@ defmodule Nova.Compiler.TypeChecker do
 
   # instance Show tcerror()
   def show(({:unify_err, e})) do
-    Nova.Runtime.append("Unification error: ", show(e))
+    Nova.Runtime.append("Unification error: ", Prelude.show(e))
   end
   def show(({:unbound_variable, v})) do
     Nova.Runtime.append("Unbound variable: ", v)
@@ -123,6 +123,12 @@ defmodule Nova.Compiler.TypeChecker do
 
 
 
+  def unify_env(env) do
+    fn auto_p0 -> fn auto_p1 -> Nova.Compiler.Unify.unify_with_aliases(env.type_aliases, auto_p0, auto_p1) end end
+  end
+
+
+
   def infer(env, ({:expr_lit, lit})) do
     {:right, %{ty: infer_lit(lit), sub: Nova.Compiler.Types.empty_subst(), env: env}}
   end
@@ -161,7 +167,7 @@ end
             {:right, r2} -> 
                 {:tuple, tv, env3} = Nova.Compiler.Types.fresh_var(r2.env, "r")
                 result_ty = {:ty_var, tv}
-                case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(r2.sub, r1.ty)), (Nova.Compiler.Types.t_arrow(r2.ty, result_ty))) do
+                case unify_env(env3).((Nova.Compiler.Types.apply_subst(r2.sub, r1.ty))).((Nova.Compiler.Types.t_arrow(r2.ty, result_ty))) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s3} -> 
       sub = Nova.Compiler.Types.compose_subst(s3, (Nova.Compiler.Types.compose_subst(r2.sub, r1.sub)))
@@ -198,7 +204,7 @@ end
   {:left, e} -> {:left, e}
   {:right, body_res} -> 
       sub = Nova.Compiler.Types.compose_subst(body_res.sub, pat_res.sub)
-      result_ty = Nova.Compiler.Types.t_arrow((Nova.Compiler.Types.apply_subst((&Prelude.sub/2), arg_ty)), body_res.ty)
+      result_ty = Nova.Compiler.Types.t_arrow((Nova.Compiler.Types.apply_subst(sub, arg_ty)), body_res.ty)
       {:right, %{ty: result_ty, sub: sub, env: body_res.env}}
 end
 end
@@ -218,13 +224,13 @@ end
   def infer(env, ({:expr_if, cond_, then_, else_})) do
     case infer(env, cond_) do
       {:left, e} -> {:left, e}
-      {:right, cond_res} -> case Nova.Compiler.Unify.unify(cond_res.ty, Nova.Compiler.Types.t_bool()) do
+      {:right, cond_res} -> case unify_env(cond_res.env).(cond_res.ty).(Nova.Compiler.Types.t_bool()) do
           {:left, ue} -> {:left, ({:unify_err, ue})}
           {:right, _} -> case infer(cond_res.env, then_) do
               {:left, e} -> {:left, e}
               {:right, then_res} -> case infer(then_res.env, else_) do
                   {:left, e} -> {:left, e}
-                  {:right, else_res} -> case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(else_res.sub, then_res.ty)), else_res.ty) do
+                  {:right, else_res} -> case unify_env(else_res.env).((Nova.Compiler.Types.apply_subst(else_res.sub, then_res.ty))).(else_res.ty) do
                       {:left, ue} -> {:left, ({:unify_err, ue})}
                       {:right, s} -> {:right, %{ty: Nova.Compiler.Types.apply_subst(s, else_res.ty), sub: Nova.Compiler.Types.compose_subst(s, else_res.sub), env: else_res.env}}
                     end
@@ -258,7 +264,7 @@ end
       {:left, e} -> {:left, e}
       {:right, r_res} -> 
           {:tuple, res_tv, env4} = Nova.Compiler.Types.fresh_var(r_res.env, "binop")
-          case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst((Nova.Compiler.Types.compose_subst(r_res.sub, l_res.sub)), op_inst.ty)), (Nova.Compiler.Types.t_arrow(l_res.ty, (Nova.Compiler.Types.t_arrow(r_res.ty, ({:ty_var, res_tv})))))) do
+          case unify_env(env4).((Nova.Compiler.Types.apply_subst((Nova.Compiler.Types.compose_subst(r_res.sub, l_res.sub)), op_inst.ty))).((Nova.Compiler.Types.t_arrow(l_res.ty, (Nova.Compiler.Types.t_arrow(r_res.ty, ({:ty_var, res_tv})))))) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s4} -> 
       sub = Nova.Compiler.Types.compose_subst(s4, (Nova.Compiler.Types.compose_subst(r_res.sub, l_res.sub)))
@@ -300,7 +306,7 @@ end
           {:tuple, result_tv, env2} = Nova.Compiler.Types.fresh_var(rec_res.env, "field")
           {:tuple, row_tv, env3} = Nova.Compiler.Types.fresh_var(env2, "row")
           expected_rec = {:ty_record, %{fields: Nova.Map.singleton(field, ({:ty_var, result_tv})), row: {:just, row_tv}}}
-          case Nova.Compiler.Unify.unify(rec_res.ty, expected_rec) do
+          case unify_env(env3).(rec_res.ty).(expected_rec) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s2} -> 
       sub = Nova.Compiler.Types.compose_subst(s2, rec_res.sub)
@@ -329,6 +335,26 @@ end
     infer_do(env, (Nova.Array.from_foldable(stmts)))
   end
 
+  def infer(env, ({:expr_section, name})) do
+    if (Nova.String.take(1, name) == ".") do
+      
+        field = Nova.String.drop(1, name)
+        {:tuple, result_tv, env1} = Nova.Compiler.Types.fresh_var(env, "field")
+        {:tuple, row_tv, env2} = Nova.Compiler.Types.fresh_var(env1, "row")
+        result_type = {:ty_var, result_tv}
+        input_type = {:ty_record, %{fields: Nova.Map.singleton(field, ({:ty_var, result_tv})), row: {:just, row_tv}}}
+        section_type = Nova.Compiler.Types.t_arrow(input_type, result_type)
+        {:right, %{ty: section_type, sub: Nova.Map.empty, env: env2}}
+    else
+      case Nova.Map.lookup(name, env.bindings) do
+        :nothing -> {:left, ({:unbound_variable, name})}
+        {:just, scheme} -> 
+            %{ty: ty, env: env2} = instantiate(env, scheme)
+            {:right, %{ty: ty, sub: Nova.Map.empty, env: env2}}
+      end
+    end
+  end
+
   def infer(_, _) do
     {:left, ({:not_implemented, "expression form"})}
   end
@@ -341,7 +367,7 @@ end
             {:tuple, row_var, env2} = Nova.Compiler.Types.fresh_var(update_res.env, "row")
             update_fields = Nova.Map.from_foldable(update_res.tys)
             expected_rec = {:ty_record, %{fields: update_fields, row: {:just, row_var}}}
-      case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(update_res.sub, rec_res.ty)), expected_rec) do
+      case unify_env(env2).((Nova.Compiler.Types.apply_subst(update_res.sub, rec_res.ty))).(expected_rec) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> 
       sub = Nova.Compiler.Types.compose_subst(s, (Nova.Compiler.Types.compose_subst(update_res.sub, rec_res.sub)))
@@ -356,13 +382,13 @@ end
   def infer_unary_op(env, op, e) do
     case op do
       "-" ->     Nova.Runtime.bind(infer(env, e), fn res ->
-      case Nova.Compiler.Unify.unify(res.ty, Nova.Compiler.Types.t_int()) do
+      case unify_env(res.env).(res.ty).(Nova.Compiler.Types.t_int()) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> {:right, %{ty: Nova.Compiler.Types.t_int(), sub: Nova.Compiler.Types.compose_subst(s, res.sub), env: res.env}}
 end
     end)
       "!" ->     Nova.Runtime.bind(infer(env, e), fn res ->
-      case Nova.Compiler.Unify.unify(res.ty, Nova.Compiler.Types.t_bool()) do
+      case unify_env(res.env).(res.ty).(Nova.Compiler.Types.t_bool()) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> {:right, %{ty: Nova.Compiler.Types.t_bool(), sub: Nova.Compiler.Types.compose_subst(s, res.sub), env: res.env}}
 end
@@ -372,7 +398,7 @@ end
           {:just, scheme} ->             op_inst = instantiate(env, scheme)
       Nova.Runtime.bind(infer(op_inst.env, e), fn res ->
                 {:tuple, res_tv, env2} = Nova.Compiler.Types.fresh_var(res.env, "unary")
-        case Nova.Compiler.Unify.unify(op_inst.ty, (Nova.Compiler.Types.t_arrow(res.ty, ({:ty_var, res_tv})))) do
+        case unify_env(env2).(op_inst.ty).((Nova.Compiler.Types.t_arrow(res.ty, ({:ty_var, res_tv})))) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> 
       sub = Nova.Compiler.Types.compose_subst(s, res.sub)
@@ -447,7 +473,7 @@ end
   def infer_elems_go(e, e_ty, ([expr | rest]), sub) do
     case infer(e, expr) do
       {:left, err} -> {:left, err}
-      {:right, res} -> case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(res.sub, e_ty)), res.ty) do
+      {:right, res} -> case unify_env(res.env).((Nova.Compiler.Types.apply_subst(res.sub, e_ty))).(res.ty) do
           {:left, ue} -> {:left, ({:unify_err, ue})}
           {:right, s2} -> infer_elems_go(res.env, (Nova.Compiler.Types.apply_subst(s2, e_ty)), rest, (Nova.Compiler.Types.compose_subst(s2, (Nova.Compiler.Types.compose_subst(res.sub, sub)))))
         end
@@ -499,7 +525,7 @@ end
   def infer_pat(env, ({:pat_lit, lit}), ty) do
     
       lit_ty = infer_lit(lit)
-      case Nova.Compiler.Unify.unify(ty, lit_ty) do
+      case unify_env(env).(ty).(lit_ty) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> {:right, %{env: env, sub: s}}
 end
@@ -558,7 +584,7 @@ end
   def infer_record_pat_go(ty, e, [], field_types, sub) do
         {:tuple, row_var, e_prime} = Nova.Compiler.Types.fresh_var(e, "row")
     expected_rec = {:ty_record, %{fields: field_types, row: {:just, row_var}}}
-  case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(sub, ty)), expected_rec) do
+  case unify_env(e_prime).((Nova.Compiler.Types.apply_subst(sub, ty))).(expected_rec) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> {:right, %{env: e_prime, sub: Nova.Compiler.Types.compose_subst(s, sub)}}
 end
@@ -590,7 +616,7 @@ end)
       end end end end end end)
       {:tuple, elem_var, env1} = Nova.Compiler.Types.fresh_var(env, "elem")
 elem_ty = {:ty_var, elem_var}
-case Nova.Compiler.Unify.unify(ty, (Nova.Compiler.Types.t_array(elem_ty))) do
+case unify_env(env1).(ty).((Nova.Compiler.Types.t_array(elem_ty))) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s1} ->     elem_ty_prime = Nova.Compiler.Types.apply_subst(s1, elem_ty)
   go_elems.(env1).(pats).(elem_ty_prime).(s1)
@@ -602,7 +628,7 @@ end
   def infer_cons_pat(env, hd_pat, tl_pat, ty) do
         {:tuple, elem_var, env1} = Nova.Compiler.Types.fresh_var(env, "elem")
     elem_ty = {:ty_var, elem_var}
-  case Nova.Compiler.Unify.unify(ty, (Nova.Compiler.Types.t_array(elem_ty))) do
+  case unify_env(env1).(ty).((Nova.Compiler.Types.t_array(elem_ty))) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s1} ->     elem_ty_prime = Nova.Compiler.Types.apply_subst(s1, elem_ty)
     list_ty = Nova.Compiler.Types.apply_subst(s1, (Nova.Compiler.Types.t_array(elem_ty)))
@@ -617,7 +643,7 @@ end
 
 
   def infer_con_pats_go(result_ty, e, ty, [], sub) do
-    case Nova.Compiler.Unify.unify(ty, result_ty) do
+    case unify_env(e).(ty).(result_ty) do
       {:left, ue} -> {:left, ({:unify_err, ue})}
       {:right, s} -> {:right, %{env: e, sub: Nova.Compiler.Types.compose_subst(s, sub)}}
     end
@@ -769,7 +795,7 @@ end
   {:left, err} -> {:left, err}
   {:right, guard_res} -> case infer(guard_res.env, clause.body) do
       {:left, err} -> {:left, err}
-      {:right, body_res} -> case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(body_res.sub, r_ty_prime)), body_res.ty) do
+      {:right, body_res} -> case unify_env(body_res.env).((Nova.Compiler.Types.apply_subst(body_res.sub, r_ty_prime))).(body_res.ty) do
           {:left, ue} -> {:left, ({:unify_err, ue})}
           {:right, s} -> 
               new_sub = Nova.Compiler.Types.compose_subst(s, (Nova.Compiler.Types.compose_subst(body_res.sub, (Nova.Compiler.Types.compose_subst(guard_res.sub, (Nova.Compiler.Types.compose_subst(pat_res.sub, sub)))))))
@@ -801,7 +827,7 @@ end
       env_with_func = Nova.Compiler.Types.extend_env(env1, func.name, temp_scheme)
       case infer(env_with_func, expr) do
   {:left, e} -> {:left, e}
-  {:right, res} ->   case Nova.Compiler.Unify.unify((Nova.Compiler.Types.apply_subst(res.sub, func_ty)), res.ty) do
+  {:right, res} ->   case unify_env(res.env).((Nova.Compiler.Types.apply_subst(res.sub, func_ty))).(res.ty) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> 
       final_sub = Nova.Compiler.Types.compose_subst(s, res.sub)
@@ -1307,7 +1333,8 @@ end
     
       ty = type_expr_to_type(Nova.Map.empty, ta.ty)
       scheme = Nova.Compiler.Types.mk_scheme([], ty)
-      Nova.Compiler.Types.extend_env(env, ta.name, scheme)
+      env_prime = Nova.Compiler.Types.extend_env(env, ta.name, scheme)
+      Nova.Compiler.Types.extend_type_alias(env_prime, ta.name, ty)
   end
 
 
@@ -1360,7 +1387,10 @@ end
   Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
 else
   if Nova.List.null(imp.items) do
-    Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+    case imp.alias_ do
+      {:just, _} -> env_with_qualified
+      :nothing -> Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+    end
   else
     Data.Foldable.foldl((fn auto_p0 -> fn auto_p1 -> import_item(exports, auto_p0, auto_p1) end end), env_with_qualified, imp.items)
   end
@@ -1390,7 +1420,7 @@ end
     end
   end
 
-  # @type resolved_imports :: map()(string())(string())
+  # @type resolved_imports :: map._map()(string())(string())
 
 
 
@@ -1462,7 +1492,19 @@ end end end), acc, all_names)
       collect_from_import = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {acc, ({:decl_import, imp})} -> case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
   :nothing -> acc
-  {:just, exports} -> Nova.Map.union(acc, exports.type_aliases)
+  {:just, exports} -> 
+      aliases = exports.type_aliases
+      prefix = case imp.alias_ do
+        {:just, alias_} -> alias_
+        :nothing -> case Nova.String.last_index_of((Nova.String.pattern(".")), imp.module_name) do
+            :nothing -> imp.module_name
+            {:just, idx} -> Nova.String.drop(((idx + 1)), imp.module_name)
+          end
+      end
+      acc1 = Nova.Map.union(acc, aliases)
+      add_with_prefix = fn m -> fn ({:tuple, name, info}) -> Nova.Map.insert((Nova.Runtime.append(Nova.Runtime.append(prefix, "."), name)), info, m) end end
+      acc2 = Nova.Array.foldl(add_with_prefix, acc1, (Nova.Map.to_unfoldable(aliases)))
+      acc2
 end
         {acc, _} -> acc
       end end end
@@ -1492,6 +1534,20 @@ end
   exp1 = %{exp | types: Nova.Map.insert(dt.name, type_info, exp.types)}
   Nova.Array.foldl((add_constructor_placeholder.(dt)), exp1, (Nova.Array.from_foldable(dt.constructors)))
         {exp, ({:decl_type_alias, ta})} -> %{exp | type_aliases: Nova.Map.insert(ta.name, %{params: Nova.Array.from_foldable(ta.type_vars), body: ta.ty}, exp.type_aliases)}
+        {exp, ({:decl_newtype, nt})} -> 
+  type_info = %{arity: Nova.List.length(nt.type_vars), constructors: [nt.constructor]}
+  type_var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(i, v))} end end), (Nova.Array.from_foldable(nt.type_vars)))
+  exp1 = %{exp | types: Nova.Map.insert(nt.name, type_info, exp.types)}
+  type_var_map = Nova.Map.from_foldable(type_var_pairs)
+  result_type = if Nova.List.null(nt.type_vars) do
+    {:ty_con, (Nova.Compiler.Types.mk_tcon(nt.name, []))}
+  else
+    {:ty_con, (Nova.Compiler.Types.mk_tcon(nt.name, (Prelude.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs))))}
+  end
+  wrapped_ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, type_var_map, nt.wrapped_type)
+  ctor_type = Nova.Compiler.Types.t_arrow(wrapped_ty, result_type)
+  scheme = Nova.Compiler.Types.mk_scheme((Prelude.map((&Data.Tuple.snd/1), type_var_pairs)), ctor_type)
+  %{exp1 | constructors: Nova.Map.insert(nt.constructor, scheme, exp1.constructors)}
         {exp, ({:decl_function, func})} -> exp
         {exp, ({:decl_foreign_import, fi})} -> 
   ty = type_expr_to_type(Nova.Map.empty, fi.type_signature)

@@ -18,6 +18,8 @@ defmodule Nova.Compiler.Unify do
 
   # import Data.Maybe
 
+  # import Data.String
+
   # import Nova.Compiler.Types
 
   # Data type: UnifyError
@@ -34,7 +36,7 @@ defmodule Nova.Compiler.Unify do
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Type mismatch: ", show_type(t1)), " vs "), show_type(t2))
   end
   def show(({:arity_mismatch, name, n1, n2})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Arity mismatch for ", name), ": "), show(n1)), " vs "), show(n2))
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Arity mismatch for ", name), ": "), Prelude.show(n1)), " vs "), Prelude.show(n2))
   end
   def show(({:record_field_mismatch, f})) do
     Nova.Runtime.append("Record field mismatch: ", f)
@@ -43,11 +45,11 @@ defmodule Nova.Compiler.Unify do
 
 
   def show_type(({:ty_var, v})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(v.name, "["), show(v.id)), "]")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(v.name, "["), Prelude.show(v.id)), "]")
   end
 
   def show_type(({:ty_con, tc})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), show((Data.Array.length(tc.args)))), " args)")
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), Prelude.show((Data.Array.length(tc.args)))), " args)")
   end
 
   def show_type(({:ty_record, r})) do
@@ -93,133 +95,102 @@ defmodule Nova.Compiler.Unify do
 
 
 
-  def is_record_type_alias(name) do
-    cond do
-      ((name == "TypeClass")) ->
-        true
-      ((name == "TypeClassInstance")) ->
-        true
-      ((name == "NewtypeDecl")) ->
-        true
-      ((name == "FunctionDecl")) ->
-        true
-      ((name == "FunctionDeclaration")) ->
-        true
-      ((name == "TypeSig")) ->
-        true
-      ((name == "DataType")) ->
-        true
-      ((name == "DataConstructor")) ->
-        true
-      ((name == "DataField")) ->
-        true
-      ((name == "TypeAlias")) ->
-        true
-      ((name == "ModuleDecl")) ->
-        true
-      ((name == "ModuleExports")) ->
-        true
-      ((name == "ImportDecl")) ->
-        true
-      ((name == "InfixDecl")) ->
-        true
-      ((name == "Constraint")) ->
-        true
-      ((name == "ForeignImport")) ->
-        true
-      ((name == "TypeDecl")) ->
-        true
-      ((name == "LetBind")) ->
-        true
-      ((name == "CaseClause")) ->
-        true
-      ((name == "GuardedExpr")) ->
-        true
-      ((name == "PatResult")) ->
-        true
-      ((name == "InstantiateResult")) ->
-        true
-      ((name == "InferResult")) ->
-        true
-      ((name == "Env")) ->
-        true
-      ((name == "Scheme")) ->
-        true
-      ((name == "TVar")) ->
-        true
-      ((name == "LiftedLambda")) ->
-        true
-      (true) ->
-        false
-    end
+  def is_record_type_alias_in_map(alias_map, name) do
+    
+      index_of = fn p -> fn s -> Nova.String.last_index_of(p, s) end end
+      case Nova.Map.lookup(name, alias_map) do
+  {:just, ({:ty_record, _})} -> true
+  {:just, _} -> false
+  :nothing -> 
+      unqualified_name = case index_of.((Nova.String.pattern("."))).(name) do
+        {:just, idx} -> Nova.String.drop(((idx + 1)), name)
+        :nothing -> name
+      end
+      if (unqualified_name != name) do
+  case Nova.Map.lookup(unqualified_name, alias_map) do
+    {:just, ({:ty_record, _})} -> true
+    _ -> false
+  end
+else
+  false
+end
+end
   end
 
+  # @type type_alias_map :: map._map()(string())(type())
 
 
-  def unify(({:ty_var, v}), t) do
+
+  def unify_with_aliases(aliases, ({:ty_var, v}), t) do
     bind_var(v, t)
   end
 
-  def unify(t, ({:ty_var, v})) do
+  def unify_with_aliases(aliases, t, ({:ty_var, v})) do
     bind_var(v, t)
   end
 
-  def unify(({:ty_con, c1}), ({:ty_con, c2})) do
+  def unify_with_aliases(aliases, ({:ty_con, c1}), ({:ty_con, c2})) do
     cond do
       (not((are_equivalent_types(c1.name, c2.name)))) ->
         {:left, ({:type_mismatch, ({:ty_con, c1}), ({:ty_con, c2})})}
       ((Data.Array.length(c1.args) != Data.Array.length(c2.args))) ->
         {:left, ({:arity_mismatch, c1.name, (Data.Array.length(c1.args)), (Data.Array.length(c2.args))})}
       (true) ->
-        unify_many(c1.args, c2.args)
+        unify_many_with_aliases(aliases, c1.args, c2.args)
     end
   end
 
-  def unify(({:ty_con, c}), ({:ty_record, r})) do
+  def unify_with_aliases(aliases, ({:ty_con, c}), ({:ty_record, r})) do
     cond do
-      (((Data.Array.length(c.args) == 0) and is_record_type_alias(c.name))) ->
+      (((Data.Array.length(c.args) == 0) and is_record_type_alias_in_map(aliases, c.name))) ->
         {:right, Nova.Compiler.Types.empty_subst()}
       (true) ->
         {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_record, r})})}
     end
   end
 
-  def unify(({:ty_record, r}), ({:ty_con, c})) do
+  def unify_with_aliases(aliases, ({:ty_record, r}), ({:ty_con, c})) do
     cond do
-      (((Data.Array.length(c.args) == 0) and is_record_type_alias(c.name))) ->
+      (((Data.Array.length(c.args) == 0) and is_record_type_alias_in_map(aliases, c.name))) ->
         {:right, Nova.Compiler.Types.empty_subst()}
       (true) ->
         {:left, ({:type_mismatch, ({:ty_record, r}), ({:ty_con, c})})}
     end
   end
 
-  def unify(({:ty_record, r1}), ({:ty_record, r2})) do
-    unify_records(r1, r2)
+  def unify_with_aliases(aliases, ({:ty_record, r1}), ({:ty_record, r2})) do
+    unify_records_with_aliases(aliases, r1, r2)
   end
 
-  def unify(t1, t2) do
+  def unify_with_aliases(aliases, t1, t2) do
     {:left, ({:type_mismatch, t1, t2})}
   end
 
 
 
-  def unify_step(sub, ({:tuple, t1, t2})) do
-      Nova.Runtime.bind(unify((Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))), fn s ->
+  def unify() do
+    fn auto_p0 -> fn auto_p1 -> unify_with_aliases(Nova.Map.empty, auto_p0, auto_p1) end end
+  end
+
+
+
+  def unify_step_with_aliases(aliases, sub, ({:tuple, t1, t2})) do
+      Nova.Runtime.bind(unify_with_aliases(aliases, (Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))), fn s ->
     Prelude.pure((Nova.Compiler.Types.compose_subst(s, sub)))
   end)
   end
 
 
 
-  def unify_many(ts1, ts2) do
-    Data.Foldable.fold_m((&unify_step/2), Nova.Compiler.Types.empty_subst(), (Data.Array.zip(ts1, ts2)))
+  def unify_many_with_aliases(aliases, ts1, ts2) do
+    Data.Foldable.fold_m((fn auto_p0 -> fn auto_p1 -> unify_step_with_aliases(aliases, auto_p0, auto_p1) end end), Nova.Compiler.Types.empty_subst(), (Data.Array.zip(ts1, ts2)))
   end
 
 
 
-  def unify_field(fields1, fields2, sub, k) do
+  def unify_field_with_aliases(aliases, fields1, fields2, sub, k) do
     case {:tuple, (Nova.Map.lookup(k, fields1)), (Nova.Map.lookup(k, fields2))} do
-      {:tuple, ({:just, t1}), ({:just, t2})} -> case unify((Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))) do
+      {:tuple, ({:just, t1}), ({:just, t2})} -> case unify_with_aliases(aliases, (Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))) do
           {:left, err} -> {:left, err}
           {:right, s} -> {:right, (Nova.Compiler.Types.compose_subst(s, sub))}
         end
@@ -229,9 +200,33 @@ defmodule Nova.Compiler.Unify do
 
 
 
-  def unify_records(r1, r2) do
+  def unify_records_with_aliases(aliases, r1, r2) do
     
       keys1 = Nova.Map.keys(r1.fields)
-      Data.Foldable.fold_m((fn auto_p0 -> fn auto_p1 -> unify_field(r1.fields, r2.fields, auto_p0, auto_p1) end end), Nova.Compiler.Types.empty_subst(), keys1)
+      Data.Foldable.fold_m((fn auto_p0 -> fn auto_p1 -> unify_field_with_aliases(aliases, r1.fields, r2.fields, auto_p0, auto_p1) end end), Nova.Compiler.Types.empty_subst(), keys1)
+  end
+
+
+
+  def unify_step() do
+    fn auto_p0 -> fn auto_p1 -> unify_step_with_aliases(Nova.Map.empty, auto_p0, auto_p1) end end
+  end
+
+
+
+  def unify_many() do
+    fn auto_p0 -> fn auto_p1 -> unify_many_with_aliases(Nova.Map.empty, auto_p0, auto_p1) end end
+  end
+
+
+
+  def unify_field() do
+    fn auto_p0 -> fn auto_p1 -> fn auto_p2 -> fn auto_p3 -> unify_field_with_aliases(Nova.Map.empty, auto_p0, auto_p1, auto_p2, auto_p3) end end end end
+  end
+
+
+
+  def unify_records() do
+    fn auto_p0 -> fn auto_p1 -> unify_records_with_aliases(Nova.Map.empty, auto_p0, auto_p1) end end
   end
 end

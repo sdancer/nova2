@@ -1396,7 +1396,7 @@ end
       is_upper = fn c -> ((c >= ?A) and (c <= ?Z)) end
       to_lower = fn c -> Data.Maybe.from_maybe(c, (Nova.String.char_at(0, (Nova.String.to_lower((Nova.String.singleton(c))))))) end
       convert_char = fn c -> if is_upper.(c) do
-        [?_, Prelude.to_lower(c)]
+        [?_, to_lower.(c)]
       else
         [c]
       end end

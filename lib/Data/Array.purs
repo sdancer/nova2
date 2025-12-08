@@ -281,3 +281,19 @@ splitAt :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }
 splitAt i xs = splitAtImpl i xs
 
 foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }
+
+-- Map with Maybe (filter and map combined)
+mapMaybe :: forall a b. (a -> Maybe b) -> Array a -> Array b
+mapMaybe f xs = mapMaybeImpl f xs
+
+foreign import mapMaybeImpl :: forall a b. (a -> Maybe b) -> Array a -> Array b
+
+-- catMaybes - filter out Nothing values
+catMaybes :: forall a. Array (Maybe a) -> Array a
+catMaybes xs = mapMaybe (\x -> x) xs
+
+-- nubByEq - remove duplicates using custom equality function
+nubByEq :: forall a. (a -> a -> Boolean) -> Array a -> Array a
+nubByEq f xs = nubByEqImpl f xs
+
+foreign import nubByEqImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array a
