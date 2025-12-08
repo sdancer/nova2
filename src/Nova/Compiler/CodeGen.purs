@@ -1197,9 +1197,9 @@ genExpr' ctx _ (ExprVar name) =
       -- Handle nullary data constructors as atoms (e.g., LytRoot -> :lyt_root)
       else if isNullaryConstructor name
       then ":" <> snakeCase name
-      -- Type class methods should route to Nova.Runtime even if the current module
-      -- defines instance implementations (which would otherwise shadow the call)
-      else if isTypeClassMethod name && isModuleFunc ctx name
+      -- Type class methods should always route to Nova.Runtime
+      -- These are prelude functions like negate, bottom, top, show, etc.
+      else if isTypeClassMethod name && not (Set.member name ctx.locals)
       then let tcArity = typeClassMethodArity name
            in if tcArity == 0
               then "Nova.Runtime." <> snakeCase name <> "()"
@@ -1308,9 +1308,9 @@ genExpr' ctx indent (ExprApp f arg) =
       -- Handle data constructors specially
       else if isDataConstructor n
       then genConstructorApp c i n exprs
-      -- Type class methods should route to Nova.Runtime even if the current module
-      -- defines instance implementations (which would otherwise shadow the call)
-      else if isTypeClassMethod n && isModuleFunc c n
+      -- Type class methods should always route to Nova.Runtime
+      -- These are prelude functions like negate, bottom, top, show, etc.
+      else if isTypeClassMethod n && not (Set.member n c.locals)
       then
         let qualifiedFunc = "Nova.Runtime." <> snakeCase n
             tcArity = typeClassMethodArity n

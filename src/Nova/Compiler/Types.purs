@@ -213,6 +213,9 @@ builtinPrelude = Map.fromFoldable
   , Tuple "/" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
   , Tuple "mod" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
   , Tuple "negate" (mkScheme [] (tArrow tInt tInt))
+  -- Bounded type class (top/bottom for Int)
+  , Tuple "top" (mkScheme [] tInt)
+  , Tuple "bottom" (mkScheme [] tInt)
   -- Comparison operators (polymorphic - works for Int, Char, String, etc.)
   , Tuple "<" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
   , Tuple ">" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
@@ -289,6 +292,8 @@ builtinPrelude = Map.fromFoldable
 
   -- Show
   , Tuple "show" (mkScheme [a] (tArrow (TyVar a) tString))
+  -- Effect.Console
+  , Tuple "log" (mkScheme [] (tArrow tString tUnit))
 
   -- TokenType constructors (from Tokenizer)
   , Tuple "TokKeyword" (mkScheme [] tTokenType)

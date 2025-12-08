@@ -300,6 +300,11 @@ defmodule Nova.Runtime do
 
   # Prelude extras
   def negate(x), do: -x
+  # Bounded type class for Int
+  # In Elixir, integers are arbitrary precision, but for compatibility with PureScript
+  # we use the standard 64-bit signed integer bounds
+  def top(), do: 9_223_372_036_854_775_807  # 2^63 - 1
+  def bottom(), do: -9_223_372_036_854_775_808  # -2^63
   def flip(f), do: fn b -> fn a -> f.(a).(b) end end
   def mempty(), do: []
   def discard(_x), do: fn y -> y end

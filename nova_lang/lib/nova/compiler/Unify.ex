@@ -205,7 +205,7 @@ defmodule Nova.Compiler.Unify do
 
   def unify_step(sub, ({:tuple, t1, t2})) do
       Nova.Runtime.bind(unify((Nova.Compiler.Types.apply_subst(sub, t1)), (Nova.Compiler.Types.apply_subst(sub, t2))), fn s ->
-    Prelude.pure((Nova.Compiler.Types.compose_subst(s, sub)))
+    Nova.Runtime.pure((Nova.Compiler.Types.compose_subst(s, sub)))
   end)
   end
 

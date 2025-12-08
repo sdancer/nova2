@@ -385,7 +385,7 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
 
 
   def get_lambda_param_name(i, ({:pat_var, "_"})) do
-    Nova.Runtime.append("__w", Prelude.show(i))
+    Nova.Runtime.append("__w", Nova.Runtime.show(i))
   end
 
   def get_lambda_param_name(i, ({:pat_var, n})) do
@@ -393,11 +393,11 @@ defmodule Nova.Compiler.CodeGenWasmSimple do
   end
 
   def get_lambda_param_name(i, :pat_wildcard) do
-    Nova.Runtime.append("__w", Prelude.show(i))
+    Nova.Runtime.append("__w", Nova.Runtime.show(i))
   end
 
   def get_lambda_param_name(i, _) do
-    Nova.Runtime.append("__p", Prelude.show(i))
+    Nova.Runtime.append("__p", Nova.Runtime.show(i))
   end
 
 
@@ -610,9 +610,9 @@ end
 
   def group_functions(funcs) do
     
-      keys = Nova.Array.nub_by_eq((fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end), (Prelude.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
+      keys = Nova.Array.nub_by_eq((fn a -> fn b -> ((a.name == b.name) and (a.arity == b.arity)) end end), (Nova.Runtime.map((fn f -> %{name: f.name, arity: Nova.List.length(f.parameters)} end), funcs)))
       mk_group = fn k -> %{name: k.name, arity: k.arity, clauses: Nova.Array.filter((fn f -> ((f.name == k.name) and (Nova.List.length(f.parameters) == k.arity)) end), funcs)} end
-      Prelude.map(mk_group, keys)
+      Nova.Runtime.map(mk_group, keys)
   end
 
 
