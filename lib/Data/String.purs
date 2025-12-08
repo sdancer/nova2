@@ -2,6 +2,10 @@ module Data.String where
 
 import Data.Maybe (Maybe)
 
+-- Pattern and Replacement newtypes for API compatibility with PureScript
+newtype Pattern = Pattern String
+newtype Replacement = Replacement String
+
 -- String length
 length :: String -> Int
 length s = lengthImpl s
@@ -32,9 +36,9 @@ contains pattern s = containsImpl pattern s
 
 foreign import containsImpl :: String -> String -> Boolean
 
--- Split string by separator
-split :: String -> String -> Array String
-split sep s = splitImpl sep s
+-- Split string by separator (Pattern version for PureScript API compatibility)
+split :: Pattern -> String -> Array String
+split (Pattern sep) s = splitImpl sep s
 
 foreign import splitImpl :: String -> String -> Array String
 
@@ -44,9 +48,9 @@ joinWith sep xs = joinWithImpl sep xs
 
 foreign import joinWithImpl :: String -> Array String -> String
 
--- Replace all occurrences
-replaceAll :: String -> String -> String -> String
-replaceAll pattern replacement s = replaceAllImpl pattern replacement s
+-- Replace all occurrences (Pattern/Replacement version for PureScript API compatibility)
+replaceAll :: Pattern -> Replacement -> String -> String
+replaceAll (Pattern pat) (Replacement rep) s = replaceAllImpl pat rep s
 
 foreign import replaceAllImpl :: String -> String -> String -> String
 
@@ -130,9 +134,9 @@ codeUnitLength s = codeUnitLengthImpl s
 
 foreign import codeUnitLengthImpl :: String -> Int
 
--- Index of substring
-indexOf :: String -> String -> Maybe Int
-indexOf pattern s = indexOfImpl pattern s
+-- Index of substring (Pattern version for PureScript API compatibility)
+indexOf :: Pattern -> String -> Maybe Int
+indexOf (Pattern pat) s = indexOfImpl pat s
 
 foreign import indexOfImpl :: String -> String -> Maybe Int
 
