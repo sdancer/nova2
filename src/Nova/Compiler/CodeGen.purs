@@ -252,6 +252,10 @@ collectModuleFuncs decls maybeEnv =
       [Tuple nt.constructor (mkInfo nt.constructor 1)]  -- Newtypes always have arity 1
     getCtorArities (DeclTypeClassInstance inst) =
       Array.fromFoldable (map (\m -> Tuple m.name (mkInfo m.name (List.length m.parameters))) inst.methods)
+    getCtorArities (DeclForeignImport fi) =
+      -- Foreign imports: arity is based on the type signature
+      let arity = countTypeArity fi.typeSignature
+      in [Tuple fi.functionName (mkInfo fi.functionName arity)]
     getCtorArities _ = []
 
     -- Build initial arity map from direct arities and constructors
@@ -373,8 +377,21 @@ genForeignImport fi =
       aliasName = case fi.alias of
         Just a -> snakeCase a
         Nothing -> funcName
-      -- Return a function reference so it works with curried application syntax f.(x)
-  in "  def " <> aliasName <> "(), do: &" <> ffiModule <> "." <> funcName <> "/1"
+      -- Calculate arity from type signature
+      arity = countTypeArity fi.typeSignature
+      -- For 0-arity foreign imports, call directly and return the value
+      -- For higher arity, return a function reference for curried application
+  in if arity == 0
+     then "  def " <> aliasName <> "(), do: " <> ffiModule <> "." <> funcName <> "()"
+     else "  def " <> aliasName <> "(), do: &" <> ffiModule <> "." <> funcName <> "/" <> show arity
+
+-- | Count the arity of a type expression (number of function arrows)
+countTypeArity :: TypeExpr -> Int
+countTypeArity (TyExprArrow _ result) = 1 + countTypeArity result
+countTypeArity (TyExprParens inner) = countTypeArity inner
+countTypeArity (TyExprConstrained _ inner) = countTypeArity inner
+countTypeArity (TyExprForAll _ inner) = countTypeArity inner
+countTypeArity _ = 0
 
 -- | Generate function definition
 genFunction :: GenCtx -> FunctionDeclaration -> String

@@ -355,6 +355,9 @@ end
         ({:decl_data_type, dt}) -> Nova.Array.from_foldable((Prelude.map((fn con -> {:tuple, con.name, (mk_info.(con.name).((Nova.List.length(con.fields))))} end), dt.constructors)))
         ({:decl_newtype, nt}) -> [{:tuple, nt.constructor, (mk_info.(nt.constructor).(1))}]
         ({:decl_type_class_instance, inst}) -> Nova.Array.from_foldable((Prelude.map((fn m -> {:tuple, m.name, (mk_info.(m.name).((Nova.List.length(m.parameters))))} end), inst.methods)))
+        ({:decl_foreign_import, fi}) -> 
+  arity = count_type_arity(fi.type_signature)
+  [{:tuple, fi.function_name, (mk_info.(fi.function_name).(arity))}]
         _ -> []
       end end end)
       resolve_arity = Nova.Runtime.fix2(fn resolve_arity -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
@@ -491,11 +494,38 @@ end
         "" -> "Nova.FFI"
         m -> Nova.Runtime.append("Nova.FFI.", m)
       end
+      arity = count_type_arity(fi.type_signature)
       alias_name = case fi.alias_ do
         {:just, a} -> snake_case(a)
         :nothing -> func_name
       end
-      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", alias_name), "(), do: &"), ffi_module), "."), func_name), "/1")
+      if (arity == 0) do
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", alias_name), "(), do: "), ffi_module), "."), func_name), "()")
+else
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("  def ", alias_name), "(), do: &"), ffi_module), "."), func_name), "/"), Prelude.show(arity))
+end
+  end
+
+
+
+  def count_type_arity(({:ty_expr_arrow, _, result})) do
+    (1 + count_type_arity(result))
+  end
+
+  def count_type_arity(({:ty_expr_parens, inner})) do
+    count_type_arity(inner)
+  end
+
+  def count_type_arity(({:ty_expr_constrained, _, inner})) do
+    count_type_arity(inner)
+  end
+
+  def count_type_arity(({:ty_expr_for_all, _, inner})) do
+    count_type_arity(inner)
+  end
+
+  def count_type_arity(_) do
+    0
   end
 
 

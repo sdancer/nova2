@@ -1331,6 +1331,13 @@ addFunctionPlaceholdersWithAliases importedAliases env decls =
                   -- No signature, add fresh type variable
                   let Tuple tv e' = freshVar e ("fn_" <> func.name)
                   in extendEnv e' func.name (mkScheme [] (TyVar tv))
+        DeclForeignImport fi ->
+          -- Foreign imports have explicit type signatures
+          let ty = typeExprToTypeWithAllAliases aliasMap paramAliasMap Map.empty fi.typeSignature
+              freeVars = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
+              tvars = map (\id -> { id: id, name: "a" <> intToString id }) freeVars
+              scheme = mkScheme tvars ty
+          in extendEnv e fi.functionName scheme
         _ -> e
   in Array.foldl addPlaceholder env decls
 

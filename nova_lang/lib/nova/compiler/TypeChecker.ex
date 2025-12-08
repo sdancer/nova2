@@ -1622,6 +1622,12 @@ end
                     Nova.Compiler.Types.extend_env(e_prime, func.name, (Nova.Compiler.Types.mk_scheme([], ({:ty_var, tv}))))
               end
           end
+        {:decl_foreign_import, fi} -> 
+            ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, Nova.Map.empty, fi.type_signature)
+            free_vars = Nova.Array.from_foldable((Nova.Set.to_unfoldable((Nova.Compiler.Types.free_type_vars(ty)))))
+            tvars = Prelude.map((fn id -> %{id: id, name: Nova.Runtime.append("a", int_to_string(id))} end), free_vars)
+            scheme = Nova.Compiler.Types.mk_scheme(tvars, ty)
+            Nova.Compiler.Types.extend_env(e, fi.function_name, scheme)
         _ -> e
       end end end
       Nova.Array.foldl(add_placeholder, env, decls)
