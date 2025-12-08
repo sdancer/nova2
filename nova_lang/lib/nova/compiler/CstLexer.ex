@@ -100,7 +100,7 @@ defmodule Nova.Compiler.CstLexer do
           end
           case call_insert_layout(tok, next_pos, stack) do
   {:tuple, new_stack, output_tokens} -> 
-      new_toks = Nova.Runtime.map((&Data.Tuple.fst/1), output_tokens)
+      new_toks = Prelude.map((&Data.Tuple.fst/1), output_tokens)
       insert_layout_go(new_stack, rest, (Nova.Runtime.append(acc, new_toks)))
 end
     end

@@ -47,7 +47,7 @@ defmodule Nova.Compiler.TypeChecker do
 
   # instance Show tcerror()
   def show(({:unify_err, e})) do
-    Nova.Runtime.append("Unification error: ", Nova.Runtime.show(e))
+    Nova.Runtime.append("Unification error: ", show(e))
   end
   def show(({:unbound_variable, v})) do
     Nova.Runtime.append("Unbound variable: ", v)
@@ -93,7 +93,7 @@ defmodule Nova.Compiler.TypeChecker do
       env_free = Nova.Compiler.Types.free_type_vars_env(env)
       ty_free = Nova.Compiler.Types.free_type_vars(ty)
       free_ids = Nova.Set.to_unfoldable((Nova.Set.difference(ty_free, env_free)))
-      vars = Nova.Runtime.map((fn i -> Nova.Compiler.Types.mk_tvar(i, (Nova.Runtime.append("t", int_to_string(i)))) end), free_ids)
+      vars = Prelude.map((fn i -> Nova.Compiler.Types.mk_tvar(i, (Nova.Runtime.append("t", int_to_string(i)))) end), free_ids)
       Nova.Compiler.Types.mk_scheme(vars, ty)
   end
 
@@ -198,7 +198,7 @@ end
   {:left, e} -> {:left, e}
   {:right, body_res} -> 
       sub = Nova.Compiler.Types.compose_subst(body_res.sub, pat_res.sub)
-      result_ty = Nova.Compiler.Types.t_arrow((Nova.Compiler.Types.apply_subst((&Nova.Runtime.sub/2), arg_ty)), body_res.ty)
+      result_ty = Nova.Compiler.Types.t_arrow((Nova.Compiler.Types.apply_subst((&Prelude.sub/2), arg_ty)), body_res.ty)
       {:right, %{ty: result_ty, sub: sub, env: body_res.env}}
 end
 end
@@ -849,7 +849,7 @@ end
         var_pairs = Nova.Array.map_with_index((fn i -> fn v -> {:tuple, v, (Nova.Compiler.Types.mk_tvar(((e.counter + i)), v))} end end), (Nova.Array.from_foldable(tc.type_vars)))
         var_map = Nova.Map.from_foldable(var_pairs)
         method_type = type_expr_to_type(var_map, sig.ty)
-        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Data.Tuple.snd/1), var_pairs)), method_type)
+        scheme = Nova.Compiler.Types.mk_scheme((Prelude.map((&Data.Tuple.snd/1), var_pairs)), method_type)
         Nova.Compiler.Types.extend_env(e, sig.name, scheme) end end
       Nova.Array.foldl(add_method, env, (Nova.Array.from_foldable(tc.methods)))
   end
@@ -874,11 +874,11 @@ end
       new_counter = (env.counter + Nova.List.length(dt.type_vars))
       type_var_map = Nova.Map.from_foldable(type_var_pairs)
       env1 = %{env | counter: new_counter}
-      type_args = Nova.Runtime.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs)
+      type_args = Prelude.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs)
       result_type = {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, type_args))}
       add_constructor = fn e -> fn con -> 
         con_type = build_constructor_type_with_all_aliases(alias_map, param_alias_map, type_var_map, con.fields, result_type)
-        con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Data.Tuple.snd/1), type_var_pairs)), con_type)
+        con_scheme = Nova.Compiler.Types.mk_scheme((Prelude.map((&Data.Tuple.snd/1), type_var_pairs)), con_type)
         Nova.Compiler.Types.extend_env(e, con.name, con_scheme) end end
       Nova.Array.foldl(add_constructor, env1, (Nova.Array.from_foldable(dt.constructors)))
   end
@@ -897,11 +897,11 @@ end
       new_counter = (env.counter + Nova.List.length(nt.type_vars))
       type_var_map = Nova.Map.from_foldable(type_var_pairs)
       env1 = %{env | counter: new_counter}
-      type_args = Nova.Runtime.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs)
+      type_args = Prelude.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs)
       result_type = {:ty_con, (Nova.Compiler.Types.mk_tcon(nt.name, type_args))}
       wrapped_ty = type_expr_to_type_with_all_aliases(alias_map, param_alias_map, type_var_map, nt.wrapped_type)
       con_type = Nova.Compiler.Types.t_arrow(wrapped_ty, result_type)
-      con_scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Data.Tuple.snd/1), type_var_pairs)), con_type)
+      con_scheme = Nova.Compiler.Types.mk_scheme((Prelude.map((&Data.Tuple.snd/1), type_var_pairs)), con_type)
       Nova.Compiler.Types.extend_env(env1, nt.constructor, con_scheme)
   end
 
@@ -1006,7 +1006,7 @@ end
           {:just, info} ->
             cond do
               (Nova.Array.length(info.params) == Nova.Array.length(args)) -> 
-                  arg_types = Nova.Runtime.map((fn auto_p0 -> type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, auto_p0) end), args)
+                  arg_types = Prelude.map((fn auto_p0 -> type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, auto_p0) end), args)
                   param_subst = Nova.Map.from_foldable((Nova.Array.zip(info.params, arg_types)))
                   substitute_type_expr(alias_map, param_alias_map, param_subst, info.body)
               true -> case type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, f) do
@@ -1028,7 +1028,7 @@ end
 
   def type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, ({:ty_expr_record, fields, maybe_row})) do
     
-      field_map = Nova.Map.from_foldable((Nova.Runtime.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, t))} end), fields)))
+      field_map = Nova.Map.from_foldable((Prelude.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, t))} end), fields)))
       row = case maybe_row do
         {:just, r} -> case Nova.Map.lookup(r, var_map) do
             {:just, tv} -> {:just, tv}
@@ -1055,7 +1055,7 @@ end
   end
 
   def type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, ({:ty_expr_tuple, ts})) do
-    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, auto_p0) end), ts)))))
+    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Prelude.map((fn auto_p0 -> type_expr_to_type_with_all_aliases(alias_map, param_alias_map, var_map, auto_p0) end), ts)))))
   end
 
 
@@ -1109,7 +1109,7 @@ end
           {:just, info} ->
             cond do
               (Nova.Array.length(info.params) == Nova.Array.length(args)) -> 
-                  arg_types = Nova.Runtime.map((fn auto_p0 -> type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, auto_p0) end), args)
+                  arg_types = Prelude.map((fn auto_p0 -> type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, auto_p0) end), args)
                   param_subst = Nova.Map.from_foldable((Nova.Array.zip(info.params, arg_types)))
                   substitute_type_expr(alias_map, param_alias_map, param_subst, info.body)
               true -> case type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, f) do
@@ -1131,7 +1131,7 @@ end
 
   def type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, ({:ty_expr_record, fields, maybe_row})) do
     
-      field_map = Nova.Map.from_foldable((Nova.Runtime.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, t))} end), fields)))
+      field_map = Nova.Map.from_foldable((Prelude.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, t))} end), fields)))
       row = case maybe_row do
         {:just, r} -> case Nova.Map.lookup(r, var_map) do
             {:just, tv} -> {:just, tv}
@@ -1158,7 +1158,7 @@ end
   end
 
   def type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, ({:ty_expr_tuple, ts})) do
-    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, auto_p0) end), ts)))))
+    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Prelude.map((fn auto_p0 -> type_expr_to_type_with_env(env, alias_map, param_alias_map, var_map, auto_p0) end), ts)))))
   end
 
 
@@ -1199,7 +1199,7 @@ end
           {:just, info} ->
             cond do
               (Nova.Array.length(info.params) == Nova.Array.length(args)) -> 
-                  arg_types = Nova.Runtime.map((fn auto_p0 -> substitute_type_expr(alias_map, param_alias_map, param_subst, auto_p0) end), args)
+                  arg_types = Prelude.map((fn auto_p0 -> substitute_type_expr(alias_map, param_alias_map, param_subst, auto_p0) end), args)
                   nested_subst = Nova.Map.from_foldable((Nova.Array.zip(info.params, arg_types)))
                   substitute_type_expr(alias_map, param_alias_map, nested_subst, info.body)
               true -> case substitute_type_expr(alias_map, param_alias_map, param_subst, f) do
@@ -1221,12 +1221,12 @@ end
 
   def substitute_type_expr(alias_map, param_alias_map, param_subst, ({:ty_expr_record, fields, maybe_row})) do
     
-      field_map = Nova.Map.from_foldable((Nova.Runtime.map((fn ({:tuple, l, t}) -> {:tuple, l, (substitute_type_expr(alias_map, param_alias_map, param_subst, t))} end), fields)))
+      field_map = Nova.Map.from_foldable((Prelude.map((fn ({:tuple, l, t}) -> {:tuple, l, (substitute_type_expr(alias_map, param_alias_map, param_subst, t))} end), fields)))
       {:ty_record, %{fields: field_map, row: :nothing}}
   end
 
   def substitute_type_expr(alias_map, param_alias_map, param_subst, ({:ty_expr_tuple, ts})) do
-    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> substitute_type_expr(alias_map, param_alias_map, param_subst, auto_p0) end), ts)))))
+    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Prelude.map((fn auto_p0 -> substitute_type_expr(alias_map, param_alias_map, param_subst, auto_p0) end), ts)))))
   end
 
   def substitute_type_expr(alias_map, param_alias_map, param_subst, ({:ty_expr_parens, t})) do
@@ -1271,7 +1271,7 @@ end
 
   def type_expr_to_type(var_map, ({:ty_expr_record, fields, maybe_row})) do
     
-      field_map = Nova.Map.from_foldable((Nova.Runtime.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type(var_map, t))} end), fields)))
+      field_map = Nova.Map.from_foldable((Prelude.map((fn ({:tuple, l, t}) -> {:tuple, l, (type_expr_to_type(var_map, t))} end), fields)))
       row = case maybe_row do
         {:just, r} -> case Nova.Map.lookup(r, var_map) do
             {:just, tv} -> {:just, tv}
@@ -1298,7 +1298,7 @@ end
   end
 
   def type_expr_to_type(var_map, ({:ty_expr_tuple, ts})) do
-    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Nova.Runtime.map((fn auto_p0 -> type_expr_to_type(var_map, auto_p0) end), ts)))))
+    Nova.Compiler.Types.t_tuple((Nova.Array.from_foldable((Prelude.map((fn auto_p0 -> type_expr_to_type(var_map, auto_p0) end), ts)))))
   end
 
 
@@ -1390,6 +1390,71 @@ end
     end
   end
 
+  # @type resolved_imports :: map()(string())(string())
+
+
+
+  def collect_resolved_imports(registry, decls) do
+    
+      collect_from_decl = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {acc, ({:decl_import, imp})} -> collect_from_import_decl(registry, acc, imp)
+        {acc, _} -> acc
+      end end end
+      Nova.Array.foldl(collect_from_decl, Nova.Map.empty, decls)
+  end
+
+
+
+  def collect_from_import_decl(registry, acc, imp) do
+    case Nova.Compiler.Types.lookup_module(registry, imp.module_name) do
+      :nothing -> acc
+      {:just, exports} -> case imp.alias_ do
+          {:just, _} -> if Nova.List.null(imp.items) do
+              acc
+            else
+              Nova.Array.foldl((fn m -> fn item -> Nova.Map.insert((get_import_item_name(item)), imp.module_name, m) end end), acc, (Nova.Array.from_foldable(imp.items)))
+            end
+          :nothing -> if imp.hiding do
+              
+                all_names = get_exported_names(exports)
+                hidden_names = Nova.Set.from_foldable((Prelude.map((&get_import_item_name/1), (Nova.Array.from_foldable(imp.items)))))
+                Nova.Array.foldl((fn m -> fn name -> if Nova.Set.member(name, hidden_names) do
+  m
+else
+  Nova.Map.insert(name, imp.module_name, m)
+end end end), acc, all_names)
+            else
+              if Nova.List.null(imp.items) do
+                
+                  all_names = get_exported_names(exports)
+                  Nova.Array.foldl((fn m -> fn name -> Nova.Map.insert(name, imp.module_name, m) end end), acc, all_names)
+              else
+                Nova.Array.foldl((fn m -> fn item -> Nova.Map.insert((get_import_item_name(item)), imp.module_name, m) end end), acc, (Nova.Array.from_foldable(imp.items)))
+              end
+            end
+        end
+    end
+  end
+
+
+
+  def get_exported_names(exports) do
+    
+      value_names = Prelude.map((fn ({:tuple, k, _}) -> k end), (Nova.Map.to_unfoldable(exports.values)))
+      ctor_names = Prelude.map((fn ({:tuple, k, _}) -> k end), (Nova.Map.to_unfoldable(exports.constructors)))
+      Nova.Runtime.append(value_names, ctor_names)
+  end
+
+
+
+  def get_import_item_name(({:import_value, name})) do
+    name
+  end
+
+  def get_import_item_name(({:import_type, name, _})) do
+    name
+  end
+
 
 
   def collect_imported_aliases(registry, decls) do
@@ -1416,14 +1481,14 @@ end
         result_type = if Nova.List.null(dt.type_vars) do
           {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, []))}
         else
-          {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, (Nova.Runtime.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs))))}
+          {:ty_con, (Nova.Compiler.Types.mk_tcon(dt.name, (Prelude.map((fn ({:tuple, _, tv}) -> {:ty_var, tv} end), type_var_pairs))))}
         end
         ctor_type = build_constructor_type_with_aliases(alias_map, type_var_map, ctor.fields, result_type)
-        scheme = Nova.Compiler.Types.mk_scheme((Nova.Runtime.map((&Data.Tuple.snd/1), type_var_pairs)), ctor_type)
+        scheme = Nova.Compiler.Types.mk_scheme((Prelude.map((&Data.Tuple.snd/1), type_var_pairs)), ctor_type)
         %{exp | constructors: Nova.Map.insert(ctor.name, scheme, exp.constructors)} end end end
       collect_export = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
         {exp, ({:decl_data_type, dt})} -> 
-  type_info = %{arity: Nova.List.length(dt.type_vars), constructors: Nova.Array.from_foldable((Nova.Runtime.map(& &1.name, dt.constructors)))}
+  type_info = %{arity: Nova.List.length(dt.type_vars), constructors: Nova.Array.from_foldable((Prelude.map(& &1.name, dt.constructors)))}
   exp1 = %{exp | types: Nova.Map.insert(dt.name, type_info, exp.types)}
   Nova.Array.foldl((add_constructor_placeholder.(dt)), exp1, (Nova.Array.from_foldable(dt.constructors)))
         {exp, ({:decl_type_alias, ta})} -> %{exp | type_aliases: Nova.Map.insert(ta.name, %{params: Nova.Array.from_foldable(ta.type_vars), body: ta.ty}, exp.type_aliases)}
@@ -1431,7 +1496,7 @@ end
         {exp, ({:decl_foreign_import, fi})} -> 
   ty = type_expr_to_type(Nova.Map.empty, fi.type_signature)
   free_vars = Nova.Array.from_foldable((Nova.Set.to_unfoldable((Nova.Compiler.Types.free_type_vars(ty)))))
-  tvars = Nova.Runtime.map((fn id -> %{id: id, name: Nova.Runtime.append("a", int_to_string(id))} end), free_vars)
+  tvars = Prelude.map((fn id -> %{id: id, name: Nova.Runtime.append("a", int_to_string(id))} end), free_vars)
   scheme = Nova.Compiler.Types.mk_scheme(tvars, ty)
   %{exp | values: Nova.Map.insert(fi.function_name, scheme, exp.values)}
         {exp, _} -> exp
@@ -1618,9 +1683,9 @@ end end end
             name = first.name
             num_params = Nova.List.length(first.parameters)
             clauses_list = Nova.List.from_foldable(clauses)
-            param_names = Nova.Runtime.map((fn i -> Nova.Runtime.append("__arg", int_to_string(i)) end), (Nova.List.range(0, ((num_params - 1)))))
-            param_pats = Nova.Runtime.map((&Nova.Compiler.Ast.pat_var/1), param_names)
-            param_vars = Nova.Runtime.map((&Nova.Compiler.Ast.expr_var/1), param_names)
+            param_names = Prelude.map((fn i -> Nova.Runtime.append("__arg", int_to_string(i)) end), (Nova.List.range(0, ((num_params - 1)))))
+            param_pats = Prelude.map((&Nova.Compiler.Ast.pat_var/1), param_names)
+            param_vars = Prelude.map((&Nova.Compiler.Ast.expr_var/1), param_names)
             case_clauses = Nova.List.map_maybe((clause_to_case_clause.(param_vars)), clauses_list)
             case_expr = case num_params do
               0 -> first.body

@@ -736,7 +736,7 @@ end)
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "(")) do
          Nova.Runtime.bind(parse_separated((&parse_pattern/1), (fn tok -> expect_delimiter(tok, ",") end), (Nova.Array.drop(1, ts))), fn {:tuple, elements, rest} ->
      Nova.Runtime.bind(expect_delimiter(rest, ")"), fn {:tuple, _, rest_prime} ->
-       success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable((Nova.Array.map_with_index((fn i -> fn p -> {:tuple, (Nova.Runtime.show(i)), p} end end), elements)))))), rest_prime)
+       success((Nova.Compiler.Ast.pat_record((Nova.List.from_foldable((Nova.Array.map_with_index((fn i -> fn p -> {:tuple, (Prelude.show(i)), p} end end), elements)))))), rest_prime)
      end)
    end)
     else
@@ -1912,13 +1912,13 @@ end
     
       pattern_to_expr = Nova.Runtime.fix(fn pattern_to_expr -> fn auto_arg0 -> case auto_arg0 do
         ({:pat_var, v}) -> Nova.Compiler.Ast.expr_var(v)
-        ({:pat_con, c, args}) -> Data.Foldable.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, (Nova.Compiler.Ast.expr_var(c)), (Nova.Runtime.map(pattern_to_expr, args)))
+        ({:pat_con, c, args}) -> Data.Foldable.foldl(fn a, b -> Nova.Compiler.Ast.expr_app(a, b) end, (Nova.Compiler.Ast.expr_var(c)), (Prelude.map(pattern_to_expr, args)))
         ({:pat_lit, l}) -> Nova.Compiler.Ast.expr_lit(l)
         :pat_wildcard -> Nova.Compiler.Ast.expr_var("_")
-        ({:pat_record, fields}) -> Nova.Compiler.Ast.expr_record((Nova.Runtime.map((fn ({:tuple, k, p}) -> {:tuple, k, (pattern_to_expr.(p))} end), fields)))
+        ({:pat_record, fields}) -> Nova.Compiler.Ast.expr_record((Prelude.map((fn ({:tuple, k, p}) -> {:tuple, k, (pattern_to_expr.(p))} end), fields)))
         ({:pat_cons, h, t}) -> Nova.Compiler.Ast.expr_bin_op(":", (pattern_to_expr.(h)), (pattern_to_expr.(t)))
         ({:pat_as, n, p}) -> pattern_to_expr.(p)
-        ({:pat_list, ps}) -> Nova.Compiler.Ast.expr_list((Nova.Runtime.map(pattern_to_expr, ps)))
+        ({:pat_list, ps}) -> Nova.Compiler.Ast.expr_list((Prelude.map(pattern_to_expr, ps)))
         ({:pat_parens, p}) -> Nova.Compiler.Ast.expr_parens((pattern_to_expr.(p)))
       end end end)
       try_pattern_bind = fn toks ->    Nova.Runtime.bind(parse_pattern(toks), fn {:tuple, pat, rest} ->
@@ -2446,11 +2446,11 @@ end
   case Nova.Array.head(rest) do
   {:just, t} -> if ((t.token_type == :tok_delimiter) and (t.value == "{")) do
          Nova.Runtime.bind(parse_braced_record_fields(rest), fn {:tuple, fields, rest_prime} ->
-     success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(field_to_data_field, fields))), is_record: true}, rest_prime)
+     success(%{name: name, fields: Nova.List.from_foldable((Prelude.map(field_to_data_field, fields))), is_record: true}, rest_prime)
    end)
     else
          Nova.Runtime.bind(parse_data_field_types(rest), fn {:tuple, field_types, rest_prime} ->
-     success(%{name: name, fields: Nova.List.from_foldable((Nova.Runtime.map(type_to_data_field, field_types))), is_record: false}, rest_prime)
+     success(%{name: name, fields: Nova.List.from_foldable((Prelude.map(type_to_data_field, field_types))), is_record: false}, rest_prime)
    end)
     end
   _ -> success(%{name: name, fields: [], is_record: false}, rest)

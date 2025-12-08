@@ -303,7 +303,7 @@ end
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_lower), fn {:tuple, tok, name} ->
-  Nova.Runtime.pure(%{token: tok, name: Nova.Compiler.Cst.ident(name)})
+  pure(%{token: tok, name: Nova.Compiler.Cst.ident(name)})
 end)
   end
 
@@ -317,12 +317,12 @@ end)
         ({:tok_lower_name, mod_, name}) -> if is_keyword.(name) do
   :nothing
 else
-  {:just, ({:tuple, (Nova.Runtime.map((&Nova.Compiler.Cst.module_name/1), mod_)), name})}
+  {:just, ({:tuple, (map((&Nova.Compiler.Cst.module_name/1), mod_)), name})}
 end
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_qual_lower), fn {:tuple, tok, ({:tuple, mod_, name})} ->
-  Nova.Runtime.pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.ident(name)})
+  pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.ident(name)})
 end)
   end
 
@@ -335,7 +335,7 @@ end)
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_upper), fn {:tuple, tok, name} ->
-  Nova.Runtime.pure(%{token: tok, name: Nova.Compiler.Cst.proper(name)})
+  pure(%{token: tok, name: Nova.Compiler.Cst.proper(name)})
 end)
   end
 
@@ -344,11 +344,11 @@ end)
   def tok_qualified_upper_name() do
     
       extract_qual_upper = fn auto_arg0 -> case auto_arg0 do
-        ({:tok_upper_name, mod_, name}) -> {:just, ({:tuple, (Nova.Runtime.map((&Nova.Compiler.Cst.module_name/1), mod_)), name})}
+        ({:tok_upper_name, mod_, name}) -> {:just, ({:tuple, (map((&Nova.Compiler.Cst.module_name/1), mod_)), name})}
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_qual_upper), fn {:tuple, tok, ({:tuple, mod_, name})} ->
-  Nova.Runtime.pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.proper(name)})
+  pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.proper(name)})
 end)
   end
 
@@ -357,11 +357,11 @@ end)
   def tok_operator() do
     
       extract_op = fn auto_arg0 -> case auto_arg0 do
-        ({:tok_operator, mod_, op}) -> {:just, ({:tuple, (Nova.Runtime.map((&Nova.Compiler.Cst.module_name/1), mod_)), op})}
+        ({:tok_operator, mod_, op}) -> {:just, ({:tuple, (map((&Nova.Compiler.Cst.module_name/1), mod_)), op})}
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_op), fn {:tuple, tok, ({:tuple, mod_, op})} ->
-  Nova.Runtime.pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.operator(op)})
+  pure(%{token: tok, module: mod_, name: Nova.Compiler.Cst.operator(op)})
 end)
   end
 
@@ -434,7 +434,7 @@ end)
 
 
   def optional(p) do
-    Nova.Runtime.alt((Nova.Runtime.map((fn x -> {:just, x} end), p)), Nova.Runtime.pure(:nothing))
+    Nova.Runtime.alt((map((fn x -> {:just, x} end), p)), pure(:nothing))
   end
 
 
@@ -459,7 +459,7 @@ end
   def some(p) do
       Nova.Runtime.bind(p, fn first ->
     Nova.Runtime.bind(many(p), fn rest ->
-      Nova.Runtime.pure(([first | rest]))
+      pure(([first | rest]))
     end)
   end)
   end
@@ -470,10 +470,10 @@ end
       Nova.Runtime.bind(p, fn head ->
     Nova.Runtime.bind(many((Nova.Runtime.bind(sep, fn s ->
   Nova.Runtime.bind(p, fn a ->
-    Nova.Runtime.pure(({:tuple, s, a}))
+    pure(({:tuple, s, a}))
   end)
 end))), fn tail ->
-      Nova.Runtime.pure(%{head: head, tail: tail})
+      pure(%{head: head, tail: tail})
     end)
   end)
   end
@@ -490,7 +490,7 @@ end))), fn tail ->
       Nova.Runtime.bind(open, fn o ->
     Nova.Runtime.bind(p, fn value ->
       Nova.Runtime.bind(close, fn c ->
-        Nova.Runtime.pure(%{open: o, value: value, close: c})
+        pure(%{open: o, value: value, close: c})
       end)
     end)
   end)
@@ -509,8 +509,8 @@ end))), fn tail ->
       dummy_token = %{range: %{start: %{line: 0, column: 0}, end_: %{line: 0, column: 0}}, leading_comments: [], trailing_comments: [], value: Nova.Compiler.Cst.tok_layout_end(0)}
       Nova.Runtime.bind(tok_layout_start(), fn _ ->
   Nova.Runtime.bind(layout_items(p), fn items ->
-    Nova.Runtime.bind(Nova.Runtime.alt(tok_layout_end(), Nova.Runtime.pure(dummy_token)), fn _ ->
-      Nova.Runtime.pure(items)
+    Nova.Runtime.bind(Nova.Runtime.alt(tok_layout_end(), pure(dummy_token)), fn _ ->
+      pure(items)
     end)
   end)
 end)
@@ -521,7 +521,7 @@ end)
   def layout_items(p) do
       Nova.Runtime.bind(p, fn first ->
     Nova.Runtime.bind(many((Nova.Runtime.seq(tok_layout_sep(), p))), fn rest ->
-      Nova.Runtime.pure(([first | rest]))
+      pure(([first | rest]))
     end)
   end)
   end
@@ -539,7 +539,7 @@ end)
     Nova.Runtime.bind(some(parse_type_var_binding()), fn vars ->
       Nova.Runtime.bind(tok_dot(), fn dot ->
         Nova.Runtime.bind(parse_type(), fn body ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.type_forall(forall_tok, vars, dot, body)))
+          pure((Nova.Compiler.Cst.type_forall(forall_tok, vars, dot, body)))
         end)
       end)
     end)
@@ -552,12 +552,12 @@ end)
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_type2(), fn t ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_right_fat_arrow(), fn arr ->
   Nova.Runtime.bind(parse_type1(), fn t2 ->
-    Nova.Runtime.pure(({:tuple, arr, t2}))
+    pure(({:tuple, arr, t2}))
   end)
 end))), fn rest ->
       case rest do
-  {:just, ({:tuple, arr, t2})} -> Nova.Runtime.pure((Nova.Compiler.Cst.type_constrained(t, arr, t2)))
-  :nothing -> Nova.Runtime.pure(t)
+  {:just, ({:tuple, arr, t2})} -> pure((Nova.Compiler.Cst.type_constrained(t, arr, t2)))
+  :nothing -> pure(t)
 end
     end)
   end) end)
@@ -569,12 +569,12 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_type3(), fn t ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_right_arrow(), fn arr ->
   Nova.Runtime.bind(parse_type2(), fn t2 ->
-    Nova.Runtime.pure(({:tuple, arr, t2}))
+    pure(({:tuple, arr, t2}))
   end)
 end))), fn rest ->
       case rest do
-  {:just, ({:tuple, arr, t2})} -> Nova.Runtime.pure((Nova.Compiler.Cst.type_arrow(t, arr, t2)))
-  :nothing -> Nova.Runtime.pure(t)
+  {:just, ({:tuple, arr, t2})} -> pure((Nova.Compiler.Cst.type_arrow(t, arr, t2)))
+  :nothing -> pure(t)
 end
     end)
   end) end)
@@ -586,9 +586,9 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_type_atom(), fn head ->
     Nova.Runtime.bind(many(parse_type_atom()), fn args ->
       if Nova.List.null(args) do
-  Nova.Runtime.pure(head)
+  pure(head)
 else
-  Nova.Runtime.pure((Nova.Compiler.Cst.type_app(head, args)))
+  pure((Nova.Compiler.Cst.type_app(head, args)))
 end
     end)
   end) end)
@@ -616,7 +616,7 @@ end
 
   def parse_type_parens() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(wrapped(tok_left_paren(), parse_type(), tok_right_paren()), fn w ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.type_parens(w)))
+    pure((Nova.Compiler.Cst.type_parens(w)))
   end) end)
   end
 
@@ -624,7 +624,7 @@ end
 
   def parse_type_record() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(wrapped(tok_left_brace(), parse_row(), tok_right_brace()), fn w ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.type_record(w)))
+    pure((Nova.Compiler.Cst.type_record(w)))
   end) end)
   end
 
@@ -634,10 +634,10 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(optional_separated(parse_row_label(), tok_comma()), fn labels ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_pipe(), fn pipe ->
   Nova.Runtime.bind(parse_type(), fn t ->
-    Nova.Runtime.pure(({:tuple, pipe, t}))
+    pure(({:tuple, pipe, t}))
   end)
 end))), fn tail ->
-      Nova.Runtime.pure(%{labels: labels, tail: tail})
+      pure(%{labels: labels, tail: tail})
     end)
   end) end)
   end
@@ -648,7 +648,7 @@ end))), fn tail ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_label(), fn label ->
     Nova.Runtime.bind(tok_double_colon(), fn sep ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure(%{label: label, separator: sep, value: ty})
+        pure(%{label: label, separator: sep, value: ty})
       end)
     end)
   end) end)
@@ -664,7 +664,7 @@ end))), fn tail ->
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_label), fn {:tuple, tok, name} ->
-  Nova.Runtime.pure(%{token: tok, name: Nova.Compiler.Cst.label(name)})
+  pure(%{token: tok, name: Nova.Compiler.Cst.label(name)})
 end)
   end
 
@@ -680,12 +680,12 @@ end)
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_expr2(), fn e ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_double_colon(), fn dc ->
   Nova.Runtime.bind(parse_type(), fn t ->
-    Nova.Runtime.pure(({:tuple, dc, t}))
+    pure(({:tuple, dc, t}))
   end)
 end))), fn ann ->
       case ann do
-  {:just, ({:tuple, dc, t})} -> Nova.Runtime.pure((Nova.Compiler.Cst.expr_typed(e, dc, t)))
-  :nothing -> Nova.Runtime.pure(e)
+  {:just, ({:tuple, dc, t})} -> pure((Nova.Compiler.Cst.expr_typed(e, dc, t)))
+  :nothing -> pure(e)
 end
     end)
   end) end)
@@ -704,27 +704,27 @@ end
   def parse_expr2_rest(e) do
       Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_operator(), fn op ->
   Nova.Runtime.bind(parse_expr3(), fn e2 ->
-    Nova.Runtime.pure(({:tuple, op, e2}))
+    pure(({:tuple, op, e2}))
   end)
 end))), fn op_result ->
     case op_result do
   {:just, ({:tuple, op, e2})} ->   Nova.Runtime.bind(parse_expr2_ops(([{:tuple, op, e2} | []])), fn rest ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_op(e, rest)))
+    pure((Nova.Compiler.Cst.expr_op(e, rest)))
   end)
   :nothing ->   Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_tick(), fn tick1 ->
   Nova.Runtime.bind(parse_expr5(), fn func_expr ->
     Nova.Runtime.bind(tok_tick(), fn tick2 ->
       Nova.Runtime.bind(parse_expr3(), fn e2 ->
-        Nova.Runtime.pure(({:tuple, %{open: tick1, value: func_expr, close: tick2}, e2}))
+        pure(({:tuple, %{open: tick1, value: func_expr, close: tick2}, e2}))
       end)
     end)
   end)
 end))), fn tick_result ->
     case tick_result do
   {:just, ({:tuple, wrapped, e2})} ->   Nova.Runtime.bind(parse_expr2_infix(([{:tuple, wrapped, e2} | []])), fn rest ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_infix(e, rest)))
+    pure((Nova.Compiler.Cst.expr_infix(e, rest)))
   end)
-  :nothing -> Nova.Runtime.pure(e)
+  :nothing -> pure(e)
 end
   end)
 end
@@ -736,12 +736,12 @@ end
   def parse_expr2_ops(acc) do
       Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_operator(), fn op ->
   Nova.Runtime.bind(parse_expr3(), fn e2 ->
-    Nova.Runtime.pure(({:tuple, op, e2}))
+    pure(({:tuple, op, e2}))
   end)
 end))), fn result ->
     case result do
   {:just, item} -> parse_expr2_ops((Nova.Runtime.append(acc, ([item | []]))))
-  :nothing -> Nova.Runtime.pure(acc)
+  :nothing -> pure(acc)
 end
   end)
   end
@@ -753,14 +753,14 @@ end
   Nova.Runtime.bind(parse_expr5(), fn func_expr ->
     Nova.Runtime.bind(tok_tick(), fn tick2 ->
       Nova.Runtime.bind(parse_expr3(), fn e2 ->
-        Nova.Runtime.pure(({:tuple, %{open: tick1, value: func_expr, close: tick2}, e2}))
+        pure(({:tuple, %{open: tick1, value: func_expr, close: tick2}, e2}))
       end)
     end)
   end)
 end))), fn result ->
     case result do
   {:just, item} -> parse_expr2_infix((Nova.Runtime.append(acc, ([item | []]))))
-  :nothing -> Nova.Runtime.pure(acc)
+  :nothing -> pure(acc)
 end
   end)
   end
@@ -775,7 +775,7 @@ end
       end end
       parse_negate =    Nova.Runtime.bind(satisfy(is_negate), fn neg ->
      Nova.Runtime.bind(parse_expr3(), fn e ->
-       Nova.Runtime.pure((Nova.Compiler.Cst.expr_negate(neg, e)))
+       pure((Nova.Compiler.Cst.expr_negate(neg, e)))
      end)
    end)
       Control.Lazy.defer(fn _ -> Nova.Runtime.alt(parse_negate, parse_expr4()) end)
@@ -787,9 +787,9 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_expr5(), fn head ->
     Nova.Runtime.bind(many(parse_expr5()), fn args ->
       if Nova.List.null(args) do
-  Nova.Runtime.pure(head)
+  pure(head)
 else
-  Nova.Runtime.pure((Nova.Compiler.Cst.expr_app(head, args)))
+  pure((Nova.Compiler.Cst.expr_app(head, args)))
 end
     end)
   end) end)
@@ -808,18 +808,18 @@ end
   def parse_record_accessor(e) do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(optional(parse_record_update_part()), fn update_result ->
     case update_result do
-  {:just, updates} -> Nova.Runtime.pure((Nova.Compiler.Cst.expr_record_update(e, updates)))
+  {:just, updates} -> pure((Nova.Compiler.Cst.expr_record_update(e, updates)))
   :nothing ->   Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_dot(), fn dot ->
   Nova.Runtime.bind(parse_label(), fn first ->
     Nova.Runtime.bind(many((Nova.Runtime.seq(tok_dot(), parse_label()))), fn rest ->
-      Nova.Runtime.pure(%{dot: dot, path: %{head: first, tail: Nova.Runtime.map((fn l -> {:tuple, dot, l} end), rest)}})
+      pure(%{dot: dot, path: %{head: first, tail: map((fn l -> {:tuple, dot, l} end), rest)}})
     end)
   end)
 end))), fn access ->
     case access do
   {:just, %{dot: dot, path: path}} ->     access_expr = Nova.Compiler.Cst.expr_record_accessor(%{expr: e, dot: dot, path: path})
   parse_record_accessor(access_expr)
-  :nothing -> Nova.Runtime.pure(e)
+  :nothing -> pure(e)
 end
   end)
 end
@@ -833,11 +833,11 @@ end
     Nova.Runtime.bind(parse_record_update_field(), fn first ->
       Nova.Runtime.bind(many((Nova.Runtime.bind(tok_comma(), fn comma ->
   Nova.Runtime.bind(parse_record_update_field(), fn field ->
-    Nova.Runtime.pure(({:tuple, comma, field}))
+    pure(({:tuple, comma, field}))
   end)
 end))), fn rest ->
         Nova.Runtime.bind(tok_right_brace(), fn close ->
-          Nova.Runtime.pure(%{open: open, value: %{head: first, tail: rest}, close: close})
+          pure(%{open: open, value: %{head: first, tail: rest}, close: close})
         end)
       end)
     end)
@@ -850,7 +850,7 @@ end))), fn rest ->
       Nova.Runtime.bind(parse_label(), fn label ->
     Nova.Runtime.bind(tok_equals(), fn eq ->
       Nova.Runtime.bind(parse_expr(), fn value ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.record_update_leaf(label, eq, value)))
+        pure((Nova.Compiler.Cst.record_update_leaf(label, eq, value)))
       end)
     end)
   end)
@@ -865,7 +865,7 @@ end))), fn rest ->
         Nova.Runtime.bind(parse_expr(), fn true_expr ->
           Nova.Runtime.bind(tok_keyword("else"), fn else_kw ->
             Nova.Runtime.bind(parse_expr(), fn false_expr ->
-              Nova.Runtime.pure((Nova.Compiler.Cst.expr_if(%{keyword: kw, cond_: cond_expr, then_kw: then_kw, then_branch: true_expr, else_kw: else_kw, else_branch: false_expr})))
+              pure((Nova.Compiler.Cst.expr_if(%{keyword: kw, cond_: cond_expr, then_kw: then_kw, then_branch: true_expr, else_kw: else_kw, else_branch: false_expr})))
             end)
           end)
         end)
@@ -881,7 +881,7 @@ end))), fn rest ->
     Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
       Nova.Runtime.bind(tok_keyword("in"), fn in_kw ->
         Nova.Runtime.bind(parse_expr(), fn body ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.expr_let(%{keyword: kw, bindings: bindings, in_: in_kw, body: body})))
+          pure((Nova.Compiler.Cst.expr_let(%{keyword: kw, bindings: bindings, in_: in_kw, body: body})))
         end)
       end)
     end)
@@ -895,7 +895,7 @@ end))), fn rest ->
     Nova.Runtime.bind(some(parse_binder()), fn binders ->
       Nova.Runtime.bind(tok_right_arrow(), fn arr ->
         Nova.Runtime.bind(parse_expr(), fn body ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.expr_lambda(%{symbol: bs, binders: binders, arrow: arr, body: body})))
+          pure((Nova.Compiler.Cst.expr_lambda(%{symbol: bs, binders: binders, arrow: arr, body: body})))
         end)
       end)
     end)
@@ -909,7 +909,7 @@ end))), fn rest ->
     Nova.Runtime.bind(separated(parse_expr(), tok_comma()), fn head ->
       Nova.Runtime.bind(tok_keyword("of"), fn of_kw ->
         Nova.Runtime.bind(layout_block(parse_case_branch()), fn branches ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.expr_case(%{keyword: kw, head: head, of: of_kw, branches: branches})))
+          pure((Nova.Compiler.Cst.expr_case(%{keyword: kw, head: head, of: of_kw, branches: branches})))
         end)
       end)
     end)
@@ -921,7 +921,7 @@ end))), fn rest ->
   def parse_case_branch() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(separated(parse_binder(), tok_comma()), fn pats ->
     Nova.Runtime.bind(parse_guarded_arrow(), fn guarded ->
-      Nova.Runtime.pure(({:tuple, pats, guarded}))
+      pure(({:tuple, pats, guarded}))
     end)
   end) end)
   end
@@ -939,10 +939,10 @@ end))), fn rest ->
     Nova.Runtime.bind(parse_expr(), fn expr ->
       Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn wh ->
   Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, wh, bindings}))
+    pure(({:tuple, wh, bindings}))
   end)
 end))), fn where_clause ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.unconditional(arrow, %{expr: expr, bindings: where_clause})))
+        pure((Nova.Compiler.Cst.unconditional(arrow, %{expr: expr, bindings: where_clause})))
       end)
     end)
   end) end)
@@ -952,7 +952,7 @@ end))), fn where_clause ->
 
   def parse_guarded_exprs_arrow() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(some(parse_guarded_expr_arrow()), fn guards ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.guarded(guards)))
+    pure((Nova.Compiler.Cst.guarded(guards)))
   end) end)
   end
 
@@ -965,10 +965,10 @@ end))), fn where_clause ->
         Nova.Runtime.bind(parse_expr(), fn expr ->
           Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn wh ->
   Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, wh, bindings}))
+    pure(({:tuple, wh, bindings}))
   end)
 end))), fn where_clause ->
-            Nova.Runtime.pure(%{bar: bar, patterns: patterns, separator: sep, where: %{expr: expr, bindings: where_clause}})
+            pure(%{bar: bar, patterns: patterns, separator: sep, where: %{expr: expr, bindings: where_clause}})
           end)
         end)
       end)
@@ -981,7 +981,7 @@ end))), fn where_clause ->
   def parse_do() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_keyword("do"), fn kw ->
     Nova.Runtime.bind(layout_block(parse_do_statement()), fn stmts ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.expr_do(%{keyword: kw, statements: stmts})))
+      pure((Nova.Compiler.Cst.expr_do(%{keyword: kw, statements: stmts})))
     end)
   end) end)
   end
@@ -997,7 +997,7 @@ end))), fn where_clause ->
   def parse_do_let() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_keyword("let"), fn kw ->
     Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.do_let(kw, bindings)))
+      pure((Nova.Compiler.Cst.do_let(kw, bindings)))
     end)
   end) end)
   end
@@ -1008,7 +1008,7 @@ end))), fn where_clause ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_binder(), fn binder ->
     Nova.Runtime.bind(tok_left_arrow(), fn arr ->
       Nova.Runtime.bind(parse_expr(), fn expr ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.do_bind(binder, arr, expr)))
+        pure((Nova.Compiler.Cst.do_bind(binder, arr, expr)))
       end)
     end)
   end) end)
@@ -1032,7 +1032,7 @@ end))), fn where_clause ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(tok_double_colon(), fn dc ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.let_binding_signature(%{label: name, separator: dc, value: ty})))
+        pure((Nova.Compiler.Cst.let_binding_signature(%{label: name, separator: dc, value: ty})))
       end)
     end)
   end) end)
@@ -1046,10 +1046,10 @@ end))), fn where_clause ->
       Nova.Runtime.bind(parse_expr(), fn expr ->
         Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn wh ->
   Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, wh, bindings}))
+    pure(({:tuple, wh, bindings}))
   end)
 end))), fn where_clause ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.let_binding_pattern(pat, eq, %{expr: expr, bindings: where_clause})))
+          pure((Nova.Compiler.Cst.let_binding_pattern(pat, eq, %{expr: expr, bindings: where_clause})))
         end)
       end)
     end)
@@ -1062,7 +1062,7 @@ end))), fn where_clause ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(many(parse_binder_atom()), fn binders ->
       Nova.Runtime.bind(parse_guarded(), fn guarded ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.let_binding_name(%{name: name, binders: binders, guarded: guarded})))
+        pure((Nova.Compiler.Cst.let_binding_name(%{name: name, binders: binders, guarded: guarded})))
       end)
     end)
   end) end)
@@ -1081,10 +1081,10 @@ end))), fn where_clause ->
     Nova.Runtime.bind(parse_expr(), fn expr ->
       Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn wh ->
   Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, wh, bindings}))
+    pure(({:tuple, wh, bindings}))
   end)
 end))), fn where_clause ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.unconditional(eq, %{expr: expr, bindings: where_clause})))
+        pure((Nova.Compiler.Cst.unconditional(eq, %{expr: expr, bindings: where_clause})))
       end)
     end)
   end) end)
@@ -1094,7 +1094,7 @@ end))), fn where_clause ->
 
   def parse_guarded_exprs() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(some(parse_guarded_expr()), fn guards ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.guarded(guards)))
+    pure((Nova.Compiler.Cst.guarded(guards)))
   end) end)
   end
 
@@ -1107,10 +1107,10 @@ end))), fn where_clause ->
         Nova.Runtime.bind(parse_expr(), fn expr ->
           Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn wh ->
   Nova.Runtime.bind(layout_block(parse_let_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, wh, bindings}))
+    pure(({:tuple, wh, bindings}))
   end)
 end))), fn where_clause ->
-            Nova.Runtime.pure(%{bar: bar, patterns: patterns, separator: sep, where: %{expr: expr, bindings: where_clause}})
+            pure(%{bar: bar, patterns: patterns, separator: sep, where: %{expr: expr, bindings: where_clause}})
           end)
         end)
       end)
@@ -1123,11 +1123,11 @@ end))), fn where_clause ->
   def parse_pattern_guard() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(optional((Nova.Runtime.bind(parse_binder(), fn b ->
   Nova.Runtime.bind(tok_left_arrow(), fn arr ->
-    Nova.Runtime.pure(({:tuple, b, arr}))
+    pure(({:tuple, b, arr}))
   end)
 end))), fn pat_bind ->
     Nova.Runtime.bind(parse_expr(), fn expr ->
-      Nova.Runtime.pure(%{binder: pat_bind, expr: expr})
+      pure(%{binder: pat_bind, expr: expr})
     end)
   end) end)
   end
@@ -1142,7 +1142,7 @@ end))), fn pat_bind ->
 
   def parse_expr_section() do
       Nova.Runtime.bind(token(Nova.Compiler.Cst.tok_underscore()), fn tok ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_section(tok)))
+    pure((Nova.Compiler.Cst.expr_section(tok)))
   end)
   end
 
@@ -1152,7 +1152,7 @@ end))), fn pat_bind ->
       Nova.Runtime.bind(tok_hole(), fn {:tuple, tok, hole_name} ->
         full_name = Nova.Runtime.append("_", hole_name)
         name = %{token: tok, name: Nova.Compiler.Cst.ident(full_name)}
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_hole(name)))
+    pure((Nova.Compiler.Cst.expr_hole(name)))
   end)
   end
 
@@ -1178,7 +1178,7 @@ end))), fn pat_bind ->
 
   def parse_expr_string() do
       Nova.Runtime.bind(tok_string(), fn {:tuple, tok, s} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_string(tok, s)))
+    pure((Nova.Compiler.Cst.expr_string(tok, s)))
   end)
   end
 
@@ -1186,7 +1186,7 @@ end))), fn pat_bind ->
 
   def parse_expr_int() do
       Nova.Runtime.bind(tok_int(), fn {:tuple, tok, n} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_int(tok, n)))
+    pure((Nova.Compiler.Cst.expr_int(tok, n)))
   end)
   end
 
@@ -1194,7 +1194,7 @@ end))), fn pat_bind ->
 
   def parse_expr_number() do
       Nova.Runtime.bind(tok_number(), fn {:tuple, tok, n} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_number(tok, n)))
+    pure((Nova.Compiler.Cst.expr_number(tok, n)))
   end)
   end
 
@@ -1202,7 +1202,7 @@ end))), fn pat_bind ->
 
   def parse_expr_char() do
       Nova.Runtime.bind(tok_char(), fn {:tuple, tok, c} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_char(tok, c)))
+    pure((Nova.Compiler.Cst.expr_char(tok, c)))
   end)
   end
 
@@ -1211,10 +1211,10 @@ end))), fn pat_bind ->
   def parse_expr_bool() do
     
       parse_true =    Nova.Runtime.bind(tok_keyword("true"), fn tok ->
-     Nova.Runtime.pure((Nova.Compiler.Cst.expr_boolean(tok, true)))
+     pure((Nova.Compiler.Cst.expr_boolean(tok, true)))
    end)
       parse_false =    Nova.Runtime.bind(tok_keyword("false"), fn tok ->
-     Nova.Runtime.pure((Nova.Compiler.Cst.expr_boolean(tok, false)))
+     pure((Nova.Compiler.Cst.expr_boolean(tok, false)))
    end)
       Nova.Runtime.alt(parse_true, parse_false)
   end
@@ -1223,7 +1223,7 @@ end))), fn pat_bind ->
 
   def parse_expr_array() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(delimited(tok_left_square(), parse_expr(), tok_comma(), tok_right_square()), fn d ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_array(d)))
+    pure((Nova.Compiler.Cst.expr_array(d)))
   end) end)
   end
 
@@ -1231,7 +1231,7 @@ end))), fn pat_bind ->
 
   def parse_expr_record() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(delimited(tok_left_brace(), parse_record_field(), tok_comma(), tok_right_brace()), fn d ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.expr_record(d)))
+    pure((Nova.Compiler.Cst.expr_record(d)))
   end) end)
   end
 
@@ -1247,7 +1247,7 @@ end))), fn pat_bind ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_label(), fn label ->
     Nova.Runtime.bind(Nova.Runtime.alt(tok_colon(), tok_equals()), fn sep ->
       Nova.Runtime.bind(parse_expr(), fn value ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.record_field(label, sep, value)))
+        pure((Nova.Compiler.Cst.record_field(label, sep, value)))
       end)
     end)
   end) end)
@@ -1266,12 +1266,12 @@ end))), fn pat_bind ->
       parse_expr_op_section =    Nova.Runtime.bind(tok_left_paren(), fn _ ->
      Nova.Runtime.bind(tok_operator(), fn op ->
        Nova.Runtime.bind(tok_right_paren(), fn _ ->
-         Nova.Runtime.pure((Nova.Compiler.Cst.expr_op_name(op)))
+         pure((Nova.Compiler.Cst.expr_op_name(op)))
        end)
      end)
    end)
       parse_expr_parens_normal = Control.Lazy.defer(fn _ ->    Nova.Runtime.bind(wrapped(tok_left_paren(), parse_expr(), tok_right_paren()), fn w ->
-     Nova.Runtime.pure((Nova.Compiler.Cst.expr_parens(w)))
+     pure((Nova.Compiler.Cst.expr_parens(w)))
    end) end)
       Control.Lazy.defer(fn _ -> Nova.Runtime.alt(parse_expr_op_section, parse_expr_parens_normal) end)
   end
@@ -1288,13 +1288,13 @@ end))), fn pat_bind ->
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_binder2(), fn b ->
     Nova.Runtime.bind(many((Nova.Runtime.bind(tok_operator(), fn op ->
   Nova.Runtime.bind(parse_binder2(), fn b2 ->
-    Nova.Runtime.pure(({:tuple, op, b2}))
+    pure(({:tuple, op, b2}))
   end)
 end))), fn ops ->
       if Nova.List.null(ops) do
-  Nova.Runtime.pure(b)
+  pure(b)
 else
-  Nova.Runtime.pure((Nova.Compiler.Cst.binder_op(b, ops)))
+  pure((Nova.Compiler.Cst.binder_op(b, ops)))
 end
     end)
   end) end)
@@ -1306,12 +1306,12 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_binder3(), fn b ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_double_colon(), fn dc ->
   Nova.Runtime.bind(parse_type(), fn t ->
-    Nova.Runtime.pure(({:tuple, dc, t}))
+    pure(({:tuple, dc, t}))
   end)
 end))), fn ann ->
       case ann do
-  {:just, ({:tuple, dc, t})} -> Nova.Runtime.pure((Nova.Compiler.Cst.binder_typed(b, dc, t)))
-  :nothing -> Nova.Runtime.pure(b)
+  {:just, ({:tuple, dc, t})} -> pure((Nova.Compiler.Cst.binder_typed(b, dc, t)))
+  :nothing -> pure(b)
 end
     end)
   end) end)
@@ -1328,7 +1328,7 @@ end
   def parse_binder_con() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_qualified_upper_name(), fn con ->
     Nova.Runtime.bind(some(parse_binder_atom()), fn args ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.binder_constructor(con, args)))
+      pure((Nova.Compiler.Cst.binder_constructor(con, args)))
     end)
   end) end)
   end
@@ -1343,7 +1343,7 @@ end
 
   def parse_binder_nullary_con() do
       Nova.Runtime.bind(tok_qualified_upper_name(), fn con ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_constructor(con, [])))
+    pure((Nova.Compiler.Cst.binder_constructor(con, [])))
   end)
   end
 
@@ -1351,7 +1351,7 @@ end
 
   def parse_binder_wildcard() do
       Nova.Runtime.bind(token(Nova.Compiler.Cst.tok_underscore()), fn tok ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_wildcard(tok)))
+    pure((Nova.Compiler.Cst.binder_wildcard(tok)))
   end)
   end
 
@@ -1361,7 +1361,7 @@ end
       Nova.Runtime.bind(tok_hole(), fn {:tuple, tok, hole_name} ->
         full_name = Nova.Runtime.append("_", hole_name)
         name = %{token: tok, name: Nova.Compiler.Cst.ident(full_name)}
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_var(name)))
+    pure((Nova.Compiler.Cst.binder_var(name)))
   end)
   end
 
@@ -1371,12 +1371,12 @@ end
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(token(Nova.Compiler.Cst.tok_at()), fn at ->
   Nova.Runtime.bind(parse_binder_atom(), fn b ->
-    Nova.Runtime.pure(({:tuple, at, b}))
+    pure(({:tuple, at, b}))
   end)
 end))), fn named ->
       case named do
-  {:just, ({:tuple, at, b})} -> Nova.Runtime.pure((Nova.Compiler.Cst.binder_named(name, at, b)))
-  :nothing -> Nova.Runtime.pure((Nova.Compiler.Cst.binder_var(name)))
+  {:just, ({:tuple, at, b})} -> pure((Nova.Compiler.Cst.binder_named(name, at, b)))
+  :nothing -> pure((Nova.Compiler.Cst.binder_var(name)))
 end
     end)
   end) end)
@@ -1392,7 +1392,7 @@ end
 
   def parse_binder_string() do
       Nova.Runtime.bind(tok_string(), fn {:tuple, tok, s} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_string(tok, s)))
+    pure((Nova.Compiler.Cst.binder_string(tok, s)))
   end)
   end
 
@@ -1406,7 +1406,7 @@ end
       end end
       Nova.Runtime.bind(optional((satisfy(is_neg))), fn neg ->
   Nova.Runtime.bind(tok_int(), fn {:tuple, tok, n} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_int(neg, tok, n)))
+    pure((Nova.Compiler.Cst.binder_int(neg, tok, n)))
   end)
 end)
   end
@@ -1421,7 +1421,7 @@ end)
       end end
       Nova.Runtime.bind(optional((satisfy(is_neg))), fn neg ->
   Nova.Runtime.bind(tok_number(), fn {:tuple, tok, n} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_number(neg, tok, n)))
+    pure((Nova.Compiler.Cst.binder_number(neg, tok, n)))
   end)
 end)
   end
@@ -1430,7 +1430,7 @@ end)
 
   def parse_binder_char() do
       Nova.Runtime.bind(tok_char(), fn {:tuple, tok, c} ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_char(tok, c)))
+    pure((Nova.Compiler.Cst.binder_char(tok, c)))
   end)
   end
 
@@ -1439,10 +1439,10 @@ end)
   def parse_binder_bool() do
     
       parse_binder_true =    Nova.Runtime.bind(tok_keyword("true"), fn tok ->
-     Nova.Runtime.pure((Nova.Compiler.Cst.binder_boolean(tok, true)))
+     pure((Nova.Compiler.Cst.binder_boolean(tok, true)))
    end)
       parse_binder_false =    Nova.Runtime.bind(tok_keyword("false"), fn tok ->
-     Nova.Runtime.pure((Nova.Compiler.Cst.binder_boolean(tok, false)))
+     pure((Nova.Compiler.Cst.binder_boolean(tok, false)))
    end)
       Nova.Runtime.alt(parse_binder_true, parse_binder_false)
   end
@@ -1451,7 +1451,7 @@ end)
 
   def parse_binder_array() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(delimited(tok_left_square(), parse_binder(), tok_comma(), tok_right_square()), fn d ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_array(d)))
+    pure((Nova.Compiler.Cst.binder_array(d)))
   end) end)
   end
 
@@ -1459,7 +1459,7 @@ end)
 
   def parse_binder_record() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(delimited(tok_left_brace(), parse_binder_record_field(), tok_comma(), tok_right_brace()), fn d ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_record(d)))
+    pure((Nova.Compiler.Cst.binder_record(d)))
   end) end)
   end
 
@@ -1475,7 +1475,7 @@ end)
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(parse_label(), fn label ->
     Nova.Runtime.bind(Nova.Runtime.alt(tok_colon(), tok_equals()), fn sep ->
       Nova.Runtime.bind(parse_binder(), fn value ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.record_field(label, sep, value)))
+        pure((Nova.Compiler.Cst.record_field(label, sep, value)))
       end)
     end)
   end) end)
@@ -1491,7 +1491,7 @@ end)
 
   def parse_binder_parens() do
     Control.Lazy.defer(fn _ ->   Nova.Runtime.bind(wrapped(tok_left_paren(), parse_binder(), tok_right_paren()), fn w ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.binder_parens(w)))
+    pure((Nova.Compiler.Cst.binder_parens(w)))
   end) end)
   end
 
@@ -1508,7 +1508,7 @@ end)
                 Nova.Runtime.bind(optional(tok_layout_end()), fn _ ->
                                     header = %{keyword: kw, name: name, exports: exports, where: where_kw, imports: imports}
                                     body = %{decls: decls, trailing_comments: [], end_: %{line: 0, column: 0}}
-                  Nova.Runtime.pure(%{header: header, body: body})
+                  pure(%{header: header, body: body})
                 end)
               end)
             end)
@@ -1527,10 +1527,10 @@ end)
   Nova.Runtime.bind(optional(tok_layout_sep()), fn sep ->
     case sep do
   {:just, _} -> go.((Nova.Runtime.append(acc, ([imp | []]))))
-  :nothing -> Nova.Runtime.pure((Nova.Runtime.append(acc, ([imp | []]))))
+  :nothing -> pure((Nova.Runtime.append(acc, ([imp | []]))))
 end
   end)
-end)), Nova.Runtime.pure(acc))  end end)
+end)), pure(acc))  end end)
       go.([])
   end
 
@@ -1542,10 +1542,10 @@ end)), Nova.Runtime.pure(acc))  end end)
   Nova.Runtime.bind(optional(tok_layout_sep()), fn sep ->
     case sep do
   {:just, _} -> go.((Nova.Runtime.append(acc, ([decl | []]))))
-  :nothing -> Nova.Runtime.pure((Nova.Runtime.append(acc, ([decl | []]))))
+  :nothing -> pure((Nova.Runtime.append(acc, ([decl | []]))))
 end
   end)
-end)), Nova.Runtime.pure(acc))  end end)
+end)), pure(acc))  end end)
       Nova.Runtime.bind(optional(tok_layout_sep()), fn _ ->
   go.([])
 end)
@@ -1558,7 +1558,7 @@ end)
     Nova.Runtime.bind(parse_module_name(), fn name ->
       Nova.Runtime.bind(optional(parse_exports()), fn exports ->
         Nova.Runtime.bind(tok_keyword("where"), fn where_kw ->
-          Nova.Runtime.pure(%{keyword: kw, name: name, exports: exports, where: where_kw, imports: []})
+          pure(%{keyword: kw, name: name, exports: exports, where: where_kw, imports: []})
         end)
       end)
     end)
@@ -1575,7 +1575,7 @@ end)
         _ -> :nothing
       end end
       Nova.Runtime.bind(expect_map(extract_module_name), fn {:tuple, tok, name} ->
-  Nova.Runtime.pure(%{token: tok, name: name})
+  pure(%{token: tok, name: name})
 end)
   end
 
@@ -1585,7 +1585,7 @@ end)
       Nova.Runtime.bind(tok_left_paren(), fn open ->
     Nova.Runtime.bind(separated(parse_export(), tok_comma()), fn exports ->
       Nova.Runtime.bind(tok_right_paren(), fn close ->
-        Nova.Runtime.pure(%{open: open, value: exports, close: close})
+        pure(%{open: open, value: exports, close: close})
       end)
     end)
   end)
@@ -1608,7 +1608,7 @@ end)
   def parse_export_type() do
       Nova.Runtime.bind(tok_upper_name(), fn name ->
     Nova.Runtime.bind(optional(parse_data_members()), fn members ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.export_type(name, members)))
+      pure((Nova.Compiler.Cst.export_type(name, members)))
     end)
   end)
   end
@@ -1618,7 +1618,7 @@ end)
   def parse_export_module() do
       Nova.Runtime.bind(tok_keyword("module"), fn kw ->
     Nova.Runtime.bind(parse_module_name(), fn name ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.export_module(kw, name)))
+      pure((Nova.Compiler.Cst.export_module(kw, name)))
     end)
   end)
   end
@@ -1635,7 +1635,7 @@ end)
       Nova.Runtime.bind(tok_left_paren(), fn _ ->
     Nova.Runtime.bind(tok_double_dot(), fn dotdot ->
       Nova.Runtime.bind(tok_right_paren(), fn _ ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.data_all(dotdot)))
+        pure((Nova.Compiler.Cst.data_all(dotdot)))
       end)
     end)
   end)
@@ -1645,7 +1645,7 @@ end)
 
   def parse_data_enumerated() do
       Nova.Runtime.bind(delimited(tok_left_paren(), tok_upper_name(), tok_comma(), tok_right_paren()), fn d ->
-    Nova.Runtime.pure((Nova.Compiler.Cst.data_enumerated(d)))
+    pure((Nova.Compiler.Cst.data_enumerated(d)))
   end)
   end
 
@@ -1656,15 +1656,15 @@ end)
     Nova.Runtime.bind(parse_module_name(), fn mod_ ->
       Nova.Runtime.bind(optional((Nova.Runtime.bind(optional((tok_keyword("hiding"))), fn is_hiding ->
   Nova.Runtime.bind(wrapped(tok_left_paren(), (separated(parse_import_item(), tok_comma())), tok_right_paren()), fn imports ->
-    Nova.Runtime.pure(({:tuple, is_hiding, imports}))
+    pure(({:tuple, is_hiding, imports}))
   end)
 end))), fn names ->
         Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("as"), fn as_kw ->
   Nova.Runtime.bind(parse_module_name(), fn alias_ ->
-    Nova.Runtime.pure(({:tuple, as_kw, alias_}))
+    pure(({:tuple, as_kw, alias_}))
   end)
 end))), fn qualified ->
-          Nova.Runtime.pure(%{keyword: kw, module: mod_, names: names, qualified: qualified})
+          pure(%{keyword: kw, module: mod_, names: names, qualified: qualified})
         end)
       end)
     end)
@@ -1683,7 +1683,7 @@ end))), fn qualified ->
       Nova.Runtime.bind(tok_left_paren(), fn _ ->
     Nova.Runtime.bind(parse_op_name(), fn op ->
       Nova.Runtime.bind(tok_right_paren(), fn _ ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.import_op(op)))
+        pure((Nova.Compiler.Cst.import_op(op)))
       end)
     end)
   end)
@@ -1700,7 +1700,7 @@ end))), fn qualified ->
   def parse_import_type() do
       Nova.Runtime.bind(tok_upper_name(), fn name ->
     Nova.Runtime.bind(optional(parse_data_members()), fn members ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.import_type(name, members)))
+      pure((Nova.Compiler.Cst.import_type(name, members)))
     end)
   end)
   end
@@ -1710,7 +1710,7 @@ end))), fn qualified ->
   def parse_import_class() do
       Nova.Runtime.bind(tok_keyword("class"), fn kw ->
     Nova.Runtime.bind(tok_upper_name(), fn name ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.import_class(kw, name)))
+      pure((Nova.Compiler.Cst.import_class(kw, name)))
     end)
   end)
   end
@@ -1719,7 +1719,7 @@ end))), fn qualified ->
 
   def parse_module_body() do
       Nova.Runtime.bind(layout_block(parse_declaration()), fn decls ->
-    Nova.Runtime.pure(%{decls: decls, trailing_comments: [], end_: %{line: 0, column: 0}})
+    pure(%{decls: decls, trailing_comments: [], end_: %{line: 0, column: 0}})
   end)
   end
 
@@ -1737,10 +1737,10 @@ end))), fn qualified ->
       Nova.Runtime.bind(many(parse_type_var_binding()), fn vars ->
         Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_equals(), fn eq ->
   Nova.Runtime.bind(separated(parse_data_ctor(), tok_pipe()), fn cs ->
-    Nova.Runtime.pure(({:tuple, eq, cs}))
+    pure(({:tuple, eq, cs}))
   end)
 end))), fn ctors ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.decl_data(%{keyword: kw, name: name, vars: vars}, ctors)))
+          pure((Nova.Compiler.Cst.decl_data(%{keyword: kw, name: name, vars: vars}, ctors)))
         end)
       end)
     end)
@@ -1752,7 +1752,7 @@ end))), fn ctors ->
   def parse_data_ctor() do
       Nova.Runtime.bind(tok_upper_name(), fn name ->
     Nova.Runtime.bind(many(parse_type_atom()), fn fields ->
-      Nova.Runtime.pure(%{name: name, fields: fields})
+      pure(%{name: name, fields: fields})
     end)
   end)
   end
@@ -1777,7 +1777,7 @@ end))), fn ctors ->
       Nova.Runtime.bind(many(parse_type_var_binding()), fn vars ->
         Nova.Runtime.bind(tok_equals(), fn eq ->
           Nova.Runtime.bind(parse_type(), fn ty ->
-            Nova.Runtime.pure((Nova.Compiler.Cst.decl_type(%{keyword: kw, name: name, vars: vars}, eq, ty)))
+            pure((Nova.Compiler.Cst.decl_type(%{keyword: kw, name: name, vars: vars}, eq, ty)))
           end)
         end)
       end)
@@ -1794,7 +1794,7 @@ end))), fn ctors ->
         Nova.Runtime.bind(tok_equals(), fn eq ->
           Nova.Runtime.bind(tok_upper_name(), fn ctor_name ->
             Nova.Runtime.bind(parse_type_atom(), fn wrapped_ty ->
-              Nova.Runtime.pure((Nova.Compiler.Cst.decl_newtype(%{keyword: kw, name: name, vars: vars}, eq, ctor_name, wrapped_ty)))
+              pure((Nova.Compiler.Cst.decl_newtype(%{keyword: kw, name: name, vars: vars}, eq, ctor_name, wrapped_ty)))
             end)
           end)
         end)
@@ -1811,10 +1811,10 @@ end))), fn ctors ->
       Nova.Runtime.bind(many(parse_type_var_binding()), fn vars ->
         Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn where_kw ->
   Nova.Runtime.bind(layout_block(parse_class_member()), fn ms ->
-    Nova.Runtime.pure(({:tuple, where_kw, ms}))
+    pure(({:tuple, where_kw, ms}))
   end)
 end))), fn methods ->
-          Nova.Runtime.pure((Nova.Compiler.Cst.decl_class(%{keyword: kw, super_: :nothing, name: name, vars: vars, fundeps: :nothing}, methods)))
+          pure((Nova.Compiler.Cst.decl_class(%{keyword: kw, super_: :nothing, name: name, vars: vars, fundeps: :nothing}, methods)))
         end)
       end)
     end)
@@ -1827,7 +1827,7 @@ end))), fn methods ->
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(tok_double_colon(), fn dc ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure(%{label: name, separator: dc, value: ty})
+        pure(%{label: name, separator: dc, value: ty})
       end)
     end)
   end)
@@ -1839,19 +1839,19 @@ end))), fn methods ->
       Nova.Runtime.bind(tok_keyword("instance"), fn kw ->
     Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_lower_name(), fn n ->
   Nova.Runtime.bind(tok_double_colon(), fn dc ->
-    Nova.Runtime.pure(({:tuple, n, dc}))
+    pure(({:tuple, n, dc}))
   end)
 end))), fn name ->
       Nova.Runtime.bind(tok_qualified_upper_name(), fn class_name ->
         Nova.Runtime.bind(many(parse_type_atom()), fn types ->
           Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_keyword("where"), fn where_kw ->
   Nova.Runtime.bind(layout_block(parse_instance_binding()), fn bindings ->
-    Nova.Runtime.pure(({:tuple, where_kw, bindings}))
+    pure(({:tuple, where_kw, bindings}))
   end)
 end))), fn body ->
                         instance_head = %{keyword: kw, name: name, constraints: :nothing, class_name: class_name, types: types}
                         inst = %{head: instance_head, body: body}
-            Nova.Runtime.pure((Nova.Compiler.Cst.decl_instance_chain(%{head: inst, tail: []})))
+            pure((Nova.Compiler.Cst.decl_instance_chain(%{head: inst, tail: []})))
           end)
         end)
       end)
@@ -1871,7 +1871,7 @@ end))), fn body ->
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(tok_double_colon(), fn dc ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.instance_binding_signature(%{label: name, separator: dc, value: ty})))
+        pure((Nova.Compiler.Cst.instance_binding_signature(%{label: name, separator: dc, value: ty})))
       end)
     end)
   end)
@@ -1883,7 +1883,7 @@ end))), fn body ->
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(many(parse_binder()), fn binders ->
       Nova.Runtime.bind(parse_guarded(), fn guarded ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.instance_binding_name(%{name: name, binders: binders, guarded: guarded})))
+        pure((Nova.Compiler.Cst.instance_binding_name(%{name: name, binders: binders, guarded: guarded})))
       end)
     end)
   end)
@@ -1897,13 +1897,13 @@ end))), fn body ->
       Nova.Runtime.bind(tok_keyword("instance"), fn instance_kw ->
         Nova.Runtime.bind(optional((Nova.Runtime.bind(tok_lower_name(), fn n ->
   Nova.Runtime.bind(tok_double_colon(), fn dc ->
-    Nova.Runtime.pure(({:tuple, n, dc}))
+    pure(({:tuple, n, dc}))
   end)
 end))), fn name ->
           Nova.Runtime.bind(tok_qualified_upper_name(), fn class_name ->
             Nova.Runtime.bind(many(parse_type_atom()), fn types ->
                             instance_head = %{keyword: instance_kw, name: name, constraints: :nothing, class_name: class_name, types: types}
-              Nova.Runtime.pure((Nova.Compiler.Cst.decl_derive(derive_kw, newtype_kw, instance_head)))
+              pure((Nova.Compiler.Cst.decl_derive(derive_kw, newtype_kw, instance_head)))
             end)
           end)
         end)
@@ -1918,7 +1918,7 @@ end))), fn name ->
       Nova.Runtime.bind(tok_keyword("foreign"), fn foreign_ ->
     Nova.Runtime.bind(tok_keyword("import"), fn import_ ->
       Nova.Runtime.bind(parse_foreign_value(), fn foreign_prime ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.decl_foreign(foreign_, import_, foreign_prime)))
+        pure((Nova.Compiler.Cst.decl_foreign(foreign_, import_, foreign_prime)))
       end)
     end)
   end)
@@ -1930,7 +1930,7 @@ end))), fn name ->
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(tok_double_colon(), fn dc ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.foreign_value(%{label: name, separator: dc, value: ty})))
+        pure((Nova.Compiler.Cst.foreign_value(%{label: name, separator: dc, value: ty})))
       end)
     end)
   end)
@@ -1947,7 +1947,7 @@ end))), fn name ->
       Nova.Runtime.bind(parse_fixity_keyword(), fn {:tuple, kw, fixity} ->
   Nova.Runtime.bind(tok_int(), fn {:tuple, prec_tok, prec} ->
     Nova.Runtime.bind(parse_fixity_op(), fn op ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.decl_fixity(%{keyword: {:tuple, kw, fixity}, prec: {:tuple, prec_tok, (int_value_to_int.(prec))}, operator: op})))
+      pure((Nova.Compiler.Cst.decl_fixity(%{keyword: {:tuple, kw, fixity}, prec: {:tuple, prec_tok, (int_value_to_int.(prec))}, operator: op})))
     end)
   end)
 end)
@@ -1958,13 +1958,13 @@ end)
   def parse_fixity_keyword() do
     
       parse_infix =    Nova.Runtime.bind(tok_keyword("infix"), fn tok ->
-     Nova.Runtime.pure(({:tuple, tok, Nova.Compiler.Cst.infix()}))
+     pure(({:tuple, tok, Nova.Compiler.Cst.infix()}))
    end)
       parse_infixl =    Nova.Runtime.bind(tok_keyword("infixl"), fn tok ->
-     Nova.Runtime.pure(({:tuple, tok, Nova.Compiler.Cst.infixl()}))
+     pure(({:tuple, tok, Nova.Compiler.Cst.infixl()}))
    end)
       parse_infixr =    Nova.Runtime.bind(tok_keyword("infixr"), fn tok ->
-     Nova.Runtime.pure(({:tuple, tok, Nova.Compiler.Cst.infixr()}))
+     pure(({:tuple, tok, Nova.Compiler.Cst.infixr()}))
    end)
       Nova.Runtime.alt(Nova.Runtime.alt(parse_infix, parse_infixl), parse_infixr)
   end
@@ -1977,7 +1977,7 @@ end)
       Nova.Runtime.bind(tok_qualified_lower_name(), fn name ->
   Nova.Runtime.bind(tok_keyword("as"), fn as_kw ->
     Nova.Runtime.bind(parse_op_name(), fn op ->
-      Nova.Runtime.pure((Nova.Compiler.Cst.fixity_value((to_either_name.(name)), as_kw, op)))
+      pure((Nova.Compiler.Cst.fixity_value((to_either_name.(name)), as_kw, op)))
     end)
   end)
 end)
@@ -1987,7 +1987,7 @@ end)
 
   def parse_op_name() do
       Nova.Runtime.bind(tok_operator(), fn op ->
-    Nova.Runtime.pure(%{token: op.token, name: op.name})
+    pure(%{token: op.token, name: op.name})
   end)
   end
 
@@ -1997,7 +1997,7 @@ end)
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(tok_double_colon(), fn dc ->
       Nova.Runtime.bind(parse_type(), fn ty ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.decl_signature(%{label: name, separator: dc, value: ty})))
+        pure((Nova.Compiler.Cst.decl_signature(%{label: name, separator: dc, value: ty})))
       end)
     end)
   end)
@@ -2009,7 +2009,7 @@ end)
       Nova.Runtime.bind(tok_lower_name(), fn name ->
     Nova.Runtime.bind(many(parse_binder_atom()), fn binders ->
       Nova.Runtime.bind(parse_guarded(), fn guarded ->
-        Nova.Runtime.pure((Nova.Compiler.Cst.decl_value(%{name: name, binders: binders, guarded: guarded})))
+        pure((Nova.Compiler.Cst.decl_value(%{name: name, binders: binders, guarded: guarded})))
       end)
     end)
   end)

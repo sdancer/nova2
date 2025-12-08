@@ -136,7 +136,8 @@ function topologicalSort(graph) {
 const moduleCache = {};
 
 // Registry for library modules (populated before compiling main modules)
-let libRegistry = types.emptyRegistry;
+// Start with Prelude already registered since it's defined in Types.purs, not lib/
+let libRegistry = types.registerModule(types.emptyRegistry)("Prelude")(types.preludeExports);
 
 // Helper to get module name from path
 function getModuleName(path) {
@@ -215,9 +216,17 @@ function compile(name, path) {
     return null;
   }
 
-  // Pass the type environment for proper arity lookups (wrapped in Just)
+  // Pass the type environment and library registry for proper import resolution and arity lookups
   const maybeEnv = new Maybe.Just(result.env);
-  const code = codegen.genModuleWithEnv(maybeEnv)(result.mod);
+
+  // Debug: Check if Data.Foldable is in libRegistry
+  const foldable = types.lookupModule(libRegistry)('Data.Foldable');
+  if (name === 'Unify') {
+    console.log('  DEBUG: Data.Foldable in libRegistry:', foldable && foldable.constructor && foldable.constructor.name);
+  }
+
+  // Use genModuleWithRegistry with libRegistry to properly resolve imported functions from library modules
+  const code = codegen.genModuleWithRegistry(libRegistry)(maybeEnv)(result.mod);
   console.log('  Generated', code.split('\n').length, 'lines');
   return code;
 }
@@ -299,8 +308,12 @@ for (const path of sortedLibModules) {
 const SKIP_REGENERATE = [];
 
 console.log('\n=== Compiling Compiler Modules (auto-sorted) ===');
+// Full registry includes library modules + compiler modules (added incrementally as we compile)
+let fullRegistry = libRegistry;
+
 for (const path of sortedCompilerModules) {
   const name = getShortName(path);
+  const fullModName = getModuleName(path);
   const deps = moduleDeps[path] || [];
 
   // Skip modules with known CodeGen issues
@@ -319,10 +332,13 @@ for (const path of sortedCompilerModules) {
     continue;
   }
 
-  // Pass the type environment for proper arity lookups (wrapped in Just)
+  // Pass the type environment and full registry (libs + already-compiled compiler modules)
   const maybeEnv = new Maybe.Just(result.env);
-  const code = codegen.genModuleWithEnv(maybeEnv)(result.mod);
+  const code = codegen.genModuleWithRegistry(fullRegistry)(maybeEnv)(result.mod);
   console.log('  Generated', code.split('\n').length, 'lines');
+
+  // Register this module's exports in fullRegistry for later modules to use
+  fullRegistry = types.registerModule(fullRegistry)(fullModName)(result.exports);
 
   fs.writeFileSync('./output/' + name + '.ex', code);
   // Also copy to nova_lang for running

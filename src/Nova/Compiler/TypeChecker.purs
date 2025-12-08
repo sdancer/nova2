@@ -1100,6 +1100,62 @@ importItem exports env item = case item of
             -- Import just the type, no constructors
             env
 
+-- | Resolved import mapping: maps imported names to their source module
+-- | This is used by CodeGen to generate qualified calls
+type ResolvedImports = Map.Map String String
+
+-- | Collect resolved imports from declarations
+-- | Returns a map of imported name -> source module name
+collectResolvedImports :: ModuleRegistry -> Array Declaration -> ResolvedImports
+collectResolvedImports registry decls =
+  Array.foldl collectFromDecl Map.empty decls
+  where
+    collectFromDecl :: ResolvedImports -> Declaration -> ResolvedImports
+    collectFromDecl acc (DeclImport imp) = collectFromImportDecl registry acc imp
+    collectFromDecl acc _ = acc
+
+-- | Collect resolved imports from a single import declaration
+-- Note: Qualified imports (e.g., "import Data.Set as Set") do NOT add unqualified names
+collectFromImportDecl :: ModuleRegistry -> ResolvedImports -> ImportDeclaration -> ResolvedImports
+collectFromImportDecl registry acc imp =
+  case lookupModule registry imp.moduleName of
+    Nothing -> acc  -- Module not found
+    Just exports ->
+      -- If there's an alias, this is a qualified import - don't add unqualified names
+      case imp.alias of
+        Just _ ->
+          -- Qualified import (e.g., "import Data.Set as Set") - only allow qualified access
+          -- If there are explicit items, add those (they can be accessed unqualified)
+          if List.null imp.items
+          then acc  -- No unqualified imports
+          else Array.foldl (\m item -> Map.insert (getImportItemName item) imp.moduleName m) acc (Array.fromFoldable imp.items)
+        Nothing ->
+          -- Unqualified import
+          if imp.hiding then
+            -- Import everything except hidden items
+            let allNames = getExportedNames exports
+                hiddenNames = Set.fromFoldable (map getImportItemName (Array.fromFoldable imp.items))
+            in Array.foldl (\m name -> if Set.member name hiddenNames then m else Map.insert name imp.moduleName m) acc allNames
+          else if List.null imp.items then
+            -- Empty import list - import everything
+            let allNames = getExportedNames exports
+            in Array.foldl (\m name -> Map.insert name imp.moduleName m) acc allNames
+          else
+            -- Import only specified items
+            Array.foldl (\m item -> Map.insert (getImportItemName item) imp.moduleName m) acc (Array.fromFoldable imp.items)
+
+-- | Get all exported names from a module's exports
+getExportedNames :: ModuleExports -> Array String
+getExportedNames exports =
+  let valueNames = map (\(Tuple k _) -> k) (Map.toUnfoldable exports.values)
+      ctorNames = map (\(Tuple k _) -> k) (Map.toUnfoldable exports.constructors)
+  in valueNames <> ctorNames
+
+-- | Get the name from an ImportItem
+getImportItemName :: ImportItem -> String
+getImportItemName (ImportValue name) = name
+getImportItemName (ImportType name _) = name
+
 -- | Collect type aliases from all imported modules
 -- Returns a map of alias name to TypeAliasInfo
 collectImportedAliases :: ModuleRegistry -> Array Declaration -> Map.Map String TypeAliasInfo

@@ -23,6 +23,10 @@ defmodule Prelude do
   defdelegate identity(x), to: Nova.Runtime
   defdelegate negate(x), to: Nova.Runtime
 
+  # Bounded type class
+  defdelegate top(), to: Nova.Runtime
+  defdelegate bottom(), to: Nova.Runtime
+
   # const is needed by generated Nova compiler code
   def const(x, _y), do: x
   def const_(x, _y), do: x

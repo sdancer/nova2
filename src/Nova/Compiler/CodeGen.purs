@@ -17,7 +17,8 @@ import Data.Foldable (foldr, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..), ImportDeclaration, ImportItem(..))
-import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv)
+import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv, ModuleRegistry, defaultRegistry, lookupModule)
+import Nova.Compiler.TypeChecker (collectResolvedImports)
 
 -- | Information about a module-level function
 type FuncInfo = { arity :: Int, ty :: Maybe Type }
@@ -30,10 +31,11 @@ type GenCtx =
   , imports :: Map String String  -- Map from imported name -> source module name
   , typeEnv :: Maybe Env  -- Type environment for arity lookups
   , knownArities :: Map String Int  -- Known arities for FFI/stdlib functions
+  , registry :: ModuleRegistry  -- Module registry for looking up imported function arities
   }
 
 emptyCtx :: GenCtx
-emptyCtx = { moduleFuncs: Map.empty, locals: Set.empty, localArities: [], imports: Map.empty, typeEnv: Nothing, knownArities: Map.empty }
+emptyCtx = { moduleFuncs: Map.empty, locals: Set.empty, localArities: [], imports: Map.empty, typeEnv: Nothing, knownArities: Map.empty, registry: Map.empty }
 
 -- | Default context with known FFI/stdlib arities pre-populated
 defaultCtx :: GenCtx
@@ -42,7 +44,7 @@ defaultCtx = emptyCtx { knownArities = defaultKnownArities }
 -- | Known arities for FFI and stdlib functions
 defaultKnownArities :: Map String Int
 defaultKnownArities = Map.fromFoldable
-  [ Tuple "pure" 1, Tuple "bind" 2
+  [ Tuple "pure" 1, Tuple "bind" 2, Tuple "apply" 2, Tuple "alt" 2
   , Tuple "const" 2, Tuple "identity" 1, Tuple "flip" 3, Tuple "compose" 2
   , Tuple "show" 1, Tuple "length" 1, Tuple "head" 1, Tuple "tail" 1
   , Tuple "null" 1, Tuple "reverse" 1, Tuple "concat" 1
@@ -62,6 +64,10 @@ defaultKnownArities = Map.fromFoldable
   , Tuple "trim" 1, Tuple "toLower" 1, Tuple "toUpper" 1
   , Tuple "contains" 2, Tuple "indexOf" 2, Tuple "replaceAll" 3
   , Tuple "charAt" 2, Tuple "toCharArray" 1, Tuple "fromCharArray" 1
+  -- Type class methods (Semigroup, Monoid, Eq, Ord, Semiring, Ring, HeytingAlgebra, Bounded)
+  , Tuple "mempty" 0, Tuple "eq" 2, Tuple "compare" 2
+  , Tuple "add" 2, Tuple "sub" 2, Tuple "mul" 2, Tuple "div" 2, Tuple "negate" 1
+  , Tuple "not" 1, Tuple "disj" 2, Tuple "conj" 2, Tuple "top" 0, Tuple "bottom" 0
   -- Effect.Console functions
   , Tuple "log" 1, Tuple "logShow" 1, Tuple "warn" 1, Tuple "error" 1
   -- Control.Monad.ST.Internal functions
@@ -80,45 +86,37 @@ defaultKnownArities = Map.fromFoldable
   , Tuple "mkEffectFn1" 1, Tuple "mkEffectFn2" 1, Tuple "mkEffectFn3" 1
   , Tuple "mkEffectFn4" 1, Tuple "mkEffectFn5" 1
   ]
-
--- | Type class methods that should always be routed through Nova.Runtime
--- | When a module defines instance methods (map, pure, bind, etc.), these names
--- | conflict with the local instance definitions. We must always use Nova.Runtime.*
--- | for these, except when they are truly local variables (function parameters).
--- | Maps method name to its arity in Nova.Runtime
-typeClassMethodArities :: Map String Int
-typeClassMethodArities = Map.fromFoldable
-  [ Tuple "map" 2, Tuple "pure" 1, Tuple "bind" 2, Tuple "apply" 2, Tuple "alt" 2
-  , Tuple "append" 2, Tuple "mempty" 0
-  , Tuple "show" 1, Tuple "eq" 2, Tuple "compare" 2
-  , Tuple "add" 2, Tuple "sub" 2, Tuple "mul" 2, Tuple "div" 2, Tuple "negate" 1
-  , Tuple "not" 1, Tuple "disj" 2, Tuple "conj" 2, Tuple "top" 0, Tuple "bottom" 0
-  ]
-
--- | Check if a name is a type class method that needs special handling
-isTypeClassMethod :: String -> Boolean
-isTypeClassMethod name = Map.member name typeClassMethodArities
-
--- | Get the arity of a type class method
-typeClassMethodArity :: String -> Int
-typeClassMethodArity name = fromMaybe 1 (Map.lookup name typeClassMethodArities)
-
 -- | Compute arity from a type by counting arrows
 typeArity :: Type -> Int
-typeArity (TyCon c) | c.name == "Fun" = case c.args of
-  [_, ret] -> 1 + typeArity ret
-  _ -> 0
+typeArity (TyCon c) =
+  if c.name == "Fun"
+  then case c.args of
+    [_, ret] -> 1 + typeArity ret
+    _ -> 0
+  else 0
 typeArity _ = 0
 
--- | Look up function arity from type environment or known arities in context
+-- | Look up function arity from type environment, registry, or known arities in context
 lookupTypeArity :: String -> GenCtx -> Maybe Int
 lookupTypeArity name ctx =
   -- First try type environment
   case ctx.typeEnv of
     Just env -> case lookupEnv env name of
       Just scheme -> Just (typeArity scheme.ty)
-      Nothing -> Map.lookup name ctx.knownArities  -- Fallback to known arities in context
-    Nothing -> Map.lookup name ctx.knownArities  -- No type env, use known arities
+      Nothing -> lookupFromRegistryOrKnown name ctx
+    Nothing -> lookupFromRegistryOrKnown name ctx
+  where
+    -- Look up from registry (for imported functions) or fallback to known arities
+    lookupFromRegistryOrKnown :: String -> GenCtx -> Maybe Int
+    lookupFromRegistryOrKnown n c =
+      -- If function is imported, check the registry for its type
+      case Map.lookup n c.imports of
+        Just srcModule -> case lookupModule c.registry srcModule of
+          Just exports -> case Map.lookup n exports.values of
+            Just scheme -> Just (typeArity scheme.ty)
+            Nothing -> Map.lookup n c.knownArities
+          Nothing -> Map.lookup n c.knownArities
+        Nothing -> Map.lookup n c.knownArities
 
 -- | Look up arity of a local variable (lambda)
 lookupLocalArity :: String -> GenCtx -> Maybe Int
@@ -308,30 +306,6 @@ collectModuleFuncs decls maybeEnv =
     resolvedFuncs = Array.mapMaybe (resolveArity arityMap) decls
   in Map.fromFoldable (resolvedFuncs <> ctorArities)
 
--- | Collect imported names from declarations
--- | Maps each imported name to its source module
--- | Merges explicit imports with auto-injected prelude imports
--- | Explicit imports take precedence over prelude imports
-collectImports :: Array Declaration -> Map String String
-collectImports decls =
-  let explicitImports = foldr go Map.empty decls
-  -- Explicit imports take precedence, so merge prelude first then explicit
-  in Map.union explicitImports preludeImports
-  where
-    go (DeclImport imp) acc =
-      if imp.hiding
-      then acc  -- Skip hiding imports for now
-      else foldr (addItem imp.moduleName) acc imp.items
-    go _ acc = acc
-
-    addItem :: String -> ImportItem -> Map String String -> Map String String
-    addItem modName (ImportValue name) acc = Map.insert name modName acc
-    addItem modName (ImportType name _) acc = Map.insert name modName acc
-
--- | Translate a PureScript module name to an Elixir module for imports
--- | Standard library modules are compiled to their proper names (e.g., Data.Array)
-translateImportModule :: String -> String
-translateImportModule modName = modName  -- No mangling - keep original module names
 
 -- | Look up the arity of a module function
 lookupArity :: String -> GenCtx -> Maybe Int
@@ -343,18 +317,25 @@ lookupFuncInfo name ctx = Map.lookup name ctx.moduleFuncs
 
 -- | Generate Elixir code from a module
 genModule :: Module -> String
-genModule = genModuleWithEnv Nothing
+genModule = genModuleWithRegistry defaultRegistry Nothing
 
 -- | Generate Elixir code from a module with an optional type environment
 genModuleWithEnv :: Maybe Env -> Module -> String
-genModuleWithEnv maybeEnv mod =
+genModuleWithEnv = genModuleWithRegistry defaultRegistry
+
+-- | Generate Elixir code from a module with a registry and optional type environment
+genModuleWithRegistry :: ModuleRegistry -> Maybe Env -> Module -> String
+genModuleWithRegistry registry maybeEnv mod =
   let decls = Array.fromFoldable mod.declarations
+      -- Use TypeChecker's collectResolvedImports to resolve imports properly
+      resolvedImports = collectResolvedImports registry decls
       ctx = { moduleFuncs: collectModuleFuncs decls maybeEnv
             , locals: Set.empty
             , localArities: []
-            , imports: collectImports decls
+            , imports: resolvedImports
             , typeEnv: maybeEnv
             , knownArities: defaultKnownArities
+            , registry: registry
             }
       header = "# This file was auto-generated by the Nova compiler.\n# Do not edit this file manually.\n\n"
   in header <> "defmodule " <> elixirModuleName mod.name <> " do\n" <>
@@ -886,66 +867,18 @@ isAstConstructor name = Array.elem name
   , "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized"
   ]
 
--- | Check if a module is part of the standard library
-isStdlibModule :: String -> Boolean
-isStdlibModule mod = case mod of
-  "Prelude" -> true
-  "Data.Foldable" -> true
-  "Data.List" -> true
-  "Data.Array" -> true
-  "Data.String" -> true
-  "Data.String.CodeUnits" -> true
-  "Data.Maybe" -> true
-  "Data.Either" -> true
-  "Data.Tuple" -> true
-  "Data.Map" -> true
-  "Data.Set" -> true
-  "Effect" -> true
-  "Effect.Console" -> true
-  "Test.Assert" -> true
-  "Control.Assert" -> true
-  _ -> false
-
 -- | Get source module for an imported function from context
 getImportSourceModule :: GenCtx -> String -> Maybe String
 getImportSourceModule ctx name = Map.lookup name ctx.imports
 
--- | Check if a function is imported from a standard library module
--- | This uses ctx.imports which includes auto-injected prelude imports
-isImportedPreludeFunc :: GenCtx -> String -> Boolean
-isImportedPreludeFunc ctx name =
+-- | Check if a function is imported (exists in ctx.imports and is not shadowed)
+isImportedFunc :: GenCtx -> String -> Boolean
+isImportedFunc ctx name =
   -- Must NOT be a local variable, module function, or data constructor
   not (Set.member name ctx.locals) &&
   not (Map.member name ctx.moduleFuncs) &&
   not (isDataConstructor name) &&
-  case Map.lookup name ctx.imports of
-    Just srcMod -> isStdlibModule srcMod
-    Nothing -> false
-
--- | List of known prelude function names for auto-injection
--- | These will be auto-injected as "Prelude" imports for all modules
-preludeFuncNames :: Array String
-preludeFuncNames =
-  [ -- Monadic functions
-    "pure", "bind"
-    -- Function combinators
-  , "const", "identity", "flip", "compose"
-    -- Show, length, basic list functions
-  , "show", "length", "head", "tail", "null", "reverse", "concat"
-  , "sum", "product", "maximum", "minimum", "fromMaybe", "maybe"
-  , "map", "filter", "foldl", "foldr", "foldMap", "elem", "find"
-  , "findIndex", "take", "drop", "lookup", "insert", "delete", "member"
-  , "singleton", "empty", "cons", "snoc", "append", "intercalate"
-  , "replicate", "concatMap", "any", "all", "zipWith", "zip", "unzip"
-  , "sortBy", "sort", "nub", "union", "intersect", "difference"
-  , "fst", "snd", "split", "joinWith", "trim", "toLower", "toUpper"
-  , "contains", "indexOf", "replaceAll", "charAt", "toCharArray", "fromCharArray"
-  ]
-
--- | Auto-injected prelude imports
--- | Maps function names to "Prelude" module for all modules
-preludeImports :: Map String String
-preludeImports = foldr (\name acc -> Map.insert name "Prelude" acc) Map.empty preludeFuncNames
+  Map.member name ctx.imports
 
 -- | Check if a name is a nullary (zero-argument) data constructor
 -- | These should be represented as atoms in Elixir
@@ -1003,14 +936,38 @@ isTypesModuleFunc name = Array.elem name
   , "emptyEnv", "builtinPrelude"
   -- Export/import functions
   , "emptyExports", "mergeTypeExport", "mergeExportsToEnv", "registerModule", "lookupModule"
+  -- Module registry
+  , "defaultRegistry", "emptyRegistry", "preludeExports", "effectConsoleExports"
   ]
 
 -- | Values (zero-arity) from Types module that should be called with ()
 isTypesModuleValue :: String -> Boolean
 isTypesModuleValue name = Array.elem name
-  [ "emptySubst", "emptyEnv", "emptyExports"
+  [ "emptySubst", "emptyEnv", "emptyExports", "emptyRegistry"
   , "tInt", "tString", "tBool", "tChar", "tNumber"  -- Primitive types are values
+  , "defaultRegistry", "preludeExports", "effectConsoleExports"  -- Module exports are values
   ]
+
+-- | Check if a name is a TypeChecker module function
+isTypeCheckerModuleFunc :: String -> Boolean
+isTypeCheckerModuleFunc name = Array.elem name
+  [ "collectResolvedImports", "checkModule", "checkModuleWithRegistry"
+  , "processImports", "processImportDecl", "collectImportedAliases"
+  , "getExportedNames", "getImportItemName"
+  ]
+
+-- | Get the arity of a TypeChecker module function
+typeCheckerModuleFuncArity :: String -> Int
+typeCheckerModuleFuncArity name = case name of
+  "collectResolvedImports" -> 2
+  "checkModule" -> 2
+  "checkModuleWithRegistry" -> 3
+  "processImports" -> 3
+  "processImportDecl" -> 3
+  "collectImportedAliases" -> 2
+  "getExportedNames" -> 1
+  "getImportItemName" -> 1
+  _ -> 1
 
 -- | Get the arity of a Types module function
 typesModuleFuncArity :: String -> Int
@@ -1197,13 +1154,6 @@ genExpr' ctx _ (ExprVar name) =
       -- Handle nullary data constructors as atoms (e.g., LytRoot -> :lyt_root)
       else if isNullaryConstructor name
       then ":" <> snakeCase name
-      -- Type class methods should always route to Nova.Runtime
-      -- These are prelude functions like negate, bottom, top, show, etc.
-      else if isTypeClassMethod name && not (Set.member name ctx.locals)
-      then let tcArity = typeClassMethodArity name
-           in if tcArity == 0
-              then "Nova.Runtime." <> snakeCase name <> "()"
-              else "(&Nova.Runtime." <> snakeCase name <> "/" <> show tcArity <> ")"
       -- If it's a module function used as a value (not in call position),
       -- generate a function reference &func/arity
       else if isModuleFunc ctx name
@@ -1223,6 +1173,9 @@ genExpr' ctx _ (ExprVar name) =
            in if arity == 0
               then "Nova.Compiler.Types." <> snakeCase name <> "()"
               else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
+      else if isTypeCheckerModuleFunc name
+      then let arity = typeCheckerModuleFuncArity name
+           in "(&Nova.Compiler.TypeChecker." <> snakeCase name <> "/" <> show arity <> ")"
       else if isUnifyModuleFunc name
       then "(&Nova.Compiler.Unify." <> snakeCase name <> "/" <> show (unifyModuleFuncArity name) <> ")"
       -- Check if this is an imported function and resolve to the target module
@@ -1308,24 +1261,6 @@ genExpr' ctx indent (ExprApp f arg) =
       -- Handle data constructors specially
       else if isDataConstructor n
       then genConstructorApp c i n exprs
-      -- Type class methods should always route to Nova.Runtime
-      -- These are prelude functions like negate, bottom, top, show, etc.
-      else if isTypeClassMethod n && not (Set.member n c.locals)
-      then
-        let qualifiedFunc = "Nova.Runtime." <> snakeCase n
-            tcArity = typeClassMethodArity n
-            numArgs = length exprs
-        in if numArgs == tcArity
-           then qualifiedFunc <> "(" <> argsS <> ")"
-           else if numArgs < tcArity
-           then genPartialApp qualifiedFunc argsS numArgs tcArity
-           else
-             -- More args than expected - function returns a function
-             let directArgs = Array.take tcArity exprs
-                 curriedArgs = Array.drop tcArity exprs
-                 directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
-                 funcCall = qualifiedFunc <> "(" <> directArgsStr <> ")"
-             in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
       -- Handle module-level functions (possibly with partial application)
       else if isModuleFunc c n
       then case lookupArity n c of
@@ -1402,17 +1337,41 @@ genExpr' ctx indent (ExprApp f arg) =
                     directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
                     funcCall = "Nova.Compiler.Unify." <> snakeCase n <> "(" <> directArgsStr <> ")"
                 in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
-      else if isImportedPreludeFunc c n
+      -- Handle TypeChecker module functions
+      else if isTypeCheckerModuleFunc n
+      then let arity = typeCheckerModuleFuncArity n
+               numArgs = length exprs
+           in if numArgs == arity
+              then "Nova.Compiler.TypeChecker." <> snakeCase n <> "(" <> argsS <> ")"
+              else if numArgs < arity
+              then genPartialApp ("Nova.Compiler.TypeChecker." <> snakeCase n) argsS numArgs arity
+              else if arity == 0
+              then "Nova.Compiler.TypeChecker." <> snakeCase n <> "(" <> argsS <> ")"
+              else
+                -- More args than expected - function returns a function
+                let directArgs = Array.take arity exprs
+                    curriedArgs = Array.drop arity exprs
+                    directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
+                    funcCall = "Nova.Compiler.TypeChecker." <> snakeCase n <> "(" <> directArgsStr <> ")"
+                in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
+      else if isImportedFunc c n
       then
-        -- Function is imported from stdlib, use source module with arity from type env
+        -- Function is imported, use source module with arity from type env or knownArities
         let srcMod = fromMaybe "Prelude" (getImportSourceModule c n)
             qualifiedFunc = srcMod <> "." <> snakeCase n
             numArgs = length exprs
         in case lookupTypeArity n c of
              Nothing ->
-               -- Bug: Imported prelude function has no known arity.
-               -- This means it's not in preludeArities - add it there.
-               unsafeCrashWith ("CodeGen error: Imported stdlib function '" <> n <> "' from " <> srcMod <> " has no arity in typeEnv or preludeArities")
+               -- Function has no known arity - try knownArities
+               case Map.lookup n c.knownArities of
+                 Just knownArity ->
+                   if numArgs == knownArity
+                   then qualifiedFunc <> "(" <> argsS <> ")"
+                   else if numArgs < knownArity
+                   then genPartialApp qualifiedFunc argsS numArgs knownArity
+                   else qualifiedFunc <> "(" <> argsS <> ")"
+                 Nothing ->
+                   unsafeCrashWith ("CodeGen error: Imported function '" <> n <> "' from " <> srcMod <> " has no arity in typeEnv or knownArities")
              Just funcArity ->
                if numArgs == funcArity
                then qualifiedFunc <> "(" <> argsS <> ")"

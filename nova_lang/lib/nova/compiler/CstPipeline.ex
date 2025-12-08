@@ -37,7 +37,7 @@ defmodule Nova.Compiler.CstPipeline do
   def parse_module_to_cst(source) do
         tokens = Nova.Compiler.CstLexer.lex_module(source)
   Nova.Runtime.bind((Nova.Compiler.CstParser.run_parser(Nova.Compiler.CstParser.parse_module)).(tokens), fn cst_result ->
-    Nova.Runtime.pure((Data.Tuple.fst(cst_result)))
+    Prelude.pure((Data.Tuple.fst(cst_result)))
   end)
   end
 

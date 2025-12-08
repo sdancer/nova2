@@ -138,6 +138,12 @@ defmodule Nova.Compiler.Types do
 
 
 
+  def t_ordering() do
+    {:ty_con, (mk_tcon0("Ordering"))}
+  end
+
+
+
   def t_number() do
     {:ty_con, (mk_tcon0("Number"))}
   end
@@ -156,7 +162,7 @@ defmodule Nova.Compiler.Types do
       name = if (n == 2) do
         "Tuple"
       else
-        Nova.Runtime.append("Tuple", Nova.Runtime.show(n))
+        Nova.Runtime.append("Tuple", Prelude.show(n))
       end
       {:ty_con, %{name: name, args: ts}}
   end
@@ -191,17 +197,17 @@ defmodule Nova.Compiler.Types do
   end
 
   def apply_subst(sub, ({:ty_con, c})) do
-    {:ty_con, (%{c | args: Nova.Runtime.map((fn auto_p0 -> apply_subst(sub, auto_p0) end), c.args)})}
+    {:ty_con, (%{c | args: Prelude.map((fn auto_p0 -> apply_subst(sub, auto_p0) end), c.args)})}
   end
 
   def apply_subst(sub, ({:ty_record, r})) do
-    {:ty_record, (%{r | fields: Nova.Runtime.map((fn auto_p0 -> apply_subst(sub, auto_p0) end), r.fields)})}
+    {:ty_record, (%{r | fields: Prelude.map((fn auto_p0 -> apply_subst(sub, auto_p0) end), r.fields)})}
   end
 
 
 
   def compose_subst(s1, s2) do
-    Nova.Map.union(s1, (Nova.Runtime.map((fn auto_p0 -> apply_subst(s1, auto_p0) end), s2)))
+    Nova.Map.union(s1, (Prelude.map((fn auto_p0 -> apply_subst(s1, auto_p0) end), s2)))
   end
 
   # @type scheme :: %{vars: array()(tvar()), ty: type()}
@@ -223,14 +229,14 @@ defmodule Nova.Compiler.Types do
   end
 
   def free_type_vars(({:ty_record, r})) do
-    Data.Foldable.foldl((fn acc -> fn t -> Nova.Set.union(acc, (free_type_vars(t))) end end), Nova.Set.empty, r.fields)
+    Data.Foldable.foldl((fn acc -> fn t -> Nova.Set.union(acc, (free_type_vars(t))) end end), Nova.Set.empty, (Nova.Map.values(r.fields)))
   end
 
 
 
   def free_type_vars_scheme(s) do
     
-      bound_ids = Nova.Set.from_foldable((Nova.Runtime.map(& &1.id, s.vars)))
+      bound_ids = Nova.Set.from_foldable((Prelude.map(& &1.id, s.vars)))
       Nova.Set.difference((free_type_vars(s.ty)), bound_ids)
   end
 
@@ -259,14 +265,14 @@ defmodule Nova.Compiler.Types do
   def apply_subst_to_env(sub, env) do
     
       apply_to_scheme = fn s -> %{s | ty: apply_subst(sub, s.ty)} end
-      %{env | bindings: Nova.Runtime.map(apply_to_scheme, env.bindings)}
+      %{env | bindings: Prelude.map(apply_to_scheme, env.bindings)}
   end
 
 
 
   def fresh_var(env, hint) do
     
-      v = mk_tvar(env.counter, (Nova.Runtime.append(hint, Nova.Runtime.show(env.counter))))
+      v = mk_tvar(env.counter, (Nova.Runtime.append(hint, Prelude.show(env.counter))))
       env_prime = %{env | counter: (env.counter + 1)}
       {:tuple, v, env_prime}
   end
@@ -274,7 +280,7 @@ defmodule Nova.Compiler.Types do
 
 
   def free_type_vars_env(env) do
-    Data.Foldable.foldl((fn acc -> fn s -> Nova.Set.union(acc, (free_type_vars_scheme(s))) end end), Nova.Set.empty, env.bindings)
+    Data.Foldable.foldl((fn acc -> fn s -> Nova.Set.union(acc, (free_type_vars_scheme(s))) end end), Nova.Set.empty, (Nova.Map.values(env.bindings)))
   end
 
 
@@ -585,6 +591,45 @@ defmodule Nova.Compiler.Types do
     %{types: Nova.Map.empty, constructors: Nova.Map.empty, values: Nova.Map.empty, type_aliases: Nova.Map.empty}
   end
 
+
+
+  def prelude_exports() do
+    
+      a = mk_tvar((-1), "a")
+      b = mk_tvar((-2), "b")
+      c = mk_tvar((-3), "c")
+      d = mk_tvar((-6), "d")
+      %{types: Nova.Map.from_foldable([{:tuple, "Boolean", %{arity: 0, constructors: []}}, {:tuple, "Int", %{arity: 0, constructors: []}}, {:tuple, "String", %{arity: 0, constructors: []}}, {:tuple, "Char", %{arity: 0, constructors: []}}, {:tuple, "Number", %{arity: 0, constructors: []}}, {:tuple, "Array", %{arity: 1, constructors: []}}, {:tuple, "Unit", %{arity: 0, constructors: ["Unit"]}}, {:tuple, "Ordering", %{arity: 0, constructors: ["LT", "EQ", "GT"]}}]), constructors: Nova.Map.from_foldable([{:tuple, "Unit", (mk_scheme([], t_unit()))}, {:tuple, "LT", (mk_scheme([], t_ordering()))}, {:tuple, "EQ", (mk_scheme([], t_ordering()))}, {:tuple, "GT", (mk_scheme([], t_ordering()))}]), values: Nova.Map.from_foldable([{:tuple, "map", (mk_scheme([a, b, c, d], (t_arrow((t_arrow(({:ty_var, a}), ({:ty_var, b}))), (t_arrow(({:ty_var, c}), ({:ty_var, d})))))))}, {:tuple, "pure", (mk_scheme([a, b], (t_arrow(({:ty_var, a}), ({:ty_var, b})))))}, {:tuple, "apply", (mk_scheme([a, b, c, d], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, b}), ({:ty_var, c})))))))}, {:tuple, "alt", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), ({:ty_var, a})))))))}, {:tuple, "bind", (mk_scheme([a, b, c], (t_arrow(({:ty_var, a}), (t_arrow((t_arrow(({:ty_var, b}), ({:ty_var, c}))), ({:ty_var, c})))))))}, {:tuple, "identity", (mk_scheme([a], (t_arrow(({:ty_var, a}), ({:ty_var, a})))))}, {:tuple, "const", (mk_scheme([a, b], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, b}), ({:ty_var, a})))))))}, {:tuple, "flip", (mk_scheme([a, b, c], (t_arrow((t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, b}), ({:ty_var, c}))))), (t_arrow(({:ty_var, b}), (t_arrow(({:ty_var, a}), ({:ty_var, c})))))))))}, {:tuple, "compose", (mk_scheme([a, b, c], (t_arrow((t_arrow(({:ty_var, b}), ({:ty_var, c}))), (t_arrow((t_arrow(({:ty_var, a}), ({:ty_var, b}))), (t_arrow(({:ty_var, a}), ({:ty_var, c})))))))))}, {:tuple, "$", (mk_scheme([a, b], (t_arrow((t_arrow(({:ty_var, a}), ({:ty_var, b}))), (t_arrow(({:ty_var, a}), ({:ty_var, b})))))))}, {:tuple, "#", (mk_scheme([a, b], (t_arrow(({:ty_var, a}), (t_arrow((t_arrow(({:ty_var, a}), ({:ty_var, b}))), ({:ty_var, b})))))))}, {:tuple, "show", (mk_scheme([a], (t_arrow(({:ty_var, a}), t_string()))))}, {:tuple, "eq", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, "==", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, "/=", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, "compare", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_ordering()))))))}, {:tuple, "<", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, ">", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, "<=", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, ">=", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_bool()))))))}, {:tuple, "append", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), ({:ty_var, a})))))))}, {:tuple, "<>", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), ({:ty_var, a})))))))}, {:tuple, "mempty", (mk_scheme([a], ({:ty_var, a})))}, {:tuple, "add", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "+", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "mul", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "*", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "sub", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "-", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "negate", (mk_scheme([], (t_arrow(t_int(), t_int()))))}, {:tuple, "div", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "/", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "mod", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_int(), t_int()))))))}, {:tuple, "not", (mk_scheme([], (t_arrow(t_bool(), t_bool()))))}, {:tuple, "conj", (mk_scheme([], (t_arrow(t_bool(), (t_arrow(t_bool(), t_bool()))))))}, {:tuple, "&&", (mk_scheme([], (t_arrow(t_bool(), (t_arrow(t_bool(), t_bool()))))))}, {:tuple, "disj", (mk_scheme([], (t_arrow(t_bool(), (t_arrow(t_bool(), t_bool()))))))}, {:tuple, "||", (mk_scheme([], (t_arrow(t_bool(), (t_arrow(t_bool(), t_bool()))))))}, {:tuple, "top", (mk_scheme([], t_int()))}, {:tuple, "bottom", (mk_scheme([], t_int()))}, {:tuple, "foldl", (mk_scheme([a, b, c], (t_arrow((t_arrow(({:ty_var, b}), (t_arrow(({:ty_var, a}), ({:ty_var, b}))))), (t_arrow(({:ty_var, b}), (t_arrow(({:ty_var, c}), ({:ty_var, b})))))))))}, {:tuple, "foldr", (mk_scheme([a, b, c], (t_arrow((t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, b}), ({:ty_var, b}))))), (t_arrow(({:ty_var, b}), (t_arrow(({:ty_var, c}), ({:ty_var, b})))))))))}, {:tuple, "fst", (mk_scheme([a, b], (t_arrow((t_tuple([{:ty_var, a}, {:ty_var, b}])), ({:ty_var, a})))))}, {:tuple, "snd", (mk_scheme([a, b], (t_arrow((t_tuple([{:ty_var, a}, {:ty_var, b}])), ({:ty_var, b})))))}, {:tuple, "fromMaybe", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow((t_maybe(({:ty_var, a}))), ({:ty_var, a})))))))}, {:tuple, "maybe", (mk_scheme([a, b], (t_arrow(({:ty_var, b}), (t_arrow((t_arrow(({:ty_var, a}), ({:ty_var, b}))), (t_arrow((t_maybe(({:ty_var, a}))), ({:ty_var, b})))))))))}, {:tuple, "isJust", (mk_scheme([a], (t_arrow((t_maybe(({:ty_var, a}))), t_bool()))))}, {:tuple, "isNothing", (mk_scheme([a], (t_arrow((t_maybe(({:ty_var, a}))), t_bool()))))}, {:tuple, "length", (mk_scheme([a], (t_arrow(({:ty_var, a}), t_int()))))}, {:tuple, "head", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_maybe(({:ty_var, a})))))))}, {:tuple, "tail", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_maybe((t_array(({:ty_var, a})))))))))}, {:tuple, "null", (mk_scheme([a], (t_arrow(({:ty_var, a}), t_bool()))))}, {:tuple, "reverse", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))}, {:tuple, "concat", (mk_scheme([a], (t_arrow((t_array((t_array(({:ty_var, a}))))), (t_array(({:ty_var, a})))))))}, {:tuple, "filter", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), t_bool())), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))))}, {:tuple, "take", (mk_scheme([a], (t_arrow(t_int(), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))))}, {:tuple, "drop", (mk_scheme([a], (t_arrow(t_int(), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))))}, {:tuple, "elem", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow((t_array(({:ty_var, a}))), t_bool()))))))}, {:tuple, "find", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), t_bool())), (t_arrow((t_array(({:ty_var, a}))), (t_maybe(({:ty_var, a})))))))))}, {:tuple, "findIndex", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), t_bool())), (t_arrow((t_array(({:ty_var, a}))), (t_maybe(t_int()))))))))}, {:tuple, "cons", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))))}, {:tuple, "snoc", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_arrow(({:ty_var, a}), (t_array(({:ty_var, a})))))))))}, {:tuple, "singleton", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_array(({:ty_var, a})))))))}, {:tuple, "empty", (mk_scheme([a], (t_array(({:ty_var, a})))))}, {:tuple, "intercalate", (mk_scheme([a], (t_arrow(({:ty_var, a}), (t_arrow((t_array(({:ty_var, a}))), ({:ty_var, a})))))))}, {:tuple, "replicate", (mk_scheme([a], (t_arrow(t_int(), (t_arrow(({:ty_var, a}), (t_array(({:ty_var, a})))))))))}, {:tuple, "concatMap", (mk_scheme([a, b], (t_arrow((t_arrow(({:ty_var, a}), (t_array(({:ty_var, b}))))), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, b})))))))))}, {:tuple, "any", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), t_bool())), (t_arrow((t_array(({:ty_var, a}))), t_bool()))))))}, {:tuple, "all", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), t_bool())), (t_arrow((t_array(({:ty_var, a}))), t_bool()))))))}, {:tuple, "zipWith", (mk_scheme([a, b, c], (t_arrow((t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, b}), ({:ty_var, c}))))), (t_arrow((t_array(({:ty_var, a}))), (t_arrow((t_array(({:ty_var, b}))), (t_array(({:ty_var, c})))))))))))}, {:tuple, "zip", (mk_scheme([a, b], (t_arrow((t_array(({:ty_var, a}))), (t_arrow((t_array(({:ty_var, b}))), (t_array((t_tuple([{:ty_var, a}, {:ty_var, b}]))))))))))}, {:tuple, "unzip", (mk_scheme([a, b], (t_arrow((t_array((t_tuple([{:ty_var, a}, {:ty_var, b}])))), (t_tuple([t_array(({:ty_var, a})), t_array(({:ty_var, b}))]))))))}, {:tuple, "sortBy", (mk_scheme([a], (t_arrow((t_arrow(({:ty_var, a}), (t_arrow(({:ty_var, a}), t_ordering())))), (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))))}, {:tuple, "sort", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))}, {:tuple, "nub", (mk_scheme([a], (t_arrow((t_array(({:ty_var, a}))), (t_array(({:ty_var, a})))))))}, {:tuple, "split", (mk_scheme([], (t_arrow(t_string(), (t_arrow(t_string(), (t_array(t_string()))))))))}, {:tuple, "joinWith", (mk_scheme([], (t_arrow(t_string(), (t_arrow((t_array(t_string())), t_string()))))))}, {:tuple, "trim", (mk_scheme([], (t_arrow(t_string(), t_string()))))}, {:tuple, "toLower", (mk_scheme([], (t_arrow(t_string(), t_string()))))}, {:tuple, "toUpper", (mk_scheme([], (t_arrow(t_string(), t_string()))))}, {:tuple, "contains", (mk_scheme([], (t_arrow(t_string(), (t_arrow(t_string(), t_bool()))))))}, {:tuple, "indexOf", (mk_scheme([], (t_arrow(t_string(), (t_arrow(t_string(), (t_maybe(t_int()))))))))}, {:tuple, "replaceAll", (mk_scheme([], (t_arrow(t_string(), (t_arrow(t_string(), (t_arrow(t_string(), t_string()))))))))}, {:tuple, "charAt", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_string(), (t_maybe(t_char()))))))))}, {:tuple, "toCharArray", (mk_scheme([], (t_arrow(t_string(), (t_array(t_char()))))))}, {:tuple, "fromCharArray", (mk_scheme([], (t_arrow((t_array(t_char())), t_string()))))}, {:tuple, "otherwise", (mk_scheme([], t_bool()))}, {:tuple, "unit", (mk_scheme([], t_unit()))}]), type_aliases: Nova.Map.empty}
+  end
+
+
+
+  def effect_console_exports() do
+    
+      a = mk_tvar((-1), "a")
+      %{types: Nova.Map.empty, constructors: Nova.Map.empty, values: Nova.Map.from_foldable([{:tuple, "log", (mk_scheme([], (t_arrow(t_string(), t_unit()))))}, {:tuple, "logShow", (mk_scheme([a], (t_arrow(({:ty_var, a}), t_unit()))))}, {:tuple, "warn", (mk_scheme([], (t_arrow(t_string(), t_unit()))))}, {:tuple, "error", (mk_scheme([], (t_arrow(t_string(), t_unit()))))}]), type_aliases: Nova.Map.empty}
+  end
+
+
+
+  def nova_types_exports() do
+    
+      a = mk_tvar((-1), "a")
+      %{types: Nova.Map.from_foldable([{:tuple, "Type", %{arity: 0, constructors: ["TyVar", "TyCon", "TyRecord"]}}, {:tuple, "Env", %{arity: 0, constructors: []}}, {:tuple, "Scheme", %{arity: 0, constructors: []}}, {:tuple, "ModuleRegistry", %{arity: 0, constructors: []}}, {:tuple, "ModuleExports", %{arity: 0, constructors: []}}, {:tuple, "TVar", %{arity: 0, constructors: []}}, {:tuple, "TCon", %{arity: 0, constructors: []}}, {:tuple, "Subst", %{arity: 0, constructors: []}}]), constructors: Nova.Map.from_foldable([{:tuple, "TyVar", (mk_scheme([], (t_arrow(t_tvar(), t_type()))))}, {:tuple, "TyCon", (mk_scheme([], (t_arrow(t_tcon(), t_type()))))}, {:tuple, "TyRecord", (mk_scheme([], (t_arrow(t_record(), t_type()))))}]), values: Nova.Map.from_foldable([{:tuple, "lookupEnv", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_string(), (t_maybe(t_scheme()))))))))}, {:tuple, "extendEnv", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_string(), (t_arrow(t_scheme(), t_env()))))))))}, {:tuple, "emptyEnv", (mk_scheme([], t_env()))}, {:tuple, "defaultRegistry", (mk_scheme([], t_module_registry()))}, {:tuple, "emptyRegistry", (mk_scheme([], t_module_registry()))}, {:tuple, "lookupModule", (mk_scheme([], (t_arrow(t_module_registry(), (t_arrow(t_string(), (t_maybe(t_module_exports()))))))))}, {:tuple, "registerModule", (mk_scheme([], (t_arrow(t_module_registry(), (t_arrow(t_string(), (t_arrow(t_module_exports(), t_module_registry()))))))))}, {:tuple, "emptyExports", (mk_scheme([], t_module_exports()))}, {:tuple, "mkScheme", (mk_scheme([], (t_arrow((t_array(t_tvar())), (t_arrow(t_type(), t_scheme()))))))}, {:tuple, "mkTVar", (mk_scheme([], (t_arrow(t_int(), (t_arrow(t_string(), t_tvar()))))))}, {:tuple, "mkTCon", (mk_scheme([], (t_arrow(t_string(), (t_arrow((t_array(t_type())), t_tcon()))))))}, {:tuple, "mkTCon0", (mk_scheme([], (t_arrow(t_string(), t_tcon()))))}, {:tuple, "applySubst", (mk_scheme([a], (t_arrow(t_subst(), (t_arrow(({:ty_var, a}), ({:ty_var, a})))))))}, {:tuple, "emptySubst", (mk_scheme([], t_subst()))}, {:tuple, "singleSubst", (mk_scheme([], (t_arrow(t_tvar(), (t_arrow(t_type(), t_subst()))))))}, {:tuple, "composeSubst", (mk_scheme([], (t_arrow(t_subst(), (t_arrow(t_subst(), t_subst()))))))}, {:tuple, "generalize", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_type(), t_scheme()))))))}, {:tuple, "instantiate", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_scheme(), t_instantiate_result()))))))}, {:tuple, "builtinPrelude", (mk_scheme([], (t_map(t_string(), t_scheme()))))}, {:tuple, "tInt", (mk_scheme([], t_type()))}, {:tuple, "tString", (mk_scheme([], t_type()))}, {:tuple, "tChar", (mk_scheme([], t_type()))}, {:tuple, "tBool", (mk_scheme([], t_type()))}, {:tuple, "tArray", (mk_scheme([], (t_arrow(t_type(), t_type()))))}, {:tuple, "tArrow", (mk_scheme([], (t_arrow(t_type(), (t_arrow(t_type(), t_type()))))))}, {:tuple, "tMaybe", (mk_scheme([], (t_arrow(t_type(), t_type()))))}, {:tuple, "tEither", (mk_scheme([], (t_arrow(t_type(), (t_arrow(t_type(), t_type()))))))}, {:tuple, "tTuple", (mk_scheme([], (t_arrow((t_array(t_type())), t_type()))))}, {:tuple, "tMap", (mk_scheme([], (t_arrow(t_type(), (t_arrow(t_type(), t_type()))))))}, {:tuple, "tSet", (mk_scheme([], (t_arrow(t_type(), t_type()))))}, {:tuple, "tUnit", (mk_scheme([], t_type()))}]), type_aliases: Nova.Map.empty}
+  end
+
+
+
+  def nova_type_checker_exports() do
+    %{types: Nova.Map.from_foldable([{:tuple, "ResolvedImports", %{arity: 0, constructors: []}}]), constructors: Nova.Map.empty, values: Nova.Map.from_foldable([{:tuple, "collectResolvedImports", (mk_scheme([], (t_arrow(t_module_registry(), (t_arrow((t_array(t_declaration())), (t_map(t_string(), t_string()))))))))}, {:tuple, "checkModule", (mk_scheme([], (t_arrow(t_env(), (t_arrow((t_array(t_declaration())), (t_either(t_tcerror(), t_env()))))))))}, {:tuple, "checkDecl", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_declaration(), (t_either(t_tcerror(), t_env()))))))))}, {:tuple, "infer", (mk_scheme([], (t_arrow(t_env(), (t_arrow(t_expr(), (t_either(t_tcerror(), t_infer_result()))))))))}, {:tuple, "inferWithRegistry", (mk_scheme([], (t_arrow(t_module_registry(), (t_arrow(t_env(), (t_arrow(t_expr(), (t_either(t_tcerror(), t_infer_result()))))))))))}]), type_aliases: Nova.Map.empty}
+  end
+
+
+
+  def default_registry() do
+    Nova.Map.from_foldable([{:tuple, "Prelude", prelude_exports()}, {:tuple, "Effect.Console", effect_console_exports()}, {:tuple, "Nova.Compiler.Types", nova_types_exports()}, {:tuple, "Nova.Compiler.TypeChecker", nova_type_checker_exports()}])
+  end
+
   # @type module_registry :: map()(string())(module_exports())
 
 
@@ -672,7 +717,7 @@ defmodule Nova.Compiler.Types do
     case c.name do
       "Fun" -> case c.args do
           [arg, ret] -> Nova.Runtime.append(Nova.Runtime.append(show_type_arg(arg), " -> "), show_type(ret))
-          _ -> Nova.Runtime.append(Nova.Runtime.append(c.name, " "), Nova.String.join_with(" ", (Nova.Runtime.map((&show_type_arg/1), c.args))))
+          _ -> Nova.Runtime.append(Nova.Runtime.append(c.name, " "), Nova.String.join_with(" ", (Prelude.map((&show_type_arg/1), c.args))))
         end
       "Array" -> case c.args do
           [elem] -> Nova.Runtime.append("Array ", show_type_arg(elem))
@@ -700,16 +745,16 @@ defmodule Nova.Compiler.Types do
         end
       "Tuple" -> case c.args do
           [] -> "Unit"
-          [_] -> Nova.Runtime.append("Tuple ", Nova.String.join_with(" ", (Nova.Runtime.map((&show_type_arg/1), c.args))))
-          _ -> Nova.Runtime.append(Nova.Runtime.append("(", Nova.String.join_with(", ", (Nova.Runtime.map((&show_type/1), c.args)))), ")")
+          [_] -> Nova.Runtime.append("Tuple ", Nova.String.join_with(" ", (Prelude.map((&show_type_arg/1), c.args))))
+          _ -> Nova.Runtime.append(Nova.Runtime.append("(", Nova.String.join_with(", ", (Prelude.map((&show_type/1), c.args)))), ")")
         end
       name ->
         cond do
-          (Nova.String.take(5, name) == "Tuple") -> Nova.Runtime.append(Nova.Runtime.append("(", Nova.String.join_with(", ", (Nova.Runtime.map((&show_type/1), c.args)))), ")")
+          (Nova.String.take(5, name) == "Tuple") -> Nova.Runtime.append(Nova.Runtime.append("(", Nova.String.join_with(", ", (Prelude.map((&show_type/1), c.args)))), ")")
           true -> c.name
         end
       _ -> c.name
-      _ -> Nova.Runtime.append(Nova.Runtime.append(c.name, " "), Nova.String.join_with(" ", (Nova.Runtime.map((&show_type_arg/1), c.args))))
+      _ -> Nova.Runtime.append(Nova.Runtime.append(c.name, " "), Nova.String.join_with(" ", (Prelude.map((&show_type_arg/1), c.args))))
     end
   end
 
@@ -736,7 +781,7 @@ defmodule Nova.Compiler.Types do
   def show_record(r) do
     
       fields = Nova.Map.to_unfoldable(r.fields)
-      field_strs = Nova.Runtime.map((fn ({:tuple, name, ty}) -> Nova.Runtime.append(Nova.Runtime.append(name, " :: "), show_type(ty)) end), fields)
+      field_strs = Prelude.map((fn ({:tuple, name, ty}) -> Nova.Runtime.append(Nova.Runtime.append(name, " :: "), show_type(ty)) end), fields)
       inner = Nova.String.join_with(", ", field_strs)
       case r.row do
   :nothing -> Nova.Runtime.append(Nova.Runtime.append("{ ", inner), " }")
@@ -752,7 +797,7 @@ end
       if Nova.Array.null(s.vars) do
   ty_str
 else
-  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("forall ", Nova.String.join_with(" ", (Nova.Runtime.map(& &1.name, s.vars)))), ". "), ty_str)
+  Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("forall ", Nova.String.join_with(" ", (Prelude.map(& &1.name, s.vars)))), ". "), ty_str)
 end
   end
 end
