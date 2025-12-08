@@ -292,8 +292,8 @@ compileCompilerModules fs cfg libRegistry sortedPaths =
                   code = CodeGen.genModuleWithRegistry acc.registry maybeEnv result.mod
                   registry' = Types.registerModule acc.registry fullModName result.exports
                   -- Write output files
-                  _ = fs'.writeFile (cfg'.outputDir <> shortName <> ".ex") code
-                  _ = fs'.writeFile (cfg'.targetDir <> shortName <> ".ex") code
+                  written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".ex") code
+                  written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".ex") code
                   lineCount = Array.length (String.split (String.Pattern "\n") code)
                   logMsg = "Compiled " <> shortName <> " (" <> show lineCount <> " lines)"
               in { registry: registry'
@@ -321,11 +321,9 @@ regenerate fs cfg =
 
       -- Compile compiler modules
       Tuple compilerCount compilerLogs = compileCompilerModules fs cfg libRegistry sortedCompilerModules
-
-      allLogs = libLogs <> compilerLogs
   in { success: true
      , modulesCompiled: compilerCount
-     , logs: allLogs
+     , logs: libLogs <> compilerLogs
      }
 
 -- ============================================================================

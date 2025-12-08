@@ -252,11 +252,55 @@ end
             full_mod_name = get_module_name(cfg_prime, path)
             case parse_and_check_module(acc.registry, source) do
   {:left, err} -> %{acc | logs: Nova.Array.snoc(acc.logs, (log_error((Nova.Runtime.append(Nova.Runtime.append(short_name, ": "), err)))))}
+  {:right, result} -> 
+      maybe_env = {:just, result.env}
+      registry_prime = Nova.Compiler.Types.register_module(acc.registry, full_mod_name, result.exports)
+      code = Nova.Compiler.CodeGen.gen_module_with_registry(acc.registry, maybe_env, result.mod_)
+      written1 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.output_dir, short_name), ".ex")), code)
+      written2 = (fs_prime.write_file).((Nova.Runtime.append(Nova.Runtime.append(cfg_prime.target_dir, short_name), ".ex")), code)
+      line_count = Nova.Array.length((Nova.String.split((Nova.String.pattern("\n")), code)))
+      log_msg = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Compiled ", short_name), " ("), Prelude.show(line_count)), " lines)")
+      %{registry: registry_prime, count: (acc.count + 1), logs: Nova.Array.snoc(acc.logs, (log_info(log_msg)))}
 end
       end end end end end
       
   initial = %{registry: lib_registry, count: 0, logs: []}
   result = Data.Foldable.foldl((compile_comp_module.(fs).(cfg)), initial, sorted_paths)
   {:tuple, result.count, result.logs}
+  end
+
+
+
+  def regenerate(fs, cfg) do
+    
+      lib_files = (fs.list_files).((Nova.Runtime.append(cfg.lib_base, "Data")), ".purs")
+      compiler_files = (fs.list_files).(cfg.src_base, ".purs")
+      lib_deps = build_dependency_graph(fs, cfg, lib_files, true)
+      compiler_deps = build_dependency_graph(fs, cfg, compiler_files, false)
+      sorted_lib_modules = topological_sort(lib_deps)
+      sorted_compiler_modules = topological_sort(compiler_deps)
+      {:tuple, lib_registry, lib_logs} = compile_library_modules(fs, cfg, sorted_lib_modules)
+      {:tuple, compiler_count, compiler_logs} = compile_compiler_modules(fs, cfg, lib_registry, sorted_compiler_modules)
+      %{success: true, modules_compiled: compiler_count, logs: Nova.Runtime.append(lib_logs, compiler_logs)}
+  end
+
+
+
+  def show_log_entry(({:log_info, msg})) do
+    Nova.Runtime.append("[INFO] ", msg)
+  end
+
+  def show_log_entry(({:log_warning, msg})) do
+    Nova.Runtime.append("[WARN] ", msg)
+  end
+
+  def show_log_entry(({:log_error, msg})) do
+    Nova.Runtime.append("[ERROR] ", msg)
+  end
+
+
+
+  def show_logs() do
+    fn auto_c -> (Nova.String.join_with("\n")).((fn auto_p0 -> Prelude.map((&show_log_entry/1), auto_p0) end).(auto_c)) end
   end
 end

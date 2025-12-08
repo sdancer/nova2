@@ -592,6 +592,7 @@ end
 
 defmodule Nova.String do
   def length(s), do: String.length(s)
+  def null(s), do: s == ""
   def char_at(n, s) do
     case String.at(s, n) do
       nil -> :nothing
@@ -604,6 +605,8 @@ defmodule Nova.String do
   def split({:pattern, p}, s), do: String.split(s, p)
   def split(pattern, s) when is_binary(pattern), do: String.split(s, pattern)
   def join_with(sep, list), do: Enum.join(list, sep)
+  # Curried 1-arity version
+  def join_with(sep), do: fn list -> Enum.join(list, sep) end
   def replace_all({:pattern, p}, {:replacement, r}, s), do: String.replace(s, p, r)
   # 2-arg version for curried calls
   def replace_all({:pattern, p}, s) when is_binary(s), do: fn {:replacement, r} -> String.replace(s, p, r) end
