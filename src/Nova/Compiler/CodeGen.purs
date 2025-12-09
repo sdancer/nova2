@@ -17,7 +17,7 @@ import Data.Foldable (foldr, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, GuardedExpr, GuardClause(..), DataType, DataConstructor, TypeAlias, NewtypeDecl, InfixDecl, ForeignImport, TypeClass, TypeClassInstance, Associativity(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), TypeExpr(..), ImportDeclaration, ImportItem(..))
-import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv, ModuleRegistry, defaultRegistry, lookupModule)
+import Nova.Compiler.Types (Type(..), Env, Scheme, lookupEnv, ModuleRegistry, defaultRegistry, lookupModule, TypedModule, typedModuleToModule, typedModuleEnv)
 import Nova.Compiler.TypeChecker (collectResolvedImports)
 
 -- | Information about a module-level function
@@ -95,6 +95,22 @@ typeArity (TyCon c) =
     _ -> 0
   else 0
 typeArity _ = 0
+
+-- | Look up function arity from the registry for a specific module
+lookupRegistryArity :: ModuleRegistry -> String -> String -> Maybe Int
+lookupRegistryArity registry moduleName funcName =
+  case lookupModule registry moduleName of
+    Just exports -> case Map.lookup funcName exports.values of
+      Just scheme -> Just (typeArity scheme.ty)
+      Nothing -> Nothing
+    Nothing -> Nothing
+
+-- | Check if a function exists in the registry for a specific module
+isRegistryFunc :: ModuleRegistry -> String -> String -> Boolean
+isRegistryFunc registry moduleName funcName =
+  case lookupModule registry moduleName of
+    Just exports -> Map.member funcName exports.values
+    Nothing -> false
 
 -- | Look up function arity from type environment, registry, or known arities in context
 lookupTypeArity :: String -> GenCtx -> Maybe Int
@@ -323,11 +339,21 @@ lookupArity name ctx = map _.arity (Map.lookup name ctx.moduleFuncs)
 lookupFuncInfo :: String -> GenCtx -> Maybe FuncInfo
 lookupFuncInfo name ctx = Map.lookup name ctx.moduleFuncs
 
--- | Generate Elixir code from a module
+-- | Generate Elixir code from a type-checked module (preferred API)
+-- | This is the safe entry point that guarantees the module has been validated
+genTypedModule :: TypedModule -> String
+genTypedModule tm = genModuleWithRegistry defaultRegistry (Just (typedModuleEnv tm)) (typedModuleToModule tm)
+
+-- | Generate Elixir code from a type-checked module with a registry
+genTypedModuleWithRegistry :: ModuleRegistry -> TypedModule -> String
+genTypedModuleWithRegistry registry tm = genModuleWithRegistry registry (Just (typedModuleEnv tm)) (typedModuleToModule tm)
+
+-- | Generate Elixir code from a module (legacy API - prefer genTypedModule)
+-- | WARNING: This does not guarantee the module has been type-checked
 genModule :: Module -> String
 genModule = genModuleWithRegistry defaultRegistry Nothing
 
--- | Generate Elixir code from a module with an optional type environment
+-- | Generate Elixir code from a module with an optional type environment (legacy API)
 genModuleWithEnv :: Maybe Env -> Module -> String
 genModuleWithEnv = genModuleWithRegistry defaultRegistry
 
@@ -943,10 +969,10 @@ isBinaryFunc name = Array.elem name
   , "extendEnv", "lookupEnv", "unify", "bindVar"
   ]
 
--- | Functions that are commonly imported from Nova.Compiler.Types
--- | These need to be qualified in generated Elixir
-isTypesModuleFunc :: String -> Boolean
-isTypesModuleFunc name = Array.elem name
+-- | Check if a function is exported from Nova.Compiler.Types (hardcoded list)
+-- Note: Using hardcoded list because type checker doesn't export all functions to bindings
+isTypesModuleFunc :: GenCtx -> String -> Boolean
+isTypesModuleFunc _ name = Array.elem name
   [ "emptySubst", "singleSubst", "composeSubst", "applySubst"
   , "freeTypeVars", "freeTypeVarsScheme", "freeTypeVarsEnv"
   , "lookupSubst", "extendEnv", "lookupEnv", "applySubstToEnv"
@@ -954,11 +980,14 @@ isTypesModuleFunc name = Array.elem name
   , "mkTVar", "mkTCon", "mkTCon0", "tyVar", "tyCon", "tyRecord"
   , "tInt", "tString", "tBool", "tChar", "tArray", "tArrow"
   , "tMaybe", "tEither", "tTuple", "tMap", "tSet", "tList", "tNumber"
-  , "emptyEnv", "builtinPrelude"
+  , "emptyEnv", "builtinPrelude", "extendTypeAlias"
   -- Export/import functions
   , "emptyExports", "mergeTypeExport", "mergeExportsToEnv", "registerModule", "lookupModule"
+  , "mergeExportsToEnvWithPrefix", "mergeSelectedExports"
   -- Module registry
   , "defaultRegistry", "emptyRegistry", "preludeExports", "effectConsoleExports"
+  -- TypedModule functions
+  , "mkTypedModule", "typedModuleToModule", "typedModuleEnv"
   ]
 
 -- | Values (zero-arity) from Types module that should be called with ()
@@ -969,30 +998,9 @@ isTypesModuleValue name = Array.elem name
   , "defaultRegistry", "preludeExports", "effectConsoleExports"  -- Module exports are values
   ]
 
--- | Check if a name is a TypeChecker module function
-isTypeCheckerModuleFunc :: String -> Boolean
-isTypeCheckerModuleFunc name = Array.elem name
-  [ "collectResolvedImports", "checkModule", "checkModuleWithRegistry"
-  , "processImports", "processImportDecl", "collectImportedAliases"
-  , "getExportedNames", "getImportItemName"
-  ]
-
--- | Get the arity of a TypeChecker module function
-typeCheckerModuleFuncArity :: String -> Int
-typeCheckerModuleFuncArity name = case name of
-  "collectResolvedImports" -> 2
-  "checkModule" -> 2
-  "checkModuleWithRegistry" -> 3
-  "processImports" -> 3
-  "processImportDecl" -> 3
-  "collectImportedAliases" -> 2
-  "getExportedNames" -> 1
-  "getImportItemName" -> 1
-  _ -> 1
-
--- | Get the arity of a Types module function
-typesModuleFuncArity :: String -> Int
-typesModuleFuncArity name =
+-- | Get the arity of a Types module function (hardcoded)
+typesModuleFuncArity :: GenCtx -> String -> Int
+typesModuleFuncArity _ name =
   if isTypesModuleValue name then 0
   else if Array.elem name typesArity1Funcs then 1
   else if Array.elem name typesArity2Funcs then 2
@@ -1001,29 +1009,57 @@ typesModuleFuncArity name =
   else 1  -- Default to 1
 
 typesArity1Funcs :: Array String
-typesArity1Funcs = ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
+typesArity1Funcs = ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple", "typedModuleToModule", "typedModuleEnv"]
 
 typesArity2Funcs :: Array String
-typesArity2Funcs = ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule"]
+typesArity2Funcs = ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule", "mkTypedModule"]
 
 typesArity3Funcs :: Array String
-typesArity3Funcs = ["extendEnv", "mergeExportsToEnvWithPrefix"]
+typesArity3Funcs = ["extendEnv", "mergeExportsToEnvWithPrefix", "extendTypeAlias"]
 
 typesArity4Funcs :: Array String
 typesArity4Funcs = ["mergeTypeExport"]
 
--- | Functions from Nova.Compiler.Unify module
-isUnifyModuleFunc :: String -> Boolean
-isUnifyModuleFunc name = Array.elem name
-  [ "unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField"
-  , "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases"
-  , "unifyFieldWithAliases", "unifyStepWithAliases", "isRecordTypeAliasInMap"
-  , "unifyEnv"
+-- | Check if a name is a TypeChecker module function (hardcoded list)
+isTypeCheckerModuleFunc :: GenCtx -> String -> Boolean
+isTypeCheckerModuleFunc _ name = Array.elem name
+  [ "collectResolvedImports", "checkModule", "checkModuleWithRegistry"
+  , "processImports", "processImportDecl", "collectImportedAliases"
+  , "getExportedNames", "getImportItemName"
+  , "extractExports", "addValuesToExports"
   ]
 
--- | Get the arity of an Unify module function
-unifyModuleFuncArity :: String -> Int
-unifyModuleFuncArity name = case name of
+-- | Get the arity of a TypeChecker module function (hardcoded)
+typeCheckerModuleFuncArity :: GenCtx -> String -> Int
+typeCheckerModuleFuncArity _ name = case name of
+  "collectResolvedImports" -> 2
+  "checkModule" -> 2
+  "checkModuleWithRegistry" -> 3
+  "processImports" -> 3
+  "processImportDecl" -> 3
+  "collectImportedAliases" -> 2
+  "getExportedNames" -> 1
+  "getImportItemName" -> 1
+  "extractExports" -> 1
+  "addValuesToExports" -> 3
+  _ -> 1
+
+-- | Check if a function is from Nova.Compiler.Unify module (hardcoded list)
+-- Note: Using hardcoded list because type checker doesn't export all functions to bindings
+isUnifyModuleFunc :: GenCtx -> String -> Boolean
+isUnifyModuleFunc _ name = Array.elem name unifyModuleFuncs
+
+unifyModuleFuncs :: Array String
+unifyModuleFuncs =
+  [ "unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField"
+  , "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases"
+  , "unifyFieldWithAliases", "unifyStep", "unifyStepWithAliases"
+  , "isRecordTypeAliasInMap", "areEquivalentTypes", "showType"
+  ]
+
+-- | Get the arity of an Unify module function (hardcoded)
+unifyModuleFuncArity :: GenCtx -> String -> Int
+unifyModuleFuncArity _ name = case name of
   "unify" -> 2
   "unifyMany" -> 2
   "bindVar" -> 2
@@ -1034,10 +1070,12 @@ unifyModuleFuncArity name = case name of
   "unifyManyWithAliases" -> 3
   "unifyRecordsWithAliases" -> 3
   "unifyFieldWithAliases" -> 5
+  "unifyStep" -> 2
   "unifyStepWithAliases" -> 3
   "isRecordTypeAliasInMap" -> 2
-  "unifyEnv" -> 3
-  _ -> 2
+  "areEquivalentTypes" -> 2
+  "showType" -> 1
+  _ -> 2  -- Default to 2
 
 -- | Translate qualified module calls to Nova.* modules
 translateQualified :: String -> String -> String
@@ -1199,16 +1237,16 @@ genExpr' ctx _ (ExprVar name) =
                    else "(&" <> snakeCase name <> "/" <> show typeArity <> ")"
                  Nothing ->
                    unsafeCrashWith ("CodeGen error: Missing arity for module function ref '" <> name <> "'")
-      else if isTypesModuleFunc name
-      then let arity = typesModuleFuncArity name
+      else if isTypesModuleFunc ctx name
+      then let arity = typesModuleFuncArity ctx name
            in if arity == 0
               then "Nova.Compiler.Types." <> snakeCase name <> "()"
               else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
-      else if isTypeCheckerModuleFunc name
-      then let arity = typeCheckerModuleFuncArity name
+      else if isTypeCheckerModuleFunc ctx name
+      then let arity = typeCheckerModuleFuncArity ctx name
            in "(&Nova.Compiler.TypeChecker." <> snakeCase name <> "/" <> show arity <> ")"
-      else if isUnifyModuleFunc name
-      then "(&Nova.Compiler.Unify." <> snakeCase name <> "/" <> show (unifyModuleFuncArity name) <> ")"
+      else if isUnifyModuleFunc ctx name
+      then "(&Nova.Compiler.Unify." <> snakeCase name <> "/" <> show (unifyModuleFuncArity ctx name) <> ")"
       -- Check if this is an imported function and resolve to the target module
       else case Map.lookup name ctx.imports of
         Just srcMod ->
@@ -1228,7 +1266,7 @@ genExpr' ctx _ (ExprVar name) =
           then "(&" <> snakeCase name <> "/1)"
           -- Fallback for any remaining variables - just use the name
           else snakeCase name
-genExpr' _ _ (ExprQualified mod name) =
+genExpr' ctx _ (ExprQualified mod name) =
   -- Check if this is an AST constructor used as a function value
   -- These need to be wrapped in lambdas because Elixir doesn't support
   -- passing module functions without explicit capture
@@ -1242,9 +1280,9 @@ genExpr' _ _ (ExprQualified mod name) =
        else if arity == 1
        then "fn a -> " <> translateQualified mod name <> "(a) end"
        else "fn a, b -> " <> translateQualified mod name <> "(a, b) end"
-  else if isTypesModuleFunc name
+  else if isTypesModuleFunc ctx name
   then
-    let arity = typesModuleFuncArity name
+    let arity = typesModuleFuncArity ctx name
     in if arity == 0
        then "Nova.Compiler.Types." <> snakeCase name <> "()"
        else "(&Nova.Compiler.Types." <> snakeCase name <> "/" <> show arity <> ")"
@@ -1339,8 +1377,8 @@ genExpr' ctx indent (ExprApp f arg) =
                    -- This shouldn't happen - if we hit this, there's a bookkeeping bug.
                    "(raise \"CodeGen error: Module function '" <> n <> "' is in moduleFuncs but has no arity in funcArities or typeEnv\")"
       -- Handle external Types module functions
-      else if isTypesModuleFunc n
-      then let arity = typesModuleFuncArity n
+      else if isTypesModuleFunc c n
+      then let arity = typesModuleFuncArity c n
                numArgs = length exprs
            in if numArgs == arity
               then "Nova.Compiler.Types." <> snakeCase n <> "(" <> argsS <> ")"
@@ -1355,8 +1393,8 @@ genExpr' ctx indent (ExprApp f arg) =
                     directArgsStr = intercalate ", " (map (genExpr' c i) directArgs)
                     funcCall = "Nova.Compiler.Types." <> snakeCase n <> "(" <> directArgsStr <> ")"
                 in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
-      else if isUnifyModuleFunc n
-      then let arity = unifyModuleFuncArity n
+      else if isUnifyModuleFunc c n
+      then let arity = unifyModuleFuncArity c n
                numArgs = length exprs
            in if numArgs == arity
               then "Nova.Compiler.Unify." <> snakeCase n <> "(" <> argsS <> ")"
@@ -1372,8 +1410,8 @@ genExpr' ctx indent (ExprApp f arg) =
                     funcCall = "Nova.Compiler.Unify." <> snakeCase n <> "(" <> directArgsStr <> ")"
                 in foldl (\acc arg -> acc <> ".(" <> genExpr' c i arg <> ")") funcCall curriedArgs
       -- Handle TypeChecker module functions
-      else if isTypeCheckerModuleFunc n
-      then let arity = typeCheckerModuleFuncArity n
+      else if isTypeCheckerModuleFunc c n
+      then let arity = typeCheckerModuleFuncArity c n
                numArgs = length exprs
            in if numArgs == arity
               then "Nova.Compiler.TypeChecker." <> snakeCase n <> "(" <> argsS <> ")"

@@ -58,7 +58,7 @@ function extractImports(source) {
 // e.g., "Data.List" -> "./lib/Data/List.purs"
 function moduleToPath(modName, isLibContext) {
   // Library modules
-  if (modName.startsWith('Data.') || modName === 'Prelude') {
+  if (modName.startsWith('Data.') || modName.startsWith('Control.') || modName === 'Prelude') {
     const path = lib + modName.replace(/\./g, '/') + '.purs';
     if (fs.existsSync(path)) {
       return path;
@@ -176,19 +176,20 @@ function parseAndCheckModule(path, isLibModule = false) {
   // Build registry from dependencies (recursively)
   // Start with library registry for non-lib modules
   let registry = isLibModule ? types.emptyRegistry : libRegistry;
-  let depDecls = [];
   for (const depPath of deps) {
     const depResult = parseAndCheckModule(depPath, isLibModule);
     if (depResult) {
       const depName = getModuleName(depPath);
       registry = types.registerModule(registry)(depName)(depResult.exports);
-      depDecls = depDecls.concat(depResult.mod.declarations);
     }
   }
 
-  // Type check with registry for imports + concatenated deps for backward compatibility
-  const allDecls = depDecls.concat(mod.declarations);
-  const check = tc.checkModuleWithRegistry(registry)(types.emptyEnv)(allDecls);
+  // Type check with registry for imports
+  // Note: Only check this module's declarations - dependency exports are in the registry
+  // DO NOT concatenate dependency declarations - this causes name collisions
+  // (e.g., multiple foreign imports named 'singletonImpl' from different modules)
+  const modDeclsForCheck = Array.isArray(mod.declarations) ? mod.declarations : listToArray(mod.declarations);
+  const check = tc.checkModuleWithRegistry(registry)(types.emptyEnv)(modDeclsForCheck);
 
   if (check.constructor && check.constructor.name === 'Left') {
     console.log('  Type error in', path + ':', JSON.stringify(check.value0));
@@ -203,6 +204,25 @@ function parseAndCheckModule(path, isLibModule = false) {
   // Extract exports from the checked module (using Array)
   const exports = tc.extractExports(modDeclsArray);
   const exportsWithValues = tc.addValuesToExports(exports)(env)(modDeclsArray);
+
+  // Debug: Check bindings for Unify module only
+  if (path.includes('Unify.purs')) {
+    console.log('  DEBUG: Checking Unify bindings in env...');
+    const funcsToCheck = [
+      'showType', 'occurs', 'bindVar', 'areEquivalentTypes', 'isRecordTypeAliasInMap',
+      'unifyWithAliases', 'unify', 'unifyStepWithAliases', 'unifyManyWithAliases',
+      'unifyFieldWithAliases', 'unifyRecordsWithAliases', 'unifyStep', 'unifyMany',
+      'unifyField', 'unifyRecords'
+    ];
+    for (const fn of funcsToCheck) {
+      const result = types.lookupEnv(env)(fn);
+      const found = result && result.constructor && result.constructor.name === 'Just';
+      console.log('    ' + fn + ': ' + (found ? 'FOUND' : 'MISSING'));
+    }
+    // Also count what IS in exports.values
+    const valCount = mapSize(exportsWithValues.values);
+    console.log('  DEBUG: Total values in exports:', valCount);
+  }
 
   moduleCache[path] = { mod, env, exports: exportsWithValues };
   return moduleCache[path];
@@ -269,7 +289,9 @@ function getShortName(path) {
 console.log('=== Discovering Module Dependencies ===');
 
 // Find all library and compiler module files
-const libFiles = findPursFiles('./lib/Data');
+const libDataFiles = findPursFiles('./lib/Data');
+const libControlFiles = findPursFiles('./lib/Control');
+const libFiles = [...libDataFiles, ...libControlFiles];
 const compilerFiles = findPursFiles('./src/Nova/Compiler');
 
 console.log('Found', libFiles.length, 'library modules');

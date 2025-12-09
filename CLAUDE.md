@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Nova Lang is a compiler written in PureScript that compiles a PureScript-like language to Elixir. The project implements a full compiler pipeline: tokenization → parsing → type checking → code generation.
 
-**Bootstrapping Goal:** We are bootstrapping a self-hosted version of the compiler that will run on the BEAM VM. The PureScript compiler in `src/` compiles itself to Elixir, producing the output in `nova_lang/`. Once complete, the compiled Elixir version will be able to compile its own source code.
+**Bootstrapping Goal:** We are bootstrapping a self-hosted version of the compiler that will run on the BEAM VM. The PureScript compiler in `src/` compiles itself to Elixir, producing the output in `nova_lang/`. 
+
+Selfhosting has been achieved, now we are removing hardcoded stuff, generalizing existing code and refining it.
 
 ## Directory Structure
 
@@ -65,14 +67,13 @@ After making changes to the PureScript source:
 
 ### Working
 - Tokenization (complete)
-- Parsing (~95% - supports functions, data types, newtypes, type classes, instances, imports, infixl/r, where clauses)
+- Parsing
 - Type inference (Hindley-Milner with basic type class support)
 - Code generation to Elixir (functions, data types, newtypes, case expressions, do-notation)
-- Self-compilation: 10/10 core compiler modules parse and generate code
+- Self-compilation
 
 ### In Progress
-- **Self-hosting byte-for-byte**: The Elixir compiler can compile its own PureScript source, but output differs from PureScript-compiled version
-- Remaining differences: whitespace, type comment formatting, some operator associativity
+- dehardcoding and generalizing leftovers scafolding on the compiler core modules
 
 ## Self-Hosting Verification (CRITICAL)
 
@@ -82,11 +83,6 @@ Run the self-hosting test:
 ```bash
 cd nova_lang && mix run test_self_host_all.exs
 ```
-
-**Current status:** Ast.purs passes (whitespace diff only), other modules have differences in:
-1. **Blank lines** - Extra newlines between functions
-2. **Type comment formatting** - Parenthesization in `@type` comments
-3. **Operator associativity** - Fixed for `<>`, `+`, `-`, `*`, `/` (now left-associative)
 
 **Goal:** All modules must show "EXACT MATCH" or at minimum "whitespace diff only". Any semantic difference in generated code indicates a bug in the Elixir compiler.
 
@@ -136,13 +132,4 @@ The Nova MCP server (`nova mcp`) exposes the compiler as a service for AI agents
 
 **No Workarounds in Test Runners:** Test infrastructure should execute generated code as-is. Never add string replacements, regex patches, or injected code to make tests pass. If tests fail, the fix belongs in the compiler source.
 
-## Backlog & Known Issues
-
-See `BACKLOG.md` for:
-- Self-hosting issues that have been resolved (forward references, type annotations, parser fixes)
-- Outstanding issues (parameterized type alias expansion for CstToAst/CstPipeline)
-- Future enhancements
-
-**Priority:** Continue work on parameterized type alias expansion in CstToAst.purs to complete self-hosting.
-- each warning is a waste of tokens, which means a compounding waste of money
-- don't add a map for methods from prelude, we aren't hardcoding prelude but injecting everything to the context as imports
+each warning is a waste of tokens, which means a compounding waste of money

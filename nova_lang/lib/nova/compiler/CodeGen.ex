@@ -81,6 +81,27 @@ defmodule Nova.Compiler.CodeGen do
 
 
 
+  def lookup_registry_arity(registry, module_name, func_name) do
+    case Nova.Compiler.Types.lookup_module(registry, module_name) do
+      {:just, exports} -> case Nova.Map.lookup(func_name, exports.values) do
+          {:just, scheme} -> {:just, (type_arity(scheme.ty))}
+          :nothing -> :nothing
+        end
+      :nothing -> :nothing
+    end
+  end
+
+
+
+  def is_registry_func(registry, module_name, func_name) do
+    case Nova.Compiler.Types.lookup_module(registry, module_name) do
+      {:just, exports} -> Nova.Map.member(func_name, exports.values)
+      :nothing -> false
+    end
+  end
+
+
+
   def lookup_type_arity(name, ctx) do
     
       lookup_from_registry_or_known = fn n -> fn c -> case Nova.Map.lookup(n, c.imports) do
@@ -408,6 +429,18 @@ end
 
   def lookup_func_info(name, ctx) do
     Nova.Map.lookup(name, ctx.module_funcs)
+  end
+
+
+
+  def gen_typed_module(tm) do
+    gen_module_with_registry(Nova.Compiler.Types.default_registry(), ({:just, (Nova.Compiler.Types.typed_module_env(tm))}), (Nova.Compiler.Types.typed_module_to_module(tm)))
+  end
+
+
+
+  def gen_typed_module_with_registry(registry, tm) do
+    gen_module_with_registry(registry, ({:just, (Nova.Compiler.Types.typed_module_env(tm))}), (Nova.Compiler.Types.typed_module_to_module(tm)))
   end
 
 
@@ -1106,8 +1139,8 @@ end
 
 
 
-  def is_types_module_func(name) do
-    Nova.Array.elem(name, ["emptySubst", "singleSubst", "composeSubst", "applySubst", "freeTypeVars", "freeTypeVarsScheme", "freeTypeVarsEnv", "lookupSubst", "extendEnv", "lookupEnv", "applySubstToEnv", "freshVar", "generalize", "instantiate", "mkScheme", "mkTVar", "mkTCon", "mkTCon0", "tyVar", "tyCon", "tyRecord", "tInt", "tString", "tBool", "tChar", "tArray", "tArrow", "tMaybe", "tEither", "tTuple", "tMap", "tSet", "tList", "tNumber", "emptyEnv", "builtinPrelude", "emptyExports", "mergeTypeExport", "mergeExportsToEnv", "registerModule", "lookupModule", "defaultRegistry", "emptyRegistry", "preludeExports", "effectConsoleExports"])
+  def is_types_module_func(_, name) do
+    Nova.Array.elem(name, ["emptySubst", "singleSubst", "composeSubst", "applySubst", "freeTypeVars", "freeTypeVarsScheme", "freeTypeVarsEnv", "lookupSubst", "extendEnv", "lookupEnv", "applySubstToEnv", "freshVar", "generalize", "instantiate", "mkScheme", "mkTVar", "mkTCon", "mkTCon0", "tyVar", "tyCon", "tyRecord", "tInt", "tString", "tBool", "tChar", "tArray", "tArrow", "tMaybe", "tEither", "tTuple", "tMap", "tSet", "tList", "tNumber", "emptyEnv", "builtinPrelude", "extendTypeAlias", "emptyExports", "mergeTypeExport", "mergeExportsToEnv", "registerModule", "lookupModule", "mergeExportsToEnvWithPrefix", "mergeSelectedExports", "defaultRegistry", "emptyRegistry", "preludeExports", "effectConsoleExports", "mkTypedModule", "typedModuleToModule", "typedModuleEnv"])
   end
 
 
@@ -1118,29 +1151,7 @@ end
 
 
 
-  def is_type_checker_module_func(name) do
-    Nova.Array.elem(name, ["collectResolvedImports", "checkModule", "checkModuleWithRegistry", "processImports", "processImportDecl", "collectImportedAliases", "getExportedNames", "getImportItemName"])
-  end
-
-
-
-  def type_checker_module_func_arity(name) do
-    case name do
-      "collectResolvedImports" -> 2
-      "checkModule" -> 2
-      "checkModuleWithRegistry" -> 3
-      "processImports" -> 3
-      "processImportDecl" -> 3
-      "collectImportedAliases" -> 2
-      "getExportedNames" -> 1
-      "getImportItemName" -> 1
-      _ -> 1
-    end
-  end
-
-
-
-  def types_module_func_arity(name) do
+  def types_module_func_arity(_, name) do
     if is_types_module_value(name) do
       0
     else
@@ -1167,19 +1178,19 @@ end
 
 
   def types_arity1_funcs() do
-    ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple"]
+    ["mkTCon0", "tArray", "tMaybe", "tSet", "tList", "tTuple", "typedModuleToModule", "typedModuleEnv"]
   end
 
 
 
   def types_arity2_funcs() do
-    ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule"]
+    ["singleSubst", "mkTVar", "mkScheme", "composeSubst", "applySubst", "mkTCon", "tArrow", "tEither", "tMap", "lookupEnv", "freshVar", "generalize", "instantiate", "applySubstToEnv", "lookupModule", "mergeExportsToEnv", "registerModule", "mkTypedModule"]
   end
 
 
 
   def types_arity3_funcs() do
-    ["extendEnv", "mergeExportsToEnvWithPrefix"]
+    ["extendEnv", "mergeExportsToEnvWithPrefix", "extendTypeAlias"]
   end
 
 
@@ -1190,13 +1201,43 @@ end
 
 
 
-  def is_unify_module_func(name) do
-    Nova.Array.elem(name, ["unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField", "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases", "unifyFieldWithAliases", "unifyStepWithAliases", "isRecordTypeAliasInMap", "unifyEnv"])
+  def is_type_checker_module_func(_, name) do
+    Nova.Array.elem(name, ["collectResolvedImports", "checkModule", "checkModuleWithRegistry", "processImports", "processImportDecl", "collectImportedAliases", "getExportedNames", "getImportItemName", "extractExports", "addValuesToExports"])
   end
 
 
 
-  def unify_module_func_arity(name) do
+  def type_checker_module_func_arity(_, name) do
+    case name do
+      "collectResolvedImports" -> 2
+      "checkModule" -> 2
+      "checkModuleWithRegistry" -> 3
+      "processImports" -> 3
+      "processImportDecl" -> 3
+      "collectImportedAliases" -> 2
+      "getExportedNames" -> 1
+      "getImportItemName" -> 1
+      "extractExports" -> 1
+      "addValuesToExports" -> 3
+      _ -> 1
+    end
+  end
+
+
+
+  def is_unify_module_func(_, name) do
+    Nova.Array.elem(name, unify_module_funcs())
+  end
+
+
+
+  def unify_module_funcs() do
+    ["unify", "unifyMany", "bindVar", "occurs", "unifyRecords", "unifyField", "unifyWithAliases", "unifyManyWithAliases", "unifyRecordsWithAliases", "unifyFieldWithAliases", "unifyStep", "unifyStepWithAliases", "isRecordTypeAliasInMap", "areEquivalentTypes", "showType"]
+  end
+
+
+
+  def unify_module_func_arity(_, name) do
     case name do
       "unify" -> 2
       "unifyMany" -> 2
@@ -1208,9 +1249,11 @@ end
       "unifyManyWithAliases" -> 3
       "unifyRecordsWithAliases" -> 3
       "unifyFieldWithAliases" -> 5
+      "unifyStep" -> 2
       "unifyStepWithAliases" -> 3
       "isRecordTypeAliasInMap" -> 2
-      "unifyEnv" -> 3
+      "areEquivalentTypes" -> 2
+      "showType" -> 1
       _ -> 2
     end
   end
@@ -1387,22 +1430,22 @@ end
                     end
                 end
               else
-                if is_types_module_func(name) do
+                if is_types_module_func(ctx, name) do
                   
-                    arity = types_module_func_arity(name)
+                    arity = types_module_func_arity(ctx, name)
                     if (arity == 0) do
   Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(name)), "()")
 else
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Types.", snake_case(name)), "/"), Prelude.show(arity)), ")")
 end
                 else
-                  if is_type_checker_module_func(name) do
+                  if is_type_checker_module_func(ctx, name) do
                     
-                      arity = type_checker_module_func_arity(name)
+                      arity = type_checker_module_func_arity(ctx, name)
                       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.TypeChecker.", snake_case(name)), "/"), Prelude.show(arity)), ")")
                   else
-                    if is_unify_module_func(name) do
-                      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Unify.", snake_case(name)), "/"), Prelude.show((unify_module_func_arity(name)))), ")")
+                    if is_unify_module_func(ctx, name) do
+                      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(&Nova.Compiler.Unify.", snake_case(name)), "/"), Prelude.show((unify_module_func_arity(ctx, name)))), ")")
                     else
                       case Nova.Map.lookup(name, ctx.imports) do
                         {:just, src_mod} -> case lookup_type_arity(name, ctx) do
@@ -1429,7 +1472,7 @@ end
     end
   end
 
-  def gen_expr_prime(_, _, ({:expr_qualified, mod_, name})) do
+  def gen_expr_prime(ctx, _, ({:expr_qualified, mod_, name})) do
     if is_ast_constructor(name) do
       
         arity = get_ast_constructor_arity(name)
@@ -1443,9 +1486,9 @@ else
   end
 end
     else
-      if is_types_module_func(name) do
+      if is_types_module_func(ctx, name) do
         
-          arity = types_module_func_arity(name)
+          arity = types_module_func_arity(ctx, name)
           if (arity == 0) do
   Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(name)), "()")
 else
@@ -1542,9 +1585,9 @@ end
                       end
                   end
                 else
-                  if is_types_module_func(n) do
+                  if is_types_module_func(c, n) do
                     
-                      arity = types_module_func_arity(n)
+                      arity = types_module_func_arity(c, n)
                       num_args = Data.Array.length(exprs)
                       if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Types.", snake_case(n)), "("), args_s), ")")
@@ -1565,9 +1608,9 @@ else
   end
 end
                   else
-                    if is_unify_module_func(n) do
+                    if is_unify_module_func(c, n) do
                       
-                        arity = unify_module_func_arity(n)
+                        arity = unify_module_func_arity(c, n)
                         num_args = Data.Array.length(exprs)
                         if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.Unify.", snake_case(n)), "("), args_s), ")")
@@ -1588,9 +1631,9 @@ else
   end
 end
                     else
-                      if is_type_checker_module_func(n) do
+                      if is_type_checker_module_func(c, n) do
                         
-                          arity = type_checker_module_func_arity(n)
+                          arity = type_checker_module_func_arity(c, n)
                           num_args = Data.Array.length(exprs)
                           if (num_args == arity) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("Nova.Compiler.TypeChecker.", snake_case(n)), "("), args_s), ")")

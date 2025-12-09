@@ -815,15 +815,88 @@ end
 
 
 
+  def guarded_exprs_to_if([]) do
+    Nova.Compiler.Ast.expr_var("undefined")
+  end
+
+  def guarded_exprs_to_if(([ge | []])) do
+    wrap_with_pattern_guards(ge.guards, ge.body)
+  end
+
+  def guarded_exprs_to_if(([ge | rest])) do
+    
+      else_expr = guarded_exprs_to_if(rest)
+      then_body = wrap_with_pattern_guards(ge.guards, ge.body)
+      cond_ = guards_to_condition(ge.guards)
+      Nova.Compiler.Ast.expr_if(cond_, then_body, else_expr)
+  end
+
+
+
+  def guards_to_condition([]) do
+    Nova.Compiler.Ast.expr_var("true")
+  end
+
+  def guards_to_condition(([gc | []])) do
+    guard_clause_to_cond_expr(gc)
+  end
+
+  def guards_to_condition(([gc | rest])) do
+    Nova.Compiler.Ast.expr_bin_op("&&", (guard_clause_to_cond_expr(gc)), (guards_to_condition(rest)))
+  end
+
+
+
+  def guard_clause_to_cond_expr(({:guard_expr, e})) do
+    e
+  end
+
+  def guard_clause_to_cond_expr(({:guard_pat, _, _})) do
+    Nova.Compiler.Ast.expr_var("true")
+  end
+
+
+
+  def wrap_with_pattern_guards(guards, body) do
+    
+      is_pattern_guard = fn auto_arg0 -> case auto_arg0 do
+        ({:guard_pat, _, _}) -> true
+        _ -> false
+      end end
+      
+  pattern_guards = Nova.List.filter(is_pattern_guard, guards)
+  build_pattern_guard_cases(pattern_guards, body)
+  end
+
+
+
+  def build_pattern_guard_cases([], body) do
+    body
+  end
+
+  def build_pattern_guard_cases(([({:guard_pat, pat, scrutinee}) | rest]), body) do
+    Nova.Compiler.Ast.expr_case(scrutinee, ([%{pattern: pat, body: build_pattern_guard_cases(rest, body), guard: :nothing} | []]))
+  end
+
+  def build_pattern_guard_cases(([_ | rest]), body) do
+    build_pattern_guard_cases(rest, body)
+  end
+
+
+
   def check_function(env, func) do
     
       {:tuple, func_tv, env1} = Nova.Compiler.Types.fresh_var(env, (Nova.Runtime.append("fn_", func.name)))
       func_ty = {:ty_var, func_tv}
-      expr = case func.parameters do
+      body = case func.guards do
         [] -> func.body
-        _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, func.body)
+        _ -> guarded_exprs_to_if(func.guards)
       end
       temp_scheme = Nova.Compiler.Types.mk_scheme([], func_ty)
+      expr = case func.parameters do
+        [] -> body
+        _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, body)
+      end
       env_with_func = Nova.Compiler.Types.extend_env(env1, func.name, temp_scheme)
       case infer(env_with_func, expr) do
   {:left, e} -> {:left, e}
@@ -861,6 +934,14 @@ end
 
   def check_decl(env, ({:decl_type_class, tc})) do
     {:right, (check_type_class(env, tc))}
+  end
+
+  # Handle infix declarations - register operator as alias for function
+  def check_decl(env, ({:decl_infix, inf})) do
+    case Nova.Compiler.Types.lookup_env(env, inf.function_name) do
+      {:just, scheme} -> {:right, Nova.Compiler.Types.extend_env(env, inf.operator, scheme)}
+      :nothing -> {:right, env}  # Function not yet defined, will be checked later
+    end
   end
 
   def check_decl(env, _) do
@@ -1340,21 +1421,36 @@ end
 
 
   def check_module(env, decls) do
-    
+
       env1 = process_non_functions(env, decls)
       env2 = add_function_placeholders(env1, decls)
-      check_function_bodies(env2, decls)
+      # Process infix declarations after function placeholders are added
+      env3 = process_infix_declarations(env2, decls)
+      check_function_bodies(env3, decls)
+  end
+
+
+
+  def type_check_module(env, mod_) do
+    
+      decls = Nova.Array.from_foldable(mod_.declarations)
+      case check_module(env, decls) do
+  {:left, err} -> {:left, err}
+  {:right, env_prime} -> {:right, (Nova.Compiler.Types.mk_typed_module(mod_, env_prime))}
+end
   end
 
 
 
   def check_module_with_registry(registry, env, decls) do
-    
+
       imported_aliases = collect_imported_aliases(registry, decls)
       env1 = process_imports(registry, env, decls)
       env2 = process_non_functions_with_aliases(imported_aliases, env1, decls)
       env3 = add_function_placeholders_with_aliases(imported_aliases, env2, decls)
-      check_function_bodies(env3, decls)
+      # Process infix declarations after function placeholders are added
+      env4 = process_infix_declarations(env3, decls)
+      check_function_bodies(env4, decls)
   end
 
 
@@ -1384,12 +1480,18 @@ end
                 Nova.Compiler.Types.merge_exports_to_env_with_prefix(env, exports, last_part)
           end
           if imp.hiding do
-  Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+  merge_exports_with_type_aliases(env_with_qualified, exports)
 else
   if Nova.List.null(imp.items) do
     case imp.alias_ do
-      {:just, _} -> env_with_qualified
-      :nothing -> Nova.Compiler.Types.merge_exports_to_env(env_with_qualified, exports)
+      {:just, _} ->
+        # With alias and no items: qualified access + all type aliases for unification
+        module_aliases = expand_module_aliases(exports.type_aliases)
+        add_alias = fn e, {:tuple, name, ty} ->
+          Nova.Compiler.Types.extend_type_alias(e, name, ty)
+        end
+        Nova.Array.foldl(add_alias, env_with_qualified, Nova.Map.to_unfoldable(module_aliases))
+      :nothing -> merge_exports_with_type_aliases(env_with_qualified, exports)
     end
   else
     Data.Foldable.foldl((fn auto_p0 -> fn auto_p1 -> import_item(exports, auto_p0, auto_p1) end end), env_with_qualified, imp.items)
@@ -1401,23 +1503,136 @@ end
 
 
   def import_item(exports, env, item) do
+    # Expand module's type aliases for use in resolution
+    module_aliases = expand_module_aliases(exports.type_aliases)
     case item do
-      {:import_value, name} -> case Nova.Map.lookup(name, exports.values) do
+      {:import_value, name} ->
+        # Import a value or constructor by name
+        # Also check if it's a type alias
+        case Nova.Map.lookup(name, exports.values) do
           {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name, scheme)
-          :nothing -> case Nova.Map.lookup(name, exports.constructors) do
+          :nothing ->
+            case Nova.Map.lookup(name, exports.constructors) do
               {:just, scheme} -> Nova.Compiler.Types.extend_env(env, name, scheme)
+              :nothing ->
+                # Check if it's a type alias
+                case Nova.Map.lookup(name, module_aliases) do
+                  {:just, ty} -> Nova.Compiler.Types.extend_type_alias(env, name, ty)
+                  :nothing -> env
+                end
+            end
+        end
+      {:import_type, type_name, spec} ->
+        # Import a type and optionally its constructors
+        # First check if it's a type alias and add it to env.type_aliases
+        env1 = case Nova.Map.lookup(type_name, exports.type_aliases) do
+          {:just, alias_info} ->
+            # Add the expanded type alias itself
+            expanded_ty = case Nova.Map.lookup(type_name, module_aliases) do
+              {:just, ty} -> ty
+              :nothing -> type_expr_to_type(Nova.Map.empty, alias_info.body)
+            end
+            e1 = Nova.Compiler.Types.extend_type_alias(env, type_name, expanded_ty)
+            # Collect type names from the body to find referenced aliases
+            referenced_names = collect_type_expr_names(alias_info.body)
+            add_if_record = fn e, name ->
+              case Nova.Map.lookup(name, module_aliases) do
+                {:just, alias_ty} ->
+                  if is_record_type(alias_ty) do
+                    Nova.Compiler.Types.extend_type_alias(e, name, alias_ty)
+                  else
+                    e
+                  end
+                :nothing -> e
+              end
+            end
+            Nova.Array.foldl(add_if_record, e1, Nova.Array.from_foldable(Nova.Set.to_unfoldable(referenced_names)))
+          :nothing ->
+            # Check if it's in module_aliases (simple type alias from expansion)
+            case Nova.Map.lookup(type_name, module_aliases) do
+              {:just, ty} -> Nova.Compiler.Types.extend_type_alias(env, type_name, ty)
               :nothing -> env
             end
         end
-      {:import_type, type_name, spec} -> case Nova.Map.lookup(type_name, exports.types) do
-          :nothing -> env
-          {:just, type_info} -> case spec do
-              :import_all -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, type_info.constructors)
-              {:import_some, ctor_names} -> Nova.Compiler.Types.merge_type_export(env, exports, type_name, (Nova.Array.from_foldable(ctor_names)))
-              :import_none -> env
+        case Nova.Map.lookup(type_name, exports.types) do
+          :nothing -> env1  # Not a data type, but might be alias (already handled)
+          {:just, type_info} ->
+            case spec do
+              :import_all -> Nova.Compiler.Types.merge_type_export(env1, exports, type_name, type_info.constructors)
+              {:import_some, ctor_names} -> Nova.Compiler.Types.merge_type_export(env1, exports, type_name, (Nova.Array.from_foldable(ctor_names)))
+              :import_none -> env1
             end
         end
     end
+  end
+
+  # Check if a type is a record type
+  def is_record_type({:ty_record, _}), do: true
+  def is_record_type(_), do: false
+
+  # Collect all type constructor names referenced in a TypeExpr
+  def collect_type_expr_names({:ty_expr_var, _}), do: Nova.Set.empty
+  def collect_type_expr_names({:ty_expr_con, name}), do: Nova.Set.singleton(name)
+  def collect_type_expr_names({:ty_expr_app, f, arg}) do
+    Nova.Set.union(collect_type_expr_names(f), collect_type_expr_names(arg))
+  end
+  def collect_type_expr_names({:ty_expr_arrow, a, b}) do
+    Nova.Set.union(collect_type_expr_names(a), collect_type_expr_names(b))
+  end
+  def collect_type_expr_names({:ty_expr_record, fields, _}) do
+    Nova.Array.foldl(fn s, {:tuple, _, t} ->
+      Nova.Set.union(s, collect_type_expr_names(t))
+    end, Nova.Set.empty, Nova.Array.from_foldable(fields))
+  end
+  def collect_type_expr_names({:ty_expr_forall, _, t}), do: collect_type_expr_names(t)
+  def collect_type_expr_names({:ty_expr_constrained, _, t}), do: collect_type_expr_names(t)
+  def collect_type_expr_names({:ty_expr_parens, t}), do: collect_type_expr_names(t)
+  def collect_type_expr_names({:ty_expr_tuple, ts}) do
+    Data.Foldable.foldl(fn s, t ->
+      Nova.Set.union(s, collect_type_expr_names(t))
+    end, Nova.Set.empty, ts)
+  end
+  def collect_type_expr_names(_), do: Nova.Set.empty
+
+  # Expand module's TypeAliasInfo map to simple alias map (Map String Type)
+  def expand_module_aliases(alias_infos) do
+    # First pass: convert without resolving nested aliases
+    initial = Nova.Map.map_maybe(fn info ->
+      if Nova.Array.null(info.params) do
+        {:just, type_expr_to_type(Nova.Map.empty, info.body)}
+      else
+        :nothing
+      end
+    end, alias_infos)
+    # Second pass: expand with full context
+    pass2 = Nova.Map.map_maybe(fn info ->
+      if Nova.Array.null(info.params) do
+        {:just, type_expr_to_type_with_all_aliases(initial, alias_infos, Nova.Map.empty, info.body)}
+      else
+        :nothing
+      end
+    end, alias_infos)
+    # Third pass for deeper nesting
+    Nova.Map.map_maybe(fn info ->
+      if Nova.Array.null(info.params) do
+        {:just, type_expr_to_type_with_all_aliases(pass2, alias_infos, Nova.Map.empty, info.body)}
+      else
+        :nothing
+      end
+    end, alias_infos)
+  end
+
+  # Merge exports including type aliases into environment
+  def merge_exports_with_type_aliases(env, exports) do
+    # First merge values and constructors
+    env1 = Nova.Compiler.Types.merge_exports_to_env(env, exports)
+    # Add ALL type aliases to env.type_aliases for proper unification
+    # (both record type aliases like Scheme and type constructor aliases like Subst)
+    module_aliases = expand_module_aliases(exports.type_aliases)
+    add_alias = fn e, {:tuple, name, ty} ->
+      Nova.Compiler.Types.extend_type_alias(e, name, ty)
+    end
+    Nova.Array.foldl(add_alias, env1, Nova.Map.to_unfoldable(module_aliases))
   end
 
   # @type resolved_imports :: map._map()(string())(string())
@@ -1638,7 +1853,21 @@ end
       env3
   end
 
-
+  # Process infix declarations - register operators as aliases for functions
+  # This must be called after add_function_placeholders so function types are available
+  def process_infix_declarations(env, decls) do
+    process_infix = fn e, decl ->
+      case decl do
+        {:decl_infix, inf} ->
+          case Nova.Compiler.Types.lookup_env(e, inf.function_name) do
+            {:just, scheme} -> Nova.Compiler.Types.extend_env(e, inf.operator, scheme)
+            :nothing -> e  # Function not found, skip
+          end
+        _ -> e
+      end
+    end
+    Nova.Array.foldl(process_infix, env, decls)
+  end
 
   def add_function_placeholders(env, decls) do
     add_function_placeholders_with_aliases(Nova.Map.empty, env, decls)

@@ -10,7 +10,7 @@ import Data.Tuple (Tuple(..))
 import Data.Foldable (foldl)
 import Data.Array as Array
 import Data.String as String
-import Nova.Compiler.Ast (TypeExpr)
+import Nova.Compiler.Ast (TypeExpr, Module)
 
 -- | Type variable identified by integer id for fast comparisons
 type TVar = { id :: Int, name :: String }
@@ -151,14 +151,44 @@ type Env =
   , typeAliases :: Map String Type  -- type alias name -> expanded type (for record aliases)
   }
 
+-- | A module that has been type-checked/inferred
+-- | This wrapper ensures at the type level that only validated modules
+-- | can be passed to code generation. The env contains type information
+-- | collected during type checking (bindings, type aliases, etc.)
+type TypedModule =
+  { mod :: Module
+  , env :: Env
+  }
+
+-- | Create a TypedModule from a module and its type-checked environment
+mkTypedModule :: Module -> Env -> TypedModule
+mkTypedModule mod env = { mod, env }
+
+-- | Extract the module from a TypedModule
+typedModuleToModule :: TypedModule -> Module
+typedModuleToModule tm = tm.mod
+
+-- | Extract the environment from a TypedModule
+typedModuleEnv :: TypedModule -> Env
+typedModuleEnv tm = tm.env
+
 emptyEnv :: Env
 emptyEnv =
   { bindings: builtinPrelude
   , counter: 0
   , registryLayer: Nothing
   , namespace: Nothing
-  , typeAliases: Map.empty
+  , typeAliases: builtinRecordAliases
   }
+
+-- | Built-in record type aliases that need to be known for unification
+-- | These are type aliases that expand to records and are used in function signatures
+builtinRecordAliases :: Map String Type
+builtinRecordAliases = Map.fromFoldable
+  [ Tuple "TypeAliasInfo" (TyRecord { fields: Map.fromFoldable [Tuple "params" (tArray tString), Tuple "body" tTypeExpr], row: Nothing })
+  , Tuple "TCon" (TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "args" (tArray tType)], row: Nothing })
+  , Tuple "TVar" (TyRecord { fields: Map.fromFoldable [Tuple "id" tInt, Tuple "name" tString], row: Nothing })
+  ]
 
 -- | Extend environment with a new binding
 extendEnv :: Env -> String -> Scheme -> Env
@@ -207,6 +237,8 @@ builtinPrelude = Map.fromFoldable
   , Tuple "Boolean" (mkScheme [] tBool)  -- PureScript uses Boolean, alias to Bool
   , Tuple "True" (mkScheme [] tBool)
   , Tuple "False" (mkScheme [] tBool)
+  , Tuple "true" (mkScheme [] tBool)   -- lowercase for Elixir/JS style
+  , Tuple "false" (mkScheme [] tBool)  -- lowercase for Elixir/JS style
   , Tuple "Array" (mkScheme [a] (tArray (TyVar a)))
   , Tuple "List" (mkScheme [a] (tList (TyVar a)))
   , Tuple "List.fromFoldable" (mkScheme [a] (tArrow (tArray (TyVar a)) (tList (TyVar a))))
@@ -678,6 +710,12 @@ tModuleExports = TyRecord { fields: Map.fromFoldable
 tModuleRegistry :: Type
 tModuleRegistry = tMap tString tModuleExports
 
+tModule :: Type
+tModule = TyCon (mkTCon0 "Module")
+
+tTypedModule :: Type
+tTypedModule = TyRecord { fields: Map.fromFoldable [Tuple "mod" tModule, Tuple "env" tEnv], row: Nothing }
+
 tPattern :: Type
 tPattern = TyCon (mkTCon0 "Pattern")
 
@@ -919,9 +957,14 @@ preludeExports =
   , values: Map.fromFoldable
       -- Functor
       [ Tuple "map" (mkScheme [a, b, c, d] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar c) (TyVar d))))
+      , Tuple "<$>" (mkScheme [a, b, c, d] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar c) (TyVar d))))  -- map operator
       -- Applicative
       , Tuple "pure" (mkScheme [a, b] (tArrow (TyVar a) (TyVar b)))
       , Tuple "apply" (mkScheme [a, b, c, d] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar c))))
+      , Tuple "applySecond" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))))
+      , Tuple "*>" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))))
+      , Tuple "applyFirst" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
+      , Tuple "<*" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
       -- Alternative
       , Tuple "alt" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
       -- Monad
@@ -1052,86 +1095,13 @@ effectConsoleExports =
   where
     a = mkTVar (-1) "a"
 
--- | Exports for Nova.Compiler.Types module
-novaTypesExports :: ModuleExports
-novaTypesExports =
-  { types: Map.fromFoldable
-      [ Tuple "Type" { arity: 0, constructors: ["TyVar", "TyCon", "TyRecord"] }
-      , Tuple "Env" { arity: 0, constructors: [] }
-      , Tuple "Scheme" { arity: 0, constructors: [] }
-      , Tuple "ModuleRegistry" { arity: 0, constructors: [] }
-      , Tuple "ModuleExports" { arity: 0, constructors: [] }
-      , Tuple "TVar" { arity: 0, constructors: [] }
-      , Tuple "TCon" { arity: 0, constructors: [] }
-      , Tuple "Subst" { arity: 0, constructors: [] }
-      ]
-  , constructors: Map.fromFoldable
-      [ Tuple "TyVar" (mkScheme [] (tArrow tTVar tType))
-      , Tuple "TyCon" (mkScheme [] (tArrow tTCon tType))
-      , Tuple "TyRecord" (mkScheme [] (tArrow tRecord tType))
-      ]
-  , values: Map.fromFoldable
-      [ Tuple "lookupEnv" (mkScheme [] (tArrow tEnv (tArrow tString (tMaybe tScheme))))
-      , Tuple "extendEnv" (mkScheme [] (tArrow tEnv (tArrow tString (tArrow tScheme tEnv))))
-      , Tuple "emptyEnv" (mkScheme [] tEnv)
-      , Tuple "defaultRegistry" (mkScheme [] tModuleRegistry)
-      , Tuple "emptyRegistry" (mkScheme [] tModuleRegistry)
-      , Tuple "lookupModule" (mkScheme [] (tArrow tModuleRegistry (tArrow tString (tMaybe tModuleExports))))
-      , Tuple "registerModule" (mkScheme [] (tArrow tModuleRegistry (tArrow tString (tArrow tModuleExports tModuleRegistry))))
-      , Tuple "emptyExports" (mkScheme [] tModuleExports)
-      , Tuple "mkScheme" (mkScheme [] (tArrow (tArray tTVar) (tArrow tType tScheme)))
-      , Tuple "mkTVar" (mkScheme [] (tArrow tInt (tArrow tString tTVar)))
-      , Tuple "mkTCon" (mkScheme [] (tArrow tString (tArrow (tArray tType) tTCon)))
-      , Tuple "mkTCon0" (mkScheme [] (tArrow tString tTCon))
-      , Tuple "applySubst" (mkScheme [a] (tArrow tSubst (tArrow (TyVar a) (TyVar a))))
-      , Tuple "emptySubst" (mkScheme [] tSubst)
-      , Tuple "singleSubst" (mkScheme [] (tArrow tTVar (tArrow tType tSubst)))
-      , Tuple "composeSubst" (mkScheme [] (tArrow tSubst (tArrow tSubst tSubst)))
-      , Tuple "generalize" (mkScheme [] (tArrow tEnv (tArrow tType tScheme)))
-      , Tuple "instantiate" (mkScheme [] (tArrow tEnv (tArrow tScheme tInstantiateResult)))
-      , Tuple "builtinPrelude" (mkScheme [] (tMap tString tScheme))
-      , Tuple "tInt" (mkScheme [] tType)
-      , Tuple "tString" (mkScheme [] tType)
-      , Tuple "tChar" (mkScheme [] tType)
-      , Tuple "tBool" (mkScheme [] tType)
-      , Tuple "tArray" (mkScheme [] (tArrow tType tType))
-      , Tuple "tArrow" (mkScheme [] (tArrow tType (tArrow tType tType)))
-      , Tuple "tMaybe" (mkScheme [] (tArrow tType tType))
-      , Tuple "tEither" (mkScheme [] (tArrow tType (tArrow tType tType)))
-      , Tuple "tTuple" (mkScheme [] (tArrow (tArray tType) tType))
-      , Tuple "tMap" (mkScheme [] (tArrow tType (tArrow tType tType)))
-      , Tuple "tSet" (mkScheme [] (tArrow tType tType))
-      , Tuple "tUnit" (mkScheme [] tType)
-      ]
-  , typeAliases: Map.empty
-  }
-  where
-    a = mkTVar (-1) "a"
-
--- | Exports for Nova.Compiler.TypeChecker module
-novaTypeCheckerExports :: ModuleExports
-novaTypeCheckerExports =
-  { types: Map.fromFoldable
-      [ Tuple "ResolvedImports" { arity: 0, constructors: [] }
-      ]
-  , constructors: Map.empty
-  , values: Map.fromFoldable
-      [ Tuple "collectResolvedImports" (mkScheme [] (tArrow tModuleRegistry (tArrow (tArray tDeclaration) (tMap tString tString))))
-      , Tuple "checkModule" (mkScheme [] (tArrow tEnv (tArrow (tArray tDeclaration) (tEither tTCError tEnv))))
-      , Tuple "checkDecl" (mkScheme [] (tArrow tEnv (tArrow tDeclaration (tEither tTCError tEnv))))
-      , Tuple "infer" (mkScheme [] (tArrow tEnv (tArrow tExpr (tEither tTCError tInferResult))))
-      , Tuple "inferWithRegistry" (mkScheme [] (tArrow tModuleRegistry (tArrow tEnv (tArrow tExpr (tEither tTCError tInferResult)))))
-      ]
-  , typeAliases: Map.empty
-  }
-
 -- | Default module registry with standard library modules
+-- | Nova.Compiler.* modules are NOT included here - they are dynamically
+-- | registered by Regenerate.purs during compilation
 defaultRegistry :: ModuleRegistry
 defaultRegistry = Map.fromFoldable
   [ Tuple "Prelude" preludeExports
   , Tuple "Effect.Console" effectConsoleExports
-  , Tuple "Nova.Compiler.Types" novaTypesExports
-  , Tuple "Nova.Compiler.TypeChecker" novaTypeCheckerExports
   ]
 
 -- | Module registry: maps module names to their exports

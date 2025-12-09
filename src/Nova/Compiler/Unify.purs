@@ -4,7 +4,8 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Set as Set
-import Data.Array (zip, length)
+import Data.Array (zip, length, take, fromFoldable) as Array
+import Data.Array (length, zip)
 import Data.Foldable (foldM)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
@@ -27,7 +28,11 @@ instance showUnifyError :: Show UnifyError where
 showType :: Type -> String
 showType (TyVar v) = v.name <> "[" <> show v.id <> "]"
 showType (TyCon tc) = tc.name <> "(" <> show (length tc.args) <> " args)"
-showType (TyRecord r) = "{record}"
+showType (TyRecord r) =
+  let fieldNames = Array.fromFoldable (Map.keys r.fields)
+      fieldStr = String.joinWith ", " (Array.take 5 fieldNames)
+      suffix = if Array.length fieldNames > 5 then ", ..." else ""
+  in "{" <> fieldStr <> suffix <> "}"
 
 -- | Occurs check: does variable v occur in type t?
 occurs :: TVar -> Type -> Boolean
@@ -35,10 +40,16 @@ occurs v t = Set.member v.id (freeTypeVars t)
 
 -- | Bind a type variable to a type, with occurs check
 bindVar :: TVar -> Type -> Either UnifyError Subst
-bindVar v t
-  | TyVar v' <- t, v.id == v'.id = Right emptySubst
-  | occurs v t = Left (OccursCheck v t)
-  | otherwise = Right (singleSubst v t)
+bindVar v t =
+  if isSameVar v t
+  then Right emptySubst
+  else if occurs v t
+       then Left (OccursCheck v t)
+       else Right (singleSubst v t)
+  where
+    isSameVar tv ty = case ty of
+      TyVar tv2 -> tv.id == tv2.id
+      _ -> false
 
 -- | Check if two type names are considered equivalent
 -- | List and Array are treated as equivalent since they compile to the same Elixir representation
