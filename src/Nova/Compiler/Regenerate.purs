@@ -292,8 +292,8 @@ compileCompilerModules fs cfg libRegistry sortedPaths =
                   code = CodeGen.genModuleWithRegistry acc.registry maybeEnv result.mod
                   registry' = Types.registerModule acc.registry fullModName result.exports
                   -- Write output files
-                  written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".ex") code
-                  written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".ex") code
+                  _written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".ex") code
+                  _written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".ex") code
                   lineCount = Array.length (String.split (String.Pattern "\n") code)
                   logMsg = "Compiled " <> shortName <> " (" <> show lineCount <> " lines)"
               in { registry: registry'

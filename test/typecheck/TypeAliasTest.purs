@@ -6,11 +6,8 @@ import Prelude
 import Effect (Effect)
 import Effect.Console (log)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Data.Array as Array
-import Nova.Compiler.Tokenizer (tokenize)
-import Nova.Compiler.Parser as P
+import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.TypeChecker (checkModule)
 import Nova.Compiler.Types (emptyEnv)
 
@@ -73,10 +70,9 @@ unwrapDouble d = d.wrapped.wrapped
 
 testModule :: String -> String -> Effect Unit
 testModule name source =
-  let tokens = tokenize source
-  in case P.parseModule tokens of
+  case parseModuleCst source of
     Left err -> log $ "PARSE FAIL: " <> name <> " - " <> err
-    Right (Tuple mod _) ->
+    Right mod ->
       case checkModule emptyEnv (Array.fromFoldable mod.declarations) of
         Left err -> log $ "TYPE FAIL: " <> name <> " - " <> show err
         Right _ -> log $ "PASS: " <> name

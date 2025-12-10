@@ -8,12 +8,10 @@ import Data.Tuple (Tuple(..))
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Traversable (traverse)
-import Control.Monad (void)
 import Data.Maybe (Maybe(..))
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile)
-import Nova.Compiler.Tokenizer (tokenize)
-import Nova.Compiler.Parser as P
+import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.Ast (Declaration(..))
 import Nova.Compiler.Types (emptyEnv, Env)
 import Nova.Compiler.TypeChecker (checkDecl, checkModule, TCError)
@@ -26,7 +24,6 @@ main = do
   -- Test modules individually first (for modules with no deps)
   testFile "Types.purs" "src/Nova/Compiler/Types.purs"
   testFile "Ast.purs" "src/Nova/Compiler/Ast.purs"
-  testFile "Tokenizer.purs" "src/Nova/Compiler/Tokenizer.purs"
   testFile "TypeChecker.purs" "src/Nova/Compiler/TypeChecker.purs"
   testFile "CodeGen.purs" "src/Nova/Compiler/CodeGen.purs"
 
@@ -35,8 +32,8 @@ main = do
   testFileCombined "Unify.purs" "src/Nova/Compiler/Unify.purs"
     ["src/Nova/Compiler/Types.purs"]
 
-  testFileCombined "Parser.purs" "src/Nova/Compiler/Parser.purs"
-    ["src/Nova/Compiler/Types.purs", "src/Nova/Compiler/Ast.purs", "src/Nova/Compiler/Tokenizer.purs"]
+  testFileCombined "CstToAst.purs" "src/Nova/Compiler/CstToAst.purs"
+    ["src/Nova/Compiler/Types.purs", "src/Nova/Compiler/Ast.purs"]
 
   log ""
   log "=== Tests Complete ==="
@@ -45,12 +42,11 @@ main = do
 parseFile :: String -> Effect (Array Declaration)
 parseFile path = do
   content <- readTextFile UTF8 path
-  let tokens = tokenize content
-  case P.parseModule tokens of
+  case parseModuleCst content of
     Left parseErr -> do
       log $ "Parse error in " <> path <> ": " <> parseErr
       pure []
-    Right (Tuple m _) -> pure (Array.fromFoldable m.declarations)
+    Right m -> pure (Array.fromFoldable m.declarations)
 
 -- | Load multiple module dependencies into an environment
 loadModules :: Array String -> Effect Env
@@ -67,10 +63,9 @@ testFileWithDeps name path deps = do
   baseEnv <- loadModules deps
 
   content <- readTextFile UTF8 path
-  let tokens = tokenize content
-  case P.parseModule tokens of
+  case parseModuleCst content of
     Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
-    Right (Tuple m _) -> do
+    Right m -> do
       let decls = Array.fromFoldable m.declarations
       let total = Array.length decls
 
@@ -128,10 +123,9 @@ testFileCombined name path deps = do
 testFile :: String -> String -> Effect Unit
 testFile name path = do
   content <- readTextFile UTF8 path
-  let tokens = tokenize content
-  case P.parseModule tokens of
+  case parseModuleCst content of
     Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
-    Right (Tuple m _) -> do
+    Right m -> do
       -- Count declarations
       let decls = Array.fromFoldable m.declarations
       let total = Array.length decls

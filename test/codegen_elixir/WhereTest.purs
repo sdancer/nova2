@@ -4,11 +4,8 @@ import Prelude
 import Effect (Effect)
 import Effect.Console (log)
 import Data.Either (Either(..))
-import Data.Tuple (Tuple(..))
-import Data.Maybe (Maybe(..))
 import Data.String as String
-import Nova.Compiler.Tokenizer (tokenize)
-import Nova.Compiler.Parser (parseModule)
+import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.CodeGen (genModule)
 
 main :: Effect Unit
@@ -60,10 +57,9 @@ getFirst xs = helper xs
 testCodeGen :: String -> String -> Effect Unit
 testCodeGen name source = do
   log $ "\n--- " <> name <> " ---"
-  let tokens = tokenize source
-  case parseModule tokens of
+  case parseModuleCst source of
     Left err -> log $ "Parse error: " <> err
-    Right (Tuple mod _) -> do
+    Right mod -> do
       log "Parsed successfully"
       let elixir = genModule mod
       log "Generated Elixir:"

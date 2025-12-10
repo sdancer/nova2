@@ -4,15 +4,12 @@ import Prelude
 import Effect (Effect)
 import Effect.Console (log)
 import Data.Either (Either(..))
-import Data.Tuple (Tuple(..))
 import Data.Array as Array
-import Data.List as List
 import Data.String as String
 import Data.Traversable (traverse)
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile, writeTextFile)
-import Nova.Compiler.Tokenizer (tokenize)
-import Nova.Compiler.Parser (parseModule)
+import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.TypeChecker (checkModule)
 import Nova.Compiler.Types (emptyEnv)
 import Nova.Compiler.CodeGen (genModule)
@@ -27,13 +24,12 @@ main = do
   compileFile "Unify" "src/Nova/Compiler/Unify.purs" []
   compileFile "Types" "src/Nova/Compiler/Types.purs" []
   compileFile "Ast" "src/Nova/Compiler/Ast.purs" []
-  compileFile "Tokenizer" "src/Nova/Compiler/Tokenizer.purs" []
   compileFile "CodeGen" "src/Nova/Compiler/CodeGen.purs" []
   compileFile "TypeChecker" "src/Nova/Compiler/TypeChecker.purs" []
 
-  -- Parser depends on Types, Ast, Tokenizer
-  compileFile "Parser" "src/Nova/Compiler/Parser.purs"
-    ["src/Nova/Compiler/Types.purs", "src/Nova/Compiler/Ast.purs", "src/Nova/Compiler/Tokenizer.purs"]
+  -- CstToAst depends on Types, Ast
+  compileFile "CstToAst" "src/Nova/Compiler/CstToAst.purs"
+    ["src/Nova/Compiler/Types.purs", "src/Nova/Compiler/Ast.purs"]
 
   log ""
   log "=== Done ==="
@@ -42,10 +38,9 @@ main = do
 parseFile :: String -> Effect (Array Declaration)
 parseFile path = do
   content <- readTextFile UTF8 path
-  let tokens = tokenize content
-  case parseModule tokens of
+  case parseModuleCst content of
     Left _ -> pure []
-    Right (Tuple m _) -> pure (Array.fromFoldable m.declarations)
+    Right m -> pure (Array.fromFoldable m.declarations)
 
 compileFile :: String -> String -> Array String -> Effect Unit
 compileFile name path deps = do
@@ -54,10 +49,9 @@ compileFile name path deps = do
   depDecls <- map Array.concat $ traverse parseFile deps
   -- Load main file
   content <- readTextFile UTF8 path
-  let tokens = tokenize content
-  case parseModule tokens of
+  case parseModuleCst content of
     Left parseErr -> log $ "  Parse error: " <> parseErr
-    Right (Tuple mod _) -> do
+    Right mod -> do
       let modDecls = Array.fromFoldable mod.declarations
       log $ "  Parsed " <> show (Array.length modDecls) <> " declarations"
       -- Combine dep declarations with main for type checking

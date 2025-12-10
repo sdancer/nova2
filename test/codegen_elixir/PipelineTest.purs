@@ -4,16 +4,12 @@ import Prelude
 import Effect (Effect)
 import Effect.Console (log)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Data.String as String
 import Data.Array as Array
-import Nova.Compiler.Tokenizer (tokenize)
-import Nova.Compiler.Parser (parseModule)
-import Nova.Compiler.TypeChecker (checkModule, TCError)
+import Nova.Compiler.CstPipeline (parseModuleCst)
+import Nova.Compiler.TypeChecker (checkModule)
 import Nova.Compiler.Types (emptyEnv)
 import Nova.Compiler.CodeGen (genModule)
-import Nova.Compiler.Ast (Module)
 
 foreign import runElixirCode :: String -> Effect String
 
@@ -115,12 +111,10 @@ testPipeline name source expr expected = do
 
 compilePipeline :: String -> Either String String
 compilePipeline source = do
-  -- Tokenize
-  let tokens = tokenize source
   -- Parse
-  case parseModule tokens of
+  case parseModuleCst source of
     Left parseErr -> Left $ "Parse error: " <> parseErr
-    Right (Tuple mod _rest) -> do
+    Right mod -> do
       -- Type check
       case checkModule emptyEnv (Array.fromFoldable mod.declarations) of
         Left tcErr -> Left $ "Type error: " <> show tcErr
