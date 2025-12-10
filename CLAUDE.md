@@ -34,28 +34,7 @@ cd nova_lang && mix run test_self_host_all.exs  # Self-host verification
 
 **Self-hosting is the ultimate test.** Output must be byte-for-byte identical. "EXACT MATCH" or "whitespace diff only" = good. Any semantic diff = bug.
 
-## Structure
-
-```
-src/Nova/Compiler/    # PureScript source (edit here)
-nova_lang/            # Generated Elixir (never edit directly)
-test/                 # PureScript tests
-test/parser/          # Parser-specific tests
-```
-
-## Compiler Modules
-
-| Module | Purpose |
-|--------|---------|
-| `Tokenizer.purs` | Lexical analysis → tokens with positions |
-| `Parser.purs` | Recursive descent → AST |
-| `Ast.purs` | AST types: Declaration, Expr, Pattern, TypeExpr |
-| `Types.purs` | Internal types: TVar, TCon, TyRecord, substitutions |
-| `TypeChecker.purs` | Hindley-Milner inference (Algorithm W) |
-| `Unify.purs` | Robinson unification |
-| `CodeGen.purs` | Typed AST → Elixir |
-| `Dependencies.purs` | Dependency graph |
-| `Regenerate.purs` | Self-compilation orchestration |
+**See [SOURCESTRUCTURE.md](SOURCESTRUCTURE.md)** for directory layout, modules, and types. Update it when adding/changing modules.
 
 ## Don't Do This
 
@@ -73,14 +52,6 @@ test/parser/          # Parser-specific tests
 3. Verify new test passes
 
 Parser pattern: `Either String (Tuple a (Array Token))` with helpers `skipNewlines`, `expectKeyword`, `expectDelimiter`.
-
-## Key Type Distinctions
-
-- `TypeExpr` = surface syntax (what user writes)
-- `Type` = internal representation (type checker uses)
-- `Declaration` = top-level (functions, data, newtypes, imports, infix)
-- `Expr` = expressions (literals, vars, app, lambda, case, do, let)
-- `Pattern` = pattern matching (vars, constructors, records, lists)
 
 ## Current Focus
 
