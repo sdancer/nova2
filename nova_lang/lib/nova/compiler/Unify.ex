@@ -66,6 +66,10 @@ defmodule Nova.Compiler.Unify do
       Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{", field_str), suffix), "}")
   end
 
+  def show_type(({:ty_app, f, arg})) do
+    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", show_type(f)), " "), show_type(arg)), ")")
+  end
+
 
 
   def occurs(v, t) do
@@ -100,6 +104,10 @@ end
       (((n1 == "List") and (n2 == "Array"))) ->
         true
       (((n1 == "Array") and (n2 == "List"))) ->
+        true
+      (((n1 == "Number") and (n2 == "Int"))) ->
+        true
+      (((n1 == "Int") and (n2 == "Number"))) ->
         true
       (true) ->
         false
@@ -203,6 +211,60 @@ end
 
   def unify_with_aliases(aliases, ({:ty_record, r1}), ({:ty_record, r2})) do
     unify_records_with_aliases(aliases, r1, r2)
+  end
+
+  def unify_with_aliases(aliases, ({:ty_app, f1, a1}), ({:ty_app, f2, a2})) do
+      Nova.Runtime.bind(unify_with_aliases(aliases, f1, f2), fn s1 ->
+    Nova.Runtime.bind(unify_with_aliases(aliases, (Nova.Compiler.Types.apply_subst(s1, a1)), (Nova.Compiler.Types.apply_subst(s1, a2))), fn s2 ->
+      Prelude.pure((Nova.Compiler.Types.compose_subst(s2, s1)))
+    end)
+  end)
+  end
+
+  def unify_with_aliases(aliases, ({:ty_app, f, a}), ({:ty_con, c})) do
+    cond do
+      ((Data.Array.length(c.args) > 0)) ->
+        
+  head_ty_con = {:ty_con, %{name: c.name, args: Nova.Array.take(((Data.Array.length(c.args) - 1)), c.args)}}
+  last_arg = case Nova.Array.last(c.args) do
+    {:just, arg} -> arg
+    :nothing -> {:ty_con, %{name: "Unit", args: []}}
+  end
+  Nova.Runtime.bind(unify_with_aliases(aliases, f, head_ty_con), fn s1 ->
+  Nova.Runtime.bind(unify_with_aliases(aliases, (Nova.Compiler.Types.apply_subst(s1, a)), (Nova.Compiler.Types.apply_subst(s1, last_arg))), fn s2 ->
+    Prelude.pure((Nova.Compiler.Types.compose_subst(s2, s1)))
+  end)
+end)
+      (true) ->
+        {:left, ({:type_mismatch, ({:ty_app, f, a}), ({:ty_con, c})})}
+    end
+  end
+
+  def unify_with_aliases(aliases, ({:ty_con, c}), ({:ty_app, f, a})) do
+    cond do
+      ((Data.Array.length(c.args) > 0)) ->
+        
+  head_ty_con = {:ty_con, %{name: c.name, args: Nova.Array.take(((Data.Array.length(c.args) - 1)), c.args)}}
+  last_arg = case Nova.Array.last(c.args) do
+    {:just, arg} -> arg
+    :nothing -> {:ty_con, %{name: "Unit", args: []}}
+  end
+  Nova.Runtime.bind(unify_with_aliases(aliases, f, head_ty_con), fn s1 ->
+  Nova.Runtime.bind(unify_with_aliases(aliases, (Nova.Compiler.Types.apply_subst(s1, a)), (Nova.Compiler.Types.apply_subst(s1, last_arg))), fn s2 ->
+    Prelude.pure((Nova.Compiler.Types.compose_subst(s2, s1)))
+  end)
+end)
+      (true) ->
+        {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_app, f, a})})}
+    end
+  end
+
+  def unify_with_aliases(aliases, ({:ty_app, f, a}), ({:ty_var, v})) do
+    bind_var(v, ({:ty_app, f, a}))
+  end
+
+  def unify_with_aliases(aliases, ({:ty_var, v}), ({:ty_app, f, a})) do
+    bind_var(v, ({:ty_app, f, a}))
   end
 
   def unify_with_aliases(aliases, t1, t2) do

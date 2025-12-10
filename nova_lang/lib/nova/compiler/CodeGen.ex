@@ -1074,7 +1074,7 @@ end
 
 
   def is_data_constructor(name) do
-    Nova.Array.elem(name, ["Tuple", "Tuple2", "Tuple3", "Tuple4", "Tuple5", "Just", "Nothing", "Left", "Right", "Cons", "Nil", "TyVar", "TyCon", "TyRecord", "TokKeyword", "TokIdentifier", "TokNumber", "TokString", "TokChar", "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized", "ExprVar", "ExprLit", "ExprApp", "ExprLambda", "ExprLet", "ExprIf", "ExprCase", "ExprBinOp", "ExprList", "ExprRecord", "ExprRecordAccess", "ExprParens", "ExprDo", "ExprQualified", "ExprRecordUpdate", "ExprTyped", "ExprUnaryOp", "ExprTuple", "ExprSection", "ExprSectionLeft", "ExprSectionRight", "ExprNegate", "PatVar", "PatWildcard", "PatLit", "PatCon", "PatRecord", "PatList", "PatCons", "PatAs", "PatParens", "PatTyped", "LitInt", "LitString", "LitChar", "LitBool", "LitNumber", "DeclFunction", "DeclTypeSig", "DeclDataType", "DeclTypeAlias", "DeclModule", "DeclImport", "DeclTypeClass", "DeclTypeClassInstance", "DeclInfix", "DeclForeignImport", "DeclType", "TyExprCon", "TyExprVar", "TyExprApp", "TyExprArrow", "TyExprRecord", "TyExprForAll", "TyExprTuple", "TyExprConstrained", "TyExprParens", "OccursCheck", "TypeMismatch", "ArityMismatch", "RecordFieldMismatch", "UnifyErr", "UnboundVariable", "NotImplemented", "DoLet", "DoBind", "DoExpr", "GuardExpr", "GuardPat", "Parser"])
+    Nova.Array.elem(name, ["Tuple", "Tuple2", "Tuple3", "Tuple4", "Tuple5", "Just", "Nothing", "Left", "Right", "Cons", "Nil", "TyVar", "TyCon", "TyRecord", "TyApp", "TokKeyword", "TokIdentifier", "TokNumber", "TokString", "TokChar", "TokOperator", "TokDelimiter", "TokNewline", "TokUnrecognized", "ExprVar", "ExprLit", "ExprApp", "ExprLambda", "ExprLet", "ExprIf", "ExprCase", "ExprBinOp", "ExprList", "ExprRecord", "ExprRecordAccess", "ExprParens", "ExprDo", "ExprQualified", "ExprRecordUpdate", "ExprTyped", "ExprUnaryOp", "ExprTuple", "ExprSection", "ExprSectionLeft", "ExprSectionRight", "ExprNegate", "PatVar", "PatWildcard", "PatLit", "PatCon", "PatRecord", "PatList", "PatCons", "PatAs", "PatParens", "PatTyped", "LitInt", "LitString", "LitChar", "LitBool", "LitNumber", "DeclFunction", "DeclTypeSig", "DeclDataType", "DeclTypeAlias", "DeclModule", "DeclImport", "DeclTypeClass", "DeclTypeClassInstance", "DeclInfix", "DeclForeignImport", "DeclType", "TyExprCon", "TyExprVar", "TyExprApp", "TyExprArrow", "TyExprRecord", "TyExprForAll", "TyExprTuple", "TyExprConstrained", "TyExprParens", "OccursCheck", "TypeMismatch", "ArityMismatch", "RecordFieldMismatch", "UnifyErr", "UnboundVariable", "NotImplemented", "DoLet", "DoBind", "DoExpr", "GuardExpr", "GuardPat", "Parser"])
   end
 
 
@@ -1104,7 +1104,7 @@ end
 
 
   def arity2_constructors() do
-    ["ExprApp", "ExprCase", "ExprBinOp", "ExprRecordAccess", "ExprRecordUpdate", "ExprQualified", "ExprTyped", "ExprUnaryOp", "ExprLambda", "ExprLet", "PatCon", "PatCons", "PatAs", "TyExprApp", "TyExprArrow", "TyExprRecord", "TyExprForAll", "TyExprConstrained", "DoBind", "GuardPat", "ImportType"]
+    ["ExprApp", "ExprCase", "ExprBinOp", "ExprRecordAccess", "ExprRecordUpdate", "ExprQualified", "ExprTyped", "ExprUnaryOp", "ExprLambda", "ExprLet", "PatCon", "PatCons", "PatAs", "TyExprApp", "TyExprArrow", "TyExprRecord", "TyExprForAll", "TyExprConstrained", "DoBind", "GuardPat", "ImportType", "TyApp"]
   end
 
 

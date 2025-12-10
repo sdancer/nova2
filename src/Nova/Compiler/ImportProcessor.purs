@@ -38,11 +38,11 @@ type ResolvedImports = Map.Map String String
 
 -- | Local array map wrapper (uses Prelude map in real PureScript, resolved to Array.map by self-hosted compiler)
 arrayMap :: forall a b. (a -> b) -> Array a -> Array b
-arrayMap = map
+arrayMap f arr = map f arr
 
 -- | Local list map wrapper (uses Prelude map in real PureScript, resolved to List.map by self-hosted compiler)
 listMap :: forall a b. (a -> b) -> List a -> List b
-listMap = map
+listMap f xs = map f xs
 
 -- | Map over a Map, keeping only Just values (local impl since Map.mapMaybe not exported)
 -- | Specialized for String keys since that's what we use in this module

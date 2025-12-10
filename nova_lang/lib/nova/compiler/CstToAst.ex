@@ -435,27 +435,114 @@ end
 
 
 
+  def convert_let_bindings(bindings) do
+    
+      collect_let_signatures = Nova.Runtime.fix(fn collect_let_signatures -> fn auto_arg0 -> case auto_arg0 do
+        [] -> []
+        ([b | bs]) -> case b do
+  {:let_binding_signature, labeled} -> 
+      name = unwrap_ident(labeled.label.name)
+      [({:tuple, name, labeled.value}) | collect_let_signatures.(bs)]
+  _ -> collect_let_signatures.(bs)
+end
+      end end end)
+      lookup_let_sig = Nova.Runtime.fix2(fn lookup_let_sig -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {_, []} -> :nothing
+        {name, ([({:tuple, n, ty}) | rest])} -> if (name == n) do
+  {:just, ty}
+else
+  lookup_let_sig.(name).(rest)
+end
+      end end end end)
+      get_let_value_binding = fn auto_arg0 -> case auto_arg0 do
+        ({:let_binding_name, vbf}) -> {:just, ({:left, vbf})}
+        ({:let_binding_pattern, binder, sep, wh}) -> {:just, ({:right, %{binder: binder, sep: sep, wh: wh}})}
+        _ -> :nothing
+      end end
+      convert_let_binding_with_sig = fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {sig_map, ({:left, vbf})} -> name = unwrap_ident(vbf.name.name)
+Nova.Runtime.bind(traverse((&convert_binder/1), vbf.binders), fn params ->
+  Nova.Runtime.bind(case lookup_let_sig.(name).(sig_map) do
+  :nothing -> Prelude.pure(:nothing)
+  {:just, cst_ty} ->   Nova.Runtime.bind(convert_type(cst_ty), fn ty ->
+    Prelude.pure(({:just, ty}))
+  end)
+end, fn type_ann ->
+    Nova.Runtime.bind(case vbf.guarded do
+  {:unconditional, _, wh} -> convert_expr(wh.expr)
+  {:guarded, guards} -> case guards do
+      ([ge | _]) -> convert_expr(ge.where.expr)
+      [] -> {:left, "Empty guarded let binding"}
+    end
+end, fn body_expr ->
+            body = if Nova.List.null(params) do
+              body_expr
+            else
+              Nova.Compiler.Ast.expr_lambda(params, body_expr)
+            end
+      Prelude.pure(%{pattern: Nova.Compiler.Ast.pat_var(name), value: body, type_ann: type_ann})
+    end)
+  end)
+end)
+        {_, ({:right, %{binder: binder, wh: wh}})} -> Nova.Runtime.bind(convert_binder(binder), fn pat ->
+  Nova.Runtime.bind(convert_expr(wh.expr), fn body ->
+    Prelude.pure(%{pattern: pat, value: body, type_ann: :nothing})
+  end)
+end)
+      end end end
+      sig_map = collect_let_signatures.(bindings)
+value_bindings = Nova.List.map_maybe(get_let_value_binding, bindings)
+traverse((convert_let_binding_with_sig.(sig_map)), value_bindings)
+  end
+
+
+
   def convert_where_bindings(bindings) do
     
+      collect_signatures = Nova.Runtime.fix(fn collect_signatures -> fn auto_arg0 -> case auto_arg0 do
+        [] -> []
+        ([b | bs]) -> case b do
+  {:let_binding_signature, labeled} -> 
+      name = unwrap_ident(labeled.label.name)
+      [({:tuple, name, labeled.value}) | collect_signatures.(bs)]
+  _ -> collect_signatures.(bs)
+end
+      end end end)
+      lookup_sig = Nova.Runtime.fix2(fn lookup_sig -> fn auto_arg0 -> fn auto_arg1 -> case {auto_arg0, auto_arg1} do
+        {_, []} -> :nothing
+        {name, ([({:tuple, n, ty}) | rest])} -> if (name == n) do
+  {:just, ty}
+else
+  lookup_sig.(name).(rest)
+end
+      end end end end)
       get_value_binding = fn auto_arg0 -> case auto_arg0 do
         ({:let_binding_name, vbf}) -> {:just, vbf}
         _ -> :nothing
       end end
-      convert_let_bind = fn vbf ->       bind_name = unwrap_ident(vbf.name.name)
+      convert_let_bind_with_sig = fn sig_map -> fn vbf ->       bind_name = unwrap_ident(vbf.name.name)
    Nova.Runtime.bind(traverse((&convert_binder/1), vbf.binders), fn bind_params ->
-     case vbf.guarded do
+     Nova.Runtime.bind(case lookup_sig.(bind_name).(sig_map) do
+  :nothing -> Prelude.pure(:nothing)
+  {:just, cst_ty} ->   Nova.Runtime.bind(convert_type(cst_ty), fn ty ->
+    Prelude.pure(({:just, ty}))
+  end)
+end, fn type_ann ->
+       case vbf.guarded do
   {:unconditional, _, wh} ->   Nova.Runtime.bind(convert_where_expr(wh), fn bind_body ->
         value = case bind_params do
           [] -> bind_body
           _ -> Nova.Compiler.Ast.expr_lambda(bind_params, bind_body)
         end
-    Prelude.pure(%{pattern: Nova.Compiler.Ast.pat_var(bind_name), value: value, type_ann: :nothing})
+    Prelude.pure(%{pattern: Nova.Compiler.Ast.pat_var(bind_name), value: value, type_ann: type_ann})
   end)
   {:guarded, _} -> {:left, "Guarded where bindings not yet supported"}
 end
-   end) end
-      value_bindings = Nova.List.map_maybe(get_value_binding, bindings)
-traverse(convert_let_bind, value_bindings)
+     end)
+   end) end end
+      sig_map = collect_signatures.(bindings)
+value_bindings = Nova.List.map_maybe(get_value_binding, bindings)
+traverse((convert_let_bind_with_sig.(sig_map)), value_bindings)
   end
 
 
@@ -766,7 +853,7 @@ end
     end)
   end)
 end
-      {:expr_let, let_in} ->     Nova.Runtime.bind(traverse((&convert_let_binding/1), let_in.bindings), fn bindings ->
+      {:expr_let, let_in} ->     Nova.Runtime.bind(convert_let_bindings(let_in.bindings), fn bindings ->
       Nova.Runtime.bind(convert_expr(let_in.body), fn body ->
         ((&Prelude.pure/1)).(Nova.Compiler.Ast.expr_let(bindings, body))
       end)
@@ -963,7 +1050,7 @@ end, fn body_expr ->
 
   def convert_do_statement(stmt) do
     case stmt do
-      {:do_let, _, bindings} ->     Nova.Runtime.bind(traverse((&convert_let_binding/1), bindings), fn binds ->
+      {:do_let, _, bindings} ->     Nova.Runtime.bind(convert_let_bindings(bindings), fn binds ->
       ((&Prelude.pure/1)).(Nova.Compiler.Ast.do_let(binds))
     end)
       {:do_discard, e} ->     Nova.Runtime.bind(convert_expr(e), fn expr ->

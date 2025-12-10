@@ -51,7 +51,7 @@ getDependencies decl = case decl of
     getTypeExprDeps t.typeSignature
 
   DeclModule m ->
-    foldl (\acc d -> Set.union acc (getDependencies d)) Set.empty m.declarations
+    getModuleDependencies m.declarations
 
   DeclImport _ ->
     Set.empty  -- Imports don't have dependencies on local names
@@ -61,6 +61,10 @@ getDependencies decl = case decl of
 
   DeclInfix _ ->
     Set.empty  -- Infix declarations don't have dependencies
+
+-- | Get dependencies from module declarations
+getModuleDependencies :: List Declaration -> Set String
+getModuleDependencies decls = foldl (\acc decl' -> Set.union acc (getDependencies decl')) Set.empty decls
 
 -- | Get dependencies from a data constructor
 getConstructorDeps :: { name :: String, fields :: List { label :: String, ty :: TypeExpr }, isRecord :: Boolean } -> Set String

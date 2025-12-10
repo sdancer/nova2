@@ -573,7 +573,7 @@ inferConPats env conTy pats resultTy = inferConPatsGo resultTy env conTy pats em
 -- | Infer let bindings
 inferBinds :: Env -> List LetBind -> Either TCError PatResult
 inferBinds env binds =
-  -- First pass: add all bindings with fresh type variables (for recursive refs)
+  -- First pass: add all bindings with fresh type variables or from type annotations (for recursive refs)
   let envWithPlaceholders = addBindPlaceholders env binds
   -- Second pass: infer actual types
   in inferBindsPass2 envWithPlaceholders binds emptySubst
@@ -584,8 +584,16 @@ inferBinds env binds =
     addOne :: Env -> LetBind -> Env
     addOne e bind = case bind.pattern of
       PatVar name ->
-        let Tuple tv e' = freshVar e ("let_" <> name)
-        in extendEnv e' name (mkScheme [] (TyVar tv))
+        -- If there's a type annotation, use that; otherwise create a fresh type variable
+        case bind.typeAnn of
+          Just tyExpr ->
+            -- Convert the type annotation to a Type and use it as the scheme
+            let annotatedTy = typeExprToType Map.empty tyExpr
+                scheme = mkScheme [] annotatedTy
+            in extendEnv e name scheme
+          Nothing ->
+            let Tuple tv e' = freshVar e ("let_" <> name)
+            in extendEnv e' name (mkScheme [] (TyVar tv))
       _ -> e
 
     inferBindsPass2 :: Env -> List LetBind -> Subst -> Either TCError PatResult

@@ -380,21 +380,91 @@ convertWhereExpr wh = do
       letBinds <- convertWhereBindings bindings
       pure $ Ast.ExprLet letBinds expr
 
+-- | Convert let bindings, properly handling type signatures
+-- | Collects type signatures and attaches them to corresponding value bindings
+convertLetBindings :: List (Cst.LetBinding Void) -> Either String (List Ast.LetBind)
+convertLetBindings bindings = do
+  -- First, collect all type signatures into a map
+  let sigMap = collectLetSignatures bindings
+  -- Then convert value bindings with their signatures attached
+  let valueBindings = List.mapMaybe getLetValueBinding bindings
+  traverse (convertLetBindingWithSig sigMap) valueBindings
+  where
+    -- Collect type signatures from let bindings
+    collectLetSignatures Nil = Nil
+    collectLetSignatures (b : bs) = case b of
+      Cst.LetBindingSignature labeled ->
+        let name = unwrapIdent labeled.label.name
+        in (Tuple name labeled.value) : collectLetSignatures bs
+      _ -> collectLetSignatures bs
+
+    lookupLetSig _ Nil = Nothing
+    lookupLetSig name ((Tuple n ty) : rest) =
+      if name == n then Just ty else lookupLetSig name rest
+
+    getLetValueBinding (Cst.LetBindingName vbf) = Just (Left vbf)
+    getLetValueBinding (Cst.LetBindingPattern binder sep wh) = Just (Right { binder, sep, wh })
+    getLetValueBinding _ = Nothing
+
+    convertLetBindingWithSig sigMap (Left vbf) = do
+      let name = unwrapIdent vbf.name.name
+      params <- traverse convertBinder vbf.binders
+      -- Look up type signature for this binding
+      typeAnn <- case lookupLetSig name sigMap of
+        Nothing -> pure Nothing
+        Just cstTy -> do
+          ty <- convertType cstTy
+          pure (Just ty)
+      bodyExpr <- case vbf.guarded of
+        Cst.Unconditional _ wh -> convertExpr wh.expr
+        Cst.Guarded guards -> case guards of
+          (ge : _) -> convertExpr ge.where.expr
+          Nil -> Left "Empty guarded let binding"
+      -- If there are parameters, wrap in lambda
+      let body = if List.null params
+                 then bodyExpr
+                 else Ast.ExprLambda params bodyExpr
+      pure { pattern: Ast.PatVar name, value: body, typeAnn }
+    convertLetBindingWithSig _ (Right { binder, wh }) = do
+      pat <- convertBinder binder
+      body <- convertExpr wh.expr
+      pure { pattern: pat, value: body, typeAnn: Nothing }
+
 -- | Convert where clause bindings to let bindings
+-- | Handles type signatures by collecting them first, then attaching to corresponding value bindings
 convertWhereBindings :: List (Cst.LetBinding Void) -> Either String (List Ast.LetBind)
 convertWhereBindings bindings = do
-  -- Filter out type signatures and convert the rest
+  -- First, collect all type signatures into a map
+  let sigMap = collectSignatures bindings
+  -- Then convert value bindings with their signatures attached
   let valueBindings = List.mapMaybe getValueBinding bindings
-  traverse convertLetBind valueBindings
+  traverse (convertLetBindWithSig sigMap) valueBindings
   where
-    getValueBinding :: Cst.LetBinding Void -> Maybe (Cst.ValueBindingFields Void)
+    -- Note: No type annotations on helper functions to avoid self type-checker issues
+    -- with parameterized type alias expansion
+    collectSignatures Nil = Nil
+    collectSignatures (b : bs) = case b of
+      Cst.LetBindingSignature labeled ->
+        let name = unwrapIdent labeled.label.name
+        in (Tuple name labeled.value) : collectSignatures bs
+      _ -> collectSignatures bs
+
+    lookupSig _ Nil = Nothing
+    lookupSig name ((Tuple n ty) : rest) =
+      if name == n then Just ty else lookupSig name rest
+
     getValueBinding (Cst.LetBindingName vbf) = Just vbf
     getValueBinding _ = Nothing
 
-    convertLetBind :: Cst.ValueBindingFields Void -> Either String Ast.LetBind
-    convertLetBind vbf = do
+    convertLetBindWithSig sigMap vbf = do
       let bindName = unwrapIdent vbf.name.name
       bindParams <- traverse convertBinder vbf.binders
+      -- Look up type signature for this binding
+      typeAnn <- case lookupSig bindName sigMap of
+        Nothing -> pure Nothing
+        Just cstTy -> do
+          ty <- convertType cstTy
+          pure (Just ty)
       case vbf.guarded of
         Cst.Unconditional _ wh -> do
           bindBody <- convertWhereExpr wh
@@ -402,7 +472,7 @@ convertWhereBindings bindings = do
           let value = case bindParams of
                 Nil -> bindBody
                 _ -> Ast.ExprLambda bindParams bindBody
-          pure { pattern: Ast.PatVar bindName, value, typeAnn: Nothing }
+          pure { pattern: Ast.PatVar bindName, value, typeAnn }
         Cst.Guarded _ -> Left "Guarded where bindings not yet supported"
 
 convertGuardedExpr :: Cst.GuardedExpr Void -> Either String Ast.GuardedExpr
@@ -735,7 +805,7 @@ convertExpr expr = case expr of
         pure $ Ast.ExprCase (Ast.ExprTuple es) clauses
 
   Cst.ExprLet letIn -> do
-    bindings <- traverse convertLetBinding letIn.bindings
+    bindings <- convertLetBindings letIn.bindings
     body <- convertExpr letIn.body
     pure $ Ast.ExprLet bindings body
 
@@ -917,7 +987,7 @@ convertLetBinding binding = case binding of
 convertDoStatement :: Cst.DoStatement Void -> Either String Ast.DoStatement
 convertDoStatement stmt = case stmt of
   Cst.DoLet _ bindings -> do
-    binds <- traverse convertLetBinding bindings
+    binds <- convertLetBindings bindings
     pure $ Ast.DoLet binds
 
   Cst.DoDiscard e -> do
