@@ -424,7 +424,6 @@ builtinPrelude = Map.fromFoldable
   , Tuple "infer" (mkScheme [] (tArrow tEnv (tArrow tExpr (tEither tTCError tInferResult))))
   , Tuple "generalize" (mkScheme [] (tArrow tEnv (tArrow tType tScheme)))
   , Tuple "checkDecl" (mkScheme [] (tArrow tEnv (tArrow tDeclaration (tEither tTCError tEnv))))
-  , Tuple "checkModule" (mkScheme [] (tArrow tEnv (tArrow (tArray tDeclaration) (tEither tTCError tEnv))))
   , Tuple "inferDo" (mkScheme [] (tArrow tEnv (tArrow (tArray tDoStatement) (tEither tTCError tInferResult))))
   , Tuple "inferRecordUpdate" (mkScheme [] (tArrow tEnv (tArrow tExpr (tArrow (tArray (tTuple [tString, tExpr])) (tEither tTCError tInferResult)))))
   , Tuple "inferUnaryOp" (mkScheme [] (tArrow tEnv (tArrow tString (tArrow tExpr (tEither tTCError tInferResult)))))

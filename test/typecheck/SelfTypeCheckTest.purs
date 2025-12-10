@@ -3,188 +3,136 @@ module Test.TypeCheck.SelfTypeCheckTest where
 import Prelude
 import Effect (Effect)
 import Effect.Console (log)
+import Effect.Exception (throw)
 import Data.Either (Either(..))
-import Data.Tuple (Tuple(..))
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Traversable (traverse)
-import Data.Maybe (Maybe(..))
+import Data.String as String
 import Node.Encoding (Encoding(..))
-import Node.FS.Sync (readTextFile)
+import Node.FS.Sync (readTextFile, readdir)
 import Nova.Compiler.CstPipeline (parseModuleCst)
-import Nova.Compiler.Ast (Declaration(..))
-import Nova.Compiler.Types (emptyEnv, Env)
-import Nova.Compiler.TypeChecker (checkDecl, checkModule, TCError)
+import Nova.Compiler.Types (emptyEnv, ModuleRegistry, defaultRegistry, registerModule)
+import Nova.Compiler.TypeChecker (checkModule, TCError, extractExports, addValuesToExports)
+
+-- | Test result tracking
+type TestResult = { passed :: Int, failed :: Int, errors :: Array String }
+
+initResult :: TestResult
+initResult = { passed: 0, failed: 0, errors: [] }
 
 main :: Effect Unit
 main = do
-  log "=== Self Type-Check Coverage Tests ==="
+  log "=== Self Type-Check Test ==="
+  log "Testing that all source files typecheck and unify properly"
   log ""
 
-  -- Test modules individually first (for modules with no deps)
-  testFile "Types.purs" "src/Nova/Compiler/Types.purs"
-  testFile "Ast.purs" "src/Nova/Compiler/Ast.purs"
-  testFile "TypeChecker.purs" "src/Nova/Compiler/TypeChecker.purs"
-  testFile "CodeGen.purs" "src/Nova/Compiler/CodeGen.purs"
+  -- Step 1: Build registry from lib/Data/* modules
+  log "--- Building Module Registry ---"
+  log "Typechecking lib/Data/* modules..."
+  libFiles <- listPursFiles "lib/Data/"
+  registry <- buildRegistry "lib/Data/" defaultRegistry libFiles
+  log $ "Registry built with " <> show (Array.length libFiles) <> " library modules"
+  log ""
 
-  -- For modules with dependencies, combine all declarations
-  -- This simulates how a real multi-module type checker would work
-  testFileCombined "Unify.purs" "src/Nova/Compiler/Unify.purs"
-    ["src/Nova/Compiler/Types.purs"]
+  -- Step 2: Test src/Nova/Compiler/ files with the registry
+  log "--- Testing src/Nova/Compiler/ ---"
+  srcFiles <- listPursFiles "src/Nova/Compiler/"
+  log $ "Found " <> show (Array.length srcFiles) <> " files"
 
-  testFileCombined "CstToAst.purs" "src/Nova/Compiler/CstToAst.purs"
-    ["src/Nova/Compiler/Types.purs", "src/Nova/Compiler/Ast.purs"]
+  -- Build registry with compiler modules too (for inter-module deps)
+  fullRegistry <- buildRegistry "src/Nova/Compiler/" registry srcFiles
+
+  -- Now test each file with the full registry
+  result <- foldM (testFileWithRegistry "src/Nova/Compiler/" fullRegistry) initResult srcFiles
 
   log ""
-  log "=== Tests Complete ==="
+  log "=== Summary ==="
+  log $ "Passed: " <> show result.passed
+  log $ "Failed: " <> show result.failed
 
--- | Parse a file and return its declarations
-parseFile :: String -> Effect (Array Declaration)
-parseFile path = do
+  -- Show errors and fail if any
+  when (result.failed > 0) do
+    log ""
+    log "Errors (first 10):"
+    void $ traverse (\e -> log $ "  " <> e) (Array.take 10 result.errors)
+    throw $ "Self type-check failed: " <> show result.failed <> " files failed"
+
+-- | List .purs files in a directory
+listPursFiles :: String -> Effect (Array String)
+listPursFiles dir = do
+  entries <- readdir dir
+  pure $ Array.filter isPursFile entries
+  where
+    isPursFile name = String.contains (String.Pattern ".purs") name
+
+-- | Build a module registry by typechecking modules
+buildRegistry :: String -> ModuleRegistry -> Array String -> Effect ModuleRegistry
+buildRegistry basePath initialRegistry files =
+  foldM (addModuleToRegistry basePath) initialRegistry files
+
+-- | Add a single module to the registry
+addModuleToRegistry :: String -> ModuleRegistry -> String -> Effect ModuleRegistry
+addModuleToRegistry basePath registry filename = do
+  let path = basePath <> filename
   content <- readTextFile UTF8 path
+
+  case parseModuleCst content of
+    Left _ -> pure registry  -- Skip on parse error
+    Right m -> do
+      let decls = Array.fromFoldable m.declarations
+      let moduleName = getModuleName basePath filename
+
+      -- Extract initial exports (types, constructors, aliases)
+      let initialExports = extractExports decls
+
+      -- Type check with current registry
+      case checkModule registry emptyEnv decls of
+        Left _ ->
+          -- Even if typecheck fails, register what we can
+          pure $ registerModule registry moduleName initialExports
+        Right env -> do
+          -- Add function types to exports
+          let fullExports = addValuesToExports initialExports env decls
+          pure $ registerModule registry moduleName fullExports
+
+-- | Get module name from path
+getModuleName :: String -> String -> String
+getModuleName basePath filename =
+  let name = String.replace (String.Pattern ".purs") (String.Replacement "") filename
+  in case basePath of
+    "lib/Data/" -> "Data." <> name
+    "src/Nova/Compiler/" -> "Nova.Compiler." <> name
+    _ -> name
+
+-- | Test a single file with the registry for import resolution
+testFileWithRegistry :: String -> ModuleRegistry -> TestResult -> String -> Effect TestResult
+testFileWithRegistry basePath registry result filename = do
+  let path = basePath <> filename
+  content <- readTextFile UTF8 path
+
   case parseModuleCst content of
     Left parseErr -> do
-      log $ "Parse error in " <> path <> ": " <> parseErr
-      pure []
-    Right m -> pure (Array.fromFoldable m.declarations)
+      log $ "FAIL: " <> filename <> " - Parse error: " <> parseErr
+      pure $ result { failed = result.failed + 1
+                    , errors = Array.snoc result.errors (filename <> ": " <> parseErr) }
 
--- | Load multiple module dependencies into an environment
-loadModules :: Array String -> Effect Env
-loadModules paths = do
-  allDecls <- map Array.concat $ traverse parseFile paths
-  case checkModule emptyEnv allDecls of
-    Left _ -> pure emptyEnv  -- Return empty env if check fails
-    Right env -> pure env
-
--- | Test a file with module dependencies loaded first
-testFileWithDeps :: String -> String -> Array String -> Effect Unit
-testFileWithDeps name path deps = do
-  -- First load dependency modules
-  baseEnv <- loadModules deps
-
-  content <- readTextFile UTF8 path
-  case parseModuleCst content of
-    Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
     Right m -> do
       let decls = Array.fromFoldable m.declarations
-      let total = Array.length decls
+      let declCount = Array.length decls
 
-      -- Type check with the dependency env
-      case checkModule baseEnv decls of
-        Right _ -> do
-          log $ name <> ": " <> show total <> "/" <> show total <> " (100%) - Module OK!"
-        Left moduleErr -> do
-          log $ name <> ": Module error: " <> show moduleErr
+      -- Type check the module with registry for import resolution
+      case checkModule registry emptyEnv decls of
+        Right _env -> do
+          log $ "PASS: " <> filename <> " (" <> show declCount <> " declarations)"
+          pure $ result { passed = result.passed + 1 }
 
-          -- Fall back to checking declarations individually
-          let results = typeCheckDecls baseEnv decls
-          let passed = countPassed results
-          let percentage = if total > 0 then (passed * 100) / total else 0
+        Left tcErr -> do
+          let errMsg = showTCError tcErr
+          log $ "FAIL: " <> filename <> " - " <> errMsg
+          pure $ result { failed = result.failed + 1
+                        , errors = Array.snoc result.errors (filename <> ": " <> errMsg) }
 
-          log $ "  Individual check: " <> show passed <> "/" <> show total <> " (" <> show percentage <> "%)"
-
-          let failures = getFailures results 5
-          showFailures failures
-
--- | Test a file by combining all declarations from deps + main file
--- | This ensures type aliases from deps are available when processing main file's types
-testFileCombined :: String -> String -> Array String -> Effect Unit
-testFileCombined name path deps = do
-  -- Load all dependency declarations
-  depDecls <- map Array.concat $ traverse parseFile deps
-
-  -- Load main file declarations
-  mainDecls <- parseFile path
-  let total = Array.length mainDecls
-
-  -- Combine all declarations
-  let allDecls = depDecls <> mainDecls
-
-  -- Type check all declarations together
-  case checkModule emptyEnv allDecls of
-    Right _ -> do
-      log $ name <> ": " <> show total <> "/" <> show total <> " (100%) - Module OK!"
-    Left moduleErr -> do
-      log $ name <> ": Module error: " <> show moduleErr
-
-      -- Fall back to checking declarations individually (using combined env)
-      let baseEnv = case checkModule emptyEnv depDecls of
-            Right e -> e
-            Left _ -> emptyEnv
-      let results = typeCheckDecls baseEnv mainDecls
-      let passed = countPassed results
-      let percentage = if total > 0 then (passed * 100) / total else 0
-
-      log $ "  Individual check: " <> show passed <> "/" <> show total <> " (" <> show percentage <> "%)"
-
-      let failures = getFailures results 5
-      showFailures failures
-
-testFile :: String -> String -> Effect Unit
-testFile name path = do
-  content <- readTextFile UTF8 path
-  case parseModuleCst content of
-    Left parseErr -> log $ "✗ " <> name <> " - Parse error: " <> parseErr
-    Right m -> do
-      -- Count declarations
-      let decls = Array.fromFoldable m.declarations
-      let total = Array.length decls
-
-      -- Try to type check the whole module (handles forward refs)
-      case checkModule emptyEnv decls of
-        Right _ -> do
-          log $ name <> ": " <> show total <> "/" <> show total <> " (100%) - Module OK!"
-        Left moduleErr -> do
-          -- Show the module-level error
-          log $ name <> ": Module error: " <> show moduleErr
-
-          -- Fall back to checking declarations individually
-          let results = typeCheckDecls emptyEnv decls
-          let passed = countPassed results
-          let percentage = if total > 0 then (passed * 100) / total else 0
-
-          log $ "  Individual check: " <> show passed <> "/" <> show total <> " (" <> show percentage <> "%)"
-
-          -- Show first few failures
-          let failures = getFailures results 5
-          showFailures failures
-
-typeCheckDecls :: Env -> Array Declaration -> Array (Tuple String (Either TCError Env))
-typeCheckDecls env decls = Array.foldl checkOne [] decls
-  where
-    checkOne acc decl =
-      let name = getDeclName decl
-          result = checkDecl env decl
-      in Array.snoc acc (Tuple name result)
-
-countPassed :: Array (Tuple String (Either TCError Env)) -> Int
-countPassed results = Array.length (Array.filter isRight results)
-  where
-    isRight (Tuple _ (Right _)) = true
-    isRight _ = false
-
-getFailures :: Array (Tuple String (Either TCError Env)) -> Int -> Array (Tuple String TCError)
-getFailures results n = Array.take n (Array.mapMaybe toFailure results)
-  where
-    toFailure (Tuple name (Left err)) = Just (Tuple name err)
-    toFailure _ = Nothing
-
-showFailures :: Array (Tuple String TCError) -> Effect Unit
-showFailures failures =
-  void $ foldM (\_ (Tuple name err) -> log $ "  ✗ " <> name <> ": " <> show err) unit failures
-
-getDeclName :: Declaration -> String
-getDeclName (DeclFunction f) = f.name
-getDeclName (DeclTypeSig sig) = sig.name
-getDeclName (DeclDataType dt) = dt.name
-getDeclName (DeclNewtype nt) = nt.name
-getDeclName (DeclTypeAlias ta) = ta.name
-getDeclName (DeclTypeClass c) = c.name
-getDeclName (DeclTypeClassInstance i) = i.className
-getDeclName (DeclImport im) = case im.alias of
-  Just a -> a
-  Nothing -> im.moduleName
-getDeclName (DeclModule m) = m.name
-getDeclName (DeclForeignImport f) = f.functionName
-getDeclName (DeclType t) = t.name
-getDeclName (DeclInfix inf) = inf.operator
+-- | Show a type checker error in a readable format
+showTCError :: TCError -> String
+showTCError err = show err

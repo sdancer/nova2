@@ -9,7 +9,7 @@ import Data.Either (Either(..))
 import Data.Array as Array
 import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.TypeChecker (checkModule)
-import Nova.Compiler.Types (emptyEnv)
+import Nova.Compiler.Types (emptyEnv, emptyRegistry)
 
 main :: Effect Unit
 main = do
@@ -73,6 +73,6 @@ testModule name source =
   case parseModuleCst source of
     Left err -> log $ "PARSE FAIL: " <> name <> " - " <> err
     Right mod ->
-      case checkModule emptyEnv (Array.fromFoldable mod.declarations) of
+      case checkModule emptyRegistry emptyEnv (Array.fromFoldable mod.declarations) of
         Left err -> log $ "TYPE FAIL: " <> name <> " - " <> show err
         Right _ -> log $ "PASS: " <> name

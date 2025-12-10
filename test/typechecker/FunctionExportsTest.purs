@@ -98,7 +98,7 @@ checkAndGetBindingsWithDeps source depSources =
           depDecls = Array.concatMap parseDepModule depSources
           -- Concatenate dep decls + module decls (like regenerate.js)
           allDecls = depDecls <> modDecls
-      in case TC.checkModuleWithRegistry Types.defaultRegistry Types.emptyEnv allDecls of
+      in case TC.checkModule Types.defaultRegistry Types.emptyEnv allDecls of
         Left err -> Left $ "Type error: " <> show err
         Right env -> Right env
 
@@ -109,7 +109,7 @@ checkAndGetBindings source =
     Left err -> Left $ "Parse error: " <> err
     Right mod ->
       let decls = Array.fromFoldable mod.declarations
-      in case TC.checkModuleWithRegistry Types.defaultRegistry Types.emptyEnv decls of
+      in case TC.checkModule Types.defaultRegistry Types.emptyEnv decls of
         Left err -> Left $ "Type error: " <> show err
         Right env -> Right env
 

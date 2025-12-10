@@ -28,12 +28,15 @@ data TCError
   = UnifyErr UnifyError
   | UnifyErrWithContext UnifyError String  -- UnifyError with context (e.g., function name)
   | UnboundVariable String
+  | UndefinedQualifiedImport String String  -- module name, function/value name
   | NotImplemented String
 
 instance showTCError :: Show TCError where
   show (UnifyErr e) = "Unification error: " <> show e
   show (UnifyErrWithContext e ctx) = "Unification error in " <> ctx <> ": " <> show e
   show (UnboundVariable v) = "Unbound variable: " <> v
+  show (UndefinedQualifiedImport modName valName) =
+    "Undefined qualified import: " <> modName <> "." <> valName
   show (NotImplemented s) = "Not implemented: " <> s
 
 -- | Add context to a TCError
@@ -125,7 +128,7 @@ infer env (ExprQualified m name) =
         Just scheme ->
           let r = instantiate env scheme
           in Right { ty: r.ty, sub: emptySubst, env: r.env }
-        Nothing -> Left (UnboundVariable fullName)
+        Nothing -> Left (UndefinedQualifiedImport m name)
 
 infer env (ExprApp f arg) =
   -- Special case: (-n) is parsed as ExprApp(ExprVar "-", n), treat as negation
@@ -208,8 +211,11 @@ infer env (ExprCase scrutinee clauses) =
           Right { ty: applySubst clauseRes.sub resultTy, sub: clauseRes.sub, env: clauseRes.env }
 
 infer env (ExprBinOp op l r) =
-  case lookupEnv env op of
-    Nothing -> Left (UnboundVariable op)
+  let mkError = case String.lastIndexOf (String.Pattern ".") op of
+        Just idx -> UndefinedQualifiedImport (String.take idx op) (String.drop (idx + 1) op)
+        Nothing -> UnboundVariable op
+  in case lookupEnv env op of
+    Nothing -> Left mkError
     Just scheme ->
       let opInst = instantiate env scheme
       in case infer opInst.env l of
@@ -452,6 +458,10 @@ inferPat env (PatCon conName pats) ty =
         Just idx -> String.drop (idx + 1) conName
         Nothing -> conName
       tryLookup name = lookupEnv env name
+      -- Build appropriate error based on whether name is qualified
+      mkError = case String.lastIndexOf (String.Pattern ".") conName of
+        Just idx -> UndefinedQualifiedImport (String.take idx conName) unqualifiedName
+        Nothing -> UnboundVariable conName
   in case tryLookup conName of
     Just scheme ->
       let r = instantiate env scheme
@@ -460,7 +470,7 @@ inferPat env (PatCon conName pats) ty =
       Just scheme ->
         let r = instantiate env scheme
         in inferConPats r.env r.ty pats ty
-      Nothing -> Left (UnboundVariable conName)
+      Nothing -> Left mkError
 
 inferPat env (PatParens p) ty = inferPat env p ty
 
@@ -1174,33 +1184,12 @@ collectTypeExprNames (TyExprParens t) = collectTypeExprNames t
 collectTypeExprNames (TyExprTuple ts) =
   List.foldl (\s t -> Set.union s (collectTypeExprNames t)) Set.empty ts
 
--- | Type check a module with two-pass approach for forward references
--- Pass 1: Process data types, type aliases, and collect function signatures
--- Pass 2: Type check function bodies
-checkModule :: Env -> Array Declaration -> Either TCError Env
-checkModule env decls =
-  -- Pass 1: Process non-function declarations and collect function names
-  let env1 = processNonFunctions env decls
-      -- Pass 2: Add placeholder types for all functions first
-      env2 = addFunctionPlaceholders env1 decls
-      -- Pass 3: Process infix declarations after function placeholders are added
-      env3 = processInfixDeclarations env2 decls
-  -- Pass 4: Type check all function bodies
-  in checkFunctionBodies env3 decls
-
--- | Type check a full module and return a TypedModule
--- | This is the preferred entry point as it guarantees the module has been validated
-typeCheckModule :: Env -> Module -> Either TCError TypedModule
-typeCheckModule env mod =
-  let decls = Array.fromFoldable mod.declarations
-  in case checkModule env decls of
-    Left err -> Left err
-    Right env' -> Right (mkTypedModule mod env')
-
 -- | Type check a module with imports resolved from a module registry
--- This is the new version that supports the module system
-checkModuleWithRegistry :: ModuleRegistry -> Env -> Array Declaration -> Either TCError Env
-checkModuleWithRegistry registry env decls =
+-- | Pass 1: Process imports and collect type aliases
+-- | Pass 2: Process data types, type aliases, and collect function signatures
+-- | Pass 3: Type check function bodies
+checkModule :: ModuleRegistry -> Env -> Array Declaration -> Either TCError Env
+checkModule registry env decls =
   -- First collect imported type aliases
   let importedAliases = collectImportedAliases registry decls
       -- Process imports to add imported types/values to environment (using ImportProcessor)
@@ -1211,6 +1200,15 @@ checkModuleWithRegistry registry env decls =
       -- Process infix declarations after function placeholders are added
       env4 = processInfixDeclarations env3 decls
   in withContext "checkFunctionBodies" (checkFunctionBodies env4 decls)
+
+-- | Type check a full module and return a TypedModule
+-- | This is the preferred entry point as it guarantees the module has been validated
+typeCheckModule :: ModuleRegistry -> Env -> Module -> Either TCError TypedModule
+typeCheckModule registry env mod =
+  let decls = Array.fromFoldable mod.declarations
+  in case checkModule registry env decls of
+    Left err -> Left err
+    Right env' -> Right (mkTypedModule mod env')
 
 -- | Process import declarations and add imported types/values to environment
 processImports :: ModuleRegistry -> Env -> Array Declaration -> Env
