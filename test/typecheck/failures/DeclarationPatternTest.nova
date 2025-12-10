@@ -1,0 +1,43 @@
+-- Minimal reproduction: Declaration ADT pattern matching
+-- Reproduces: Dependencies.purs failure - getDependencies
+-- Uses exact pattern from Dependencies.purs:22-28
+
+module Test.DeclarationPatternTest where
+
+import Data.List (List(..))
+
+-- Exact types from Ast.purs
+type FunctionDeclaration =
+  { name :: String
+  , parameters :: List Pattern
+  , body :: Expr
+  }
+
+data Pattern
+  = PatVar String
+  | PatWildcard
+
+data Expr
+  = ExprVar String
+  | ExprLit Literal
+
+data Literal = LitInt Int | LitString String
+
+-- Declaration ADT exactly like Ast.purs
+data Declaration
+  = DeclFunction FunctionDeclaration
+  | DeclType { name :: String }
+
+-- Pattern from Dependencies.purs - accessing f.body when f is extracted from ADT
+getDependencies :: Declaration -> List String
+getDependencies decl = case decl of
+  DeclFunction f ->
+    -- f should have type FunctionDeclaration but type checker may not resolve it
+    let bodyDeps = getExprDeps f.body
+    in bodyDeps
+  DeclType t -> Nil
+
+-- Helper
+getExprDeps :: Expr -> List String
+getExprDeps (ExprVar s) = Cons s Nil
+getExprDeps (ExprLit _) = Nil

@@ -186,15 +186,35 @@ Deep let-binding chains with multiple function applications lose type informatio
 
 ---
 
+## Key Finding: Cross-Module Type Resolution
+
+**Single-file tests pass, cross-module fails.**
+
+We created minimal test cases (`test/typecheck/failures/`) attempting to reproduce each failure:
+
+| Test | Pattern | Result |
+|------|---------|--------|
+| QualifiedImportTest.nova | `List.singleton` qualified call | FAILS (as expected) |
+| DeclarationPatternTest.nova | ADT pattern `DeclFunction f` → access `f.body` | PASSES |
+| TypeAdtPatternTest.nova | ADT pattern `TyCon tc` → access `tc.args` | PASSES |
+| TypeAliasInAdtTest.nova | Type alias `Module` used in ADT constructor | PASSES |
+
+**Conclusion:** The type checker correctly handles:
+- ADT pattern matching with record payloads
+- Type aliases used in ADT constructors
+- Recursive type definitions
+
+The actual failures occur because:
+1. **Qualified imports aren't resolved** - `Set.empty`, `Array.foldl`, etc. fail lookup
+2. **Cross-module type info missing** - When `Declaration` is imported from Ast.purs, its constructor payload types aren't properly resolved
+
 ## Suggested Fixes (Priority Order)
 
-1. **Export resolution** (CstPipeline.purs) - Ensure `runParser` is exported and captured by `extractExports`
+1. **Qualified import resolution** - The registry builds correctly but qualified names (`Module.function`) aren't being resolved. Check `infer env (ExprQualified m name)` and how it interacts with the registry.
 
-2. **ADT constructor inference** - Improve `inferPat` in TypeChecker to properly extract record types from ADT constructor patterns
+2. **Cross-module ADT types** - When importing `Declaration(..)` from Ast.purs, the type checker needs to know what type each constructor's payload has. Currently this information may not be flowing through the registry correctly.
 
-3. **Numeric type class** - Consider making `negate` Int-specific or implementing proper Ring/Num type class inference
-
-4. **CST wrapper types** - Add understanding of Wrapped/Delimited newtypes to type inference
+3. **Export visibility** - Ensure functions like `runParser` are captured by `extractExports` and registered properly.
 
 ---
 

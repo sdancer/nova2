@@ -1,0 +1,15 @@
+-- Minimal reproduction: Qualified import resolution
+-- Reproduces: CstPipeline.purs failure
+-- Error: Undefined qualified import - module function not resolved
+
+module Test.QualifiedImportTest where
+
+import Data.List as List
+
+-- Use qualified import
+testQualified :: forall a. a -> List a
+testQualified x = List.singleton x
+
+-- Multiple qualified uses
+testMultiple :: forall a. List a -> List a
+testMultiple xs = List.reverse (List.reverse xs)

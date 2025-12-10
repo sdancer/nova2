@@ -1,0 +1,38 @@
+-- Minimal reproduction: Type ADT pattern matching
+-- Reproduces: TypeChecker.purs failure - collectTypeNames
+-- Uses exact pattern from TypeChecker.purs:1163-1171
+
+module Test.TypeAdtPatternTest where
+
+import Data.List (List(..))
+
+-- Exact types from Types.purs
+type TVar = { name :: String, id :: Int }
+
+type TCon = { name :: String, args :: List Type }
+
+type TRecord = { fields :: List String }
+
+-- Type ADT exactly like Types.purs
+data Type
+  = TyVar TVar
+  | TyCon TCon
+  | TyRecord TRecord
+
+-- Pattern from TypeChecker.purs - accessing tc.args when tc is extracted from ADT
+collectTypeNames :: Type -> List String
+collectTypeNames (TyVar v) = Cons v.name Nil
+collectTypeNames (TyCon tc) =
+  -- tc should have type TCon = { name, args } but type checker may not resolve it
+  let argsNames = concatMap collectTypeNames tc.args
+  in Cons tc.name argsNames
+collectTypeNames (TyRecord r) = r.fields
+
+-- Helper
+concatMap :: forall a b. (a -> List b) -> List a -> List b
+concatMap f Nil = Nil
+concatMap f (Cons x xs) = append (f x) (concatMap f xs)
+
+append :: forall a. List a -> List a -> List a
+append Nil ys = ys
+append (Cons x xs) ys = Cons x (append xs ys)

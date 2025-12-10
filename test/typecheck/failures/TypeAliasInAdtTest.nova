@@ -1,0 +1,42 @@
+-- Minimal reproduction: Type alias used in ADT constructor payload
+-- Reproduces: Dependencies.purs failure pattern
+-- The issue: When pattern matching `DeclModule m`, is `m` correctly typed as `Module`?
+
+module Test.TypeAliasInAdtTest where
+
+import Data.List (List(..))
+
+-- Type alias for a record (like Ast.Module)
+type Module =
+  { name :: String
+  , declarations :: List Declaration
+  }
+
+-- Simple expression type
+data Expr = ExprVar String | ExprLit Int
+
+-- Declaration ADT with type alias in constructor (like Ast.Declaration)
+data Declaration
+  = DeclModule Module  -- Uses type alias, not inline record
+  | DeclFunc { name :: String, body :: Expr }
+
+-- Function that pattern matches and accesses fields through type alias
+-- This is the actual pattern from Dependencies.purs
+processDeclarations :: Declaration -> List String
+processDeclarations decl = case decl of
+  DeclModule m ->
+    -- m should be Module = { name, declarations }
+    -- m.declarations should be List Declaration
+    -- But type checker might not expand the type alias
+    processAll m.declarations
+  DeclFunc f -> Cons f.name Nil
+
+-- Recursive helper that takes List Declaration
+processAll :: List Declaration -> List String
+processAll Nil = Nil
+processAll (Cons d ds) = append (processDeclarations d) (processAll ds)
+
+-- Helper
+append :: forall a. List a -> List a -> List a
+append Nil ys = ys
+append (Cons x xs) ys = Cons x (append xs ys)
