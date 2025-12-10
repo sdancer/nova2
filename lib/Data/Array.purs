@@ -303,3 +303,15 @@ nubByEq :: forall a. (a -> a -> Boolean) -> Array a -> Array a
 nubByEq f xs = nubByEqImpl f xs
 
 foreign import nubByEqImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array a
+
+-- Convert from a List to an Array
+fromFoldable :: forall a. List a -> Array a
+fromFoldable xs = fromFoldableImpl xs
+
+foreign import fromFoldableImpl :: forall a. List a -> Array a
+
+-- Convert from Array to List
+toUnfoldable :: forall a. Array a -> List a
+toUnfoldable xs = toUnfoldableImpl xs
+
+foreign import toUnfoldableImpl :: forall a. Array a -> List a
