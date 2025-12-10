@@ -947,14 +947,17 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprApp f arg) =
                    paramSubst = Map.fromFoldable (Array.zip ps argTypes)
                in substituteTypeExpr aliasMap paramAliasMap paramSubst bodyExpr
              else -- Wrong arity, normal type application
-               case typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap f of
-                 TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap arg) }
-                 other -> other
+               applyTypeArg aliasMap paramAliasMap varMap f arg
         _ ->
           -- Not a parameterized alias, normal type application
-          case typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap f of
-            TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap arg) }
-            other -> other
+          applyTypeArg aliasMap paramAliasMap varMap f arg
+  where
+    -- Apply a type argument, using TyApp for HKT (type variables applied to args)
+    applyTypeArg aMap paMap vMap func argExpr =
+      let argTy = typeExprToTypeWithAllAliases aMap paMap vMap argExpr
+      in case typeExprToTypeWithAllAliases aMap paMap vMap func of
+           TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args argTy }
+           other -> TyApp other argTy  -- HKT: use TyApp for non-TyCon heads
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprArrow a b) =
   tArrow (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap a) (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap b)
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprRecord fields maybeRow) =
@@ -1118,9 +1121,10 @@ typeExprToType varMap (TyExprCon name) =
     -- Type alias expansion should be done via typeExprToTypeWithAllAliases
     _ -> TyCon (mkTCon name [])
 typeExprToType varMap (TyExprApp f arg) =
-  case typeExprToType varMap f of
-    TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToType varMap arg) }
-    other -> other  -- Shouldn't happen for well-formed types
+  let argTy = typeExprToType varMap arg
+  in case typeExprToType varMap f of
+       TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args argTy }
+       other -> TyApp other argTy  -- HKT: type variable applied to argument
 typeExprToType varMap (TyExprArrow a b) =
   tArrow (typeExprToType varMap a) (typeExprToType varMap b)
 typeExprToType varMap (TyExprRecord fields maybeRow) =
@@ -1169,6 +1173,7 @@ collectTypeNames (TyRecord r) =
   let fieldNames = Map.values r.fields
       fieldsSet = Array.foldl (\s t -> Set.union s (collectTypeNames t)) Set.empty (Array.fromFoldable fieldNames)
   in fieldsSet
+collectTypeNames (TyApp f arg) = Set.union (collectTypeNames f) (collectTypeNames arg)
 
 -- | Collect all type constructor names referenced in a TypeExpr (before expansion)
 collectTypeExprNames :: TypeExpr -> Set.Set String

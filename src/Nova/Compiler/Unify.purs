@@ -4,7 +4,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Set as Set
-import Data.Array (zip, length, take, fromFoldable) as Array
+import Data.Array (zip, length, take, fromFoldable, last) as Array
 import Data.Array (length, zip)
 import Data.Foldable (foldM)
 import Data.Tuple (Tuple(..))
@@ -33,6 +33,7 @@ showType (TyRecord r) =
       fieldStr = String.joinWith ", " (Array.take 5 fieldNames)
       suffix = if Array.length fieldNames > 5 then ", ..." else ""
   in "{" <> fieldStr <> suffix <> "}"
+showType (TyApp f arg) = "(" <> showType f <> " " <> showType arg <> ")"
 
 -- | Occurs check: does variable v occur in type t?
 occurs :: TVar -> Type -> Boolean
@@ -53,11 +54,14 @@ bindVar v t =
 
 -- | Check if two type names are considered equivalent
 -- | List and Array are treated as equivalent since they compile to the same Elixir representation
+-- | Number and Int are treated as equivalent for Nova's Elixir backend
 areEquivalentTypes :: String -> String -> Boolean
 areEquivalentTypes n1 n2
   | n1 == n2 = true
   | n1 == "List" && n2 == "Array" = true
   | n1 == "Array" && n2 == "List" = true
+  | n1 == "Number" && n2 == "Int" = true
+  | n1 == "Int" && n2 == "Number" = true
   | otherwise = false
 
 -- | Check if a type name is a known record type alias using a map lookup
@@ -122,6 +126,38 @@ unifyWithAliases aliases (TyRecord r) (TyCon c)
       Nothing -> Left (TypeMismatch (TyRecord r) (TyCon c))
   | otherwise = Left (TypeMismatch (TyRecord r) (TyCon c))
 unifyWithAliases aliases (TyRecord r1) (TyRecord r2) = unifyRecordsWithAliases aliases r1 r2
+-- HKT: unify type applications (m a) with (n b) by unifying m~n and a~b
+unifyWithAliases aliases (TyApp f1 a1) (TyApp f2 a2) = do
+  s1 <- unifyWithAliases aliases f1 f2
+  s2 <- unifyWithAliases aliases (applySubst s1 a1) (applySubst s1 a2)
+  pure (composeSubst s2 s1)
+-- HKT: unify TyApp with TyCon - (m a) unified with (Array b)
+-- Unify m with the head type constructor, then unify a with b
+unifyWithAliases aliases (TyApp f a) (TyCon c)
+  | length c.args > 0 =
+      let headTyCon = TyCon { name: c.name, args: Array.take (length c.args - 1) c.args }
+          lastArg = case Array.last c.args of
+            Just arg -> arg
+            Nothing -> TyCon { name: "Unit", args: [] }  -- shouldn't happen
+      in do
+        s1 <- unifyWithAliases aliases f headTyCon
+        s2 <- unifyWithAliases aliases (applySubst s1 a) (applySubst s1 lastArg)
+        pure (composeSubst s2 s1)
+  | otherwise = Left (TypeMismatch (TyApp f a) (TyCon c))
+unifyWithAliases aliases (TyCon c) (TyApp f a)
+  | length c.args > 0 =
+      let headTyCon = TyCon { name: c.name, args: Array.take (length c.args - 1) c.args }
+          lastArg = case Array.last c.args of
+            Just arg -> arg
+            Nothing -> TyCon { name: "Unit", args: [] }  -- shouldn't happen
+      in do
+        s1 <- unifyWithAliases aliases f headTyCon
+        s2 <- unifyWithAliases aliases (applySubst s1 a) (applySubst s1 lastArg)
+        pure (composeSubst s2 s1)
+  | otherwise = Left (TypeMismatch (TyCon c) (TyApp f a))
+-- Allow TyApp to unify with TyVar
+unifyWithAliases aliases (TyApp f a) (TyVar v) = bindVar v (TyApp f a)
+unifyWithAliases aliases (TyVar v) (TyApp f a) = bindVar v (TyApp f a)
 unifyWithAliases aliases t1 t2 = Left (TypeMismatch t1 t2)
 
 -- | Main unification algorithm (backward compatible - uses empty alias map)

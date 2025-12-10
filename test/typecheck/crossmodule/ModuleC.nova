@@ -1,0 +1,10 @@
+-- Module C: Uses qualified import
+module Test.CrossModule.ModuleC where
+
+import Test.CrossModule.ModuleA as A
+
+-- Use qualified constructor
+getNameQualified :: A.Item -> String
+getNameQualified item = case item of
+  A.ItemPerson p -> p.name
+  A.ItemString s -> s

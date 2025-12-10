@@ -1,0 +1,10 @@
+-- Module B: Imports from A and pattern matches
+module Test.CrossModule.ModuleB where
+
+import Test.CrossModule.ModuleA (Item(..))
+
+-- Pattern match on imported ADT and access record field
+getName :: Item -> String
+getName item = case item of
+  ItemPerson p -> p.name  -- Access .name on imported Person type
+  ItemString s -> s

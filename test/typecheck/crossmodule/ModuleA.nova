@@ -1,0 +1,10 @@
+-- Module A: Defines an ADT with record payload
+module Test.CrossModule.ModuleA where
+
+-- Record type alias
+type Person = { name :: String, age :: Int }
+
+-- ADT with record payload
+data Item
+  = ItemPerson Person
+  | ItemString String

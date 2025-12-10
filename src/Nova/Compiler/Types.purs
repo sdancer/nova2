@@ -43,6 +43,7 @@ data Type
   = TyVar TVar
   | TyCon TCon
   | TyRecord Record
+  | TyApp Type Type  -- ^ Type application for HKT: (TyApp m a) represents (m a)
 
 derive instance eqType :: Eq Type
 
@@ -119,6 +120,7 @@ applySubst :: Subst -> Type -> Type
 applySubst sub (TyVar v) = lookupSubst sub v
 applySubst sub (TyCon c) = TyCon (c { args = map (applySubst sub) c.args })
 applySubst sub (TyRecord r) = TyRecord (r { fields = map (applySubst sub) r.fields })
+applySubst sub (TyApp f arg) = TyApp (applySubst sub f) (applySubst sub arg)
 
 -- | Compose two substitutions: s1 `compose` s2 applies s2 then s1
 composeSubst :: Subst -> Subst -> Subst
@@ -135,6 +137,7 @@ freeTypeVars :: Type -> Set Int
 freeTypeVars (TyVar v) = Set.singleton v.id
 freeTypeVars (TyCon c) = foldl (\acc t -> Set.union acc (freeTypeVars t)) Set.empty c.args
 freeTypeVars (TyRecord r) = foldl (\acc t -> Set.union acc (freeTypeVars t)) Set.empty (Map.values r.fields)
+freeTypeVars (TyApp f arg) = Set.union (freeTypeVars f) (freeTypeVars arg)
 
 -- | Free type variables in a scheme
 freeTypeVarsScheme :: Scheme -> Set Int
@@ -862,6 +865,7 @@ showType :: Type -> String
 showType (TyVar v) = v.name
 showType (TyCon c) = showTyCon c
 showType (TyRecord r) = showRecord r
+showType (TyApp f arg) = "(" <> showType f <> " " <> showType arg <> ")"
 
 -- | Pretty-print a type constructor
 showTyCon :: TCon -> String
@@ -919,6 +923,7 @@ showTypeArg ty = case ty of
     -- Simple type constructors don't need parens
     _ -> c.name
   TyRecord r -> showRecord r
+  TyApp _ _ -> "(" <> showType ty <> ")"  -- Type applications need parens
 
 -- | Pretty-print a record type
 showRecord :: Record -> String

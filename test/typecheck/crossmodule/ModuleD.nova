@@ -1,0 +1,16 @@
+-- Module D: Tests foldl over imported ADT
+module Test.CrossModule.ModuleD where
+
+import Data.List (List(..))
+import Data.Foldable (foldl)
+import Test.CrossModule.ModuleA (Item(..))
+
+-- foldl over List of imported ADT
+countItems :: List Item -> Int
+countItems items = foldl (\acc item -> acc + 1) 0 items
+
+-- Access fields within foldl
+collectNames :: List Item -> List String
+collectNames items = foldl (\acc item -> case item of
+  ItemPerson p -> Cons p.name acc
+  ItemString s -> Cons s acc) Nil items

@@ -362,8 +362,11 @@ typeExprToType aliases expr = case expr of
       other -> other
   TyExprConstrained _constraints inner ->
     typeExprToType aliases inner
-  TyExprTuple _ ->
-    TyCon { name: "Tuple", args: [] }
+  TyExprTuple items ->
+    let itemsAsArray :: Array TypeExpr
+        itemsAsArray = List.toUnfoldable items
+        argTypes = arrayMap (typeExprToType aliases) itemsAsArray
+    in TyCon { name: "Tuple", args: argTypes }
 
 -- | Convert a TypeExpr to Type with full alias expansion
 typeExprToTypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Map.Map String Type -> TypeExpr -> Type
@@ -411,8 +414,11 @@ typeExprToTypeWithAllAliases simpleAliases fullAliases paramAliases expr = case 
       _ -> TyCon { name: conName, args: argTypes }
   TyExprConstrained _constraints inner ->
     typeExprToTypeWithAllAliases simpleAliases fullAliases paramAliases inner
-  TyExprTuple _ ->
-    TyCon { name: "Tuple", args: [] }
+  TyExprTuple items ->
+    let itemsAsArray :: Array TypeExpr
+        itemsAsArray = List.toUnfoldable items
+        argTypes = arrayMap (typeExprToTypeWithAllAliases simpleAliases fullAliases paramAliases) itemsAsArray
+    in TyCon { name: "Tuple", args: argTypes }
 
 -- | Collect type constructor name and args from nested TyExprApp
 collectTypeApp :: TypeExpr -> Tuple String (Array TypeExpr)
