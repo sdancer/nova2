@@ -27,12 +27,21 @@ main = do
   log "Testing that all source files typecheck and unify properly"
   log ""
 
-  -- Step 1: Build registry from lib/Data/* modules
+  -- Step 1: Build registry from lib modules
   log "--- Building Module Registry ---"
   log "Typechecking lib/Data/* modules..."
-  libFiles <- listPursFiles "lib/Data/"
-  registry <- buildRegistry "lib/Data/" defaultRegistry libFiles
-  log $ "Registry built with " <> show (Array.length libFiles) <> " library modules"
+  libDataFiles <- listPursFiles "lib/Data/"
+  registry1 <- buildRegistry "lib/Data/" defaultRegistry libDataFiles
+
+  log "Typechecking lib/Data/String/* modules..."
+  libDataStringFiles <- listPursFiles "lib/Data/String/"
+  registry2 <- buildRegistry "lib/Data/String/" registry1 libDataStringFiles
+
+  log "Typechecking lib/Control/* modules..."
+  libControlFiles <- listPursFiles "lib/Control/"
+  registry <- buildRegistry "lib/Control/" registry2 libControlFiles
+  let libCount = Array.length libDataFiles + Array.length libDataStringFiles + Array.length libControlFiles
+  log $ "Registry built with " <> show libCount <> " library modules"
   log ""
 
   -- Step 2: Test src/Nova/Compiler/ files with the registry
@@ -102,6 +111,8 @@ getModuleName basePath filename =
   let name = String.replace (String.Pattern ".purs") (String.Replacement "") filename
   in case basePath of
     "lib/Data/" -> "Data." <> name
+    "lib/Data/String/" -> "Data.String." <> name
+    "lib/Control/" -> "Control." <> name
     "src/Nova/Compiler/" -> "Nova.Compiler." <> name
     _ -> name
 

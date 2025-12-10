@@ -173,3 +173,9 @@ lookupDefault :: forall k v. v -> k -> Map k v -> v
 lookupDefault def k m = lookupDefaultImpl def k m
 
 foreign import lookupDefaultImpl :: forall k v. v -> k -> Map k v -> v
+
+-- Map over values with Maybe, filtering out Nothing results
+mapMaybe :: forall k a b. (a -> Maybe b) -> Map k a -> Map k b
+mapMaybe f m = mapMaybeImpl f m
+
+foreign import mapMaybeImpl :: forall k a b. (a -> Maybe b) -> Map k a -> Map k b

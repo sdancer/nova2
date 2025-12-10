@@ -248,7 +248,7 @@ builtinPrelude = Map.fromFoldable
   , Tuple "*" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
   , Tuple "/" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
   , Tuple "mod" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-  , Tuple "negate" (mkScheme [] (tArrow tInt tInt))
+  , Tuple "negate" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
   -- Bounded type class (top/bottom for Int)
   , Tuple "top" (mkScheme [] tInt)
   , Tuple "bottom" (mkScheme [] tInt)
@@ -310,7 +310,7 @@ builtinPrelude = Map.fromFoldable
   -- Set functions - now provided by lib/Data/Set.purs via import
 
   -- Foldable functions
-  , Tuple "foldl" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b))))) -- generic Foldable
+  , Tuple "foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tList (TyVar a)) (TyVar b))))) -- List foldl (no higher-kinded types)
   , Tuple "foldr" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b))))) -- generic Foldable
   -- foldM :: forall m a b t. Monad m => Foldable t => (b -> a -> m b) -> b -> t a -> m b
   -- Simplified: using generic type d for "m b", and returns d (same monad result)
@@ -738,16 +738,16 @@ tDeclaration = TyCon (mkTCon0 "Declaration")
 tFunctionDecl :: Type
 tFunctionDecl = TyRecord { fields: Map.fromFoldable
   [ Tuple "name" tString
-  , Tuple "parameters" (tArray tPattern)
+  , Tuple "parameters" (tList tPattern)
   , Tuple "body" tExpr
-  , Tuple "guards" (tArray tGuardedExprRec)
+  , Tuple "guards" (tList tGuardedExprRec)
   , Tuple "typeSignature" (tMaybe tTypeSigRec)
   ], row: Nothing }
 
 -- Record type versions for nested use (avoiding circular definition issues)
 tGuardedExprRec :: Type
 tGuardedExprRec = TyRecord { fields: Map.fromFoldable
-  [ Tuple "guards" (tArray tGuardClause)
+  [ Tuple "guards" (tList tGuardClause)
   , Tuple "body" tExpr
   ], row: Nothing }
 
@@ -765,14 +765,14 @@ tTypeSig = tTypeSigRec
 tDataType :: Type
 tDataType = TyRecord { fields: Map.fromFoldable
   [ Tuple "name" tString
-  , Tuple "typeVars" (tArray tString)
-  , Tuple "constructors" (tArray tDataConstructor)
+  , Tuple "typeVars" (tList tString)
+  , Tuple "constructors" (tList tDataConstructor)
   ], row: Nothing }
 
 tDataConstructor :: Type
 tDataConstructor = TyRecord { fields: Map.fromFoldable
   [ Tuple "name" tString
-  , Tuple "fields" (tArray tDataField)
+  , Tuple "fields" (tList tDataField)
   , Tuple "isRecord" tBool
   ], row: Nothing }
 
@@ -792,6 +792,7 @@ tTypeAlias = TyRecord { fields: Map.fromFoldable
 tModuleDecl :: Type
 tModuleDecl = TyRecord { fields: Map.fromFoldable
   [ Tuple "name" tString
+  , Tuple "declarations" (tList tDeclaration)
   ], row: Nothing }
 
 tImportDecl :: Type
@@ -1004,7 +1005,7 @@ preludeExports =
       -- Ring
       , Tuple "sub" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
       , Tuple "-" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      , Tuple "negate" (mkScheme [] (tArrow tInt tInt))
+      , Tuple "negate" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
       -- EuclideanRing
       , Tuple "div" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
       , Tuple "/" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
@@ -1019,7 +1020,7 @@ preludeExports =
       , Tuple "top" (mkScheme [] tInt)
       , Tuple "bottom" (mkScheme [] tInt)
       -- Foldable
-      , Tuple "foldl" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b)))))
+      , Tuple "foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tList (TyVar a)) (TyVar b)))))
       , Tuple "foldr" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b)))))
       -- Tuple functions
       , Tuple "fst" (mkScheme [a, b] (tArrow (tTuple [TyVar a, TyVar b]) (TyVar a)))

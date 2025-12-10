@@ -96,11 +96,17 @@ find f xs = findImpl f xs
 
 foreign import findImpl :: forall a. (a -> Boolean) -> Array a -> Maybe a
 
--- Find index
-index :: forall a. a -> Array a -> Maybe Int
-index x xs = indexImpl x xs
+-- Get element at index
+index :: forall a. Array a -> Int -> Maybe a
+index xs i = indexImpl xs i
 
-foreign import indexImpl :: forall a. a -> Array a -> Maybe Int
+foreign import indexImpl :: forall a. Array a -> Int -> Maybe a
+
+-- Find index of element (elemIndex)
+elemIndex :: forall a. a -> Array a -> Maybe Int
+elemIndex x xs = elemIndexImpl x xs
+
+foreign import elemIndexImpl :: forall a. a -> Array a -> Maybe Int
 
 -- Map
 map :: forall a b. (a -> b) -> Array a -> Array b

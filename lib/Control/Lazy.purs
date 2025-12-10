@@ -7,5 +7,9 @@ import Prelude
 class Lazy l where
   defer :: (Unit -> l) -> l
 
--- Note: The 'defer' class method will be exported when instances provide it
--- For type checking purposes, we also provide this as a typed binding
+-- | Standalone defer function for type checking purposes
+-- | The actual implementation comes from type class instances
+defer :: forall l. (Unit -> l) -> l
+defer f = deferImpl f
+
+foreign import deferImpl :: forall l. (Unit -> l) -> l
