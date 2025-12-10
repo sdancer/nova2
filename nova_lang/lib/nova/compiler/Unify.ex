@@ -134,6 +134,30 @@ end
 
 
 
+  def lookup_record_alias(alias_map, name) do
+    
+      index_of = fn p -> fn s -> Nova.String.last_index_of(p, s) end end
+      case Nova.Map.lookup(name, alias_map) do
+  {:just, ({:ty_record, r})} -> {:just, r}
+  {:just, _} -> :nothing
+  :nothing -> 
+      unqualified_name = case index_of.((Nova.String.pattern("."))).(name) do
+        {:just, idx} -> Nova.String.drop(((idx + 1)), name)
+        :nothing -> name
+      end
+      if (unqualified_name != name) do
+  case Nova.Map.lookup(unqualified_name, alias_map) do
+    {:just, ({:ty_record, r})} -> {:just, r}
+    _ -> :nothing
+  end
+else
+  :nothing
+end
+end
+  end
+
+
+
   def unify_with_aliases(aliases, ({:ty_var, v}), t) do
     bind_var(v, t)
   end
@@ -155,8 +179,11 @@ end
 
   def unify_with_aliases(aliases, ({:ty_con, c}), ({:ty_record, r})) do
     cond do
-      (((Data.Array.length(c.args) == 0) and is_record_type_alias_in_map(aliases, c.name))) ->
-        {:right, Nova.Compiler.Types.empty_subst()}
+      ((Data.Array.length(c.args) == 0)) ->
+        case lookup_record_alias(aliases, c.name) do
+  {:just, alias_record} -> unify_records_with_aliases(aliases, alias_record, r)
+  :nothing -> {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_record, r})})}
+end
       (true) ->
         {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_record, r})})}
     end
@@ -164,8 +191,11 @@ end
 
   def unify_with_aliases(aliases, ({:ty_record, r}), ({:ty_con, c})) do
     cond do
-      (((Data.Array.length(c.args) == 0) and is_record_type_alias_in_map(aliases, c.name))) ->
-        {:right, Nova.Compiler.Types.empty_subst()}
+      ((Data.Array.length(c.args) == 0)) ->
+        case lookup_record_alias(aliases, c.name) do
+  {:just, alias_record} -> unify_records_with_aliases(aliases, alias_record, r)
+  :nothing -> {:left, ({:type_mismatch, ({:ty_record, r}), ({:ty_con, c})})}
+end
       (true) ->
         {:left, ({:type_mismatch, ({:ty_record, r}), ({:ty_con, c})})}
     end

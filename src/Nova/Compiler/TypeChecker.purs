@@ -12,10 +12,11 @@ import Data.Foldable (foldl)
 import Data.Map as Map
 import Data.Set as Set
 import Data.String as String
-import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, extendTypeAlias, lookupTypeAlias, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo, TypedModule, mkTypedModule)
+import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, composeSubst, applySubst, applySubstToEnv, freeTypeVars, freeTypeVarsEnv, freshVar, extendEnv, lookupEnv, extendTypeAlias, lookupTypeAlias, mkScheme, mkTVar, mkTCon, tInt, tString, tChar, tBool, tArrow, tArray, tTuple, TypeAliasInfo, ModuleExports, ModuleRegistry, emptyExports, lookupModule, mergeExportsToEnv, mergeSelectedExports, mergeTypeExport, TypeInfo, TypedModule, mkTypedModule, getAliasInfoParams, getAliasInfoBody)
 import Nova.Compiler.Types as Types
 import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl, Module, GuardedExpr, GuardClause(..))
 import Nova.Compiler.Unify (UnifyError, unify, unifyWithAliases)
+import Nova.Compiler.ImportProcessor as IP
 
 -- | FFI helper for converting Int to String
 -- This avoids shadowing issues when a local 'show' instance is defined
@@ -53,17 +54,27 @@ listMapWithIndex f list = go 0 list
   go _ Nil = Nil
   go i (Cons x xs) = Cons (f i x) (go (i + 1) xs)
 
+-- | Result type for instantiation
+type InstResult = { ty :: Type, env :: Env }
+
+-- | Helper function to create InstResult
+mkInstResult :: Type -> Env -> InstResult
+mkInstResult t e = { ty: t, env: e }
+
 -- | Helper for instantiate - recursively substitutes fresh type variables
-instantiateGo :: Type -> Env -> List TVar -> Subst -> { ty :: Type, env :: Env }
-instantiateGo schemeTy e Nil sub = { ty: applySubst sub schemeTy, env: e }
+instantiateGo :: Type -> Env -> List TVar -> Subst -> InstResult
+instantiateGo schemeTy e Nil sub = mkInstResult (applySubst sub schemeTy) e
 instantiateGo schemeTy e (Cons v rest) sub =
-  let Tuple fresh e' = freshVar e v.name
-      sub' = Map.insert v.id (TyVar fresh) sub
+  let { id: vId, name: vName } = v
+      Tuple fresh e' = freshVar e vName
+      sub' = Map.insert vId (TyVar fresh) sub
   in instantiateGo schemeTy e' rest sub'
 
 -- | Instantiate a type scheme with fresh variables
-instantiate :: Env -> Scheme -> { ty :: Type, env :: Env }
-instantiate env scheme = instantiateGo scheme.ty env (List.fromFoldable scheme.vars) Map.empty
+instantiate :: Env -> Scheme -> InstResult
+instantiate env scheme =
+  let { ty: schemeTy, vars: schemeVars } = scheme
+  in instantiateGo schemeTy env (List.fromFoldable schemeVars) Map.empty
 
 -- | Generalize a type to a scheme
 generalize :: Env -> Type -> Scheme
@@ -898,8 +909,12 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprCon name) =
       tryLookup nm = case Map.lookup nm aliasMap of
         Just ty -> Just ty
         Nothing -> case Map.lookup nm paramAliasMap of
-          Just info | Array.null info.params ->
-            Just (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap info.body)
+          Just info ->
+            let ps = getAliasInfoParams info
+                bodyExpr = getAliasInfoBody info
+            in if Array.null ps
+               then Just (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap bodyExpr)
+               else Nothing
           _ -> Nothing
   in case tryLookup name of
     Just ty -> ty
@@ -913,13 +928,20 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprApp f arg) =
   case collectTypeApp (TyExprApp f arg) of
     Tuple conName args ->
       case Map.lookup conName paramAliasMap of
-        Just info | Array.length info.params == Array.length args ->
-          -- Found matching parameterized alias, substitute params
-          let argTypes = map (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap) args
-              paramSubst = Map.fromFoldable (Array.zip info.params argTypes)
-          in substituteTypeExpr aliasMap paramAliasMap paramSubst info.body
+        Just info ->
+          let ps = getAliasInfoParams info
+              bodyExpr = getAliasInfoBody info
+          in if Array.length ps == Array.length args
+             then -- Found matching parameterized alias, substitute params
+               let argTypes = map (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap) args
+                   paramSubst = Map.fromFoldable (Array.zip ps argTypes)
+               in substituteTypeExpr aliasMap paramAliasMap paramSubst bodyExpr
+             else -- Wrong arity, normal type application
+               case typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap f of
+                 TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap arg) }
+                 other -> other
         _ ->
-          -- Not a parameterized alias or wrong arity, normal type application
+          -- Not a parameterized alias, normal type application
           case typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap f of
             TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap arg) }
             other -> other
@@ -959,8 +981,12 @@ typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprCon name) =
       tryLookup nm = case Map.lookup nm aliasMap of
         Just ty -> Just ty
         Nothing -> case Map.lookup nm paramAliasMap of
-          Just info | Array.null info.params ->
-            Just (typeExprToTypeWithEnv env aliasMap paramAliasMap varMap info.body)
+          Just info ->
+            let ps = getAliasInfoParams info
+                bodyExpr = getAliasInfoBody info
+            in if Array.null ps
+               then Just (typeExprToTypeWithEnv env aliasMap paramAliasMap varMap bodyExpr)
+               else Nothing
           _ -> Nothing
       -- Check if it's a type alias in the environment (from imported modules)
       -- First check env.typeAliases, then env.bindings
@@ -986,11 +1012,11 @@ typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprApp f arg) =
   case collectTypeApp (TyExprApp f arg) of
     Tuple conName args ->
       case Map.lookup conName paramAliasMap of
-        Just info | Array.length info.params == Array.length args ->
+        Just info | Array.length (getAliasInfoParams info) == Array.length args ->
           -- Found matching parameterized alias, substitute params
           let argTypes = map (typeExprToTypeWithEnv env aliasMap paramAliasMap varMap) args
-              paramSubst = Map.fromFoldable (Array.zip info.params argTypes)
-          in substituteTypeExpr aliasMap paramAliasMap paramSubst info.body
+              paramSubst = Map.fromFoldable (Array.zip (getAliasInfoParams info) argTypes)
+          in substituteTypeExpr aliasMap paramAliasMap paramSubst (getAliasInfoBody info)
         _ ->
           -- Not a parameterized alias or wrong arity, normal type application
           case typeExprToTypeWithEnv env aliasMap paramAliasMap varMap f of
@@ -1044,10 +1070,10 @@ substituteTypeExpr aliasMap paramAliasMap paramSubst (TyExprApp f arg) =
   case collectTypeApp (TyExprApp f arg) of
     Tuple conName args ->
       case Map.lookup conName paramAliasMap of
-        Just info | Array.length info.params == Array.length args ->
+        Just info | Array.length (getAliasInfoParams info) == Array.length args ->
           let argTypes = map (substituteTypeExpr aliasMap paramAliasMap paramSubst) args
-              nestedSubst = Map.fromFoldable (Array.zip info.params argTypes)
-          in substituteTypeExpr aliasMap paramAliasMap nestedSubst info.body
+              nestedSubst = Map.fromFoldable (Array.zip (getAliasInfoParams info) argTypes)
+          in substituteTypeExpr aliasMap paramAliasMap nestedSubst (getAliasInfoBody info)
         _ ->
           case substituteTypeExpr aliasMap paramAliasMap paramSubst f of
             TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args (substituteTypeExpr aliasMap paramAliasMap paramSubst arg) }
@@ -1177,8 +1203,8 @@ checkModuleWithRegistry :: ModuleRegistry -> Env -> Array Declaration -> Either 
 checkModuleWithRegistry registry env decls =
   -- First collect imported type aliases
   let importedAliases = collectImportedAliases registry decls
-      -- Process imports to add imported types/values to environment
-      env1 = processImports registry env decls
+      -- Process imports to add imported types/values to environment (using ImportProcessor)
+      env1 = IP.processImports registry env decls
       -- Then proceed with normal type checking, passing imported aliases
       env2 = processNonFunctionsWithAliases importedAliases env1 decls
       env3 = addFunctionPlaceholdersWithAliases importedAliases env2 decls
@@ -1203,7 +1229,10 @@ mergeExportsWithTypeAliases env exports =
       env1 = Types.mergeExportsToEnv env exports
       -- Add RECORD type aliases to env.typeAliases for proper unification
       -- We only add record aliases (not all aliases) to avoid conflicts with data types
-      moduleAliases = expandModuleAliases exports.typeAliases
+      -- Use pre-expanded type aliases from exports if available, otherwise expand ourselves
+      moduleAliases = if Map.isEmpty exports.expandedTypeAliases
+                      then expandModuleAliases exports.typeAliases
+                      else exports.expandedTypeAliases
       addIfRecordAlias e (Tuple name ty) =
         if isRecordType ty then extendTypeAlias e name ty else e
       env2 = Array.foldl addIfRecordAlias env1 (Map.toUnfoldable moduleAliases)
@@ -1235,7 +1264,10 @@ processImportDecl registry env imp =
             Just _ ->
               -- With alias and no items: qualified access + type aliases for unification
               -- Only add record type aliases, not values (which would conflict)
-              let moduleAliases = expandModuleAliases exports.typeAliases
+              -- Use pre-expanded type aliases from exports if available
+              let moduleAliases = if Map.isEmpty exports.expandedTypeAliases
+                                  then expandModuleAliases exports.typeAliases
+                                  else exports.expandedTypeAliases
                   addIfRecordAlias e (Tuple name ty) =
                     if isRecordType ty then extendTypeAlias e name ty else e
               in Array.foldl addIfRecordAlias envWithQualified (Map.toUnfoldable moduleAliases)
@@ -1252,39 +1284,49 @@ expandModuleAliases :: Map.Map String TypeAliasInfo -> Map.Map String Type
 expandModuleAliases aliasInfos =
   let -- First pass: convert without resolving nested aliases
       initial = Map.mapMaybe (\info ->
-        if Array.null info.params
-        then Just (typeExprToType Map.empty info.body)
+        if Array.null (getAliasInfoParams info)
+        then Just (typeExprToType Map.empty (getAliasInfoBody info))
         else Nothing) aliasInfos
       -- Second pass: expand any nested references within each alias
       pass2 = Map.mapMaybe (\info ->
-        if Array.null info.params
-        then Just (typeExprToTypeWithAllAliases initial aliasInfos Map.empty info.body)
+        if Array.null (getAliasInfoParams info)
+        then Just (typeExprToTypeWithAllAliases initial aliasInfos Map.empty (getAliasInfoBody info))
         else Nothing) aliasInfos
       -- Third pass: expand again using pass2 results for deeper nesting
       pass3 = Map.mapMaybe (\info ->
-        if Array.null info.params
-        then Just (typeExprToTypeWithAllAliases pass2 aliasInfos Map.empty info.body)
+        if Array.null (getAliasInfoParams info)
+        then Just (typeExprToTypeWithAllAliases pass2 aliasInfos Map.empty (getAliasInfoBody info))
         else Nothing) aliasInfos
   in pass3
 
 -- | Import a single item from module exports
 importItem :: ModuleExports -> Env -> ImportItem -> Env
 importItem exports env item =
-  let -- Expand module's type aliases for use in resolution
-      moduleAliases = expandModuleAliases exports.typeAliases
+  let -- Use pre-expanded type aliases from exports (computed by addValuesToExports)
+      -- Fall back to expanding them ourselves for backwards compatibility
+      moduleAliases = if Map.isEmpty exports.expandedTypeAliases
+                      then expandModuleAliases exports.typeAliases
+                      else exports.expandedTypeAliases
+      -- Helper to import all RECORD type aliases from a module
+      -- This is needed because record type aliases may be referenced by values
+      addAllRecordAliases e =
+        let addIfRecord e2 (Tuple name ty) =
+              if isRecordType ty then extendTypeAlias e2 name ty else e2
+        in Array.foldl addIfRecord e (Map.toUnfoldable moduleAliases)
   in case item of
     ImportValue name ->
       -- Import a value or constructor by name
       -- Also check if it's a type alias (type aliases are imported as values in PureScript)
+      -- ALSO import all record type aliases from the module (needed for unification)
       case Map.lookup name exports.values of
-        Just scheme -> extendEnv env name scheme
+        Just scheme -> addAllRecordAliases (extendEnv env name scheme)
         Nothing -> case Map.lookup name exports.constructors of
-          Just scheme -> extendEnv env name scheme
+          Just scheme -> addAllRecordAliases (extendEnv env name scheme)
           Nothing ->
             -- Check if it's a type alias
             case Map.lookup name moduleAliases of
-              Just ty -> extendTypeAlias env name ty
-              Nothing -> env  -- Not found or parameterized alias, skip
+              Just ty -> addAllRecordAliases (extendTypeAlias env name ty)
+              Nothing -> addAllRecordAliases env  -- Still import record aliases even if value not found
     ImportType typeName spec ->
       -- Import a type and optionally its constructors
       -- First check if it's a type alias and add it to env.typeAliases
@@ -1294,10 +1336,10 @@ importItem exports env item =
               -- Add the expanded type alias itself
               let expandedTy = case Map.lookup typeName moduleAliases of
                     Just ty -> ty
-                    Nothing -> typeExprToType Map.empty aliasInfo.body
+                    Nothing -> typeExprToType Map.empty (getAliasInfoBody aliasInfo)
                   e1 = extendTypeAlias env typeName expandedTy
                   -- Collect type names from the UNEXPANDED body (TypeExpr) to find referenced aliases
-                  referencedNames = collectTypeExprNames aliasInfo.body
+                  referencedNames = collectTypeExprNames (getAliasInfoBody aliasInfo)
                   addIfRecordAlias e name = case Map.lookup name moduleAliases of
                     Just aliasTy | isRecordType aliasTy -> extendTypeAlias e name aliasTy
                     _ -> e
@@ -1308,18 +1350,21 @@ importItem exports env item =
                 Just ty -> extendTypeAlias env typeName ty
                 Nothing -> env
       in case Map.lookup typeName exports.types of
-        Nothing -> env'  -- Not a data type, but might be alias (already handled)
+        Nothing ->
+          -- Not a data type, but still import record type aliases from module
+          -- (needed for types that reference record aliases internally)
+          addAllRecordAliases env'
         Just typeInfo ->
           case spec of
             ImportAll ->
-              -- Import all constructors
-              mergeTypeExport env' exports typeName typeInfo.constructors
+              -- Import all constructors and their record type alias dependencies
+              addAllRecordAliases (mergeTypeExport env' exports typeName typeInfo.constructors)
             ImportSome ctorNames ->
               -- Import specific constructors
-              mergeTypeExport env' exports typeName (Array.fromFoldable ctorNames)
+              addAllRecordAliases (mergeTypeExport env' exports typeName (Array.fromFoldable ctorNames))
             ImportNone ->
-              -- Import just the type, no constructors
-              env'
+              -- Import just the type, no constructors, but still need record aliases
+              addAllRecordAliases env'
 
 -- | Resolved import mapping: maps imported names to their source module
 -- | This is used by CodeGen to generate qualified calls
@@ -1482,9 +1527,15 @@ extractExports decls =
       in exp { constructors = Map.insert ctor.name scheme exp.constructors }
 
 -- | Add values to exports after type checking (when we know the types)
+-- | Also computes expanded type aliases for unification
 addValuesToExports :: ModuleExports -> Env -> Array Declaration -> ModuleExports
 addValuesToExports exports env decls =
-  Array.foldl addValue exports decls
+  let -- First add function values
+      withValues = Array.foldl addValue exports decls
+      -- Then compute expanded type aliases from this module's declarations only
+      -- Note: We only export local type aliases, not imported ones
+      expandedAliases = collectTypeAliases decls
+  in withValues { expandedTypeAliases = expandedAliases }
   where
     addValue exp (DeclFunction func) =
       case Map.lookup func.name env.bindings of
@@ -1542,8 +1593,8 @@ processNonFunctionsWithAliases importedAliases env decls =
       paramAliasMap = Map.union localParamAliasMap importedAliases
       -- Convert imported TypeAliasInfo to Type for simple aliases
       importedSimpleAliases = Map.mapMaybe (\info ->
-        if Array.null info.params
-        then Just (typeExprToType Map.empty info.body)
+        if Array.null (getAliasInfoParams info)
+        then Just (typeExprToType Map.empty (getAliasInfoBody info))
         else Nothing) importedAliases
       -- Collect local aliases with imported as base for resolving references
       localAliasMap = collectTypeAliasesWithBase importedSimpleAliases paramAliasMap decls
@@ -1592,8 +1643,8 @@ addFunctionPlaceholdersWithAliases importedAliases env decls =
       paramAliasMap = Map.union localParamAliasMap importedAliases
       -- Convert imported TypeAliasInfo to Type for simple aliases
       importedSimpleAliases = Map.mapMaybe (\info ->
-        if Array.null info.params
-        then Just (typeExprToType Map.empty info.body)
+        if Array.null (getAliasInfoParams info)
+        then Just (typeExprToType Map.empty (getAliasInfoBody info))
         else Nothing) importedAliases
       -- Collect local type aliases with imported aliases as base for resolving references
       localAliasMap = collectTypeAliasesWithBase importedSimpleAliases paramAliasMap decls

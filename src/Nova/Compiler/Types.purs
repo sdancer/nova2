@@ -178,17 +178,8 @@ emptyEnv =
   , counter: 0
   , registryLayer: Nothing
   , namespace: Nothing
-  , typeAliases: builtinRecordAliases
+  , typeAliases: Map.empty
   }
-
--- | Built-in record type aliases that need to be known for unification
--- | These are type aliases that expand to records and are used in function signatures
-builtinRecordAliases :: Map String Type
-builtinRecordAliases = Map.fromFoldable
-  [ Tuple "TypeAliasInfo" (TyRecord { fields: Map.fromFoldable [Tuple "params" (tArray tString), Tuple "body" tTypeExpr], row: Nothing })
-  , Tuple "TCon" (TyRecord { fields: Map.fromFoldable [Tuple "name" tString, Tuple "args" (tArray tType)], row: Nothing })
-  , Tuple "TVar" (TyRecord { fields: Map.fromFoldable [Tuple "id" tInt, Tuple "name" tString], row: Nothing })
-  ]
 
 -- | Extend environment with a new binding
 extendEnv :: Env -> String -> Scheme -> Env
@@ -910,13 +901,24 @@ tInferResult = TyRecord { fields: Map.fromFoldable
 -- | has params = ["a"], body = TyExprApp ...
 type TypeAliasInfo = { params :: Array String, body :: TypeExpr }
 
+-- | Helper to get params from TypeAliasInfo (aids self-hosted compiler type inference)
+-- Uses field access instead of pattern matching to avoid record inference issues
+getAliasInfoParams :: TypeAliasInfo -> Array String
+getAliasInfoParams info = info.params
+
+-- | Helper to get body from TypeAliasInfo (aids self-hosted compiler type inference)
+-- Uses field access instead of pattern matching to avoid record inference issues
+getAliasInfoBody :: TypeAliasInfo -> TypeExpr
+getAliasInfoBody info = info.body
+
 -- | Module exports: what a module makes available to importers
 -- | This is the core data structure for the module system
 type ModuleExports =
   { types :: Map String TypeInfo           -- Type constructors (e.g., Maybe, Either)
   , constructors :: Map String Scheme      -- Data constructors (e.g., Just, Nothing, Left, Right)
   , values :: Map String Scheme            -- Functions and values
-  , typeAliases :: Map String TypeAliasInfo  -- Type aliases
+  , typeAliases :: Map String TypeAliasInfo  -- Type aliases (surface syntax)
+  , expandedTypeAliases :: Map String Type   -- Expanded type aliases for unification (internal Type)
   }
 
 -- | Information about an exported type
@@ -932,6 +934,7 @@ emptyExports =
   , constructors: Map.empty
   , values: Map.empty
   , typeAliases: Map.empty
+  , expandedTypeAliases: Map.empty
   }
 
 -- | Prelude module exports
@@ -1072,6 +1075,7 @@ preludeExports =
       , Tuple "unit" (mkScheme [] tUnit)
       ]
   , typeAliases: Map.empty
+  , expandedTypeAliases: Map.empty
   }
   where
     a = mkTVar (-1) "a"
@@ -1091,6 +1095,7 @@ effectConsoleExports =
       , Tuple "error" (mkScheme [] (tArrow tString tUnit))
       ]
   , typeAliases: Map.empty
+  , expandedTypeAliases: Map.empty
   }
   where
     a = mkTVar (-1) "a"
@@ -1129,7 +1134,9 @@ mergeExportsToEnv env exports =
       -- Add values
       valList = Map.toUnfoldable exports.values
       env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e name scheme) env1 valList
-  in env2
+      -- Add expanded type aliases (for unification to expand record type aliases from imports)
+      env3 = env2 { typeAliases = Map.union exports.expandedTypeAliases env2.typeAliases }
+  in env3
 
 -- | Merge exports into environment with a module prefix
 -- | Used when importing with "as" alias: import Data.List as List
@@ -1142,7 +1149,11 @@ mergeExportsToEnvWithPrefix env exports prefix =
       -- Add values with prefix
       valList = Map.toUnfoldable exports.values
       env2 = Array.foldl (\e (Tuple name scheme) -> extendEnv e (prefix <> "." <> name) scheme) env1 valList
-  in env2
+      -- Add expanded type aliases with prefix
+      aliasList = Map.toUnfoldable exports.expandedTypeAliases :: Array (Tuple String Type)
+      newAliases = Array.foldl (\m (Tuple name ty) -> Map.insert (prefix <> "." <> name) ty m) env2.typeAliases aliasList
+      env3 = env2 { typeAliases = newAliases }
+  in env3
 
 -- | Merge specific items from exports into environment
 -- | items: list of names to import
@@ -1151,11 +1162,15 @@ mergeSelectedExports env exports items =
   Array.foldl addItem env items
   where
     addItem e name =
-      case Map.lookup name exports.constructors of
-        Just scheme -> extendEnv e name scheme
+      -- First check expanded type aliases (e.g., Constraint, DataField)
+      let e' = case Map.lookup name exports.expandedTypeAliases of
+            Just ty -> e { typeAliases = Map.insert name ty e.typeAliases }
+            Nothing -> e
+      in case Map.lookup name exports.constructors of
+        Just scheme -> extendEnv e' name scheme
         Nothing -> case Map.lookup name exports.values of
-          Just scheme -> extendEnv e name scheme
-          Nothing -> e  -- Item not found, skip
+          Just scheme -> extendEnv e' name scheme
+          Nothing -> e'  -- Item not found, skip (might be just a type alias)
 
 -- | Merge a type and its constructors into environment
 mergeTypeExport :: Env -> ModuleExports -> String -> Array String -> Env

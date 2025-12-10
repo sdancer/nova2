@@ -10,7 +10,7 @@ import Data.Foldable (foldM)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Nova.Compiler.Types (Type(..), TVar, TCon, Subst, emptySubst, singleSubst, composeSubst, applySubst, freeTypeVars)
+import Nova.Compiler.Types (Type(..), TVar, TCon, Record, Subst, emptySubst, singleSubst, composeSubst, applySubst, freeTypeVars)
 
 -- | Unification error type
 data UnifyError
@@ -83,6 +83,25 @@ isRecordTypeAliasInMap aliasMap name =
 -- | Type alias map for record type aliases
 type TypeAliasMap = Map.Map String Type
 
+-- | Look up a record type alias and extract the Record (fields and row)
+lookupRecordAlias :: Map.Map String Type -> String -> Maybe Record
+lookupRecordAlias aliasMap name =
+  case Map.lookup name aliasMap of
+    Just (TyRecord r) -> Just r
+    Just _ -> Nothing  -- Alias exists but expands to non-record
+    Nothing ->
+      -- Also check unqualified name
+      let unqualifiedName = case indexOf (String.Pattern ".") name of
+            Just idx -> String.drop (idx + 1) name
+            Nothing -> name
+      in if unqualifiedName /= name
+         then case Map.lookup unqualifiedName aliasMap of
+                Just (TyRecord r) -> Just r
+                _ -> Nothing
+         else Nothing
+  where
+    indexOf p s = String.lastIndexOf p s
+
 -- | Main unification algorithm with type alias map
 unifyWithAliases :: TypeAliasMap -> Type -> Type -> Either UnifyError Subst
 unifyWithAliases aliases (TyVar v) t = bindVar v t
@@ -93,10 +112,14 @@ unifyWithAliases aliases (TyCon c1) (TyCon c2)
   | otherwise = unifyManyWithAliases aliases c1.args c2.args
 -- Treat record type aliases as unifying with their record expansions
 unifyWithAliases aliases (TyCon c) (TyRecord r)
-  | length c.args == 0 && isRecordTypeAliasInMap aliases c.name = Right emptySubst
+  | length c.args == 0 = case lookupRecordAlias aliases c.name of
+      Just aliasRecord -> unifyRecordsWithAliases aliases aliasRecord r
+      Nothing -> Left (TypeMismatch (TyCon c) (TyRecord r))
   | otherwise = Left (TypeMismatch (TyCon c) (TyRecord r))
 unifyWithAliases aliases (TyRecord r) (TyCon c)
-  | length c.args == 0 && isRecordTypeAliasInMap aliases c.name = Right emptySubst
+  | length c.args == 0 = case lookupRecordAlias aliases c.name of
+      Just aliasRecord -> unifyRecordsWithAliases aliases aliasRecord r
+      Nothing -> Left (TypeMismatch (TyRecord r) (TyCon c))
   | otherwise = Left (TypeMismatch (TyRecord r) (TyCon c))
 unifyWithAliases aliases (TyRecord r1) (TyRecord r2) = unifyRecordsWithAliases aliases r1 r2
 unifyWithAliases aliases t1 t2 = Left (TypeMismatch t1 t2)

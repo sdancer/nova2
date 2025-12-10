@@ -130,3 +130,9 @@ toggle :: forall a. a -> Set a -> Set a
 toggle x s = toggleImpl x s
 
 foreign import toggleImpl :: forall a. a -> Set a -> Set a
+
+-- Union of multiple sets
+unions :: forall a. Array (Set a) -> Set a
+unions sets = unionsImpl sets
+
+foreign import unionsImpl :: forall a. Array (Set a) -> Set a
