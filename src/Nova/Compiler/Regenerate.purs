@@ -56,10 +56,10 @@ type RegenerateConfig =
 
 defaultConfig :: RegenerateConfig
 defaultConfig =
-  { srcBase: "./src/Nova/Compiler/"
+  { srcBase: "./src/"
   , libBase: "./lib/"
   , outputDir: "./output/"
-  , targetDir: "./nova_lang/lib/nova/compiler/"
+  , targetDir: "./nova_lang/lib/nova/"
   }
 
 -- ============================================================================
@@ -118,16 +118,17 @@ extractImports source =
 -- | e.g., "Data.List" -> "./lib/Data/List.purs"
 moduleToPath :: FileSystem -> RegenerateConfig -> String -> Maybe String
 moduleToPath fs cfg modName =
-  -- Library modules
-  if String.indexOf (String.Pattern "Data.") modName == Just 0 || modName == "Prelude"
+  -- Library modules (Data.*, Control.*, Prelude)
+  if String.indexOf (String.Pattern "Data.") modName == Just 0 ||
+     String.indexOf (String.Pattern "Control.") modName == Just 0 ||
+     modName == "Prelude"
   then
     let path = cfg.libBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
     in if fs.fileExists path then Just path else Nothing
-  -- Compiler modules
-  else if String.indexOf (String.Pattern "Nova.Compiler.") modName == Just 0
+  -- Source modules (Nova.*)
+  else if String.indexOf (String.Pattern "Nova.") modName == Just 0
   then
-    let shortName = String.drop 14 modName  -- Remove "Nova.Compiler."
-        path = cfg.srcBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") shortName <> ".purs"
+    let path = cfg.srcBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
     in if fs.fileExists path then Just path else Nothing
   else Nothing
 
@@ -227,10 +228,15 @@ getModuleName cfg path =
     let relative = String.drop (String.length cfg.libBase) path
         withoutExt = String.take (String.length relative - 5) relative  -- Remove ".purs"
     in String.replaceAll (String.Pattern "/") (String.Replacement ".") withoutExt
-  -- Compiler modules
+  -- Source modules
+  else if String.indexOf (String.Pattern cfg.srcBase) path == Just 0
+  then
+    let relative = String.drop (String.length cfg.srcBase) path
+        withoutExt = String.take (String.length relative - 5) relative  -- Remove ".purs"
+    in String.replaceAll (String.Pattern "/") (String.Replacement ".") withoutExt
   else
     let match = getFileBaseName path
-    in "Nova.Compiler." <> match
+    in match
 
 -- | Get base filename without extension
 getFileBaseName :: String -> String
@@ -269,36 +275,41 @@ compileLibraryModules fs cfg sortedPaths =
               let registry' = Types.registerModule registry modName result.exports
                   -- Generate and write .core file for library module
                   code = CodeGen.genModule result.mod
-                  -- Convert "Data.Maybe" to "Data.Maybe.core"
-                  outputFile = cfg'.outputDir <> String.replaceAll (String.Pattern ".") (String.Replacement ".") modName <> ".core"
-                  _written = fs'.writeFile outputFile code
+                  -- Convert "Data.Maybe" to "Data/Maybe.core"
+                  modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName
+                  outputFile = cfg'.outputDir <> modPath <> ".core"
+                  targetFile = cfg'.targetDir <> modPath <> ".core"
+                  _written1 = fs'.writeFile outputFile code
+                  _written2 = fs'.writeFile targetFile code
               in Tuple registry' (Array.snoc logs (LogInfo ("Compiled library: " <> modName)))
 
--- | Compile all compiler modules, generating Elixir output
-compileCompilerModules :: FileSystem -> RegenerateConfig -> Types.ModuleRegistry -> Array String -> Tuple Int (Array LogEntry)
-compileCompilerModules fs cfg libRegistry sortedPaths =
+-- | Compile all source modules (src/**), generating Core Erlang output
+compileSourceModules :: FileSystem -> RegenerateConfig -> Types.ModuleRegistry -> Array String -> Tuple Int (Array LogEntry)
+compileSourceModules fs cfg libRegistry sortedPaths =
   let initial = { registry: libRegistry, count: 0, logs: [] }
-      result = foldl (compileCompModule fs cfg) initial sortedPaths
+      result = foldl (compileSrcModule fs cfg) initial sortedPaths
   in Tuple result.count result.logs
   where
-    compileCompModule fs' cfg' acc path =
+    compileSrcModule fs' cfg' acc path =
       case fs'.readFile path of
         Nothing ->
           acc { logs = Array.snoc acc.logs (LogError ("Cannot read: " <> path)) }
         Just source ->
-          let shortName = getShortName path
-              fullModName = getModuleName cfg' path
+          let fullModName = getModuleName cfg' path
           in case parseAndCheckModule acc.registry source of
             Left err ->
-              acc { logs = Array.snoc acc.logs (LogError (shortName <> ": " <> err)) }
+              acc { logs = Array.snoc acc.logs (LogError (fullModName <> ": " <> err)) }
             Right result ->
               let code = CodeGen.genModule result.mod
                   registry' = Types.registerModule acc.registry fullModName result.exports
-                  -- Write output files
-                  _written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".core") code
-                  _written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".core") code
+                  -- Convert "Nova.Compiler.Ast" to "Nova/Compiler/Ast.core"
+                  modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") fullModName
+                  outputFile = cfg'.outputDir <> modPath <> ".core"
+                  targetFile = cfg'.targetDir <> modPath <> ".core"
+                  _written1 = fs'.writeFile outputFile code
+                  _written2 = fs'.writeFile targetFile code
                   lineCount = Array.length (String.split (String.Pattern "\n") code)
-                  logMsg = "Compiled " <> shortName <> " (" <> show lineCount <> " lines)"
+                  logMsg = "Compiled " <> fullModName <> " (" <> show lineCount <> " lines)"
               in { registry: registry'
                  , count: acc.count + 1
                  , logs: Array.snoc acc.logs (LogInfo logMsg)
@@ -307,26 +318,26 @@ compileCompilerModules fs cfg libRegistry sortedPaths =
 -- | Main entry point: regenerate all compiler modules
 regenerate :: FileSystem -> RegenerateConfig -> RegenerateResult
 regenerate fs cfg =
-  let -- Find all source files
-      libFiles = fs.listFiles (cfg.libBase <> "Data") ".purs"
-      compilerFiles = fs.listFiles cfg.srcBase ".purs"
+  let -- Find all source files (lib/** and src/**)
+      libFiles = fs.listFiles cfg.libBase ".purs"
+      srcFiles = fs.listFiles cfg.srcBase ".purs"
 
       -- Build dependency graphs
       libDeps = buildDependencyGraph fs cfg libFiles true
-      compilerDeps = buildDependencyGraph fs cfg compilerFiles false
+      srcDeps = buildDependencyGraph fs cfg srcFiles false
 
       -- Sort topologically
       sortedLibModules = topologicalSort libDeps
-      sortedCompilerModules = topologicalSort compilerDeps
+      sortedSrcModules = topologicalSort srcDeps
 
       -- Compile library modules first
       Tuple libRegistry libLogs = compileLibraryModules fs cfg sortedLibModules
 
-      -- Compile compiler modules
-      Tuple compilerCount compilerLogs = compileCompilerModules fs cfg libRegistry sortedCompilerModules
+      -- Compile source modules
+      Tuple srcCount srcLogs = compileSourceModules fs cfg libRegistry sortedSrcModules
   in { success: true
-     , modulesCompiled: compilerCount
-     , logs: libLogs <> compilerLogs
+     , modulesCompiled: srcCount + Array.length sortedLibModules
+     , logs: libLogs <> srcLogs
      }
 
 -- ============================================================================
