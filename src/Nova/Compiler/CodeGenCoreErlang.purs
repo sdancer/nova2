@@ -667,27 +667,10 @@ genExpr ctx (ExprApp f arg) =
       -- Resolve module alias to full name
       let fullModName = resolveModuleName ctx modAlias
           modName = translateModuleName fullModName
-          -- Library modules (Data.*, Control.*, etc.) use uncurried calls
-          -- Compiler modules (Nova.Compiler.*) use curried calls
-          -- BUT constructors always use uncurried calls (all args at once)
-          isLibModule = String.take 5 fullModName == "Data." ||
-                        String.take 8 fullModName == "Control." ||
-                        String.take 5 fullModName == "Nova." && String.take 14 fullModName /= "Nova.Compiler."
-          isConstructor = case String.take 1 funcName of
-                            c -> c >= "A" && c <= "Z"
-      in if isLibModule || isConstructor then
-           -- Library module or constructor: call with all args (uncurried)
-           "call " <> atom modName <> ":" <> atom funcName <>
-           "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
-         else
-           -- Compiler function: call with first arg, apply remaining (curried)
-           case Array.uncons args of
-             Nothing ->
-               "call " <> atom modName <> ":" <> atom funcName <> "()"
-             Just { head: firstArg, tail: restArgs } ->
-               let baseCall = "call " <> atom modName <> ":" <> atom funcName <>
-                             "(" <> genExpr ctx firstArg <> ")"
-               in genCurriedApply ctx baseCall restArgs
+          -- All modules use uncurried calls in Core Erlang generation
+          -- since we generate uncurried function definitions
+      in "call " <> atom modName <> ":" <> atom funcName <>
+         "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
     _ ->
       "apply " <> genExpr ctx func <>
       "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
@@ -1642,6 +1625,8 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.Set" "fromFoldableImpl" -> "call 'sets':'from_list'(" <> p 0 <> ")"
 
     -- ===== Data.Int =====
+    Tuple "Data.Int" "fromStringImpl" ->
+      "case catch call 'erlang':'list_to_integer'(" <> p 0 <> ") of\n        <{'EXIT', _}> when 'true' -> 'Nothing'\n        <_TmpInt> when 'true' -> {'Just', _TmpInt}\n      end"
     Tuple "Data.Int" "toNumberImpl" -> "call 'erlang':'float'(" <> p 0 <> ")"
     Tuple "Data.Int" "roundImpl" -> "call 'erlang':'round'(" <> p 0 <> ")"
     Tuple "Data.Int" "floorImpl" -> "call 'erlang':'trunc'(" <> p 0 <> ")"

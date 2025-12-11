@@ -880,7 +880,7 @@ shuntingYard firstExpr ops =
         -- Pop and apply the operator
         case output of
           (right : left : restOutput) -> do
-            let combined = Ast.ExprBinOp topOp left right
+            let combined = makeBinOpOrSection topOp left right
             popHigherPrec (combined : restOutput) restOps prec isRightAssoc
           _ -> Left "Not enough operands for operator"
       else Right { output, opStack }
@@ -892,9 +892,20 @@ shuntingYard firstExpr ops =
     _ -> Left "Invalid expression: multiple values remaining"
   reduceAll output (op : restOps) = case output of
     (right : left : restOutput) -> do
-      let combined = Ast.ExprBinOp op left right
+      let combined = makeBinOpOrSection op left right
       reduceAll (combined : restOutput) restOps
     _ -> Left "Not enough operands for operator"
+
+-- | Create BinOp or Section expression based on whether operands are section placeholders
+-- If left is ExprSection "_": create ExprSectionRight (right section: _ op e => fun x -> x op e)
+-- If right is ExprSection "_": create ExprSectionLeft (left section: e op _ => fun x -> e op x)
+-- Otherwise: create ExprBinOp
+makeBinOpOrSection :: String -> Ast.Expr -> Ast.Expr -> Ast.Expr
+makeBinOpOrSection op left right = case left of
+  Ast.ExprSection "_" -> Ast.ExprSectionRight op right
+  _ -> case right of
+    Ast.ExprSection "_" -> Ast.ExprSectionLeft left op
+    _ -> Ast.ExprBinOp op left right
 
 -- Note: Expanding Wrapped type alias manually for self-hosted type checker compatibility
 -- Wrapped a = { open :: SourceToken, value :: a, close :: SourceToken }

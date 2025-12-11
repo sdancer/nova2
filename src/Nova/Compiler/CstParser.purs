@@ -23,7 +23,7 @@ type ParseResult a = Either String (Tuple a TokenStream)
 newtype Parser a = Parser (TokenStream -> ParseResult a)
 
 runParser :: forall a. Parser a -> TokenStream -> ParseResult a
-runParser (Parser p) = p
+runParser (Parser p) tokens = p tokens
 
 -- ============================================================================
 -- Parser Combinators
