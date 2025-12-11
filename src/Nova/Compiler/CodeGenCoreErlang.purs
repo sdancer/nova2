@@ -50,7 +50,7 @@ type PreludeFuncInfo = { mod :: String, func :: String, arity :: Int }
 
 getPreludeFunc :: String -> Maybe PreludeFuncInfo
 getPreludeFunc "show" = Just { mod: "erlang", func: "integer_to_list", arity: 1 }  -- Simple case: assume Int
-getPreludeFunc "foldl" = Just { mod: "lists", func: "foldl", arity: 3 }  -- Use lists implementation
+getPreludeFunc "foldl" = Nothing  -- Don't use lists:foldl - argument order is different
 getPreludeFunc "foldr" = Just { mod: "lists", func: "foldr", arity: 3 }  -- Use lists implementation
 getPreludeFunc "map" = Just { mod: "lists", func: "map", arity: 2 }
 getPreludeFunc "filter" = Just { mod: "lists", func: "filter", arity: 2 }
@@ -635,10 +635,19 @@ genExpr ctx (ExprVar name) =
       c -> c >= "A" && c <= "Z"
 
 genExpr ctx (ExprQualified modAlias funcName) =
-  -- When used as a value (not applied), call with no arguments
-  -- This handles constants and will use curried wrapper if more args needed
+  -- When used as a value (not applied)
   let fullModName = resolveModuleName ctx modAlias
-  in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+  in if isConstructorName funcName
+     -- Constructor used as a value: generate a curried function wrapper
+     -- For binary constructor like TyExprApp: fun(A) -> fun(B) -> {TyExprApp, A, B} end end
+     -- For unary like Just: fun(A) -> {Just, A} end
+     -- Since we don't know arity, generate curried wrapper via module call
+     then "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+     -- Regular function: call with no arguments
+     else "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+  where
+    isConstructorName s = case String.take 1 s of
+      c -> c >= "A" && c <= "Z"
 
 genExpr ctx (ExprApp f arg) =
   let { func, args } = collectArgs (ExprApp f arg)
@@ -819,9 +828,18 @@ genExpr ctx (ExprBinOp "#" l r) =
   " in apply _HashF(" <> genExpr ctx l <> ")"
 
 -- The $ operator is function application: f $ x = f x
+-- Special case: if left side is a constructor, generate tuple instead of apply
 genExpr ctx (ExprBinOp "$" l r) =
-  "let <_DollarF> = " <> genExpr ctx l <>
-  " in apply _DollarF(" <> genExpr ctx r <> ")"
+  case l of
+    ExprVar name | isConstructorName name ->
+      -- Constructor application: Right $ x -> {'Right', x}
+      "{" <> atom name <> ", " <> genExpr ctx r <> "}"
+    _ ->
+      "let <_DollarF> = " <> genExpr ctx l <>
+      " in apply _DollarF(" <> genExpr ctx r <> ")"
+  where
+    isConstructorName s = case String.take 1 s of
+      c -> c >= "A" && c <= "Z"
 
 -- The <|> operator is Parser alternative - call alt function
 genExpr ctx (ExprBinOp "<|>" l r) =
@@ -887,7 +905,7 @@ genExpr ctx (ExprRecord fields) =
 genExpr ctx (ExprRecordAccess expr field) =
   -- Check if this is a record accessor function like _.id
   case expr of
-    ExprVar "_" ->
+    ExprSection "_" ->
       -- Generate a lambda: fun (_Ra) -> call 'maps':'get'('field', _Ra)
       "fun (_Ra) -> call 'maps':'get'(" <> atom (toSnakeCase field) <> ", _Ra)"
     _ ->
@@ -1632,179 +1650,22 @@ countTypeArity (TyExprForAll _ inner) = countTypeArity inner
 countTypeArity _ = 0
 
 -- | Generate a foreign import function definition
--- Maps FFI functions to their Erlang implementations
+-- Uses inlineImpl if provided, otherwise generates ffi_not_implemented placeholder
 genForeignImport :: String -> ForeignImport -> String
-genForeignImport modName fi =
+genForeignImport _modName fi =
   let funcName = fi.functionName
       arity = countTypeArity fi.typeSignature
       params = if arity <= 0 then [] else map (\i -> "V" <> show i) (Array.range 0 (arity - 1))
       paramStr = String.joinWith ", " params
-      body = lookupFFIBody modName funcName arity params
+      -- Use inline implementation if provided, otherwise generate error
+      body = case fi.inlineImpl of
+        Just impl -> substituteParams impl params
+        Nothing -> "'ffi_not_implemented'"
   in "'" <> funcName <> "'/" <> show arity <> " = fun (" <> paramStr <> ") -> " <> body
 
--- | Look up the Core Erlang body for an FFI function
--- Returns appropriate Erlang BIF call or implementation
-lookupFFIBody :: String -> String -> Int -> Array String -> String
-lookupFFIBody modName funcName _arity params =
-  case Tuple modName funcName of
-    -- ===== Data.String.CodeUnits =====
-    Tuple "Data.String.CodeUnits" "singletonImpl" -> "[" <> p 0 <> "]"
-    Tuple "Data.String.CodeUnits" "takeImpl" -> "call 'lists':'sublist'(" <> p 1 <> ", " <> p 0 <> ")"
-    Tuple "Data.String.CodeUnits" "dropImpl" ->
-      "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
-    Tuple "Data.String.CodeUnits" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
-    Tuple "Data.String.CodeUnits" "toCharArrayImpl" -> p 0  -- identity: strings are char arrays
-    Tuple "Data.String.CodeUnits" "fromCharArrayImpl" -> p 0  -- identity
-    Tuple "Data.String.CodeUnits" "charAtImpl" ->
-      "case call 'erlang':'>'(" <> p 0 <> ", call 'erlang':'length'(" <> p 1 <> ")) of\n        <'true'> when 'true' -> 'Nothing'\n        <'false'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(" <> p 0 <> ", 1), " <> p 1 <> ")}\n      end"
-    Tuple "Data.String.CodeUnits" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
-
-    -- ===== Data.String =====
-    Tuple "Data.String" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
-    Tuple "Data.String" "takeImpl" -> "call 'lists':'sublist'(" <> p 1 <> ", " <> p 0 <> ")"
-    Tuple "Data.String" "dropImpl" ->
-      "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
-    Tuple "Data.String" "joinWithImpl" -> "call 'lists':'join'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.String" "splitImpl" -> "call 'string':'split'(" <> p 1 <> ", " <> p 0 <> ", 'all')"
-    Tuple "Data.String" "trimImpl" -> "call 'string':'trim'(" <> p 0 <> ")"
-    Tuple "Data.String" "toLowerImpl" -> "call 'string':'lowercase'(" <> p 0 <> ")"
-    Tuple "Data.String" "toUpperImpl" -> "call 'string':'uppercase'(" <> p 0 <> ")"
-    Tuple "Data.String" "containsImpl" ->
-      "case call 'string':'find'(" <> p 1 <> ", " <> p 0 <> ") of\n        <'nomatch'> when 'true' -> 'false'\n        <_> when 'true' -> 'true'\n      end"
-    Tuple "Data.String" "nullImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'true'\n        <_> when 'true' -> 'false'\n      end"
-
-    -- ===== Data.Char =====
-    Tuple "Data.Char" "toCharCodeImpl" -> p 0  -- Erlang chars are integers
-    Tuple "Data.Char" "fromCharCodeImpl" -> p 0  -- identity
-    Tuple "Data.Char" "isAlphaImpl" ->
-      "let <C> = " <> p 0 <> " in\n        call 'erlang':'or'(\n          call 'erlang':'and'(call 'erlang':'>='(C, 65), call 'erlang':'=<'(C, 90)),\n          call 'erlang':'and'(call 'erlang':'>='(C, 97), call 'erlang':'=<'(C, 122)))"
-    Tuple "Data.Char" "isDigitImpl" ->
-      "let <C> = " <> p 0 <> " in\n        call 'erlang':'and'(call 'erlang':'>='(C, 48), call 'erlang':'=<'(C, 57))"
-    Tuple "Data.Char" "isSpaceImpl" ->
-      "let <C> = " <> p 0 <> " in\n        call 'erlang':'or'(\n          call 'erlang':'=='(C, 32),\n          call 'erlang':'or'(call 'erlang':'=='(C, 9), call 'erlang':'=='(C, 10)))"
-    Tuple "Data.Char" "isUpperImpl" ->
-      "let <C> = " <> p 0 <> " in\n        call 'erlang':'and'(call 'erlang':'>='(C, 65), call 'erlang':'=<'(C, 90))"
-    Tuple "Data.Char" "isLowerImpl" ->
-      "let <C> = " <> p 0 <> " in\n        call 'erlang':'and'(call 'erlang':'>='(C, 97), call 'erlang':'=<'(C, 122))"
-    Tuple "Data.Char" "toUpperImpl" ->
-      "let <C> = " <> p 0 <> " in\n        case call 'erlang':'and'(call 'erlang':'>='(C, 97), call 'erlang':'=<'(C, 122)) of\n          <'true'> when 'true' -> call 'erlang':'-'(C, 32)\n          <'false'> when 'true' -> C\n        end"
-    Tuple "Data.Char" "toLowerImpl" ->
-      "let <C> = " <> p 0 <> " in\n        case call 'erlang':'and'(call 'erlang':'>='(C, 65), call 'erlang':'=<'(C, 90)) of\n          <'true'> when 'true' -> call 'erlang':'+'(C, 32)\n          <'false'> when 'true' -> C\n        end"
-
-    -- ===== Data.Array =====
-    Tuple "Data.Array" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
-    Tuple "Data.Array" "nullImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'true'\n        <_> when 'true' -> 'false'\n      end"
-    Tuple "Data.Array" "consImpl" -> "[" <> p 0 <> "|" <> p 1 <> "]"
-    Tuple "Data.Array" "snocImpl" -> "call 'lists':'append'(" <> p 0 <> ", [" <> p 1 <> "])"
-    Tuple "Data.Array" "headImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|_]> when 'true' -> {'Just', H}\n      end"
-    Tuple "Data.Array" "tailImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[_|T]> when 'true' -> {'Just', T}\n      end"
-    Tuple "Data.Array" "lastImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <_> when 'true' -> {'Just', call 'lists':'last'(" <> p 0 <> ")}\n      end"
-    Tuple "Data.Array" "initImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <_> when 'true' -> {'Just', call 'lists':'droplast'(" <> p 0 <> ")}\n      end"
-    Tuple "Data.Array" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
-    Tuple "Data.Array" "takeImpl" -> "call 'lists':'sublist'(" <> p 1 <> ", " <> p 0 <> ")"
-    Tuple "Data.Array" "dropImpl" ->
-      "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
-    Tuple "Data.Array" "reverseImpl" -> "call 'lists':'reverse'(" <> p 0 <> ")"
-    Tuple "Data.Array" "concatImpl" -> "call 'lists':'append'(" <> p 0 <> ")"
-    Tuple "Data.Array" "rangeImpl" -> "call 'lists':'seq'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Array" "singletonImpl" -> "[" <> p 0 <> "]"
-    Tuple "Data.Array" "indexImpl" ->
-      "let <Arr> = " <> p 0 <> " in\n        let <Idx> = " <> p 1 <> " in\n          case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, call 'erlang':'length'(Arr))) of\n            <'true'> when 'true' -> 'Nothing'\n            <'false'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(Idx, 1), Arr)}\n          end"
-    Tuple "Data.Array" "replicateImpl" -> "call 'lists':'duplicate'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Array" "mapImpl" -> "call 'lists':'map'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Array" "filterImpl" -> "call 'lists':'filter'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Array" "foldlImpl" -> "call 'lists':'foldl'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Data.Array" "foldrImpl" -> "call 'lists':'foldr'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Data.Array" "sortImpl" -> "call 'lists':'sort'(" <> p 0 <> ")"
-    Tuple "Data.Array" "zipImpl" -> "call 'lists':'zip'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Array" "elemImpl" -> "call 'lists':'member'(" <> p 0 <> ", " <> p 1 <> ")"
-
-    -- ===== Data.List =====
-    Tuple "Data.List" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
-    Tuple "Data.List" "nullImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'true'\n        <_> when 'true' -> 'false'\n      end"
-    Tuple "Data.List" "consImpl" -> "[" <> p 0 <> "|" <> p 1 <> "]"
-    Tuple "Data.List" "singletonImpl" -> "[" <> p 0 <> "]"
-    Tuple "Data.List" "reverseImpl" -> "call 'lists':'reverse'(" <> p 0 <> ")"
-    Tuple "Data.List" "appendImpl" -> "call 'lists':'append'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.List" "mapImpl" -> "call 'lists':'map'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.List" "filterImpl" -> "call 'lists':'filter'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.List" "foldlImpl" -> "call 'lists':'foldl'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Data.List" "foldrImpl" -> "call 'lists':'foldr'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Data.List" "takeImpl" -> "call 'lists':'sublist'(" <> p 1 <> ", " <> p 0 <> ")"
-    Tuple "Data.List" "dropImpl" ->
-      "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
-    Tuple "Data.List" "headImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|_]> when 'true' -> {'Just', H}\n      end"
-    Tuple "Data.List" "tailImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[_|T]> when 'true' -> {'Just', T}\n      end"
-    Tuple "Data.List" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
-    Tuple "Data.List" "fromFoldableImpl" -> p 0  -- identity for Array -> List
-    Tuple "Data.List" "toUnfoldableImpl" -> p 0  -- identity for List -> Array
-    Tuple "Data.List" "rangeImpl" -> "call 'lists':'seq'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.List" "elemImpl" -> "call 'lists':'member'(" <> p 0 <> ", " <> p 1 <> ")"
-
-    -- ===== Data.Map =====
-    Tuple "Data.Map" "emptyImpl" -> "call 'maps':'new'()"
-    Tuple "Data.Map" "singletonImpl" -> "call 'maps':'from_list'([{" <> p 0 <> ", " <> p 1 <> "}])"
-    Tuple "Data.Map" "insertImpl" -> "call 'maps':'put'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Data.Map" "lookupImpl" ->
-      "case call 'maps':'find'(" <> p 0 <> ", " <> p 1 <> ") of\n        <{'ok', V}> when 'true' -> {'Just', V}\n        <'error'> when 'true' -> 'Nothing'\n      end"
-    Tuple "Data.Map" "memberImpl" -> "call 'maps':'is_key'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Map" "deleteImpl" -> "call 'maps':'remove'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Map" "sizeImpl" -> "call 'maps':'size'(" <> p 0 <> ")"
-    Tuple "Data.Map" "isEmptyImpl" -> "call 'erlang':'=='(call 'maps':'size'(" <> p 0 <> "), 0)"
-    Tuple "Data.Map" "keysImpl" -> "call 'maps':'keys'(" <> p 0 <> ")"
-    Tuple "Data.Map" "valuesImpl" -> "call 'maps':'values'(" <> p 0 <> ")"
-    Tuple "Data.Map" "unionImpl" -> "call 'maps':'merge'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Map" "toUnfoldableImpl" -> "call 'maps':'to_list'(" <> p 0 <> ")"
-    Tuple "Data.Map" "fromFoldableImpl" -> "call 'maps':'from_list'(" <> p 0 <> ")"
-
-    -- ===== Data.Set =====
-    Tuple "Data.Set" "emptyImpl" -> "call 'sets':'new'()"
-    Tuple "Data.Set" "singletonImpl" -> "call 'sets':'from_list'([" <> p 0 <> "])"
-    Tuple "Data.Set" "insertImpl" -> "call 'sets':'add_element'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "memberImpl" -> "call 'sets':'is_element'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "deleteImpl" -> "call 'sets':'del_element'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "sizeImpl" -> "call 'sets':'size'(" <> p 0 <> ")"
-    Tuple "Data.Set" "isEmptyImpl" -> "call 'erlang':'=='(call 'sets':'size'(" <> p 0 <> "), 0)"
-    Tuple "Data.Set" "unionImpl" -> "call 'sets':'union'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "intersectionImpl" -> "call 'sets':'intersection'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "differenceImpl" -> "call 'sets':'subtract'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Data.Set" "toUnfoldableImpl" -> "call 'sets':'to_list'(" <> p 0 <> ")"
-    Tuple "Data.Set" "fromFoldableImpl" -> "call 'sets':'from_list'(" <> p 0 <> ")"
-
-    -- ===== Data.Int =====
-    Tuple "Data.Int" "fromStringImpl" ->
-      "case catch call 'erlang':'list_to_integer'(" <> p 0 <> ") of\n        <{'EXIT', _}> when 'true' -> 'Nothing'\n        <_TmpInt> when 'true' -> {'Just', _TmpInt}\n      end"
-    Tuple "Data.Int" "toNumberImpl" -> "call 'erlang':'float'(" <> p 0 <> ")"
-    Tuple "Data.Int" "roundImpl" -> "call 'erlang':'round'(" <> p 0 <> ")"
-    Tuple "Data.Int" "floorImpl" -> "call 'erlang':'trunc'(" <> p 0 <> ")"
-    Tuple "Data.Int" "ceilImpl" -> "call 'erlang':'ceil'(" <> p 0 <> ")"
-
-    -- ===== Nova.Prelude =====
-    Tuple "Nova.Prelude" "showImpl" -> "call 'erlang':'term_to_binary'(" <> p 0 <> ")"
-    Tuple "Nova.Prelude" "negate" -> "call 'erlang':'-'(0, " <> p 0 <> ")"
-    Tuple "Nova.Prelude" "mapImpl" -> "call 'lists':'map'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Nova.Prelude" "filterImpl" -> "call 'lists':'filter'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Nova.Prelude" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
-    Tuple "Nova.Prelude" "appendImpl" -> "call 'lists':'append'(" <> p 0 <> ", " <> p 1 <> ")"
-    Tuple "Nova.Prelude" "foldlImpl" -> "call 'lists':'foldl'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-    Tuple "Nova.Prelude" "foldrImpl" -> "call 'lists':'foldr'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
-
-    -- ===== Control.Lazy =====
-    Tuple "Control.Lazy" "deferImpl" -> "apply " <> p 0 <> "([])"  -- call thunk with Unit
-
-    -- Default: generate a placeholder error
-    _ -> "'ffi_not_implemented'"
-  where
-    p i = fromMaybe "?" (Array.index params i)
+-- | Substitute $0, $1, etc. with actual parameter names (V0, V1, etc.)
+substituteParams :: String -> Array String -> String
+substituteParams impl params =
+  foldl (\s i -> String.replaceAll (String.Pattern ("$" <> show i)) (String.Replacement (fromMaybe ("V" <> show i) (Array.index params i))) s)
+        impl
+        (Array.range 0 (Array.length params - 1))

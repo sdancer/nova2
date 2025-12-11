@@ -25,7 +25,7 @@ import Data.Tuple (Tuple(..))
 
 import Nova.Compiler.Ast (Module)
 import Nova.Compiler.CstPipeline as CstPipeline
-import Nova.Compiler.CodeGen as CodeGen
+import Nova.Compiler.CodeGenCoreErlang as CodeGen
 import Nova.Compiler.TypeChecker as TypeChecker
 import Nova.Compiler.Types as Types
 
@@ -211,8 +211,7 @@ compileModule registry source =
   case parseAndCheckModule registry source of
     Left err -> Left err
     Right result ->
-      let maybeEnv = Just result.env
-          code = CodeGen.genModuleWithRegistry registry maybeEnv result.mod
+      let code = CodeGen.genModule result.mod
       in Right code
 
 -- ============================================================================
@@ -268,6 +267,11 @@ compileLibraryModules fs cfg sortedPaths =
               Tuple registry (Array.snoc logs (LogError (modName <> ": " <> err)))
             Right result ->
               let registry' = Types.registerModule registry modName result.exports
+                  -- Generate and write .core file for library module
+                  code = CodeGen.genModule result.mod
+                  -- Convert "Data.Maybe" to "Data.Maybe.core"
+                  outputFile = cfg'.outputDir <> String.replaceAll (String.Pattern ".") (String.Replacement ".") modName <> ".core"
+                  _written = fs'.writeFile outputFile code
               in Tuple registry' (Array.snoc logs (LogInfo ("Compiled library: " <> modName)))
 
 -- | Compile all compiler modules, generating Elixir output
@@ -288,12 +292,11 @@ compileCompilerModules fs cfg libRegistry sortedPaths =
             Left err ->
               acc { logs = Array.snoc acc.logs (LogError (shortName <> ": " <> err)) }
             Right result ->
-              let maybeEnv = Just result.env
-                  code = CodeGen.genModuleWithRegistry acc.registry maybeEnv result.mod
+              let code = CodeGen.genModule result.mod
                   registry' = Types.registerModule acc.registry fullModName result.exports
                   -- Write output files
-                  _written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".ex") code
-                  _written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".ex") code
+                  _written1 = fs'.writeFile (cfg'.outputDir <> shortName <> ".core") code
+                  _written2 = fs'.writeFile (cfg'.targetDir <> shortName <> ".core") code
                   lineCount = Array.length (String.split (String.Pattern "\n") code)
                   logMsg = "Compiled " <> shortName <> " (" <> show lineCount <> " lines)"
               in { registry: registry'

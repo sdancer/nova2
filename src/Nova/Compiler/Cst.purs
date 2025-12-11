@@ -286,6 +286,7 @@ data FixityOp
 
 data Foreign e
   = ForeignValue (Labeled (Name Ident) (Type e))
+  | ForeignValueInline (Labeled (Name Ident) (Type e)) SourceToken String  -- = "inline impl"
   | ForeignData SourceToken (Labeled (Name Proper) (Type e))
 
 -- ============================================================================

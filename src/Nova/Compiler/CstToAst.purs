@@ -558,7 +558,11 @@ convertForeign foreign' = case foreign' of
   Cst.ForeignValue labeled -> do
     let functionName = unwrapIdent labeled.label.name
     ty <- convertType labeled.value
-    Right $ Ast.DeclForeignImport { moduleName: "", functionName, alias: Nothing, typeSignature: ty }
+    Right $ Ast.DeclForeignImport { moduleName: "", functionName, alias: Nothing, typeSignature: ty, inlineImpl: Nothing }
+  Cst.ForeignValueInline labeled _ impl -> do
+    let functionName = unwrapIdent labeled.label.name
+    ty <- convertType labeled.value
+    Right $ Ast.DeclForeignImport { moduleName: "", functionName, alias: Nothing, typeSignature: ty, inlineImpl: Just impl }
   Cst.ForeignData _ labeled -> do
     -- Foreign data types become type aliases to opaque types
     let name = unwrapProper labeled.label.name

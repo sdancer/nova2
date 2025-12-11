@@ -1426,7 +1426,14 @@ parseForeignValue = do
   name <- tokLowerName
   dc <- tokDoubleColon
   ty <- parseType
-  pure (Cst.ForeignValue { label: name, separator: dc, value: ty })
+  -- Optionally parse inline Core Erlang implementation: = "..."
+  inlineImpl <- optional (do
+    eq <- tokEquals
+    Tuple _tok impl <- tokString
+    pure (Tuple eq impl))
+  case inlineImpl of
+    Just (Tuple eq impl) -> pure (Cst.ForeignValueInline { label: name, separator: dc, value: ty } eq impl)
+    Nothing -> pure (Cst.ForeignValue { label: name, separator: dc, value: ty })
 
 parseDeclFixity :: Parser (Cst.Declaration Void)
 parseDeclFixity = do

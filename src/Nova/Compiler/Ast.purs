@@ -224,11 +224,13 @@ data ImportSpec
   | ImportNone
 
 -- | Foreign import
+-- | inlineImpl contains optional inline Core Erlang implementation
 type ForeignImport =
   { moduleName :: String
   , functionName :: String
   , alias :: Maybe String
   , typeSignature :: TypeExpr
+  , inlineImpl :: Maybe String
   }
 
 -- | Infix declaration (infixl, infixr, infix)

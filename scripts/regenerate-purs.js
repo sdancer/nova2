@@ -9,90 +9,94 @@
 
 const fs = require('fs');
 const path = require('path');
-const regenerate = require('../output/Nova.Compiler.Regenerate/index.js');
-const Maybe = require('../output/Data.Maybe/index.js');
 
 // ============================================================================
-// Filesystem Delegates
+// Main - using dynamic import for ES modules
 // ============================================================================
 
-// Create filesystem operations object matching the FileSystem type
-const fileSystem = {
-  readFile: (filePath) => {
-    try {
-      if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf8');
-        return new Maybe.Just(content);
-      }
-      return Maybe.Nothing.value;
-    } catch (e) {
-      return Maybe.Nothing.value;
-    }
-  },
+async function main() {
+  const regenerate = await import('../output/Nova.Compiler.Regenerate/index.js');
+  const Maybe = await import('../output/Data.Maybe/index.js');
 
-  writeFile: (filePath) => (content) => {
-    // Ensure directory exists
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filePath, content);
-    return {}; // Unit
-  },
-
-  fileExists: (filePath) => {
-    return fs.existsSync(filePath);
-  },
-
-  listFiles: (dir) => (extension) => {
-    const files = [];
-
-    function walk(currentDir) {
-      if (!fs.existsSync(currentDir)) return;
-
+  // Create filesystem operations object matching the FileSystem type
+  const fileSystem = {
+    readFile: (filePath) => {
       try {
-        const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-        for (const entry of entries) {
-          const fullPath = path.join(currentDir, entry.name);
-          if (entry.isDirectory()) {
-            walk(fullPath);
-          } else if (entry.name.endsWith(extension)) {
-            // Normalize to use ./ prefix like the original script
-            files.push('./' + fullPath.replace(/\\/g, '/'));
-          }
+        if (fs.existsSync(filePath)) {
+          const content = fs.readFileSync(filePath, 'utf8');
+          return new Maybe.Just(content);
         }
+        return Maybe.Nothing.value;
       } catch (e) {
-        // Ignore permission errors, etc.
+        return Maybe.Nothing.value;
       }
+    },
+
+    writeFile: (filePath) => (content) => {
+      // Ensure directory exists
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(filePath, content);
+      return {}; // Unit
+    },
+
+    fileExists: (filePath) => {
+      return fs.existsSync(filePath);
+    },
+
+    listFiles: (dir) => (extension) => {
+      const files = [];
+
+      function walk(currentDir) {
+        if (!fs.existsSync(currentDir)) return;
+
+        try {
+          const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+          for (const entry of entries) {
+            const fullPath = path.join(currentDir, entry.name);
+            if (entry.isDirectory()) {
+              walk(fullPath);
+            } else if (entry.name.endsWith(extension)) {
+              // Normalize to use ./ prefix like the original script
+              files.push('./' + fullPath.replace(/\\/g, '/'));
+            }
+          }
+        } catch (e) {
+          // Ignore permission errors, etc.
+        }
+      }
+
+      walk(dir);
+      return files;
     }
+  };
 
-    walk(dir);
-    return files;
-  }
-};
+  console.log('=== Nova Compiler Regeneration (PureScript) ===\n');
 
-// ============================================================================
-// Main
-// ============================================================================
+  // Use default config
+  const config = regenerate.defaultConfig;
 
-console.log('=== Nova Compiler Regeneration (PureScript) ===\n');
+  console.log('Source dir:', config.srcBase);
+  console.log('Library dir:', config.libBase);
+  console.log('Output dir:', config.outputDir);
+  console.log('Target dir:', config.targetDir);
+  console.log('');
 
-// Use default config
-const config = regenerate.defaultConfig;
+  // Run regeneration
+  const result = regenerate.regenerate(fileSystem)(config);
 
-console.log('Source dir:', config.srcBase);
-console.log('Library dir:', config.libBase);
-console.log('Output dir:', config.outputDir);
-console.log('Target dir:', config.targetDir);
-console.log('');
+  // Print logs
+  console.log(regenerate.showLogs(result.logs));
 
-// Run regeneration
-const result = regenerate.regenerate(fileSystem)(config);
+  // Print summary
+  console.log('\n=== Summary ===');
+  console.log('Modules compiled:', result.modulesCompiled);
+  console.log('Success:', result.success);
+}
 
-// Print logs
-console.log(regenerate.showLogs(result.logs));
-
-// Print summary
-console.log('\n=== Summary ===');
-console.log('Modules compiled:', result.modulesCompiled);
-console.log('Success:', result.success);
+main().catch(err => {
+  console.error('Error:', err);
+  process.exit(1);
+});
