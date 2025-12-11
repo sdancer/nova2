@@ -187,8 +187,11 @@ infer env (ExprApp f arg) =
             Right r2 ->
               let Tuple tv env3 = freshVar r2.env "r"
                   resultTy = TyVar tv
-              in case unifyEnv env3 (applySubst r2.sub r1.ty) (tArrow r2.ty resultTy) of
-                Left ue -> Left (UnifyErrWithContext ue ("app: " <> showExprShort func <> " applied to " <> showExprShort a))
+                  funcTy = applySubst r2.sub r1.ty
+                  expectedTy = tArrow r2.ty resultTy
+              in case unifyEnv env3 funcTy expectedTy of
+                Left ue ->
+                  Left (UnifyErrWithContext ue ("app: " <> showExprShort func <> " applied to " <> showExprShort a))
                 Right s3 ->
                   let sub = composeSubst s3 (composeSubst r2.sub r1.sub)
                   in Right { ty: applySubst s3 resultTy, sub, env: env3 }
@@ -249,25 +252,37 @@ infer env (ExprCase scrutinee clauses) =
           Right { ty: applySubst clauseRes.sub resultTy, sub: clauseRes.sub, env: clauseRes.env }
 
 infer env (ExprBinOp op l r) =
-  let mkError = case String.lastIndexOf (String.Pattern ".") op of
-        Just idx -> UndefinedQualifiedImport (String.take idx op) (String.drop (idx + 1) op)
-        Nothing -> UnboundVariable op
-  in case lookupEnv env op of
-    Nothing -> Left mkError
-    Just scheme ->
-      let opInst = instantiate env scheme
-      in case infer opInst.env l of
-        Left e -> Left e
-        Right lRes ->
-          case infer lRes.env r of
-            Left e -> Left e
-            Right rRes ->
-              let Tuple resTv env4 = freshVar rRes.env "binop"
-              in case unifyEnv env4 (applySubst (composeSubst rRes.sub lRes.sub) opInst.ty) (tArrow lRes.ty (tArrow rRes.ty (TyVar resTv))) of
-                Left ue -> Left (UnifyErr ue)
-                Right s4 ->
-                  let sub = composeSubst s4 (composeSubst rRes.sub lRes.sub)
-                  in Right { ty: applySubst s4 (TyVar resTv), sub, env: env4 }
+  -- Check for section syntax: (_ op expr) or (expr op _)
+  case l of
+    ExprSection "_" ->
+      -- (_ op r) is a right section: \x -> x op r
+      -- Type: a -> result where op :: a -> b -> result and r :: b
+      infer env (ExprLambda (Cons (PatVar "_x") Nil) (ExprBinOp op (ExprVar "_x") r))
+    _ -> case r of
+      ExprSection "_" ->
+        -- (l op _) is a left section: \x -> l op x
+        infer env (ExprLambda (Cons (PatVar "_x") Nil) (ExprBinOp op l (ExprVar "_x")))
+      _ ->
+        -- Normal binary operation
+        let mkError = case String.lastIndexOf (String.Pattern ".") op of
+              Just idx -> UndefinedQualifiedImport (String.take idx op) (String.drop (idx + 1) op)
+              Nothing -> UnboundVariable op
+        in case lookupEnv env op of
+          Nothing -> Left mkError
+          Just scheme ->
+            let opInst = instantiate env scheme
+            in case infer opInst.env l of
+              Left e -> Left e
+              Right lRes ->
+                case infer lRes.env r of
+                  Left e -> Left e
+                  Right rRes ->
+                    let Tuple resTv env4 = freshVar rRes.env "binop"
+                    in case unifyEnv env4 (applySubst (composeSubst rRes.sub lRes.sub) opInst.ty) (tArrow lRes.ty (tArrow rRes.ty (TyVar resTv))) of
+                      Left ue -> Left (UnifyErr ue)
+                      Right s4 ->
+                        let sub = composeSubst s4 (composeSubst rRes.sub lRes.sub)
+                        in Right { ty: applySubst s4 (TyVar resTv), sub, env: env4 }
 
 infer env (ExprList elems) =
   let Tuple elemTv env1 = freshVar env "elem"
@@ -811,8 +826,17 @@ checkFunction env func =
         Right s ->
           let finalSub = composeSubst s res.sub
               finalTy = applySubst finalSub res.ty
-              scheme = generalize res.env finalTy
+              -- Check if there's a type signature for this function
+              sigScheme = lookupEnv env func.name
+              scheme = case sigScheme of
+                -- Has signature (not a placeholder) - use signature scheme directly
+                Just sig | not (isPlaceholder sig.ty) -> sig
+                -- No signature - generalize as usual
+                _ -> generalize res.env finalTy
           in Right { scheme, env: extendEnv res.env func.name scheme }
+  where
+    isPlaceholder (TyVar tv) = tv.id >= 0 && String.take 3 tv.name == "fn_"
+    isPlaceholder _ = false
 
 -- | Type check a declaration
 checkDecl :: Env -> Declaration -> Either TCError Env
@@ -1055,13 +1079,11 @@ typeExprToTypeWithEnv env aliasMap paramAliasMap varMap (TyExprCon name) =
                else Nothing
           _ -> Nothing
       -- Check if it's a type alias in the environment (from imported modules)
-      -- First check env.typeAliases, then env.bindings
+      -- Only check env.typeAliases - NOT env.bindings
+      -- env.bindings contains value types (e.g., Array :: forall a. Array a)
+      -- which would incorrectly add type variables when used as type constructors
       tryEnvLookup :: String -> Maybe Type
-      tryEnvLookup nm = case lookupTypeAlias env nm of
-        Just ty -> Just ty
-        Nothing -> case lookupEnv env nm of
-          Just scheme -> Just scheme.ty
-          Nothing -> Nothing
+      tryEnvLookup nm = lookupTypeAlias env nm
   in case tryLookup name of
     Just ty -> ty
     Nothing -> case tryLookup unqualifiedName of
