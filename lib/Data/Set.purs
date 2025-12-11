@@ -105,13 +105,13 @@ foreign import filterImpl :: forall a. (a -> Boolean) -> Set a -> Set a = "call 
 foldl :: forall a b. (b -> a -> b) -> b -> Set a -> b
 foldl f acc s = foldlImpl f acc s
 
-foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Set a -> b = "call 'sets':'fold'(fun (E, A) -> apply (apply $0(A))(E), $1, $2)"
+foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Set a -> b = "call 'sets':'fold'(fun (E, A) -> let <F1> = apply $0 (A) in apply F1 (E), $1, $2)"
 
 -- Fold right
 foldr :: forall a b. (a -> b -> b) -> b -> Set a -> b
 foldr f acc s = foldrImpl f acc s
 
-foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Set a -> b = "call 'lists':'foldr'(fun (E, A) -> apply (apply $0(E))(A), $1, call 'sets':'to_list'($2))"
+foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Set a -> b = "call 'lists':'foldr'(fun (E, A) -> let <F1> = apply $0 (E) in apply F1 (A), $1, call 'sets':'to_list'($2))"
 
 -- Find minimum
 findMin :: forall a. Set a -> Maybe a

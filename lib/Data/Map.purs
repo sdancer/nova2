@@ -46,13 +46,13 @@ foreign import deleteImpl :: forall k v. k -> Map k v -> Map k v = "call 'maps':
 update :: forall k v. (v -> Maybe v) -> k -> Map k v -> Map k v
 update f k m = updateImpl f k m
 
-foreign import updateImpl :: forall k v. (v -> Maybe v) -> k -> Map k v -> Map k v = "case call 'maps':'find'($1, $2) of\n        <'error'> when 'true' -> $2\n        <{'ok', V}> when 'true' -> case apply $0(V) of\n          <'Nothing'> when 'true' -> call 'maps':'remove'($1, $2)\n          <{'Just', NewV}> when 'true' -> call 'maps':'put'($1, NewV, $2)\n        end\n      end"
+foreign import updateImpl :: forall k v. (v -> Maybe v) -> k -> Map k v -> Map k v = "case call 'maps':'find'($1, $2) of\n        <'error'> when 'true' -> $2\n        <{'ok', V}> when 'true' -> case apply $0 (V) of\n          <'Nothing'> when 'true' -> call 'maps':'remove'($1, $2)\n          <{'Just', NewV}> when 'true' -> call 'maps':'put'($1, NewV, $2)\n        end\n      end"
 
 -- Alter (insert, update, or delete)
 alter :: forall k v. (Maybe v -> Maybe v) -> k -> Map k v -> Map k v
 alter f k m = alterImpl f k m
 
-foreign import alterImpl :: forall k v. (Maybe v -> Maybe v) -> k -> Map k v -> Map k v = "let <MaybeV> = case call 'maps':'find'($1, $2) of\n        <'error'> when 'true' -> 'Nothing'\n        <{'ok', V}> when 'true' -> {'Just', V}\n      end in case apply $0(MaybeV) of\n        <'Nothing'> when 'true' -> call 'maps':'remove'($1, $2)\n        <{'Just', NewV}> when 'true' -> call 'maps':'put'($1, NewV, $2)\n      end"
+foreign import alterImpl :: forall k v. (Maybe v -> Maybe v) -> k -> Map k v -> Map k v = "let <MaybeV> = case call 'maps':'find'($1, $2) of\n        <'error'> when 'true' -> 'Nothing'\n        <{'ok', V}> when 'true' -> {'Just', V}\n      end in case apply $0 (MaybeV) of\n        <'Nothing'> when 'true' -> call 'maps':'remove'($1, $2)\n        <{'Just', NewV}> when 'true' -> call 'maps':'put'($1, NewV, $2)\n      end"
 
 -- Get all keys
 keys :: forall k v. Map k v -> Array k
@@ -100,7 +100,7 @@ foreign import unionImpl :: forall k v. Map k v -> Map k v -> Map k v = "call 'm
 unionWith :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v
 unionWith f m1 m2 = unionWithImpl f m1 m2
 
-foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> apply (apply $0(V1))(V2), $1, $2)"
+foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply $0 (V1) in apply F1 (V2), $1, $2)"
 
 -- Intersection of two maps
 intersection :: forall k v. Map k v -> Map k v -> Map k v
@@ -118,43 +118,43 @@ foreign import differenceImpl :: forall k v. Map k v -> Map k v -> Map k v = "ca
 map :: forall k a b. (a -> b) -> Map k a -> Map k b
 map f m = mapImpl f m
 
-foreign import mapImpl :: forall k a b. (a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (_K, V) -> apply $0(V), $1)"
+foreign import mapImpl :: forall k a b. (a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (_K, V) -> apply $0 (V), $1)"
 
 -- Map over key-value pairs
 mapWithKey :: forall k a b. (k -> a -> b) -> Map k a -> Map k b
 mapWithKey f m = mapWithKeyImpl f m
 
-foreign import mapWithKeyImpl :: forall k a b. (k -> a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (K, V) -> apply (apply $0(K))(V), $1)"
+foreign import mapWithKeyImpl :: forall k a b. (k -> a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (K, V) -> let <F1> = apply $0 (K) in apply F1 (V), $1)"
 
 -- Filter by value
 filter :: forall k v. (v -> Boolean) -> Map k v -> Map k v
 filter f m = filterImpl f m
 
-foreign import filterImpl :: forall k v. (v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (_K, V) -> apply $0(V), $1)"
+foreign import filterImpl :: forall k v. (v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (_K, V) -> apply $0 (V), $1)"
 
 -- Filter by key and value
 filterWithKey :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v
 filterWithKey f m = filterWithKeyImpl f m
 
-foreign import filterWithKeyImpl :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (K, V) -> apply (apply $0(K))(V), $1)"
+foreign import filterWithKeyImpl :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (K, V) -> let <F1> = apply $0 (K) in apply F1 (V), $1)"
 
 -- Fold left over values
 foldl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a
 foldl f acc m = foldlImpl f acc m
 
-foreign import foldlImpl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (_K, V, A) -> apply (apply $0(A))(V), $1, $2)"
+foreign import foldlImpl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (_K, V, A) -> let <F1> = apply $0 (A) in apply F1 (V), $1, $2)"
 
 -- Fold left with key
 foldlWithKey :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a
 foldlWithKey f acc m = foldlWithKeyImpl f acc m
 
-foreign import foldlWithKeyImpl :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (K, V, A) -> apply (apply (apply $0(A))(K))(V), $1, $2)"
+foreign import foldlWithKeyImpl :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (K, V, A) -> let <F1> = apply $0 (A) in let <F2> = apply F1 (K) in apply F2 (V), $1, $2)"
 
 -- Fold right over values
 foldr :: forall k v a. (v -> a -> a) -> a -> Map k v -> a
 foldr f acc m = foldrImpl f acc m
 
-foreign import foldrImpl :: forall k v a. (v -> a -> a) -> a -> Map k v -> a = "call 'lists':'foldr'(fun ({_K, V}, A) -> apply (apply $0(V))(A), $1, call 'maps':'to_list'($2))"
+foreign import foldrImpl :: forall k v a. (v -> a -> a) -> a -> Map k v -> a = "call 'lists':'foldr'(fun (KV, A) -> case KV of <{_K, V}> when 'true' -> let <F1> = apply $0 (V) in apply F1 (A) end, $1, call 'maps':'to_list'($2))"
 
 -- Find minimum key
 findMin :: forall k v. Map k v -> Maybe (Tuple k v)
@@ -178,4 +178,4 @@ foreign import lookupDefaultImpl :: forall k v. v -> k -> Map k v -> v = "case c
 mapMaybe :: forall k a b. (a -> Maybe b) -> Map k a -> Map k b
 mapMaybe f m = mapMaybeImpl f m
 
-foreign import mapMaybeImpl :: forall k a b. (a -> Maybe b) -> Map k a -> Map k b = "call 'maps':'fold'(fun (K, V, Acc) -> case apply $0(V) of\n        <'Nothing'> when 'true' -> Acc\n        <{'Just', NewV}> when 'true' -> call 'maps':'put'(K, NewV, Acc)\n      end, call 'maps':'new'(), $1)"
+foreign import mapMaybeImpl :: forall k a b. (a -> Maybe b) -> Map k a -> Map k b = "call 'maps':'fold'(fun (K, V, Acc) -> case apply $0 (V) of\n        <'Nothing'> when 'true' -> Acc\n        <{'Just', NewV}> when 'true' -> call 'maps':'put'(K, NewV, Acc)\n      end, call 'maps':'new'(), $1)"

@@ -88,7 +88,7 @@ foreign import filterImpl :: forall a. (a -> Boolean) -> List a -> List a = "cal
 foldr :: forall a b. (a -> b -> b) -> b -> List a -> b
 foldr f acc xs = foldrImpl f acc xs
 
-foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> List a -> b = "call 'lists':'foldr'(fun (E, A) -> apply (apply $0(E))(A), $1, $2)"
+foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> List a -> b = "call 'lists':'foldr'(fun (E, A) -> let <F1> = apply $0 (E) in apply F1 (A), $1, $2)"
 
 -- Fold left - native implementation (not foreign) to ensure correct argument order
 -- Note: we use explicit let binding to ensure curried application is generated correctly
@@ -121,7 +121,7 @@ foreign import anyImpl :: forall a. (a -> Boolean) -> List a -> Boolean = "call 
 mapMaybe :: forall a b. (a -> Maybe b) -> List a -> List b
 mapMaybe f xs = mapMaybeImpl f xs
 
-foreign import mapMaybeImpl :: forall a b. (a -> Maybe b) -> List a -> List b = "call 'lists':'filtermap'(fun (X) -> case apply $0(X) of\n        <'Nothing'> when 'true' -> 'false'\n        <{'Just', V}> when 'true' -> {'true', V}\n      end, $1)"
+foreign import mapMaybeImpl :: forall a b. (a -> Maybe b) -> List a -> List b = "call 'lists':'filtermap'(fun (X) -> case apply $0 (X) of\n        <'Nothing'> when 'true' -> 'false'\n        <{'Just', V}> when 'true' -> {'true', V}\n      end, $1)"
 
 -- Take while predicate holds
 takeWhile :: forall a. (a -> Boolean) -> List a -> List a

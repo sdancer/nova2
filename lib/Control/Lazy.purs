@@ -12,4 +12,4 @@ class Lazy l where
 defer :: forall l. (Unit -> l) -> l
 defer f = deferImpl f
 
-foreign import deferImpl :: forall l. (Unit -> l) -> l = "apply $0('unit')"
+foreign import deferImpl :: forall l. (Unit -> l) -> l = "apply $0 ('unit')"

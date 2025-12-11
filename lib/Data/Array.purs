@@ -34,7 +34,7 @@ foreign import initImpl :: forall a. Array a -> Maybe (Array a) = "case $0 of\n 
 uncons :: forall a. Array a -> Maybe { head :: a, tail :: Array a }
 uncons xs = unconsImpl xs
 
-foreign import unconsImpl :: forall a. Array a -> Maybe { head :: a, tail :: Array a } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', #{'head' => H, 'tail' => T}}\n      end"
+foreign import unconsImpl :: forall a. Array a -> Maybe { head :: a, tail :: Array a } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
 
 -- Length
 length :: forall a. Array a -> Int
@@ -94,7 +94,7 @@ foreign import filterImpl :: forall a. (a -> Boolean) -> Array a -> Array a = "c
 find :: forall a. (a -> Boolean) -> Array a -> Maybe a
 find f xs = findImpl f xs
 
-foreign import findImpl :: forall a. (a -> Boolean) -> Array a -> Maybe a = "letrec 'doFind'/2 = fun (P, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case apply P(H) of\n          <'true'> when 'true' -> {'Just', H}\n          <'false'> when 'true' -> apply 'doFind'/2(P, T)\n        end\n      end in apply 'doFind'/2($0, $1)"
+foreign import findImpl :: forall a. (a -> Boolean) -> Array a -> Maybe a = "letrec 'doFind'/2 = fun (P, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case apply P (H) of\n          <'true'> when 'true' -> {'Just', H}\n          <'false'> when 'true' -> apply 'doFind'/2 (P, T)\n        end\n      end in apply 'doFind'/2 ($0, $1)"
 
 -- Get element at index
 index :: forall a. Array a -> Int -> Maybe a
@@ -106,7 +106,7 @@ foreign import indexImpl :: forall a. Array a -> Int -> Maybe a = "let <Arr> = $
 elemIndex :: forall a. a -> Array a -> Maybe Int
 elemIndex x xs = elemIndexImpl x xs
 
-foreign import elemIndexImpl :: forall a. a -> Array a -> Maybe Int = "letrec 'findIdx'/3 = fun (Elem, N, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case call 'erlang':'=='(H, Elem) of\n          <'true'> when 'true' -> {'Just', N}\n          <'false'> when 'true' -> apply 'findIdx'/3(Elem, call 'erlang':'+'(N, 1), T)\n        end\n      end in apply 'findIdx'/3($0, 0, $1)"
+foreign import elemIndexImpl :: forall a. a -> Array a -> Maybe Int = "letrec 'findIdx'/3 = fun (Elem, N, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case call 'erlang':'=='(H, Elem) of\n          <'true'> when 'true' -> {'Just', N}\n          <'false'> when 'true' -> apply 'findIdx'/3 (Elem, call 'erlang':'+'(N, 1), T)\n        end\n      end in apply 'findIdx'/3 ($0, 0, $1)"
 
 -- Map
 map :: forall a b. (a -> b) -> Array a -> Array b
@@ -118,19 +118,19 @@ foreign import mapImpl :: forall a b. (a -> b) -> Array a -> Array b = "call 'li
 mapWithIndex :: forall a b. (Int -> a -> b) -> Array a -> Array b
 mapWithIndex f xs = mapWithIndexImpl f xs
 
-foreign import mapWithIndexImpl :: forall a b. (Int -> a -> b) -> Array a -> Array b = "letrec 'doMapIdx'/3 = fun (F, N, Lst) -> case Lst of\n        <[]> when 'true' -> []\n        <[H|T]> when 'true' -> let <F1> = apply F(N) in [apply F1(H)|apply 'doMapIdx'/3(F, call 'erlang':'+'(N, 1), T)]\n      end in apply 'doMapIdx'/3($0, 0, $1)"
+foreign import mapWithIndexImpl :: forall a b. (Int -> a -> b) -> Array a -> Array b = "letrec 'doMapIdx'/3 = fun (F, N, Lst) -> case Lst of\n        <[]> when 'true' -> []\n        <[H|T]> when 'true' -> let <F1> = apply F (N) in [apply F1 (H)|apply 'doMapIdx'/3 (F, call 'erlang':'+'(N, 1), T)]\n      end in apply 'doMapIdx'/3 ($0, 0, $1)"
 
 -- Fold left
 foldl :: forall a b. (b -> a -> b) -> b -> Array a -> b
 foldl f acc xs = foldlImpl f acc xs
 
-foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Array a -> b = "call 'lists':'foldl'(fun (E, A) -> apply (apply $0(A))(E), $1, $2)"
+foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Array a -> b = "call 'lists':'foldl'(fun (E, A) -> let <F1> = apply $0 (A) in apply F1 (E), $1, $2)"
 
 -- Fold right
 foldr :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foldr f acc xs = foldrImpl f acc xs
 
-foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b = "call 'lists':'foldr'(fun (E, A) -> apply (apply $0(E))(A), $1, $2)"
+foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b = "call 'lists':'foldr'(fun (E, A) -> let <F1> = apply $0 (E) in apply F1 (A), $1, $2)"
 
 -- Zip two arrays
 zip :: forall a b. Array a -> Array b -> Array (Tuple a b)
@@ -142,7 +142,7 @@ foreign import zipImpl :: forall a b. Array a -> Array b -> Array (Tuple a b) = 
 zipWith :: forall a b c. (a -> b -> c) -> Array a -> Array b -> Array c
 zipWith f xs ys = zipWithImpl f xs ys
 
-foreign import zipWithImpl :: forall a b c. (a -> b -> c) -> Array a -> Array b -> Array c = "call 'lists':'zipwith'(fun (A, B) -> apply (apply $0(A))(B), $1, $2)"
+foreign import zipWithImpl :: forall a b c. (a -> b -> c) -> Array a -> Array b -> Array c = "call 'lists':'zipwith'(fun (A, B) -> let <F1> = apply $0 (A) in apply F1 (B), $1, $2)"
 
 -- Concatenate arrays
 concat :: forall a. Array (Array a) -> Array a
@@ -172,7 +172,7 @@ foreign import replicateImpl :: forall a. Int -> a -> Array a = "call 'lists':'d
 sortBy :: forall a b. (a -> b) -> Array a -> Array a
 sortBy f xs = sortByImpl f xs
 
-foreign import sortByImpl :: forall a b. (a -> b) -> Array a -> Array a = "call 'lists':'sort'(fun (A, B) -> call 'erlang':'=<'(apply $0(A), apply $0(B)), $1)"
+foreign import sortByImpl :: forall a b. (a -> b) -> Array a -> Array a = "call 'lists':'sort'(fun (A, B) -> call 'erlang':'=<'(apply $0 (A), apply $0 (B)), $1)"
 
 -- All elements satisfy predicate
 all :: forall a. (a -> Boolean) -> Array a -> Boolean
@@ -196,13 +196,13 @@ foreign import dropWhileImpl :: forall a. (a -> Boolean) -> Array a -> Array a =
 span :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a }
 span f xs = spanImpl f xs
 
-foreign import spanImpl :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a } = "case call 'lists':'splitwith'($0, $1) of\n        <{Taken, Rest}> when 'true' -> #{'init' => Taken, 'rest' => Rest}\n      end"
+foreign import spanImpl :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a } = "case call 'lists':'splitwith'($0, $1) of\n        <{Taken, Rest}> when 'true' -> {'init', Taken, 'rest', Rest}\n      end"
 
 -- Partition by predicate
 partition :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a }
 partition f xs = partitionImpl f xs
 
-foreign import partitionImpl :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a } = "case call 'lists':'partition'($0, $1) of\n        <{Trues, Falses}> when 'true' -> #{'yes' => Trues, 'no' => Falses}\n      end"
+foreign import partitionImpl :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a } = "case call 'lists':'partition'($0, $1) of\n        <{Trues, Falses}> when 'true' -> {'yes', Trues, 'no', Falses}\n      end"
 
 -- Singleton array
 singleton :: forall a. a -> Array a
@@ -214,19 +214,19 @@ foreign import singletonImpl :: forall a. a -> Array a = "[$0]"
 updateAt :: forall a. Int -> a -> Array a -> Maybe (Array a)
 updateAt i x xs = updateAtImpl i x xs
 
-foreign import updateAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($2) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> let <{Before, After}> = call 'lists':'split'(Idx, $2) in\n            {'Just', call 'lists':'append'(Before, [$1|call 'erlang':'tl'(After)])}\n        end"
+foreign import updateAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($2) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> case call 'lists':'split'(Idx, $2) of <{Before, After}> when 'true' ->\n            {'Just', call 'lists':'append'(Before, [$1|call 'erlang':'tl'(After)])} end\n        end"
 
 -- Delete element at index
 deleteAt :: forall a. Int -> Array a -> Maybe (Array a)
 deleteAt i xs = deleteAtImpl i xs
 
-foreign import deleteAtImpl :: forall a. Int -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($1) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> let <{Before, After}> = call 'lists':'split'(Idx, $1) in\n            {'Just', call 'lists':'append'(Before, call 'erlang':'tl'(After))}\n        end"
+foreign import deleteAtImpl :: forall a. Int -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($1) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> case call 'lists':'split'(Idx, $1) of <{Before, After}> when 'true' ->\n            {'Just', call 'lists':'append'(Before, call 'erlang':'tl'(After))} end\n        end"
 
 -- Insert element at index
 insertAt :: forall a. Int -> a -> Array a -> Maybe (Array a)
 insertAt i x xs = insertAtImpl i x xs
 
-foreign import insertAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($2) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>'(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> let <{Before, After}> = call 'lists':'split'(Idx, $2) in\n            {'Just', call 'lists':'append'(Before, [$1|After])}\n        end"
+foreign import insertAtImpl :: forall a. Int -> a -> Array a -> Maybe (Array a) = "let <Idx> = $0 in let <Len> = call 'erlang':'length'($2) in\n        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>'(Idx, Len)) of\n          <'true'> when 'true' -> 'Nothing'\n          <'false'> when 'true' -> case call 'lists':'split'(Idx, $2) of <{Before, After}> when 'true' ->\n            {'Just', call 'lists':'append'(Before, [$1|After])} end\n        end"
 
 -- Slice array from start to end indices
 slice :: forall a. Int -> Int -> Array a -> Array a
@@ -250,13 +250,13 @@ foreign import nubByImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array a 
 group :: forall a. Array a -> Array (Array a)
 group xs = groupImpl xs
 
-foreign import groupImpl :: forall a. Array a -> Array (Array a) = "letrec 'doGroup'/2 = fun (Lst, Acc) -> case Lst of\n        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end\n        <[H|T]> when 'true' -> case Acc of\n          <[]> when 'true' -> apply 'doGroup'/2(T, [H])\n          <[Prev|_]> when 'true' -> case call 'erlang':'=='(H, Prev) of\n            <'true'> when 'true' -> apply 'doGroup'/2(T, [H|Acc])\n            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/2(T, [H])]\n          end\n        end\n      end in apply 'doGroup'/2($0, [])"
+foreign import groupImpl :: forall a. Array a -> Array (Array a) = "letrec 'doGroup'/2 = fun (Lst, Acc) -> case Lst of\n        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end\n        <[H|T]> when 'true' -> case Acc of\n          <[]> when 'true' -> apply 'doGroup'/2 (T, [H])\n          <[Prev|_]> when 'true' -> case call 'erlang':'=='(H, Prev) of\n            <'true'> when 'true' -> apply 'doGroup'/2 (T, [H|Acc])\n            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/2 (T, [H])]\n          end\n        end\n      end in apply 'doGroup'/2 ($0, [])"
 
 -- Group by custom equality
 groupBy :: forall a. (a -> a -> Boolean) -> Array a -> Array (Array a)
 groupBy f xs = groupByImpl f xs
 
-foreign import groupByImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array (Array a) = "letrec 'doGroup'/3 = fun (Eq, Lst, Acc) -> case Lst of\n        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end\n        <[H|T]> when 'true' -> case Acc of\n          <[]> when 'true' -> apply 'doGroup'/3(Eq, T, [H])\n          <[Prev|_]> when 'true' -> case apply (apply Eq(Prev))(H) of\n            <'true'> when 'true' -> apply 'doGroup'/3(Eq, T, [H|Acc])\n            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/3(Eq, T, [H])]\n          end\n        end\n      end in apply 'doGroup'/3($0, $1, [])"
+foreign import groupByImpl :: forall a. (a -> a -> Boolean) -> Array a -> Array (Array a) = "letrec 'doGroup'/3 = fun (Eq, Lst, Acc) -> case Lst of\n        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end\n        <[H|T]> when 'true' -> case Acc of\n          <[]> when 'true' -> apply 'doGroup'/3 (Eq, T, [H])\n          <[Prev|_]> when 'true' -> let <F1> = apply Eq (Prev) in case apply F1 (H) of\n            <'true'> when 'true' -> apply 'doGroup'/3 (Eq, T, [H|Acc])\n            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/3 (Eq, T, [H])]\n          end\n        end\n      end in apply 'doGroup'/3 ($0, $1, [])"
 
 -- Take while predicate holds
 takeWhile :: forall a. (a -> Boolean) -> Array a -> Array a
@@ -268,7 +268,7 @@ foreign import takeWhileImpl :: forall a. (a -> Boolean) -> Array a -> Array a =
 findIndex :: forall a. (a -> Boolean) -> Array a -> Maybe Int
 findIndex f xs = findIndexImpl f xs
 
-foreign import findIndexImpl :: forall a. (a -> Boolean) -> Array a -> Maybe Int = "letrec 'findIdx'/3 = fun (P, N, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case apply P(H) of\n          <'true'> when 'true' -> {'Just', N}\n          <'false'> when 'true' -> apply 'findIdx'/3(P, call 'erlang':'+'(N, 1), T)\n        end\n      end in apply 'findIdx'/3($0, 0, $1)"
+foreign import findIndexImpl :: forall a. (a -> Boolean) -> Array a -> Maybe Int = "letrec 'findIdx'/3 = fun (P, N, Lst) -> case Lst of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> case apply P (H) of\n          <'true'> when 'true' -> {'Just', N}\n          <'false'> when 'true' -> apply 'findIdx'/3 (P, call 'erlang':'+'(N, 1), T)\n        end\n      end in apply 'findIdx'/3 ($0, 0, $1)"
 
 -- Sort array (uses natural ordering)
 sort :: forall a. Array a -> Array a
@@ -286,13 +286,13 @@ foreign import intercalateImpl :: forall a. Array a -> Array (Array a) -> Array 
 splitAt :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }
 splitAt i xs = splitAtImpl i xs
 
-foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a } = "case call 'lists':'split'($0, $1) of\n        <{Before, After}> when 'true' -> #{'before' => Before, 'after' => After}\n      end"
+foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a } = "case call 'lists':'split'($0, $1) of\n        <{Before, After}> when 'true' -> {'before', Before, 'after', After}\n      end"
 
 -- Map with Maybe (filter and map combined)
 mapMaybe :: forall a b. (a -> Maybe b) -> Array a -> Array b
 mapMaybe f xs = mapMaybeImpl f xs
 
-foreign import mapMaybeImpl :: forall a b. (a -> Maybe b) -> Array a -> Array b = "letrec 'doMapMaybe'/2 = fun (F, Lst) -> case Lst of\n        <[]> when 'true' -> []\n        <[H|T]> when 'true' -> case apply F(H) of\n          <'Nothing'> when 'true' -> apply 'doMapMaybe'/2(F, T)\n          <{'Just', V}> when 'true' -> [V|apply 'doMapMaybe'/2(F, T)]\n        end\n      end in apply 'doMapMaybe'/2($0, $1)"
+foreign import mapMaybeImpl :: forall a b. (a -> Maybe b) -> Array a -> Array b = "letrec 'doMapMaybe'/2 = fun (F, Lst) -> case Lst of\n        <[]> when 'true' -> []\n        <[H|T]> when 'true' -> case apply F (H) of\n          <'Nothing'> when 'true' -> apply 'doMapMaybe'/2 (F, T)\n          <{'Just', V}> when 'true' -> [V|apply 'doMapMaybe'/2 (F, T)]\n        end\n      end in apply 'doMapMaybe'/2 ($0, $1)"
 
 -- catMaybes - filter out Nothing values
 catMaybes :: forall a. Array (Maybe a) -> Array a

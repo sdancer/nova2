@@ -12,7 +12,7 @@ foreign import fromStringImpl :: String -> Maybe Number = "case call 'string':'t
 isNaN :: Number -> Boolean
 isNaN n = isNaNImpl n
 
-foreign import isNaNImpl :: Number -> Boolean = "call 'erlang':'is_float'($0) andalso call 'erlang':'not'(call 'erlang':'=='($0, $0))"
+foreign import isNaNImpl :: Number -> Boolean = "case call 'erlang':'is_float'($0) of\n        <'false'> when 'true' -> 'false'\n        <'true'> when 'true' -> call 'erlang':'not'(call 'erlang':'=='($0, $0))\n      end"
 
 -- Check if finite
 isFinite :: Number -> Boolean
