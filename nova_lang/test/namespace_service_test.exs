@@ -468,7 +468,8 @@ defmodule Nova.NamespaceServiceTest do
       ctx = Nova.Compiler.CodeGen.empty_ctx()
       generated = Nova.Compiler.CodeGen.gen_declaration(ctx, decl)
 
-      assert generated =~ "fn x ->"
+      # Lambda bindings are generated as named Elixir functions
+      assert generated =~ "def double(x) do"
       assert generated =~ "(x * 2)"
     end
 
