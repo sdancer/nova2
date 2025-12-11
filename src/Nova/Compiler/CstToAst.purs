@@ -75,7 +75,7 @@ traverse f lst = case lst of
   (head : tail) -> do
     h <- f head
     t <- traverse f tail
-    pure $ h : t
+    Right $ h : t
 
 -- | Map with index for Lists
 listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
@@ -150,7 +150,7 @@ convertModule cstMod = do
   imports <- traverse convertImportDecl cstMod.header.imports
   decls <- convertDeclarations cstMod.body.decls
   let importDecls = map Ast.DeclImport imports
-  pure { name: moduleName, declarations: importDecls <> decls }
+  Right { name: moduleName, declarations: importDecls <> decls }
 
 -- | Convert a CST ImportDecl to AST ImportDeclaration
 convertImportDecl :: CstImportDecl -> Either String Ast.ImportDeclaration
@@ -158,14 +158,14 @@ convertImportDecl imp = do
   let moduleName = unwrapModuleName imp.module.name
   let alias = map (\(Tuple _ qualName) -> unwrapModuleName qualName.name) imp.qualified
   items <- case imp.names of
-    Nothing -> pure Nil  -- Implicit import of everything
+    Nothing -> Right Nil  -- Implicit import of everything
     Just (Tuple _ delim) -> do
       importItems <- convertImportItems delim.value
-      pure importItems
+      Right importItems
   let isHiding = case imp.names of
         Just (Tuple (Just _) _) -> true
         _ -> false
-  pure { moduleName, alias, items, hiding: isHiding }
+  Right { moduleName, alias, items, hiding: isHiding }
 
 -- | Convert CST Import items to AST ImportItems
 convertImportItems :: CstSeparatedImport -> Either String (List Ast.ImportItem)
@@ -177,17 +177,17 @@ convertImportItems sep = do
 convertImportItem :: Cst.Import Void -> Either String Ast.ImportItem
 convertImportItem imp = case imp of
   Cst.ImportValue name ->
-    pure $ Ast.ImportValue (unwrapIdent name.name)
+    Right $ Ast.ImportValue (unwrapIdent name.name)
   Cst.ImportOp name ->
-    pure $ Ast.ImportValue (unwrapOperator name.name)
+    Right $ Ast.ImportValue (unwrapOperator name.name)
   Cst.ImportType name mMembers ->
     let typeName = unwrapProper name.name
         spec = convertDataMembers mMembers
-    in pure $ Ast.ImportType typeName spec
+    in Right $ Ast.ImportType typeName spec
   Cst.ImportTypeOp _ name ->
-    pure $ Ast.ImportValue (unwrapOperator name.name)
+    Right $ Ast.ImportValue (unwrapOperator name.name)
   Cst.ImportClass _ name ->
-    pure $ Ast.ImportType (unwrapProper name.name) Ast.ImportNone
+    Right $ Ast.ImportType (unwrapProper name.name) Ast.ImportNone
   Cst.ImportError _ ->
     Left "Cannot convert import error"
 
@@ -251,9 +251,9 @@ convertDataType head mCtors = do
   let name = unwrapProper head.name.name
   let typeVars = map extractTypeVar head.vars
   ctors <- case mCtors of
-    Nothing -> pure Nil
+    Nothing -> Right Nil
     Just (Tuple _ separated) -> convertDataCtors separated
-  pure $ Ast.DeclDataType { name, typeVars, constructors: ctors }
+  Right $ Ast.DeclDataType { name, typeVars, constructors: ctors }
 
 convertDataCtors :: SeparatedDataCtor -> Either String (List Ast.DataConstructor)
 convertDataCtors sep = do
@@ -264,12 +264,12 @@ convertDataCtor :: Cst.DataCtor Void -> Either String Ast.DataConstructor
 convertDataCtor ctor = do
   let name = unwrapProper ctor.name.name
   fields <- traverse convertTypeToField ctor.fields
-  pure { name, fields, isRecord: false }
+  Right { name, fields, isRecord: false }
 
 convertTypeToField :: Cst.Type Void -> Either String Ast.DataField
 convertTypeToField ty = do
   tyExpr <- convertType ty
-  pure { label: "", ty: tyExpr }
+  Right { label: "", ty: tyExpr }
 
 -- ============================================================================
 -- Type Alias Conversion
@@ -280,7 +280,7 @@ convertTypeAlias head ty = do
   let name = unwrapProper head.name.name
   let typeVars = map extractTypeVar head.vars
   tyExpr <- convertType ty
-  pure $ Ast.DeclTypeAlias { name, typeVars, ty: tyExpr }
+  Right $ Ast.DeclTypeAlias { name, typeVars, ty: tyExpr }
 
 -- ============================================================================
 -- Newtype Conversion
@@ -292,7 +292,7 @@ convertNewtype head ctorName wrappedTy = do
   let typeVars = map extractTypeVar head.vars
   let constructor = unwrapProper ctorName.name
   wrappedType <- convertType wrappedTy
-  pure $ Ast.DeclNewtype { name, typeVars, constructor, wrappedType }
+  Right $ Ast.DeclNewtype { name, typeVars, constructor, wrappedType }
 
 -- ============================================================================
 -- Type Class Conversion
@@ -305,15 +305,15 @@ convertTypeClass head mMethods = do
   let name = unwrapProper head.name.name
   let typeVars = map extractTypeVar head.vars
   methods <- case mMethods of
-    Nothing -> pure Nil
+    Nothing -> Right Nil
     Just (Tuple _ labeled) -> traverse convertMethodSig labeled
-  pure $ Ast.DeclTypeClass { name, typeVars, methods, kind: Nothing }
+  Right $ Ast.DeclTypeClass { name, typeVars, methods, kind: Nothing }
 
 convertMethodSig :: { label :: Cst.Name Cst.Ident, separator :: Cst.SourceToken, value :: Cst.Type Void } -> Either String Ast.TypeSignature
 convertMethodSig labeled = do
   let name = unwrapIdent labeled.label.name
   ty <- convertType labeled.value
-  pure { name, typeVars: Nil, constraints: Nil, ty }
+  Right { name, typeVars: Nil, constraints: Nil, ty }
 
 -- ============================================================================
 -- Instance Conversion
@@ -329,9 +329,9 @@ convertInstance chain = do
     (t : _) -> convertType t
     Nil -> Left "Instance needs at least one type"
   methods <- case inst.body of
-    Nothing -> pure Nil
+    Nothing -> Right Nil
     Just (Tuple _ bindings) -> traverse convertInstanceBinding bindings
-  pure $ Ast.DeclTypeClassInstance { className, ty, methods, derived: false }
+  Right $ Ast.DeclTypeClassInstance { className, ty, methods, derived: false }
 
 convertInstanceBinding :: Cst.InstanceBinding Void -> Either String Ast.FunctionDeclaration
 convertInstanceBinding binding = case binding of
@@ -344,7 +344,7 @@ convertDeriveInstance head = do
   ty <- case head.types of
     (t : _) -> convertType t
     Nil -> Left "Derived instance needs at least one type"
-  pure $ Ast.DeclTypeClassInstance { className, ty, methods: Nil, derived: true }
+  Right $ Ast.DeclTypeClassInstance { className, ty, methods: Nil, derived: true }
 
 -- ============================================================================
 -- Function/Value Conversion
@@ -353,7 +353,7 @@ convertDeriveInstance head = do
 convertFunction :: Cst.ValueBindingFields Void -> Either String Ast.Declaration
 convertFunction vbf = do
   func <- convertValueBinding vbf
-  pure $ Ast.DeclFunction func
+  Right $ Ast.DeclFunction func
 
 convertValueBinding :: Cst.ValueBindingFields Void -> Either String Ast.FunctionDeclaration
 convertValueBinding vbf = do
@@ -362,12 +362,12 @@ convertValueBinding vbf = do
   case vbf.guarded of
     Cst.Unconditional _ wh -> do
       body <- convertWhereExpr wh
-      pure { name, parameters: params, body, guards: Nil, typeSignature: Nothing }
+      Right { name, parameters: params, body, guards: Nil, typeSignature: Nothing }
     Cst.Guarded guardedExprs -> do
       -- For guarded expressions, use the first one as body and rest as guards
       guards <- traverse convertGuardedExpr guardedExprs
       case guards of
-        (g : _) -> pure { name, parameters: params, body: g.body, guards, typeSignature: Nothing }
+        (g : _) -> Right { name, parameters: params, body: g.body, guards, typeSignature: Nothing }
         Nil -> Left "Empty guarded expression"
 
 -- | Convert a Where clause, wrapping the expression in ExprLet if there are bindings
@@ -375,10 +375,10 @@ convertWhereExpr :: Cst.Where Void -> Either String Ast.Expr
 convertWhereExpr wh = do
   expr <- convertExpr wh.expr
   case wh.bindings of
-    Nothing -> pure expr
+    Nothing -> Right expr
     Just (Tuple _ bindings) -> do
       letBinds <- convertWhereBindings bindings
-      pure $ Ast.ExprLet letBinds expr
+      Right $ Ast.ExprLet letBinds expr
 
 -- | Convert let bindings, properly handling type signatures
 -- | Collects type signatures and attaches them to corresponding value bindings
@@ -411,10 +411,10 @@ convertLetBindings bindings = do
       params <- traverse convertBinder vbf.binders
       -- Look up type signature for this binding
       typeAnn <- case lookupLetSig name sigMap of
-        Nothing -> pure Nothing
+        Nothing -> Right Nothing
         Just cstTy -> do
           ty <- convertType cstTy
-          pure (Just ty)
+          Right (Just ty)
       bodyExpr <- case vbf.guarded of
         Cst.Unconditional _ wh -> convertExpr wh.expr
         Cst.Guarded guards -> case guards of
@@ -424,11 +424,11 @@ convertLetBindings bindings = do
       let body = if List.null params
                  then bodyExpr
                  else Ast.ExprLambda params bodyExpr
-      pure { pattern: Ast.PatVar name, value: body, typeAnn }
+      Right { pattern: Ast.PatVar name, value: body, typeAnn }
     convertLetBindingWithSig _ (Right { binder, wh }) = do
       pat <- convertBinder binder
       body <- convertExpr wh.expr
-      pure { pattern: pat, value: body, typeAnn: Nothing }
+      Right { pattern: pat, value: body, typeAnn: Nothing }
 
 -- | Convert where clause bindings to let bindings
 -- | Handles type signatures by collecting them first, then attaching to corresponding value bindings
@@ -461,10 +461,10 @@ convertWhereBindings bindings = do
       bindParams <- traverse convertBinder vbf.binders
       -- Look up type signature for this binding
       typeAnn <- case lookupSig bindName sigMap of
-        Nothing -> pure Nothing
+        Nothing -> Right Nothing
         Just cstTy -> do
           ty <- convertType cstTy
-          pure (Just ty)
+          Right (Just ty)
       case vbf.guarded of
         Cst.Unconditional _ wh -> do
           bindBody <- convertWhereExpr wh
@@ -472,14 +472,14 @@ convertWhereBindings bindings = do
           let value = case bindParams of
                 Nil -> bindBody
                 _ -> Ast.ExprLambda bindParams bindBody
-          pure { pattern: Ast.PatVar bindName, value, typeAnn }
+          Right { pattern: Ast.PatVar bindName, value, typeAnn }
         Cst.Guarded _ -> Left "Guarded where bindings not yet supported"
 
 convertGuardedExpr :: Cst.GuardedExpr Void -> Either String Ast.GuardedExpr
 convertGuardedExpr ge = do
   guards <- convertPatternGuards ge.patterns
   body <- convertWhereExpr ge.where
-  pure { guards, body }
+  Right { guards, body }
 
 convertPatternGuards :: SeparatedPatternGuard -> Either String (List Ast.GuardClause)
 convertPatternGuards sep = do
@@ -490,11 +490,11 @@ convertPatternGuard :: Cst.PatternGuard Void -> Either String Ast.GuardClause
 convertPatternGuard pg = case pg.binder of
   Nothing -> do
     expr <- convertExpr pg.expr
-    pure $ Ast.GuardExpr expr
+    Right $ Ast.GuardExpr expr
   Just (Tuple binder _) -> do
     pat <- convertBinder binder
     expr <- convertExpr pg.expr
-    pure $ Ast.GuardPat pat expr
+    Right $ Ast.GuardPat pat expr
 
 -- ============================================================================
 -- Type Signature Conversion
@@ -505,25 +505,25 @@ convertTypeSignature labeled = do
   let name = unwrapIdent labeled.label.name
   Tuple constraints ty <- extractConstraints labeled.value
   tyExpr <- convertType ty
-  pure $ Ast.DeclTypeSig { name, typeVars: Nil, constraints, ty: tyExpr }
+  Right $ Ast.DeclTypeSig { name, typeVars: Nil, constraints, ty: tyExpr }
 
 extractConstraints :: Cst.Type Void -> Either String (Tuple (List Ast.Constraint) (Cst.Type Void))
 extractConstraints ty = case ty of
   Cst.TypeConstrained constraint _ rest -> do
     c <- convertConstraintType constraint
     Tuple restCs restTy <- extractConstraints rest
-    pure $ Tuple (c : restCs) restTy
-  _ -> pure $ Tuple Nil ty
+    Right $ Tuple (c : restCs) restTy
+  _ -> Right $ Tuple Nil ty
 
 convertConstraintType :: Cst.Type Void -> Either String Ast.Constraint
 convertConstraintType ty = case ty of
   Cst.TypeConstructor qn -> do
     let className = unwrapProper qn.name
-    pure { className, types: Nil }
+    Right { className, types: Nil }
   Cst.TypeApp (Cst.TypeConstructor qn) args -> do
     let className = unwrapProper qn.name
     types <- traverse convertType args
-    pure { className, types }
+    Right { className, types }
   _ -> Left "Invalid constraint type"
 
 -- ============================================================================
@@ -543,11 +543,11 @@ convertFixity fields = do
             Left ident -> unwrapIdent ident
             Right proper -> unwrapProper proper
       let operator = unwrapOperator opName.name
-      pure $ Ast.DeclInfix { associativity: assoc, precedence: prec, functionName, operator }
+      Right $ Ast.DeclInfix { associativity: assoc, precedence: prec, functionName, operator }
     Cst.FixityType _ qn _ opName -> do
       let functionName = unwrapProper qn.name
       let operator = unwrapOperator opName.name
-      pure $ Ast.DeclInfix { associativity: assoc, precedence: prec, functionName, operator }
+      Right $ Ast.DeclInfix { associativity: assoc, precedence: prec, functionName, operator }
 
 -- ============================================================================
 -- Foreign Import Conversion
@@ -558,12 +558,12 @@ convertForeign foreign' = case foreign' of
   Cst.ForeignValue labeled -> do
     let functionName = unwrapIdent labeled.label.name
     ty <- convertType labeled.value
-    pure $ Ast.DeclForeignImport { moduleName: "", functionName, alias: Nothing, typeSignature: ty }
+    Right $ Ast.DeclForeignImport { moduleName: "", functionName, alias: Nothing, typeSignature: ty }
   Cst.ForeignData _ labeled -> do
     -- Foreign data types become type aliases to opaque types
     let name = unwrapProper labeled.label.name
     ty <- convertType labeled.value
-    pure $ Ast.DeclTypeAlias { name, typeVars: Nil, ty }
+    Right $ Ast.DeclTypeAlias { name, typeVars: Nil, ty }
 
 -- ============================================================================
 -- Type Conversion
@@ -572,35 +572,35 @@ convertForeign foreign' = case foreign' of
 convertType :: Cst.Type Void -> Either String Ast.TypeExpr
 convertType ty = case ty of
   Cst.TypeVar name ->
-    pure $ Ast.TyExprVar (unwrapIdent name.name)
+    Right $ Ast.TyExprVar (unwrapIdent name.name)
 
   Cst.TypeConstructor qn ->
-    pure $ Ast.TyExprCon (qualifiedProperName qn)
+    Right $ Ast.TyExprCon (qualifiedProperName qn)
 
   Cst.TypeWildcard _ ->
-    pure $ Ast.TyExprVar "_"
+    Right $ Ast.TyExprVar "_"
 
   Cst.TypeHole name ->
-    pure $ Ast.TyExprVar ("?" <> unwrapIdent name.name)
+    Right $ Ast.TyExprVar ("?" <> unwrapIdent name.name)
 
   Cst.TypeString _ s ->
-    pure $ Ast.TyExprCon ("\"" <> s <> "\"")
+    Right $ Ast.TyExprCon ("\"" <> s <> "\"")
 
   Cst.TypeInt _ _ ->
-    pure $ Ast.TyExprCon "Int"
+    Right $ Ast.TyExprCon "Int"
 
   Cst.TypeRow wrapped -> do
     row <- convertRow wrapped.value
-    pure $ Ast.TyExprRecord row.fields row.tail
+    Right $ Ast.TyExprRecord row.fields row.tail
 
   Cst.TypeRecord wrapped -> do
     row <- convertRow wrapped.value
-    pure $ Ast.TyExprRecord row.fields row.tail
+    Right $ Ast.TyExprRecord row.fields row.tail
 
   Cst.TypeForall _ vars _ body -> do
     let varNames = map extractTypeVar vars
     bodyTy <- convertType body
-    pure $ Ast.TyExprForAll varNames bodyTy
+    Right $ Ast.TyExprForAll varNames bodyTy
 
   Cst.TypeKinded t _ _ ->
     convertType t
@@ -608,7 +608,7 @@ convertType ty = case ty of
   Cst.TypeApp head args -> do
     headTy <- convertType head
     argTys <- traverse convertType args
-    pure $ List.foldl Ast.TyExprApp headTy argTys
+    Right $ List.foldl Ast.TyExprApp headTy argTys
 
   Cst.TypeOp head ops -> do
     -- Convert infix type operators to applications
@@ -618,23 +618,23 @@ convertType ty = case ty of
   Cst.TypeArrow from _ to -> do
     fromTy <- convertType from
     toTy <- convertType to
-    pure $ Ast.TyExprArrow fromTy toTy
+    Right $ Ast.TyExprArrow fromTy toTy
 
   Cst.TypeConstrained constraint _ body -> do
     c <- convertConstraintType constraint
     bodyTy <- convertType body
-    pure $ Ast.TyExprConstrained (c : Nil) bodyTy
+    Right $ Ast.TyExprConstrained (c : Nil) bodyTy
 
   Cst.TypeParens wrapped -> do
     inner <- convertType wrapped.value
-    pure $ Ast.TyExprParens inner
+    Right $ Ast.TyExprParens inner
 
   Cst.TypeError _ ->
     Left "Cannot convert type error"
 
 foldTypeOps :: Ast.TypeExpr -> List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Type Void)) -> Either String Ast.TypeExpr
 foldTypeOps acc ops = case ops of
-  Nil -> pure acc
+  Nil -> Right acc
   (Tuple op ty : rest) -> do
     let opName = unwrapOperator op.name
     tyExpr <- convertType ty
@@ -644,14 +644,14 @@ foldTypeOps acc ops = case ops of
 convertRow :: Cst.Row Void -> Either String { fields :: List (Tuple String Ast.TypeExpr), tail :: Maybe String }
 convertRow row = do
   fields <- case row.labels of
-    Nothing -> pure Nil
+    Nothing -> Right Nil
     Just sep -> convertRowLabels sep
   let tail = case row.tail of
         Nothing -> Nothing
         Just (Tuple _ ty) -> case ty of
           Cst.TypeVar name -> Just (unwrapIdent name.name)
           _ -> Nothing
-  pure { fields, tail }
+  Right { fields, tail }
 
 -- Note: Expanding Separated and Labeled type aliases for self-hosted type checker
 -- Separated a = { head :: a, tail :: List (Tuple SourceToken a) }
@@ -667,7 +667,7 @@ convertRowLabel :: LabeledLabelType -> Either String (Tuple String Ast.TypeExpr)
 convertRowLabel labeled = do
   let label = unwrapLabel labeled.label.name
   ty <- convertType labeled.value
-  pure $ Tuple label ty
+  Right $ Tuple label ty
 
 -- ============================================================================
 -- Expression Conversion
@@ -677,60 +677,60 @@ convertExpr :: Cst.Expr Void -> Either String Ast.Expr
 convertExpr expr = case expr of
   Cst.ExprHole name ->
     -- _name variables are treated as regular variables, not typed holes
-    pure $ Ast.ExprVar (unwrapIdent name.name)
+    Right $ Ast.ExprVar (unwrapIdent name.name)
 
   Cst.ExprSection _ ->
-    pure $ Ast.ExprSection "_"
+    Right $ Ast.ExprSection "_"
 
   Cst.ExprIdent qn ->
     case qn.module of
-      Nothing -> pure $ Ast.ExprVar (unwrapIdent qn.name)
-      Just modName -> pure $ Ast.ExprQualified (unwrapModuleName modName) (unwrapIdent qn.name)
+      Nothing -> Right $ Ast.ExprVar (unwrapIdent qn.name)
+      Just modName -> Right $ Ast.ExprQualified (unwrapModuleName modName) (unwrapIdent qn.name)
 
   Cst.ExprConstructor qn ->
     case qn.module of
-      Nothing -> pure $ Ast.ExprVar (unwrapProper qn.name)
-      Just modName -> pure $ Ast.ExprQualified (unwrapModuleName modName) (unwrapProper qn.name)
+      Nothing -> Right $ Ast.ExprVar (unwrapProper qn.name)
+      Just modName -> Right $ Ast.ExprQualified (unwrapModuleName modName) (unwrapProper qn.name)
 
   Cst.ExprBoolean _ b ->
-    pure $ Ast.ExprLit (Ast.LitBool b)
+    Right $ Ast.ExprLit (Ast.LitBool b)
 
   Cst.ExprChar _ c ->
-    pure $ Ast.ExprLit (Ast.LitChar c)
+    Right $ Ast.ExprLit (Ast.LitChar c)
 
   Cst.ExprString _ s ->
-    pure $ Ast.ExprLit (Ast.LitString s)
+    Right $ Ast.ExprLit (Ast.LitString s)
 
   Cst.ExprInt _ intVal ->
-    pure $ Ast.ExprLit (Ast.LitInt (intValueToInt intVal))
+    Right $ Ast.ExprLit (Ast.LitInt (intValueToInt intVal))
 
   Cst.ExprNumber _ n ->
-    pure $ Ast.ExprLit (Ast.LitNumber n)
+    Right $ Ast.ExprLit (Ast.LitNumber n)
 
   Cst.ExprArray del -> do
     items <- case del.value of
-      Nothing -> pure Nil
+      Nothing -> Right Nil
       Just sep -> do
         let allItems = sep.head : (map (\(Tuple _ e) -> e) sep.tail)
         traverse convertExpr allItems
-    pure $ Ast.ExprList items
+    Right $ Ast.ExprList items
 
   Cst.ExprRecord del -> do
     fields <- case del.value of
-      Nothing -> pure Nil
+      Nothing -> Right Nil
       Just sep -> do
         let allFields = sep.head : (map (\(Tuple _ f) -> f) sep.tail)
         traverse convertRecordField allFields
-    pure $ Ast.ExprRecord fields
+    Right $ Ast.ExprRecord fields
 
   Cst.ExprParens wrapped -> do
     inner <- convertExpr wrapped.value
-    pure $ Ast.ExprParens inner
+    Right $ Ast.ExprParens inner
 
   Cst.ExprTyped e _ ty -> do
     expr' <- convertExpr e
     tyExpr <- convertType ty
-    pure $ Ast.ExprTyped expr' tyExpr
+    Right $ Ast.ExprTyped expr' tyExpr
 
   Cst.ExprInfix head ops -> do
     -- Convert infix function application `e1 \`f\` e2`
@@ -743,12 +743,12 @@ convertExpr expr = case expr of
 
   Cst.ExprOpName qn ->
     case qn.module of
-      Nothing -> pure $ Ast.ExprVar (unwrapOperator qn.name)
-      Just modName -> pure $ Ast.ExprQualified (unwrapModuleName modName) (unwrapOperator qn.name)
+      Nothing -> Right $ Ast.ExprVar (unwrapOperator qn.name)
+      Just modName -> Right $ Ast.ExprQualified (unwrapModuleName modName) (unwrapOperator qn.name)
 
   Cst.ExprNegate _ e -> do
     inner <- convertExpr e
-    pure $ Ast.ExprUnaryOp "-" inner
+    Right $ Ast.ExprUnaryOp "-" inner
 
   Cst.ExprRecordAccessor acc -> do
     base <- convertExpr acc.expr
@@ -756,30 +756,30 @@ convertExpr expr = case expr of
     let labels = map (\l -> unwrapLabel l.name) path
     case labels of
       (firstLabel : rest) -> do
-        pure $ List.foldl Ast.ExprRecordAccess (Ast.ExprRecordAccess base firstLabel) rest
+        Right $ List.foldl Ast.ExprRecordAccess (Ast.ExprRecordAccess base firstLabel) rest
       Nil -> Left "Empty record accessor path"
 
   Cst.ExprRecordUpdate base updates -> do
     baseE <- convertExpr base
     let allUpdates = updates.value.head : (map (\(Tuple _ u) -> u) updates.value.tail)
     updateFields <- traverse convertRecordUpdate allUpdates
-    pure $ Ast.ExprRecordUpdate baseE updateFields
+    Right $ Ast.ExprRecordUpdate baseE updateFields
 
   Cst.ExprApp head args -> do
     headE <- convertExpr head
     argEs <- traverse convertExpr args
-    pure $ List.foldl Ast.ExprApp headE argEs
+    Right $ List.foldl Ast.ExprApp headE argEs
 
   Cst.ExprLambda lam -> do
     params <- traverse convertBinder lam.binders
     body <- convertExpr lam.body
-    pure $ Ast.ExprLambda params body
+    Right $ Ast.ExprLambda params body
 
   Cst.ExprIf ite -> do
     condE <- convertExpr ite.cond
     thenE <- convertExpr ite.thenBranch
     elseE <- convertExpr ite.elseBranch
-    pure $ Ast.ExprIf condE thenE elseE
+    Right $ Ast.ExprIf condE thenE elseE
 
   Cst.ExprCase caseOf -> do
     -- Handle multiple scrutinees
@@ -794,30 +794,30 @@ convertExpr expr = case expr of
           clauses <- traverse convertCaseBranch caseOf.branches
           let lamParam = Ast.PatVar "lamcase__"
           let lamBody = Ast.ExprCase (Ast.ExprVar "lamcase__") clauses
-          pure $ Ast.ExprLambda (lamParam : Nil) lamBody
+          Right $ Ast.ExprLambda (lamParam : Nil) lamBody
         else do
           headE <- convertExpr single
           clauses <- traverse convertCaseBranch caseOf.branches
-          pure $ Ast.ExprCase headE clauses
+          Right $ Ast.ExprCase headE clauses
       multiple -> do
         es <- traverse convertExpr multiple
         clauses <- traverse convertCaseBranch caseOf.branches
-        pure $ Ast.ExprCase (Ast.ExprTuple es) clauses
+        Right $ Ast.ExprCase (Ast.ExprTuple es) clauses
 
   Cst.ExprLet letIn -> do
     bindings <- convertLetBindings letIn.bindings
     body <- convertExpr letIn.body
-    pure $ Ast.ExprLet bindings body
+    Right $ Ast.ExprLet bindings body
 
   Cst.ExprDo doBlock -> do
     stmts <- traverse convertDoStatement doBlock.statements
-    pure $ Ast.ExprDo stmts
+    Right $ Ast.ExprDo stmts
 
   Cst.ExprAdo adoBlock -> do
     stmts <- traverse convertDoStatement adoBlock.statements
     result <- convertExpr adoBlock.result
     -- Convert ado to do with final pure
-    pure $ Ast.ExprDo (stmts <> (Ast.DoExpr result : Nil))
+    Right $ Ast.ExprDo (stmts <> (Ast.DoExpr result : Nil))
 
   Cst.ExprError _ ->
     Left "Cannot convert expression error"
@@ -835,12 +835,12 @@ foldBinOps firstExpr ops = do
 -- | Convert CST operator list to (opName, Ast.Expr) pairs
 convertOpList :: List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Expr Void)) -> Either String (List (Tuple String Ast.Expr))
 convertOpList ops = case ops of
-  Nil -> pure Nil
+  Nil -> Right Nil
   (Tuple op e : rest) -> do
     let opName = unwrapOperator op.name
     exprE <- convertExpr e
     restConverted <- convertOpList rest
-    pure $ (Tuple opName exprE) : restConverted
+    Right $ (Tuple opName exprE) : restConverted
 
 -- | Shunting-yard algorithm for operator precedence
 -- Takes first expression and list of (operator, expression) pairs
@@ -869,7 +869,7 @@ shuntingYard firstExpr ops =
   -- For right-associative operators, use > instead of >= (don't pop same-precedence ops)
   popHigherPrec :: List Ast.Expr -> List String -> Int -> Boolean -> Either String { output :: List Ast.Expr, opStack :: List String }
   popHigherPrec output opStack prec isRightAssoc = case opStack of
-    Nil -> pure { output, opStack }
+    Nil -> Right { output, opStack }
     (topOp : restOps) ->
       let topPrec = operatorPrecedence topOp
           -- For right-associative: only pop if topPrec > prec (strictly greater)
@@ -883,12 +883,12 @@ shuntingYard firstExpr ops =
             let combined = Ast.ExprBinOp topOp left right
             popHigherPrec (combined : restOutput) restOps prec isRightAssoc
           _ -> Left "Not enough operands for operator"
-      else pure { output, opStack }
+      else Right { output, opStack }
 
   -- Reduce all remaining operators on the stack
   reduceAll :: List Ast.Expr -> List String -> Either String Ast.Expr
   reduceAll output Nil = case output of
-    (result : Nil) -> pure result
+    (result : Nil) -> Right result
     _ -> Left "Invalid expression: multiple values remaining"
   reduceAll output (op : restOps) = case output of
     (right : left : restOutput) -> do
@@ -900,7 +900,7 @@ shuntingYard firstExpr ops =
 -- Wrapped a = { open :: SourceToken, value :: a, close :: SourceToken }
 foldInfixOps :: Ast.Expr -> List (Tuple WrappedExpr (Cst.Expr Void)) -> Either String Ast.Expr
 foldInfixOps acc ops = case ops of
-  Nil -> pure acc
+  Nil -> Right acc
   (Tuple wrapped e : rest) -> do
     fn <- convertExpr wrapped.value
     exprE <- convertExpr e
@@ -911,24 +911,24 @@ convertRecordField :: Cst.RecordLabeled (Cst.Expr Void) -> Either String (Tuple 
 convertRecordField field = case field of
   Cst.RecordPun name -> do
     let label = unwrapIdent name.name
-    pure $ Tuple label (Ast.ExprVar label)
+    Right $ Tuple label (Ast.ExprVar label)
   Cst.RecordField name _ value -> do
     let label = unwrapLabel name.name
     expr <- convertExpr value
-    pure $ Tuple label expr
+    Right $ Tuple label expr
 
 convertRecordUpdate :: Cst.RecordUpdate Void -> Either String (Tuple String Ast.Expr)
 convertRecordUpdate update = case update of
   Cst.RecordUpdateLeaf name _ expr -> do
     let label = unwrapLabel name.name
     e <- convertExpr expr
-    pure $ Tuple label e
+    Right $ Tuple label e
   Cst.RecordUpdateBranch name updates -> do
     -- Nested record update - convert to record with nested updates
     let label = unwrapLabel name.name
     let allUpdates = updates.value.head : (map (\(Tuple _ u) -> u) updates.value.tail)
     fields <- traverse convertRecordUpdate allUpdates
-    pure $ Tuple label (Ast.ExprRecord fields)
+    Right $ Tuple label (Ast.ExprRecord fields)
 
 convertCaseBranch :: Tuple SeparatedBinder (Cst.Guarded Void) -> Either String Ast.CaseClause
 convertCaseBranch (Tuple patterns guarded) = do
@@ -938,11 +938,11 @@ convertCaseBranch (Tuple patterns guarded) = do
     (single : Nil) -> convertBinder single
     multiple -> do
       ps <- traverse convertBinder multiple
-      pure $ Ast.PatRecord (listMapWithIndex (\i p -> Tuple (show i) p) ps)
+      Right $ Ast.PatRecord (listMapWithIndex (\i p -> Tuple (show i) p) ps)
   case guarded of
     Cst.Unconditional _ wh -> do
       body <- convertExpr wh.expr
-      pure { pattern: pat, guard: Nothing, body }
+      Right { pattern: pat, guard: Nothing, body }
     Cst.Guarded guards -> case guards of
       (ge : _) -> do
         guardClauses <- convertPatternGuards ge.patterns
@@ -951,7 +951,7 @@ convertCaseBranch (Tuple patterns guarded) = do
         let guard = case guardClauses of
               (Ast.GuardExpr e : _) -> Just e
               _ -> Nothing
-        pure { pattern: pat, guard, body }
+        Right { pattern: pat, guard, body }
       Nil -> Left "Empty guarded expression in case"
 
 convertLetBinding :: Cst.LetBinding Void -> Either String Ast.LetBind
@@ -960,7 +960,7 @@ convertLetBinding binding = case binding of
     -- Type signature in let - we'll attach it to the next binding
     let name = unwrapIdent labeled.label.name
     ty <- convertType labeled.value
-    pure { pattern: Ast.PatVar name, value: Ast.ExprVar name, typeAnn: Just ty }
+    Right { pattern: Ast.PatVar name, value: Ast.ExprVar name, typeAnn: Just ty }
 
   Cst.LetBindingName vbf -> do
     let name = unwrapIdent vbf.name.name
@@ -974,12 +974,12 @@ convertLetBinding binding = case binding of
     let body = if List.null params
                then bodyExpr
                else Ast.ExprLambda params bodyExpr
-    pure { pattern: Ast.PatVar name, value: body, typeAnn: Nothing }
+    Right { pattern: Ast.PatVar name, value: body, typeAnn: Nothing }
 
   Cst.LetBindingPattern binder _ wh -> do
     pat <- convertBinder binder
     body <- convertExpr wh.expr
-    pure { pattern: pat, value: body, typeAnn: Nothing }
+    Right { pattern: pat, value: body, typeAnn: Nothing }
 
   Cst.LetBindingError _ ->
     Left "Cannot convert let binding error"
@@ -988,16 +988,16 @@ convertDoStatement :: Cst.DoStatement Void -> Either String Ast.DoStatement
 convertDoStatement stmt = case stmt of
   Cst.DoLet _ bindings -> do
     binds <- convertLetBindings bindings
-    pure $ Ast.DoLet binds
+    Right $ Ast.DoLet binds
 
   Cst.DoDiscard e -> do
     expr <- convertExpr e
-    pure $ Ast.DoExpr expr
+    Right $ Ast.DoExpr expr
 
   Cst.DoBind binder _ e -> do
     pat <- convertBinder binder
     expr <- convertExpr e
-    pure $ Ast.DoBind pat expr
+    Right $ Ast.DoBind pat expr
 
   Cst.DoError _ ->
     Left "Cannot convert do statement error"
@@ -1009,61 +1009,61 @@ convertDoStatement stmt = case stmt of
 convertBinder :: Cst.Binder Void -> Either String Ast.Pattern
 convertBinder binder = case binder of
   Cst.BinderWildcard _ ->
-    pure Ast.PatWildcard
+    Right Ast.PatWildcard
 
   Cst.BinderVar name ->
-    pure $ Ast.PatVar (unwrapIdent name.name)
+    Right $ Ast.PatVar (unwrapIdent name.name)
 
   Cst.BinderNamed name _ inner -> do
     innerPat <- convertBinder inner
-    pure $ Ast.PatAs (unwrapIdent name.name) innerPat
+    Right $ Ast.PatAs (unwrapIdent name.name) innerPat
 
   Cst.BinderConstructor qn args -> do
     let name = qualifiedProperName qn
     argPats <- traverse convertBinder args
-    pure $ Ast.PatCon name argPats
+    Right $ Ast.PatCon name argPats
 
   Cst.BinderBoolean _ b ->
-    pure $ Ast.PatLit (Ast.LitBool b)
+    Right $ Ast.PatLit (Ast.LitBool b)
 
   Cst.BinderChar _ c ->
-    pure $ Ast.PatLit (Ast.LitChar c)
+    Right $ Ast.PatLit (Ast.LitChar c)
 
   Cst.BinderString _ s ->
-    pure $ Ast.PatLit (Ast.LitString s)
+    Right $ Ast.PatLit (Ast.LitString s)
 
   Cst.BinderInt neg _ intVal -> do
     let n = intValueToInt intVal
     let n' = case neg of
           Nothing -> n
           Just _ -> -n
-    pure $ Ast.PatLit (Ast.LitInt n')
+    Right $ Ast.PatLit (Ast.LitInt n')
 
   Cst.BinderNumber neg _ num -> do
     let n' = case neg of
           Nothing -> num
           Just _ -> -num
-    pure $ Ast.PatLit (Ast.LitNumber n')
+    Right $ Ast.PatLit (Ast.LitNumber n')
 
   Cst.BinderArray del -> do
     items <- case del.value of
-      Nothing -> pure Nil
+      Nothing -> Right Nil
       Just sep -> do
         let allItems = sep.head : (map (\(Tuple _ b) -> b) sep.tail)
         traverse convertBinder allItems
-    pure $ Ast.PatList items
+    Right $ Ast.PatList items
 
   Cst.BinderRecord del -> do
     fields <- case del.value of
-      Nothing -> pure Nil
+      Nothing -> Right Nil
       Just sep -> do
         let allFields = sep.head : (map (\(Tuple _ f) -> f) sep.tail)
         traverse convertRecordBinder allFields
-    pure $ Ast.PatRecord fields
+    Right $ Ast.PatRecord fields
 
   Cst.BinderParens wrapped -> do
     inner <- convertBinder wrapped.value
-    pure $ Ast.PatParens inner
+    Right $ Ast.PatParens inner
 
   Cst.BinderTyped inner _ _ -> do
     -- Just ignore the type annotation for now
@@ -1079,7 +1079,7 @@ convertBinder binder = case binder of
 
 foldBinderOps :: Ast.Pattern -> List (Tuple (Cst.QualifiedName Cst.Operator) (Cst.Binder Void)) -> Either String Ast.Pattern
 foldBinderOps acc ops = case ops of
-  Nil -> pure acc
+  Nil -> Right acc
   (Tuple op b : rest) -> do
     let opName = unwrapOperator op.name
     binderPat <- convertBinder b
@@ -1089,7 +1089,7 @@ foldBinderOps acc ops = case ops of
     then do
       -- First recursively process the rest, then combine
       tailPat <- foldBinderOps binderPat rest
-      pure $ Ast.PatCons acc tailPat
+      Right $ Ast.PatCons acc tailPat
     else do
       let combined = Ast.PatCon opName (acc : binderPat : Nil)
       foldBinderOps combined rest
@@ -1098,8 +1098,8 @@ convertRecordBinder :: Cst.RecordLabeled (Cst.Binder Void) -> Either String (Tup
 convertRecordBinder field = case field of
   Cst.RecordPun name -> do
     let label = unwrapIdent name.name
-    pure $ Tuple label (Ast.PatVar label)
+    Right $ Tuple label (Ast.PatVar label)
   Cst.RecordField name _ binder -> do
     let label = unwrapLabel name.name
     pat <- convertBinder binder
-    pure $ Tuple label pat
+    Right $ Tuple label pat
