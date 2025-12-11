@@ -1763,11 +1763,13 @@ sortGroupsByDependencies groups =
   let groupName grp = case Array.head grp of
         Nothing -> Nothing
         Just b -> getBindName b
-      allNames = Array.mapMaybe groupName groups
+      -- Inline allNames computation to avoid forward reference from letrec function to value
       groupDeps grp =
         let selfName = groupName grp
             usedNames = Array.concatMap (\b -> getUsedVars b.value) grp
-        in Array.filter (\n -> Just n /= selfName && Array.elem n allNames) usedNames
+            allNames' = Array.mapMaybe groupName groups  -- Inline here
+        in Array.filter (\n -> Just n /= selfName && Array.elem n allNames') usedNames
+      allNames = Array.mapMaybe groupName groups
       groupInfo = map (\g -> { group: g, name: groupName g, deps: groupDeps g }) groups
   in topoSortBindGroups allNames groupInfo []
 
@@ -2474,8 +2476,8 @@ snakeCase s =
 escapeReserved :: String -> String
 escapeReserved s = if isReserved s then s <> "_" else s
   where
-    isReserved word = Array.elem word elixirReserved
-    elixirReserved =
+    -- Inline the reserved list to avoid forward reference from function to value
+    isReserved word = Array.elem word
       [ "nil", "true", "false", "do", "end", "if", "else", "unless"
       , "case", "cond", "when", "and", "or", "not", "in", "fn"
       , "def", "defp", "defmodule", "defstruct", "defmacro", "defimpl"

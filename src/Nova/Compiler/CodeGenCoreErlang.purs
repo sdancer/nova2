@@ -807,30 +807,22 @@ genLetBindsWithBody ctx binds body =
       -- Add non-lambda bindings to locals
       ctxWithAllBinds = foldr addValueBindToCtx ctxWithFuncs valueBinds
 
-      -- Separate value bindings:
-      -- - Independent: don't reference any letrec function (can go before letrec)
-      -- - Dependent: reference letrec functions (must go after first letrec)
-      usesFunc b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor funcNames Set.empty b.value) funcNames))
-      independentValueBinds = Array.filter (not <<< usesFunc) valueBinds
-      dependentValueBinds = Array.filter usesFunc valueBinds
-      dependentValueNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) dependentValueBinds)
+      -- SIMPLIFIED: Put ALL value bindings after the letrec
+      -- This avoids complex transitive dependency detection and is always correct.
+      -- Value bindings may depend on letrec functions (directly or transitively),
+      -- so the safest approach is to generate them all after the letrec.
+      -- They'll be topo-sorted among themselves to handle inter-dependencies.
+      dependentValueBinds = valueBinds
+      independentValueBinds = []  -- No independent values - all go after letrec
+      dependentValueNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) valueBinds)
 
-      -- Separate function bindings:
-      -- - Group 1: functions that DON'T use dependent value bindings (can go in first letrec)
-      -- - Group 2: functions that DO use dependent value bindings (need second letrec after values)
-      funcUsesDepValue b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor dependentValueNames Set.empty b.value) dependentValueNames))
-      funcGroup1 = Array.filter (not <<< funcUsesDepValue) funcBinds
-      funcGroup2 = Array.filter funcUsesDepValue funcBinds
-
-      -- Get names of functions in each group
-      funcGroup2Names = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) funcGroup2)
-
-      -- Split dependent value bindings into two groups:
-      -- - depValuesGroup1: values that only need funcGroup1 (don't reference funcGroup2)
-      -- - depValuesGroup2: values that need funcGroup2 (reference funcGroup2 functions)
-      valueUsesFuncGroup2 b = not (Set.isEmpty (Set.intersection (freeVarsInExprFor funcGroup2Names Set.empty b.value) funcGroup2Names))
-      depValuesGroup1 = Array.filter (not <<< valueUsesFuncGroup2) dependentValueBinds
-      depValuesGroup2 = Array.filter valueUsesFuncGroup2 dependentValueBinds
+      -- SIMPLIFIED: All functions go in a single letrec, all values after
+      -- This avoids complex grouping that creates bootstrap dependency issues.
+      -- The two-letrec approach was trying to optimize, but it's not worth the complexity.
+      funcGroup1 = funcBinds
+      funcGroup2 = []  -- No second function group
+      depValuesGroup1 = dependentValueBinds  -- All values in one group
+      depValuesGroup2 = []  -- No second value group
 
   in if Array.null funcBinds
      then genValueBindsWithBody ctxWithAllBinds valueBinds body
