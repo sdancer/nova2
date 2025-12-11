@@ -148,10 +148,6 @@ foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String }
 
 -- String.CodePoints (SCU) functions
 
--- To code point array
-toCodePointArray :: String -> Array Int
-toCodePointArray s = toCodePointArrayImpl s
-
 -- Slice substring
 slice :: Int -> Int -> String -> String
 slice start end s = sliceImpl start end s
