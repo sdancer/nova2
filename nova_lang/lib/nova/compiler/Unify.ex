@@ -51,23 +51,49 @@ defmodule Nova.Compiler.Unify do
   end
 
   def show_type(({:ty_con, tc})) do
-    Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(tc.name, "("), Prelude.show((Data.Array.length(tc.args)))), " args)")
+    if (Nova.Array.length(tc.args) == 0) do
+      tc.name
+    else
+      Nova.Runtime.append(Nova.Runtime.append(tc.name, " "), Nova.String.join_with(" ", (Prelude.map((&show_type_parens/1), tc.args))))
+    end
   end
 
   def show_type(({:ty_record, r})) do
     
-      field_names = Nova.Array.from_foldable((Nova.Map.keys(r.fields)))
-      field_str = Nova.String.join_with(", ", (Nova.Array.take(5, field_names)))
-      suffix = if (Nova.Array.length(field_names) > 5) do
+      field_entries = Nova.Array.from_foldable((Nova.Map.to_unfoldable(r.fields)))
+      show_field = fn ({:tuple, name, ty}) -> Nova.Runtime.append(Nova.Runtime.append(name, " :: "), show_type(ty)) end
+      field_strs = Prelude.map(show_field, (Nova.Array.take(8, field_entries)))
+      suffix = if (Nova.Array.length(field_entries) > 8) do
         ", ..."
       else
         ""
       end
-      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{", field_str), suffix), "}")
+      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("{ ", Nova.String.join_with(", ", field_strs)), suffix), " }")
   end
 
   def show_type(({:ty_app, f, arg})) do
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("(", show_type(f)), " "), show_type(arg)), ")")
+  end
+
+
+
+  def show_type_parens(({:ty_var, _}) = t) do
+    show_type(t)
+  end
+
+  def show_type_parens(({:ty_con, tc}) = t) do
+    cond do
+      ((Nova.Array.length(tc.args) == 0)) ->
+        show_type(t)
+    end
+  end
+
+  def show_type_parens(({:ty_record, _}) = t) do
+    show_type(t)
+  end
+
+  def show_type_parens(t) do
+    Nova.Runtime.append(Nova.Runtime.append("(", show_type(t)), ")")
   end
 
 
@@ -97,9 +123,20 @@ end
 
 
 
+  def strip_module_prefix(name) do
+    case Nova.String.last_index_of((Nova.String.pattern(".")), name) do
+      {:just, idx} -> Nova.String.drop(((idx + 1)), name)
+      :nothing -> name
+    end
+  end
+
+
+
   def are_equivalent_types(n1, n2) do
     cond do
       ((n1 == n2)) ->
+        true
+      ((strip_module_prefix(n1) == strip_module_prefix(n2))) ->
         true
       (((n1 == "List") and (n2 == "Array"))) ->
         true
@@ -236,7 +273,7 @@ end
   end)
 end)
       (true) ->
-        {:left, ({:type_mismatch, ({:ty_app, f, a}), ({:ty_con, c})})}
+        {:left, ({:type_mismatch, (Nova.Compiler.Types.mk_ty_app(f, a)), ({:ty_con, c})})}
     end
   end
 
@@ -255,16 +292,16 @@ end)
   end)
 end)
       (true) ->
-        {:left, ({:type_mismatch, ({:ty_con, c}), ({:ty_app, f, a})})}
+        {:left, ({:type_mismatch, ({:ty_con, c}), (Nova.Compiler.Types.mk_ty_app(f, a))})}
     end
   end
 
   def unify_with_aliases(aliases, ({:ty_app, f, a}), ({:ty_var, v})) do
-    bind_var(v, ({:ty_app, f, a}))
+    bind_var(v, (Nova.Compiler.Types.mk_ty_app(f, a)))
   end
 
   def unify_with_aliases(aliases, ({:ty_var, v}), ({:ty_app, f, a})) do
-    bind_var(v, ({:ty_app, f, a}))
+    bind_var(v, (Nova.Compiler.Types.mk_ty_app(f, a)))
   end
 
   def unify_with_aliases(aliases, t1, t2) do

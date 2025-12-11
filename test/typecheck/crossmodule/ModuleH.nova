@@ -1,0 +1,11 @@
+-- Module H: Imports Scheme and does record destructuring
+-- This mirrors what TypeChecker.purs does with instantiate
+module Test.CrossModule.ModuleH where
+
+import Test.CrossModule.ModuleG (Scheme)
+
+-- Function that destructures imported Scheme type alias
+getSchemeType :: Scheme -> String
+getSchemeType scheme =
+  let { ty: schemeTy, vars: schemeVars } = scheme
+  in schemeTy

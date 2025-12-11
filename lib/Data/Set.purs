@@ -136,3 +136,9 @@ unions :: forall a. Array (Set a) -> Set a
 unions sets = unionsImpl sets
 
 foreign import unionsImpl :: forall a. Array (Set a) -> Set a
+
+-- Map and filter in one pass (like catMaybes . map)
+mapMaybe :: forall a b. (a -> Maybe b) -> Set a -> Set b
+mapMaybe f s = foldl (\acc x -> case f x of
+  Just y -> insert y acc
+  Nothing -> acc) empty s

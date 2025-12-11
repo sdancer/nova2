@@ -1,0 +1,23 @@
+-- Minimal reproduction: Type alias field access
+-- Tests whether field access works on type alias
+
+module Test.TypeAliasFieldAccess where
+
+import Data.List (List, foldl)
+import Data.Set as Set
+
+-- Type alias for a module-like structure
+type Module = { name :: String, declarations :: List String }
+
+-- ADT with type alias payload
+data Declaration
+  = DeclFunction String
+  | DeclModule Module
+
+-- Function that accesses field on type alias
+getDeps :: Declaration -> Set.Set String
+getDeps decl = case decl of
+  DeclFunction name -> Set.singleton name
+  DeclModule m ->
+    -- This line requires expanding Module type alias to access .declarations
+    foldl (\acc d -> Set.insert d acc) Set.empty m.declarations

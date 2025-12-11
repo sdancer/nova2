@@ -1,0 +1,15 @@
+-- Module I: Debug - test multiple Set functions
+module Test.CrossModule.ModuleI where
+
+import Data.Set as Set
+
+-- These all worked before
+test1 :: Set.Set String
+test1 = Set.singleton "hello"
+
+test2 :: Set.Set String
+test2 = Set.empty
+
+-- This one previously failed
+singletonSet :: Set.Set String
+singletonSet = Set.singleton "hello"

@@ -157,6 +157,12 @@ defmodule Nova.Compiler.Types do
 
 
 
+  def mk_ty_app(f, a) do
+    ty_app(f, a)
+  end
+
+
+
   def t_tuple(ts) do
     
       n = Nova.Array.length(ts)
@@ -206,7 +212,7 @@ defmodule Nova.Compiler.Types do
   end
 
   def apply_subst(sub, ({:ty_app, f, arg})) do
-    {:ty_app, (apply_subst(sub, f)), (apply_subst(sub, arg))}
+    mk_ty_app((apply_subst(sub, f)), (apply_subst(sub, arg)))
   end
 
 

@@ -16,7 +16,7 @@ import Nova.Compiler.Types (Type(..), TVar, Scheme, Env, Subst, emptySubst, comp
 import Nova.Compiler.Types as Types
 import Nova.Compiler.Ast (Expr(..), Literal(..), Pattern(..), LetBind, CaseClause, Declaration(..), FunctionDeclaration, DoStatement(..), DataType, DataConstructor, DataField, TypeExpr(..), TypeAlias, TypeClass, ImportItem(..), ImportSpec(..), ImportDeclaration, NewtypeDecl, Module, GuardedExpr, GuardClause(..))
 import Nova.Compiler.Unify (UnifyError, unify, unifyWithAliases)
-import Nova.Compiler.ImportProcessor as IP
+import Nova.Compiler.ImportProcessor as ImportProcessor
 
 -- | FFI helper for converting Int to String
 -- This avoids shadowing issues when a local 'show' instance is defined
@@ -50,6 +50,33 @@ withContext :: forall a. String -> Either TCError a -> Either TCError a
 withContext ctx (Left err) = Left (addErrorContext ctx err)
 withContext _ (Right x) = Right x
 
+-- | Short string representation of an expression for error messages
+showExprShort :: Expr -> String
+showExprShort (ExprVar n) = n
+showExprShort (ExprQualified m n) = m <> "." <> n
+showExprShort (ExprLit (LitInt n)) = show n
+showExprShort (ExprLit (LitString s)) = "\"" <> String.take 20 s <> "\""
+showExprShort (ExprLit (LitBool b)) = if b then "true" else "false"
+showExprShort (ExprLit _) = "<lit>"
+showExprShort (ExprApp f a) = "(" <> showExprShort f <> " " <> showExprShort a <> ")"
+showExprShort (ExprLambda _ _) = "<lambda>"
+showExprShort (ExprLet _ _) = "<let>"
+showExprShort (ExprIf _ _ _) = "<if>"
+showExprShort (ExprCase _ _) = "<case>"
+showExprShort (ExprBinOp op _ _) = "<binop " <> op <> ">"
+showExprShort (ExprRecord _) = "<record>"
+showExprShort (ExprRecordAccess e f) = showExprShort e <> "." <> f
+showExprShort (ExprRecordUpdate _ _) = "<record-update>"
+showExprShort (ExprList _) = "<list>"
+showExprShort (ExprDo _) = "<do>"
+showExprShort (ExprParens e) = showExprShort e
+showExprShort (ExprTyped e _) = showExprShort e
+showExprShort (ExprUnaryOp op _) = "<unary " <> op <> ">"
+showExprShort (ExprTuple _) = "<tuple>"
+showExprShort (ExprSection s) = "(" <> s <> ")"
+showExprShort (ExprSectionLeft e op) = "(" <> showExprShort e <> " " <> op <> ")"
+showExprShort (ExprSectionRight op e) = "(" <> op <> " " <> showExprShort e <> ")"
+
 -- | Map with index for Lists
 listMapWithIndex :: forall a b. (Int -> a -> b) -> List a -> List b
 listMapWithIndex f list = go 0 list
@@ -80,13 +107,24 @@ instantiate env scheme =
   in instantiateGo schemeTy env (List.fromFoldable schemeVars) Map.empty
 
 -- | Generalize a type to a scheme
+-- | Remaps quantified type variable IDs to negative values to avoid collision
+-- | with fresh variables during instantiation (which use positive IDs from counter)
 generalize :: Env -> Type -> Scheme
 generalize env ty =
   let envFree = freeTypeVarsEnv env
       tyFree = freeTypeVars ty
       freeIds = Set.toUnfoldable (Set.difference tyFree envFree) :: Array Int
-      vars = map (\i -> mkTVar i ("t" <> intToString i)) freeIds
-  in mkScheme vars ty
+      -- Remap positive IDs to negative to avoid collision during instantiation
+      -- Create pairs of (oldId, newNegativeId) for substitution
+      idPairs = Array.mapWithIndex (\idx oldId -> Tuple oldId (-(idx + 1))) freeIds
+      -- Build substitution from old IDs to new negative-ID type vars
+      remapSub = Map.fromFoldable (map (\(Tuple oldId newId) ->
+        Tuple oldId (TyVar (mkTVar newId ("t" <> intToString (-newId))))) idPairs)
+      -- Apply substitution to remap IDs in the type
+      remappedTy = applySubst remapSub ty
+      -- Create scheme vars with negative IDs
+      vars = map (\(Tuple _ newId) -> mkTVar newId ("t" <> intToString (-newId))) idPairs
+  in mkScheme vars remappedTy
 
 -- | Infer type of a literal
 inferLit :: Literal -> Type
@@ -150,7 +188,7 @@ infer env (ExprApp f arg) =
               let Tuple tv env3 = freshVar r2.env "r"
                   resultTy = TyVar tv
               in case unifyEnv env3 (applySubst r2.sub r1.ty) (tArrow r2.ty resultTy) of
-                Left ue -> Left (UnifyErr ue)
+                Left ue -> Left (UnifyErrWithContext ue ("app: " <> showExprShort func <> " applied to " <> showExprShort a))
                 Right s3 ->
                   let sub = composeSubst s3 (composeSubst r2.sub r1.sub)
                   in Right { ty: applySubst s3 resultTy, sub, env: env3 }
@@ -260,7 +298,7 @@ infer env (ExprRecordAccess rec field) =
           Tuple rowTv env3 = freshVar env2 "row"
           expectedRec = TyRecord { fields: Map.singleton field (TyVar resultTv), row: Just rowTv }
       in case unifyEnv env3 recRes.ty expectedRec of
-        Left ue -> Left (UnifyErr ue)
+        Left ue -> Left (UnifyErrWithContext ue ("field access: " <> showExprShort rec <> "." <> field))
         Right s2 ->
           let sub = composeSubst s2 recRes.sub
           in Right { ty: applySubst sub (TyVar resultTv), sub, env: env3 }
@@ -828,11 +866,11 @@ checkDataTypeWithAliases aliasMap env dt = checkDataTypeWithAllAliases aliasMap 
 -- | Process a data type declaration with both simple and parameterized type aliases
 checkDataTypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Env -> DataType -> Env
 checkDataTypeWithAllAliases aliasMap paramAliasMap env dt =
-  let -- Create type variables for the type parameters
-      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (env.counter + i) v)) (Array.fromFoldable dt.typeVars)
+  let -- Create type variables for the type parameters with NEGATIVE IDs
+      -- to avoid collision with fresh variables during instantiation
+      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (-(i + 1)) v)) (Array.fromFoldable dt.typeVars)
       typeVarMap = Map.fromFoldable typeVarPairs
-      newCounter = env.counter + List.length dt.typeVars
-      env1 = env { counter = newCounter }
+      -- Don't advance counter since we're using negative IDs
 
       -- The result type is the data type applied to its type variables
       typeArgs = map (\(Tuple _ tv) -> TyVar tv) typeVarPairs
@@ -843,7 +881,7 @@ checkDataTypeWithAllAliases aliasMap paramAliasMap env dt =
         let conType = buildConstructorTypeWithAllAliases aliasMap paramAliasMap typeVarMap con.fields resultType
             conScheme = mkScheme (map snd typeVarPairs) conType
         in extendEnv e con.name conScheme
-  in Array.foldl addConstructor env1 (Array.fromFoldable dt.constructors)
+  in Array.foldl addConstructor env (Array.fromFoldable dt.constructors)
 
 -- | Process a newtype declaration with access to type aliases
 -- | Newtypes are like data types but with exactly one constructor and one wrapped field
@@ -853,11 +891,11 @@ checkNewtypeWithAliases aliasMap env nt = checkNewtypeWithAllAliases aliasMap Ma
 -- | Process a newtype declaration with both simple and parameterized type aliases
 checkNewtypeWithAllAliases :: Map.Map String Type -> Map.Map String TypeAliasInfo -> Env -> NewtypeDecl -> Env
 checkNewtypeWithAllAliases aliasMap paramAliasMap env nt =
-  let -- Create type variables for the type parameters
-      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (env.counter + i) v)) (Array.fromFoldable nt.typeVars)
+  let -- Create type variables for the type parameters with NEGATIVE IDs
+      -- to avoid collision with fresh variables during instantiation
+      typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (-(i + 1)) v)) (Array.fromFoldable nt.typeVars)
       typeVarMap = Map.fromFoldable typeVarPairs
-      newCounter = env.counter + List.length nt.typeVars
-      env1 = env { counter = newCounter }
+      -- Don't advance counter since we're using negative IDs
 
       -- The result type is the newtype applied to its type variables
       typeArgs = map (\(Tuple _ tv) -> TyVar tv) typeVarPairs
@@ -867,7 +905,7 @@ checkNewtypeWithAllAliases aliasMap paramAliasMap env nt =
       wrappedTy = typeExprToTypeWithAllAliases aliasMap paramAliasMap typeVarMap nt.wrappedType
       conType = tArrow wrappedTy resultType
       conScheme = mkScheme (map snd typeVarPairs) conType
-  in extendEnv env1 nt.constructor conScheme
+  in extendEnv env nt.constructor conScheme
 
 -- | Build the type for a data constructor
 -- | e.g., Just :: forall a. a -> Maybe a
@@ -922,18 +960,25 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprCon name) =
   let unqualifiedName = case String.lastIndexOf (String.Pattern ".") name of
         Just idx -> String.drop (idx + 1) name
         Nothing -> name
+      -- Separate lookup functions with explicit types to help inference
+      lookupInAliasMap :: String -> Maybe Type
+      lookupInAliasMap nm = Map.lookup nm aliasMap
+
+      lookupInParamAliasMap :: String -> Maybe TypeAliasInfo
+      lookupInParamAliasMap nm = Map.lookup nm paramAliasMap
+
       -- Check if it's a simple type alias we should expand
       tryLookup :: String -> Maybe Type
-      tryLookup nm = case Map.lookup nm aliasMap of
+      tryLookup nm = case lookupInAliasMap nm of
         Just ty -> Just ty
-        Nothing -> case Map.lookup nm paramAliasMap of
+        Nothing -> case lookupInParamAliasMap nm of
           Just info ->
             let ps = getAliasInfoParams info
                 bodyExpr = getAliasInfoBody info
             in if Array.null ps
                then Just (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap bodyExpr)
                else Nothing
-          _ -> Nothing
+          Nothing -> Nothing
   in case tryLookup name of
     Just ty -> ty
     Nothing -> case tryLookup unqualifiedName of
@@ -965,7 +1010,7 @@ typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprApp f arg) =
       let argTy = typeExprToTypeWithAllAliases aMap paMap vMap argExpr
       in case typeExprToTypeWithAllAliases aMap paMap vMap func of
            TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args argTy }
-           other -> TyApp other argTy  -- HKT: use TyApp for non-TyCon heads
+           other -> Types.mkTyApp other argTy  -- HKT: use TyApp for non-TyCon heads
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprArrow a b) =
   tArrow (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap a) (typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap b)
 typeExprToTypeWithAllAliases aliasMap paramAliasMap varMap (TyExprRecord fields maybeRow) =
@@ -1132,7 +1177,7 @@ typeExprToType varMap (TyExprApp f arg) =
   let argTy = typeExprToType varMap arg
   in case typeExprToType varMap f of
        TyCon tc -> TyCon { name: tc.name, args: Array.snoc tc.args argTy }
-       other -> TyApp other argTy  -- HKT: type variable applied to argument
+       other -> Types.mkTyApp other argTy  -- HKT: type variable applied to argument
 typeExprToType varMap (TyExprArrow a b) =
   tArrow (typeExprToType varMap a) (typeExprToType varMap b)
 typeExprToType varMap (TyExprRecord fields maybeRow) =
@@ -1197,6 +1242,11 @@ collectTypeExprNames (TyExprParens t) = collectTypeExprNames t
 collectTypeExprNames (TyExprTuple ts) =
   List.foldl (\s t -> Set.union s (collectTypeExprNames t)) Set.empty ts
 
+-- | Backwards-compatible wrapper that uses defaultRegistry
+-- | For use by tests and simple cases without cross-module imports
+checkModuleSimple :: Env -> Array Declaration -> Either TCError Env
+checkModuleSimple env decls = checkModule Types.defaultRegistry env decls
+
 -- | Type check a module with imports resolved from a module registry
 -- | Pass 1: Process imports and collect type aliases
 -- | Pass 2: Process data types, type aliases, and collect function signatures
@@ -1206,7 +1256,7 @@ checkModule registry env decls =
   -- First collect imported type aliases
   let importedAliases = collectImportedAliases registry decls
       -- Process imports to add imported types/values to environment (using ImportProcessor)
-      env1 = IP.processImports registry env decls
+      env1 = ImportProcessor.processImports registry env decls
       -- Then proceed with normal type checking, passing imported aliases
       env2 = processNonFunctionsWithAliases importedAliases env1 decls
       env3 = addFunctionPlaceholdersWithAliases importedAliases env2 decls
@@ -1354,7 +1404,7 @@ importItem exports env item =
                   addIfRecordAlias e name = case Map.lookup name moduleAliases of
                     Just aliasTy | isRecordType aliasTy -> extendTypeAlias e name aliasTy
                     _ -> e
-              in Array.foldl addIfRecordAlias e1 (Array.fromFoldable referencedNames)
+              in Array.foldl addIfRecordAlias e1 (Set.toUnfoldable referencedNames)
             Nothing ->
               -- Check if it's in moduleAliases (simple type alias from expansion)
               case Map.lookup typeName moduleAliases of
@@ -1460,10 +1510,15 @@ collectImportedAliases registry decls =
           in acc2
     collectFromImport acc _ = acc
 
--- | Extract exports from a module's declarations
+-- | Extract exports from a module's declarations (without registry - uses only local aliases)
 -- This is used to build the registry from parsed modules
 extractExports :: Array Declaration -> ModuleExports
-extractExports decls =
+extractExports decls = extractExportsWithRegistry Types.defaultRegistry decls
+
+-- | Extract exports with access to registry for imported type aliases
+-- This allows constructor types to properly expand type aliases from imported modules
+extractExportsWithRegistry :: ModuleRegistry -> Array Declaration -> ModuleExports
+extractExportsWithRegistry registry decls =
   Array.foldl collectExport emptyExports decls
   where
     collectExport :: ModuleExports -> Declaration -> ModuleExports
@@ -1485,7 +1540,8 @@ extractExports decls =
                      }
           exp1 = exp { types = Map.insert nt.name typeInfo exp.types }
           -- Build constructor type: wrappedType -> NewtypeName a b ...
-          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) (Array.fromFoldable nt.typeVars)
+          -- Use negative IDs to avoid collision with fresh variables during instantiation
+          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (-(i + 1)) v)) (Array.fromFoldable nt.typeVars)
           typeVarMap = Map.fromFoldable typeVarPairs
           resultType = if List.null nt.typeVars
                        then TyCon (mkTCon nt.name [])
@@ -1502,15 +1558,21 @@ extractExports decls =
       -- Foreign imports have explicit type signatures, so we can add them
       let ty = typeExprToType Map.empty fi.typeSignature
           freeVars = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
-          tvars = map (\id -> { id: id, name: "a" <> intToString id }) freeVars
-          scheme = mkScheme tvars ty
+          -- Remap to negative IDs to avoid collision with fresh variables
+          idPairs = Array.mapWithIndex (\idx oldId -> Tuple oldId (-(idx + 1))) freeVars
+          remapSub = Map.fromFoldable (map (\(Tuple oldId newId) ->
+            Tuple oldId (TyVar { id: newId, name: "a" <> intToString (-newId) })) idPairs)
+          remappedTy = applySubst remapSub ty
+          tvars = map (\(Tuple _ newId) -> { id: newId, name: "a" <> intToString (-newId) }) idPairs
+          scheme = mkScheme tvars remappedTy
       in exp { values = Map.insert fi.functionName scheme exp.values }
     collectExport exp (DeclTypeClass tc) =
       -- Add type class methods to exports with their polymorphic types
       Array.foldl addMethod exp (Array.fromFoldable tc.methods)
       where
         addMethod e sig =
-          let varPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) (Array.fromFoldable tc.typeVars)
+          -- Use negative IDs to avoid collision with fresh variables during instantiation
+          let varPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (-(i + 1)) v)) (Array.fromFoldable tc.typeVars)
               varMap = Map.fromFoldable varPairs
               methodType = typeExprToType varMap sig.ty
               scheme = mkScheme (map snd varPairs) methodType
@@ -1518,14 +1580,20 @@ extractExports decls =
     collectExport exp _ = exp
 
     -- Build alias maps for resolving field types
-    aliasMap = collectTypeAliases decls
-    paramAliasMap = collectParamTypeAliases decls
+    -- Include both local aliases AND imported aliases from registry
+    localAliasMap = collectTypeAliases decls
+    localParamAliasMap = collectParamTypeAliases decls
+    importedAliases = collectImportedAliases registry decls
+    -- Merge: local aliases take precedence over imported
+    aliasMap = localAliasMap
+    paramAliasMap = Map.union localParamAliasMap importedAliases
 
     addConstructorPlaceholder :: DataType -> ModuleExports -> DataConstructor -> ModuleExports
     addConstructorPlaceholder dt exp ctor =
       -- Build proper constructor type using type aliases
       let -- Create type var map for the data type's type parameters
-          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar i v)) (Array.fromFoldable dt.typeVars)
+          -- Use negative IDs to avoid collision with fresh variables during instantiation
+          typeVarPairs = Array.mapWithIndex (\i v -> Tuple v (mkTVar (-(i + 1)) v)) (Array.fromFoldable dt.typeVars)
           typeVarMap = Map.fromFoldable typeVarPairs
           -- Result type is the data type applied to its type vars
           resultType = if List.null dt.typeVars
@@ -1610,11 +1678,13 @@ processNonFunctionsWithAliases importedAliases env decls =
       -- Collect local aliases with imported as base for resolving references
       localAliasMap = collectTypeAliasesWithBase importedSimpleAliases paramAliasMap decls
       aliasMap = localAliasMap  -- Already includes importedSimpleAliases from base
-      -- Also add aliases to env for other purposes
+      -- Add imported simple aliases to env.typeAliases for unification
+      envWithImportedAliases = env { typeAliases = Map.union importedSimpleAliases env.typeAliases }
+      -- Also add local aliases to env for other purposes
       processTypeAlias e decl = case decl of
         DeclTypeAlias ta -> checkTypeAlias e ta
         _ -> e
-      env1 = Array.foldl processTypeAlias env decls
+      env1 = Array.foldl processTypeAlias envWithImportedAliases decls
       -- Phase 2: Process data types and newtypes (with both simple and parameterized type aliases)
       processDataType e decl = case decl of
         DeclDataType dt -> checkDataTypeWithAllAliases aliasMap paramAliasMap e dt
@@ -1674,14 +1744,22 @@ addFunctionPlaceholdersWithAliases importedAliases env decls =
             Just sig ->
               -- sig is a TypeSignature record with { name, typeVars, constraints, ty }
               let ty = typeExprToTypeWithAllAliases aliasMap paramAliasMap Map.empty sig.ty
-                  scheme = mkScheme [] ty
+                  -- Extract forall-bound type variables (those with negative IDs)
+                  freeVarIds = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
+                  forallVars = Array.filter (\id -> id < 0) freeVarIds
+                  tvars = map (\id -> { id: id, name: "t" <> intToString ((-id)) }) forallVars
+                  scheme = mkScheme tvars ty
               in extendEnv e func.name scheme
             Nothing ->
               -- Then check standalone signatures
               case Map.lookup func.name sigMap of
                 Just tyExpr ->
                   let ty = typeExprToTypeWithAllAliases aliasMap paramAliasMap Map.empty tyExpr
-                      scheme = mkScheme [] ty
+                      -- Extract forall-bound type variables (those with negative IDs)
+                      freeVarIds = Array.fromFoldable (Set.toUnfoldable (freeTypeVars ty) :: Array Int)
+                      forallVars = Array.filter (\id -> id < 0) freeVarIds
+                      tvars = map (\id -> { id: id, name: "t" <> intToString ((-id)) }) forallVars
+                      scheme = mkScheme tvars ty
                   in extendEnv e func.name scheme
                 Nothing ->
                   -- No signature, add fresh type variable

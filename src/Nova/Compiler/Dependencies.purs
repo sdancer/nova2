@@ -11,7 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
-import Nova.Compiler.Ast (Declaration(..), Expr(..), Pattern(..), TypeExpr(..), DeclId, ManagedDecl, LetBind, CaseClause, DoStatement(..), GuardedExpr, GuardClause(..))
+import Nova.Compiler.Ast (Declaration(..), Expr(..), Pattern(..), TypeExpr(..), DeclId, ManagedDecl, LetBind, CaseClause, DoStatement(..), GuardedExpr, GuardClause(..), Module, FunctionDeclaration, DataType, TypeAlias, TypeClass, TypeClassInstance, ForeignImport, TypeSignature, TypeDeclaration, NewtypeDecl, ImportDeclaration, InfixDecl)
 
 -- ============================================================================
 -- Dependency Extraction

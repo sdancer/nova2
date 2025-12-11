@@ -93,6 +93,10 @@ tNumber = TyCon (mkTCon0 "Number")
 tTokenType :: Type
 tTokenType = TyCon (mkTCon0 "TokenType")
 
+-- | Helper to construct TyApp (needed for code generation)
+mkTyApp :: Type -> Type -> Type
+mkTyApp f a = TyApp f a
+
 tTuple :: Array Type -> Type
 tTuple ts =
   let n = Array.length ts
@@ -120,7 +124,7 @@ applySubst :: Subst -> Type -> Type
 applySubst sub (TyVar v) = lookupSubst sub v
 applySubst sub (TyCon c) = TyCon (c { args = map (applySubst sub) c.args })
 applySubst sub (TyRecord r) = TyRecord (r { fields = map (applySubst sub) r.fields })
-applySubst sub (TyApp f arg) = TyApp (applySubst sub f) (applySubst sub arg)
+applySubst sub (TyApp f arg) = mkTyApp (applySubst sub f) (applySubst sub arg)
 
 -- | Compose two substitutions: s1 `compose` s2 applies s2 then s1
 composeSubst :: Subst -> Subst -> Subst

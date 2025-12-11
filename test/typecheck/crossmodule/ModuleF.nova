@@ -1,0 +1,33 @@
+-- Module F: Imports and accesses fields on type alias
+-- This tests the exact pattern that fails in Dependencies.purs
+module Test.CrossModule.ModuleF where
+
+import Data.List (List, Nil, foldl)
+import Test.CrossModule.ModuleE (Declaration(..), Module)
+
+-- Simple function to get module name - tests type alias field access
+getModuleName :: Declaration -> String
+getModuleName decl = case decl of
+  DeclFunction name -> name
+  DeclModule m ->
+    -- This requires expanding Module type alias to access .name
+    m.name
+
+-- Test access to list field too - now returns List Declaration (recursive!)
+getDeclarations :: Declaration -> List Declaration
+getDeclarations decl = case decl of
+  DeclFunction _ -> Nil
+  DeclModule m ->
+    -- This requires expanding Module type alias to access .declarations
+    m.declarations
+
+-- CRITICAL: This tests the foldl pattern from Dependencies.purs
+-- foldl lambda param type inference is where the failure occurs
+countDeclarations :: Declaration -> Int
+countDeclarations decl = case decl of
+  DeclFunction _ -> 1
+  DeclModule m ->
+    -- This is the pattern that fails in getDependencies:
+    -- foldl with lambda over m.declarations (List Declaration)
+    -- The lambda param 'd' should be inferred as Declaration
+    foldl (\acc d -> acc + countDeclarations d) 0 m.declarations

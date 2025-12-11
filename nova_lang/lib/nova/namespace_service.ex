@@ -665,7 +665,7 @@ defmodule Nova.NamespaceService do
     decl = managed.decl
 
     # Wrap single declaration in a list for check_module
-    case Nova.Compiler.TypeChecker.check_module(env, [decl]) do
+    case Nova.Compiler.TypeChecker.check_module_simple(env, [decl]) do
       {:left, err} ->
         error_msg = format_type_error(err)
         diagnostic = build_diagnostic(err, managed.source_text, managed.meta.name)

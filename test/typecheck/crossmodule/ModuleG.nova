@@ -1,0 +1,9 @@
+-- Module G: Defines Scheme type alias (like Types.purs)
+module Test.CrossModule.ModuleG where
+
+-- Type alias for a scheme
+type Scheme = { vars :: Array String, ty :: String }
+
+-- Constructor helper
+mkScheme :: Array String -> String -> Scheme
+mkScheme vars ty = { vars, ty }

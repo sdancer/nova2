@@ -43,11 +43,17 @@ defmodule Nova.Compiler.Dependencies do
       {:decl_foreign_import, f} -> get_type_expr_deps(f.type_signature)
       {:decl_type_sig, s} -> get_type_expr_deps(s.ty)
       {:decl_type, t} -> get_type_expr_deps(t.type_signature)
-      {:decl_module, m} -> Data.Foldable.foldl((fn acc -> fn d -> Nova.Set.union(acc, (get_dependencies(d))) end end), Nova.Set.empty, m.declarations)
+      {:decl_module, m} -> get_module_dependencies(m.declarations)
       {:decl_import, _} -> Nova.Set.empty
       {:decl_newtype, n} -> get_type_expr_deps(n.wrapped_type)
       {:decl_infix, _} -> Nova.Set.empty
     end
+  end
+
+
+
+  def get_module_dependencies(decls) do
+    Data.Foldable.foldl((fn acc -> fn decl_prime -> Nova.Set.union(acc, (get_dependencies(decl_prime))) end end), Nova.Set.empty, decls)
   end
 
 

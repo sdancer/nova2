@@ -46,7 +46,7 @@ defmodule Nova do
         all_decls = dep_decls ++ mod_decls
         env = Nova.Compiler.Types.empty_env()
 
-        case Nova.Compiler.TypeChecker.check_module(env, all_decls) do
+        case Nova.Compiler.TypeChecker.check_module_simple(env, all_decls) do
           {:left, err} ->
             {:error, {:typecheck, err}}
 
@@ -67,7 +67,7 @@ defmodule Nova do
     all_decls = dep_decls ++ mod_decls
     env = Nova.Compiler.Types.empty_env()
 
-    case Nova.Compiler.TypeChecker.check_module(env, all_decls) do
+    case Nova.Compiler.TypeChecker.check_module_simple(env, all_decls) do
       {:left, err} ->
         {:error, {:typecheck, err}}
 

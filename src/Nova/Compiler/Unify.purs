@@ -10,7 +10,7 @@ import Data.Foldable (foldM)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.String as String
-import Nova.Compiler.Types (Type(..), TVar, TCon, Record, Subst, emptySubst, singleSubst, composeSubst, applySubst, freeTypeVars)
+import Nova.Compiler.Types (Type(..), TVar, TCon, Record, Subst, emptySubst, singleSubst, composeSubst, applySubst, freeTypeVars, mkTyApp)
 
 -- | Unification error type
 data UnifyError
@@ -27,13 +27,24 @@ instance showUnifyError :: Show UnifyError where
 
 showType :: Type -> String
 showType (TyVar v) = v.name <> "[" <> show v.id <> "]"
-showType (TyCon tc) = tc.name <> "(" <> show (length tc.args) <> " args)"
+showType (TyCon tc) =
+  if Array.length tc.args == 0
+  then tc.name
+  else tc.name <> " " <> String.joinWith " " (map showTypeParens tc.args)
 showType (TyRecord r) =
-  let fieldNames = Array.fromFoldable (Map.keys r.fields)
-      fieldStr = String.joinWith ", " (Array.take 5 fieldNames)
-      suffix = if Array.length fieldNames > 5 then ", ..." else ""
-  in "{" <> fieldStr <> suffix <> "}"
+  let fieldEntries = Array.fromFoldable (Map.toUnfoldable r.fields :: Array (Tuple String Type))
+      showField (Tuple name ty) = name <> " :: " <> showType ty
+      fieldStrs = map showField (Array.take 8 fieldEntries)
+      suffix = if Array.length fieldEntries > 8 then ", ..." else ""
+  in "{ " <> String.joinWith ", " fieldStrs <> suffix <> " }"
 showType (TyApp f arg) = "(" <> showType f <> " " <> showType arg <> ")"
+
+-- | Show type with parens for complex types
+showTypeParens :: Type -> String
+showTypeParens t@(TyVar _) = showType t
+showTypeParens t@(TyCon tc) | Array.length tc.args == 0 = showType t
+showTypeParens t@(TyRecord _) = showType t
+showTypeParens t = "(" <> showType t <> ")"
 
 -- | Occurs check: does variable v occur in type t?
 occurs :: TVar -> Type -> Boolean
@@ -52,12 +63,20 @@ bindVar v t =
       TyVar tv2 -> tv.id == tv2.id
       _ -> false
 
+-- | Strip module prefix from a type name (e.g., "Set.Set" -> "Set", "Data.Map.Map" -> "Map")
+stripModulePrefix :: String -> String
+stripModulePrefix name = case String.lastIndexOf (String.Pattern ".") name of
+  Just idx -> String.drop (idx + 1) name
+  Nothing -> name
+
 -- | Check if two type names are considered equivalent
 -- | List and Array are treated as equivalent since they compile to the same Elixir representation
 -- | Number and Int are treated as equivalent for Nova's Elixir backend
 areEquivalentTypes :: String -> String -> Boolean
 areEquivalentTypes n1 n2
   | n1 == n2 = true
+  -- Handle qualified vs unqualified type names (e.g., "Set.Set" == "Set")
+  | stripModulePrefix n1 == stripModulePrefix n2 = true
   | n1 == "List" && n2 == "Array" = true
   | n1 == "Array" && n2 == "List" = true
   | n1 == "Number" && n2 == "Int" = true
@@ -143,7 +162,7 @@ unifyWithAliases aliases (TyApp f a) (TyCon c)
         s1 <- unifyWithAliases aliases f headTyCon
         s2 <- unifyWithAliases aliases (applySubst s1 a) (applySubst s1 lastArg)
         pure (composeSubst s2 s1)
-  | otherwise = Left (TypeMismatch (TyApp f a) (TyCon c))
+  | otherwise = Left (TypeMismatch (mkTyApp f a) (TyCon c))
 unifyWithAliases aliases (TyCon c) (TyApp f a)
   | length c.args > 0 =
       let headTyCon = TyCon { name: c.name, args: Array.take (length c.args - 1) c.args }
@@ -154,10 +173,10 @@ unifyWithAliases aliases (TyCon c) (TyApp f a)
         s1 <- unifyWithAliases aliases f headTyCon
         s2 <- unifyWithAliases aliases (applySubst s1 a) (applySubst s1 lastArg)
         pure (composeSubst s2 s1)
-  | otherwise = Left (TypeMismatch (TyCon c) (TyApp f a))
+  | otherwise = Left (TypeMismatch (TyCon c) (mkTyApp f a))
 -- Allow TyApp to unify with TyVar
-unifyWithAliases aliases (TyApp f a) (TyVar v) = bindVar v (TyApp f a)
-unifyWithAliases aliases (TyVar v) (TyApp f a) = bindVar v (TyApp f a)
+unifyWithAliases aliases (TyApp f a) (TyVar v) = bindVar v (mkTyApp f a)
+unifyWithAliases aliases (TyVar v) (TyApp f a) = bindVar v (mkTyApp f a)
 unifyWithAliases aliases t1 t2 = Left (TypeMismatch t1 t2)
 
 -- | Main unification algorithm (backward compatible - uses empty alias map)

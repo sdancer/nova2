@@ -1,0 +1,18 @@
+-- Minimal test: Type alias record pattern matching
+-- Tests if Scheme type alias can be destructured
+module Test.SchemeTest where
+
+import Data.Array (length)
+
+-- Local type alias mimicking Scheme
+type Scheme = { vars :: Array String, ty :: String }
+
+-- Function that destructures Scheme
+getSchemeType :: Scheme -> String
+getSchemeType scheme =
+  let { ty: schemeTy, vars: schemeVars } = scheme
+  in schemeTy
+
+-- Simple usage
+testScheme :: String
+testScheme = getSchemeType { vars: [], ty: "Int" }

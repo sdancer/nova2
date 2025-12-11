@@ -1,7 +1,7 @@
 module Nova.Compiler.CodeGenCoreErlang where
 
 import Prelude
-import Data.Array (intercalate, length, (:))
+import Data.Array (length, (:))
 import Data.Array as Array
 import Data.List (List(..))
 import Data.List as List
@@ -218,14 +218,14 @@ genModule m =
       -- Extract unique name/arity pairs for exports
       uniqueFuncs = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
                       (map (\g -> { name: g.name, arity: g.arity }) grouped)
-      exports = intercalate ", " (map (\f -> atom f.name <> "/" <> show f.arity) uniqueFuncs)
+      exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) uniqueFuncs)
       ctx = (emptyCtx modName) { moduleFuncs = Set.fromFoldable (map _.name uniqueFuncs)
                                , funcArities = uniqueFuncs
                                , imports = importMap }
       -- Generate function definitions (merging multiple clauses)
-      funcDefs = intercalate "\n\n" (map (genFunctionGroup ctx) grouped)
+      funcDefs = String.joinWith "\n\n" (map (genFunctionGroup ctx) grouped)
       -- Generate data type comments
-      dtComments = intercalate "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) (Array.fromFoldable m.declarations))
+      dtComments = String.joinWith "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) (Array.fromFoldable m.declarations))
   in "module " <> atom modName <> " [" <> exports <> "]\n" <>
      "  attributes []\n" <>
      dtComments <> (if dtComments == "" then "" else "\n\n") <>
@@ -296,20 +296,20 @@ genMergedFunction ctx group =
   let arity = group.arity
       -- Generate fresh parameter names
       paramNames = Array.range 0 (arity - 1) # map (\i -> "_P" <> show i)
-      paramsStr = intercalate ", " paramNames
+      paramsStr = String.joinWith ", " paramNames
       -- Generate case clauses from each function clause
       caseClauses = map (genFunctionClauseAsCase ctx paramNames) group.clauses
   in atom group.name <> "/" <> show arity <> " =\n" <>
      "  fun (" <> paramsStr <> ") ->\n" <>
      "    case {" <> paramsStr <> "} of\n" <>
-     intercalate "\n" caseClauses <> "\n" <>
+     String.joinWith "\n" caseClauses <> "\n" <>
      "    end"
 
 -- | Generate a function clause as a case clause
 genFunctionClauseAsCase :: CoreCtx -> Array String -> FunctionDeclaration -> String
 genFunctionClauseAsCase ctx _paramNames func =
   let patsResult = genPatsWithCounter (Array.fromFoldable func.parameters) 0
-      patTuple = "{" <> intercalate ", " patsResult.strs <> "}"
+      patTuple = "{" <> String.joinWith ", " patsResult.strs <> "}"
       ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
       -- Check if function has guards
       body = if List.null func.guards
@@ -334,7 +334,7 @@ translateModuleName name =
 genFunction :: CoreCtx -> FunctionDeclaration -> String
 genFunction ctx func =
   let params = Array.fromFoldable (map genPattern func.parameters)
-      paramsStr = intercalate ", " params
+      paramsStr = String.joinWith ", " params
       arity = List.length func.parameters
       ctxWithParams = foldr addLocalsFromPattern ctx func.parameters
       -- Check if function has guards (body is __guarded__ placeholder)
@@ -391,7 +391,7 @@ genOneGuardedExpr ctx guardedExpr rest =
 genDataType :: CoreCtx -> DataType -> String
 genDataType _ dt =
   "% Data type: " <> dt.name <> "\n" <>
-  "% Constructors: " <> intercalate ", " (Array.fromFoldable (map _.name dt.constructors))
+  "% Constructors: " <> String.joinWith ", " (Array.fromFoldable (map _.name dt.constructors))
 
 -- | Generate pattern (wrapper that hides counter)
 genPattern :: Pattern -> String
@@ -412,17 +412,17 @@ genPatternWithCounter (PatCon name pats) n =
   in if List.null pats
      then { str: atom (toSnakeCase baseName), counter: n }
      else let result = genPatsWithCounter (Array.fromFoldable pats) n
-          in { str: "{" <> atom (toSnakeCase baseName) <> ", " <> intercalate ", " result.strs <> "}", counter: result.counter }
+          in { str: "{" <> atom (toSnakeCase baseName) <> ", " <> String.joinWith ", " result.strs <> "}", counter: result.counter }
 genPatternWithCounter (PatRecord fields) n =
   let result = foldl genFieldPat { strs: [], counter: n } fields
-  in { str: "~{" <> intercalate "," result.strs <> "}~", counter: result.counter }
+  in { str: "~{" <> String.joinWith "," result.strs <> "}~", counter: result.counter }
   where
     genFieldPat acc (Tuple label pat) =
       let r = genPatternWithCounter pat acc.counter
       in { strs: acc.strs <> [atom (toSnakeCase label) <> ":=" <> r.str], counter: r.counter }
 genPatternWithCounter (PatList pats) n =
   let result = genPatsWithCounter (Array.fromFoldable pats) n
-  in { str: "[" <> intercalate ", " result.strs <> "]", counter: result.counter }
+  in { str: "[" <> String.joinWith ", " result.strs <> "]", counter: result.counter }
 genPatternWithCounter (PatCons hd tl) n =
   let r1 = genPatternWithCounter hd n
       r2 = genPatternWithCounter tl r1.counter
@@ -464,7 +464,7 @@ genExpr ctx (ExprVar name) =
         -- Prelude function as first-class value - wrap in lambda
         Just info ->
           let paramNames = Array.range 0 (info.arity - 1) # map (\i -> "_Pf" <> show i)
-              paramsStr = intercalate ", " paramNames
+              paramsStr = String.joinWith ", " paramNames
           in "fun (" <> paramsStr <> ") -> call " <> atom info.mod <> ":" <> atom info.func <>
              "(" <> paramsStr <> ")"
         Nothing ->
@@ -476,7 +476,7 @@ genExpr ctx (ExprVar name) =
                   then "apply " <> atom name <> "/0()"
                   -- Higher arity = function, wrap in lambda for first-class use
                   else let paramNames = Array.range 0 (arity - 1) # map (\i -> "_Mf" <> show i)
-                           paramsStr = intercalate ", " paramNames
+                           paramsStr = String.joinWith ", " paramNames
                        in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show arity <>
                           "(" <> paramsStr <> ")"
           else case Map.lookup name ctx.imports of
@@ -508,38 +508,38 @@ genExpr ctx (ExprApp f arg) =
           let modName = translateModuleName (String.take idx name)
               funcName = String.drop (idx + 1) name
           in "call " <> atom modName <> ":" <> atom funcName <>
-             "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+             "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
         Nothing ->
           -- Handle special monad functions
           if name == "pure"
           then -- pure is Right for Either monad
-               "{" <> atom "_right" <> ", " <> intercalate ", " (map (genExpr ctx) args) <> "}"
+               "{" <> atom "_right" <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
           else
           -- Check if it's a prelude function
           case getPreludeFunc name of
             Just info ->
               -- Generate call to Erlang/stdlib function
               "call " <> atom info.mod <> ":" <> atom info.func <>
-              "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+              "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
             Nothing ->
               if Set.member name ctx.locals
               then "apply " <> coreVar name <>
-                   "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+                   "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
               else if Set.member name ctx.moduleFuncs
               then let declaredArity = lookupArity name ctx
                        numArgs = length args
                    in if declaredArity == 0 && numArgs > 0
                       then -- Function returns a function - call it first, then apply result
                            "let <_Fn0> = apply " <> atom name <> "/0()\n" <>
-                           "      in apply _Fn0(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+                           "      in apply _Fn0(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
                       else if numArgs >= declaredArity
                       then "apply " <> atom name <> "/" <> show declaredArity <>
-                           "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+                           "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
                       else -- Partial application - generate a closure
                            let remaining = declaredArity - numArgs
                                paramNames = Array.range 0 (remaining - 1) # map (\i -> "_Pc" <> show i)
-                               paramsStr = intercalate ", " paramNames
-                               allArgs = intercalate ", " (map (genExpr ctx) args <> paramNames)
+                               paramsStr = String.joinWith ", " paramNames
+                               allArgs = String.joinWith ", " (map (genExpr ctx) args <> paramNames)
                            in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show declaredArity <>
                               "(" <> allArgs <> ")"
               else case Map.lookup name ctx.imports of
@@ -547,21 +547,21 @@ genExpr ctx (ExprApp f arg) =
                    Just srcMod ->
                      let modName = translateModuleName srcMod
                      in "call " <> atom modName <> ":" <> atom name <>
-                        "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+                        "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
                    Nothing ->
                      if isConstructorName name
                      then -- Data constructor application
                           if length args == 0
                           then atom (toSnakeCase name)
-                          else "{" <> atom (toSnakeCase name) <> ", " <> intercalate ", " (map (genExpr ctx) args) <> "}"
+                          else "{" <> atom (toSnakeCase name) <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
                      else "apply " <> coreVar name <>
-                          "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+                          "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
     ExprQualified modName funcName ->
       "call " <> atom (translateModuleName modName) <> ":" <> atom funcName <>
-      "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+      "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
     _ ->
       "apply " <> genExpr ctx func <>
-      "(" <> intercalate ", " (map (genExpr ctx) args) <> ")"
+      "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
   where
     isConstructorName s = case String.take 1 s of
       c -> c >= "A" && c <= "Z"
@@ -665,11 +665,11 @@ genExpr ctx (ExprList elems) =
   genCoreList ctx elems
 
 genExpr ctx (ExprTuple elems) =
-  "{" <> intercalate ", " (Array.fromFoldable (map (genExpr ctx) elems)) <> "}"
+  "{" <> String.joinWith ", " (Array.fromFoldable (map (genExpr ctx) elems)) <> "}"
 
 genExpr ctx (ExprRecord fields) =
   -- Records as maps: ~{'key'=>Val}~
-  "~{" <> intercalate "," (Array.fromFoldable (map genField fields)) <> "}~"
+  "~{" <> String.joinWith "," (Array.fromFoldable (map genField fields)) <> "}~"
   where
     genField (Tuple label expr) = atom (toSnakeCase label) <> "=>" <> genExpr ctx expr
 
@@ -683,7 +683,7 @@ genExpr ctx (ExprRecordAccess expr field) =
       "call 'maps':'get'(" <> atom (toSnakeCase field) <> ", " <> genExpr ctx expr <> ")"
 
 genExpr ctx (ExprRecordUpdate expr fields) =
-  let updates = intercalate "," (Array.fromFoldable (map genFieldUpdate fields))
+  let updates = String.joinWith "," (Array.fromFoldable (map genFieldUpdate fields))
   in "call 'maps':'merge'(" <> genExpr ctx expr <> ", ~{" <> updates <> "}~)"
   where
     genFieldUpdate (Tuple label val) = atom (toSnakeCase label) <> "=>" <> genExpr ctx val
@@ -712,9 +712,9 @@ genExprLetrec ctx expr = case expr of
     then
       let arity = List.length pats
           paramNames = Array.range 0 (arity - 1) # map (\i -> "_L" <> show i)
-          paramsStr = intercalate ", " paramNames
+          paramsStr = String.joinWith ", " paramNames
           patResult = genPatsWithCounter (Array.fromFoldable pats) 0
-          patTuple = "{" <> intercalate ", " patResult.strs <> "}"
+          patTuple = "{" <> String.joinWith ", " patResult.strs <> "}"
           ctxWithParams = foldr addLocalsFromPattern ctx pats
           bodyCode = genExpr ctxWithParams body
       in "fun (" <> paramsStr <> ") ->\n" <>
@@ -724,7 +724,7 @@ genExprLetrec ctx expr = case expr of
     else
       let patResult = genPatsWithCounter (Array.fromFoldable pats) 0
           ctxWithParams = foldr addLocalsFromPattern ctx pats
-      in "fun (" <> intercalate ", " patResult.strs <> ") ->\n      " <> genExpr ctxWithParams body
+      in "fun (" <> String.joinWith ", " patResult.strs <> ") ->\n      " <> genExpr ctxWithParams body
   _ -> genExpr ctx expr
 
 -- | Check if an expression references a variable name
@@ -852,7 +852,7 @@ genLetBindsWithBody ctx binds body =
                 if Array.null fs
                 then bodyStr
                 else let grouped = groupByName fs
-                         defs = intercalate "\n       " (map (genLetrecDefGrouped ctxWithAllBinds) grouped)
+                         defs = String.joinWith "\n       " (map (genLetrecDefGrouped ctxWithAllBinds) grouped)
                      in "letrec " <> defs <> "\n      in " <> bodyStr
 
               -- Build from inside out: body <- depValues2 <- letrec2 <- depValues1 <- letrec1 <- independent values
@@ -898,12 +898,12 @@ genLetBindsWithBody ctx binds body =
         multiple ->
           -- Multiple clauses - generate a function with case
           let paramNames = Array.range 0 (group.arity - 1) # map (\i -> "_L" <> show i)
-              paramsStr = intercalate ", " paramNames
+              paramsStr = String.joinWith ", " paramNames
               -- Generate case clauses from each binding's lambda
               caseClauses = map (genLetrecClauseAsCase ctx' paramNames) multiple
           in atom group.name <> "/" <> show group.arity <> " = fun (" <> paramsStr <> ") ->\n" <>
              "      case {" <> paramsStr <> "} of\n" <>
-             intercalate "\n" caseClauses <> "\n" <>
+             String.joinWith "\n" caseClauses <> "\n" <>
              "      end"
 
     -- Generate a letrec clause as a case clause
@@ -913,7 +913,7 @@ genLetBindsWithBody ctx binds body =
       case bind.value of
         ExprLambda pats body ->
           let patsResult = genPatsWithCounter (Array.fromFoldable pats) 0
-              patTuple = "{" <> intercalate ", " patsResult.strs <> "}"
+              patTuple = "{" <> String.joinWith ", " patsResult.strs <> "}"
               ctxWithParams = foldr addLocalsFromPattern ctx' pats
               bodyStr = genExpr ctxWithParams body
           in "        <" <> patTuple <> "> when 'true' -> " <> bodyStr
@@ -1221,7 +1221,7 @@ toSnakeCase s =
 genCoreList :: CoreCtx -> List Expr -> String
 genCoreList ctx elems =
   if List.length elems <= 50
-  then "[" <> intercalate ", " (map (genExpr ctx) (List.toUnfoldable elems :: Array Expr)) <> "]"
+  then "[" <> String.joinWith ", " (map (genExpr ctx) (List.toUnfoldable elems :: Array Expr)) <> "]"
   else case List.uncons elems of
     Nothing -> "[]"
     Just { head: h, tail: Nil } -> "[" <> genExpr ctx h <> "]"

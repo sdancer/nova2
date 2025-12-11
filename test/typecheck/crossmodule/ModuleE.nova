@@ -1,0 +1,17 @@
+-- Module E: Type alias definition with record fields
+-- CRITICAL: This mirrors the recursive type structure in Ast.purs
+module Test.CrossModule.ModuleE where
+
+import Data.List (List, Nil)
+
+-- Type alias for a module - NOTE: declarations is List Declaration (RECURSIVE!)
+type Module = { name :: String, declarations :: List Declaration }
+
+-- ADT with Module payload
+data Declaration
+  = DeclFunction String
+  | DeclModule Module
+
+-- Export a function that constructs Module
+makeModule :: String -> Module
+makeModule n = { name: n, declarations: Nil }
