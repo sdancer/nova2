@@ -317,7 +317,9 @@ end
             {:right, r2} -> 
                 {:tuple, tv, env3} = Nova.Compiler.Types.fresh_var(r2.env, "r")
                 result_ty = {:ty_var, tv}
-                case unify_env(env3).((Nova.Compiler.Types.apply_subst(r2.sub, r1.ty))).((Nova.Compiler.Types.t_arrow(r2.ty, result_ty))) do
+                func_ty = Nova.Compiler.Types.apply_subst(r2.sub, r1.ty)
+                expected_ty = Nova.Compiler.Types.t_arrow(r2.ty, result_ty)
+                case unify_env(env3).(func_ty).(expected_ty) do
   {:left, ue} -> {:left, (unify_err_with_context(ue, (Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("app: ", show_expr_short(func)), " applied to "), show_expr_short(a)))))}
   {:right, s3} -> 
       sub = Nova.Compiler.Types.compose_subst(s3, (Nova.Compiler.Types.compose_subst(r2.sub, r1.sub)))
@@ -404,12 +406,16 @@ end
   end
 
   def infer(env, ({:expr_bin_op, op, l, r})) do
-    
-      mk_error = case Nova.String.last_index_of((Nova.String.pattern(".")), op) do
-        {:just, idx} -> undefined_qualified_import((Nova.String.take(idx, op)), (Nova.String.drop(((idx + 1)), op)))
-        :nothing -> {:unbound_variable, op}
-      end
-      case Nova.Compiler.Types.lookup_env(env, op) do
+    case l do
+      {:expr_section, "_"} -> infer(env, (Nova.Compiler.Ast.expr_lambda(([(Nova.Compiler.Ast.pat_var("_x")) | []]), (Nova.Compiler.Ast.expr_bin_op(op, (Nova.Compiler.Ast.expr_var("_x")), r)))))
+      _ -> case r do
+          {:expr_section, "_"} -> infer(env, (Nova.Compiler.Ast.expr_lambda(([(Nova.Compiler.Ast.pat_var("_x")) | []]), (Nova.Compiler.Ast.expr_bin_op(op, l, (Nova.Compiler.Ast.expr_var("_x")))))))
+          _ -> 
+              mk_error = case Nova.String.last_index_of((Nova.String.pattern(".")), op) do
+                {:just, idx} -> undefined_qualified_import((Nova.String.take(idx, op)), (Nova.String.drop(((idx + 1)), op)))
+                :nothing -> {:unbound_variable, op}
+              end
+              case Nova.Compiler.Types.lookup_env(env, op) do
   :nothing -> {:left, mk_error}
   {:just, scheme} -> 
       op_inst = instantiate(env, scheme)
@@ -428,6 +434,8 @@ end
     end
 end
 end
+        end
+    end
   end
 
   def infer(env, ({:expr_list, elems})) do
@@ -1051,26 +1059,39 @@ end
 
   def check_function(env, func) do
     
-      {:tuple, func_tv, env1} = Nova.Compiler.Types.fresh_var(env, (Nova.Runtime.append("fn_", func.name)))
-      func_ty = {:ty_var, func_tv}
-      body = case func.guards do
-        [] -> func.body
-        _ -> guarded_exprs_to_if(func.guards)
-      end
-      temp_scheme = Nova.Compiler.Types.mk_scheme([], func_ty)
-      expr = case func.parameters do
-        [] -> body
-        _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, body)
-      end
-      env_with_func = Nova.Compiler.Types.extend_env(env1, func.name, temp_scheme)
-      case infer(env_with_func, expr) do
+      is_placeholder = fn auto_arg0 -> case auto_arg0 do
+        ({:ty_var, tv}) -> ((tv.id >= 0) and (Nova.String.take(3, tv.name) == "fn_"))
+        _ -> false
+      end end
+      
+  {:tuple, func_tv, env1} = Nova.Compiler.Types.fresh_var(env, (Nova.Runtime.append("fn_", func.name)))
+  func_ty = {:ty_var, func_tv}
+  body = case func.guards do
+    [] -> func.body
+    _ -> guarded_exprs_to_if(func.guards)
+  end
+  temp_scheme = Nova.Compiler.Types.mk_scheme([], func_ty)
+  expr = case func.parameters do
+    [] -> body
+    _ -> Nova.Compiler.Ast.expr_lambda(func.parameters, body)
+  end
+  env_with_func = Nova.Compiler.Types.extend_env(env1, func.name, temp_scheme)
+  case infer(env_with_func, expr) do
   {:left, e} -> {:left, e}
   {:right, res} ->   case unify_env(res.env).((Nova.Compiler.Types.apply_subst(res.sub, func_ty))).(res.ty) do
   {:left, ue} -> {:left, ({:unify_err, ue})}
   {:right, s} -> 
       final_sub = Nova.Compiler.Types.compose_subst(s, res.sub)
+      sig_scheme = Nova.Compiler.Types.lookup_env(env, func.name)
       final_ty = Nova.Compiler.Types.apply_subst(final_sub, res.ty)
-      scheme = generalize(res.env, final_ty)
+      scheme = case sig_scheme do
+        {:just, sig} ->
+          cond do
+            not((is_placeholder.(sig.ty))) -> sig
+            true -> generalize(res.env, final_ty)
+          end
+        _ -> generalize(res.env, final_ty)
+      end
       {:right, %{scheme: scheme, env: Nova.Compiler.Types.extend_env(res.env, func.name, scheme)}}
 end
 end
@@ -1278,7 +1299,7 @@ end
         arg_ty = type_expr_to_type_with_all_aliases(a_map, pa_map, v_map, arg_expr)
         case type_expr_to_type_with_all_aliases(a_map, pa_map, v_map, func) do
   {:ty_con, tc} -> {:ty_con, %{name: tc.name, args: Nova.Array.snoc(tc.args, arg_ty)}}
-  other -> {:ty_app, other, arg_ty}
+  other -> Nova.Compiler.Types.mk_ty_app(other, arg_ty)
 end end end end end end
       case collect_type_app((Nova.Compiler.Ast.ty_expr_app(f, arg))) do
   {:tuple, con_name, args} -> case Nova.Map.lookup(con_name, param_alias_map) do
@@ -1363,13 +1384,7 @@ end
             _ -> :nothing
           end
       end end
-      try_env_lookup = fn nm -> case Nova.Compiler.Types.lookup_type_alias(env, nm) do
-        {:just, ty} -> {:just, ty}
-        :nothing -> case Nova.Compiler.Types.lookup_env(env, nm) do
-            {:just, scheme} -> {:just, scheme.ty}
-            :nothing -> :nothing
-          end
-      end end
+      try_env_lookup = fn nm -> Nova.Compiler.Types.lookup_type_alias(env, nm) end
       case try_lookup.(name) do
   {:just, ty} -> ty
   :nothing -> case try_lookup.(unqualified_name) do
@@ -1545,7 +1560,7 @@ end
       arg_ty = type_expr_to_type(var_map, arg)
       case type_expr_to_type(var_map, f) do
   {:ty_con, tc} -> {:ty_con, %{name: tc.name, args: Nova.Array.snoc(tc.args, arg_ty)}}
-  other -> {:ty_app, other, arg_ty}
+  other -> Nova.Compiler.Types.mk_ty_app(other, arg_ty)
 end
   end
 
@@ -1677,7 +1692,7 @@ end
   def check_module(registry, env, decls) do
     
       imported_aliases = collect_imported_aliases(registry, decls)
-      env1 = Nova.Compiler.ImportProcessor.process_imports(registry, env, decls)
+      env1 = ImportProcessor.process_imports(registry, env, decls)
       env2 = process_non_functions_with_aliases(imported_aliases, env1, decls)
       env3 = add_function_placeholders_with_aliases(imported_aliases, env2, decls)
       env4 = process_infix_declarations(env3, decls)

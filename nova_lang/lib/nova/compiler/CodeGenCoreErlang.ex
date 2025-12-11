@@ -652,15 +652,23 @@ end
                     if ((declared_arity == 0) and (num_args > 0)) do
   Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("let <_Fn0> = apply ", atom(name)), "/0()\n"), "      in apply _Fn0("), Nova.String.join_with(", ", (Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args)))), ")")
 else
-  if (num_args >= declared_arity) do
+  if (num_args == declared_arity) do
     Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("apply ", atom(name)), "/"), Prelude.show(declared_arity)), "("), Nova.String.join_with(", ", (Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args)))), ")")
   else
-    
-      remaining = (declared_arity - num_args)
-      param_names = (fn auto_p0 -> Prelude.map((fn i -> Nova.Runtime.append("_Pc", Prelude.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((remaining - 1))))
-      params_str = Nova.String.join_with(", ", param_names)
-      all_args = Nova.String.join_with(", ", (Nova.Runtime.append(Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args), param_names)))
-      Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fun (", params_str), ") -> apply "), atom(name)), "/"), Prelude.show(declared_arity)), "("), all_args), ")")
+    if (num_args > declared_arity) do
+      
+        direct_args = Nova.Array.take(declared_arity, args)
+        extra_args = Nova.Array.drop(declared_arity, args)
+        base_call = Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("apply ", atom(name)), "/"), Prelude.show(declared_arity)), "("), Nova.String.join_with(", ", (Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), direct_args)))), ")")
+        gen_curried_apply(ctx, base_call, extra_args)
+    else
+      
+        remaining = (declared_arity - num_args)
+        param_names = (fn auto_p0 -> Prelude.map((fn i -> Nova.Runtime.append("_Pc", Prelude.show(i)) end), auto_p0) end).(Nova.Array.range(0, ((remaining - 1))))
+        params_str = Nova.String.join_with(", ", param_names)
+        all_args = Nova.String.join_with(", ", (Nova.Runtime.append(Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), args), param_names)))
+        Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("fun (", params_str), ") -> apply "), atom(name)), "/"), Prelude.show(declared_arity)), "("), all_args), ")")
+    end
   end
 end
                 else
@@ -952,11 +960,11 @@ end end end
         val = gen_expr_letrec(ctx_prime, bind.value)
         Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(atom(bind_name), "/"), Prelude.show(arity)), " = "), val) end end
       gen_letrec_clause_as_case = Nova.Runtime.fix3(fn gen_letrec_clause_as_case -> fn ctx_prime -> fn param_names_prime -> fn bind -> case bind.value do
-        {:expr_lambda, pats, body} -> 
+        {:expr_lambda, pats, lambda_body} -> 
             pats_result = gen_pats_with_counter((Nova.Array.from_foldable(pats)), 0)
             ctx_with_params = Data.Foldable.foldr((&add_locals_from_pattern/2), ctx_prime, pats)
             pat_tuple = Nova.Runtime.append(Nova.Runtime.append("{", Nova.String.join_with(", ", pats_result.strs)), "}")
-            body_str = gen_expr(ctx_with_params, body)
+            body_str = gen_expr(ctx_with_params, lambda_body)
             Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("        <", pat_tuple), "> when 'true' -> "), body_str)
         {:expr_parens, e} -> gen_letrec_clause_as_case.(ctx_prime).(param_names_prime).((%{bind | value: e}))
         _ -> Nova.Runtime.append("        <_W0> when 'true' -> ", gen_expr(ctx_prime, bind.value))
@@ -972,24 +980,71 @@ end end end
       end end end
       
   is_lambda_bind = fn b -> (get_lambda_arity(b.value) > 0) end
+  func_group2 = []
+  dep_values_group2 = []
   func_binds = Nova.Array.filter(is_lambda_bind, binds)
   value_binds = Nova.Array.filter((fn auto_c -> ((&Kernel.not/1)).((is_lambda_bind).(auto_c)) end), binds)
   letrec_funcs = Nova.Array.map_maybe((fn b -> (fn auto_p0 -> Prelude.map((fn n -> %{name: n, arity: get_lambda_arity(b.value)} end), auto_p0) end).(get_pattern_var_name(b.pattern)) end), func_binds)
-  value_names = Nova.Set.from_foldable((Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), value_binds)))
+  used_by_funcs = Nova.Set.from_foldable((Nova.Array.concat_map((fn b -> get_used_vars(b.value) end), func_binds)))
+  compute_cyclic_closure = Nova.Runtime.fix(fn compute_cyclic_closure -> fn current_cyclic -> 
+    cyclic_binds = Nova.Array.filter((fn b -> case get_pattern_var_name(b.pattern) do
+      {:just, n} -> Nova.Set.member(n, current_cyclic)
+      :nothing -> false
+    end end), value_binds)
+    value_names = (Nova.Set.from_foldable).(Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), value_binds))
+    used_by_cyclic = (Nova.Set.from_foldable).(Nova.Array.concat_map((fn b -> get_used_vars(b.value) end), cyclic_binds))
+    new_cyclic = Nova.Set.union(current_cyclic, (Nova.Set.intersection(used_by_cyclic, value_names)))
+    if (new_cyclic == current_cyclic) do
+  new_cyclic
+else
+  compute_cyclic_closure.(new_cyclic)
+end  end end)
   func_names = Nova.Set.from_foldable((Prelude.map(& &1.name, letrec_funcs)))
-  ctx_with_funcs = %{ctx | module_funcs: Data.Foldable.foldr((fn f -> fn s -> Nova.Set.insert(f.name, s) end end), ctx.module_funcs, letrec_funcs), func_arities: Nova.Runtime.append(ctx.func_arities, letrec_funcs)}
-  ctx_with_all_binds = Data.Foldable.foldr(add_value_bind_to_ctx, ctx_with_funcs, value_binds)
-  uses_func = fn b -> not((Nova.Set.is_empty((Nova.Set.intersection((free_vars_in_expr_for(func_names, Nova.Set.empty, b.value)), func_names))))) end
-  independent_value_binds = Nova.Array.filter((fn auto_c -> ((&Kernel.not/1)).((uses_func).(auto_c)) end), value_binds)
-  dependent_value_binds = Nova.Array.filter(uses_func, value_binds)
-  dependent_value_names = Nova.Set.from_foldable((Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), dependent_value_binds)))
-  func_uses_dep_value = fn b -> not((Nova.Set.is_empty((Nova.Set.intersection((free_vars_in_expr_for(dependent_value_names, Nova.Set.empty, b.value)), dependent_value_names))))) end
-  func_group1 = Nova.Array.filter((fn auto_c -> ((&Kernel.not/1)).((func_uses_dep_value).(auto_c)) end), func_binds)
-  func_group2 = Nova.Array.filter(func_uses_dep_value, func_binds)
-  func_group2_names = Nova.Set.from_foldable((Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), func_group2)))
-  value_uses_func_group2 = fn b -> not((Nova.Set.is_empty((Nova.Set.intersection((free_vars_in_expr_for(func_group2_names, Nova.Set.empty, b.value)), func_group2_names))))) end
-  dep_values_group1 = Nova.Array.filter((fn auto_c -> ((&Kernel.not/1)).((value_uses_func_group2).(auto_c)) end), dependent_value_binds)
-  dep_values_group2 = Nova.Array.filter(value_uses_func_group2, dependent_value_binds)
+  is_used_by_funcs = fn b -> case get_pattern_var_name(b.pattern) do
+    {:just, n} -> Nova.Set.member(n, used_by_funcs)
+    :nothing -> false
+  end end
+  compute_transitive_func_deps = Nova.Runtime.fix(fn compute_transitive_func_deps -> fn current_deps -> 
+    deps_or_funcs = Nova.Set.union(func_names, current_deps)
+    new_deps = (Nova.Set.from_foldable).(Nova.Array.map_maybe((fn b -> 
+  used = Nova.Set.from_foldable((get_used_vars(b.value)))
+  if not((Nova.Set.is_empty((Nova.Set.intersection(used, deps_or_funcs))))) do
+  get_pattern_var_name(b.pattern)
+else
+  :nothing
+end end), value_binds))
+    if (new_deps == current_deps) do
+  new_deps
+else
+  compute_transitive_func_deps.(new_deps)
+end  end end)
+  values_that_depend_on_funcs = compute_transitive_func_deps.(Nova.Set.empty)
+  depends_on_funcs = fn b -> case get_pattern_var_name(b.pattern) do
+    {:just, n} -> Nova.Set.member(n, values_that_depend_on_funcs)
+    :nothing -> 
+        used = Nova.Set.from_foldable((get_used_vars(b.value)))
+        not((Nova.Set.is_empty((Nova.Set.intersection(used, (Nova.Set.union(func_names, values_that_depend_on_funcs)))))))
+  end end
+  directly_cyclic = Nova.Array.filter((fn b -> (depends_on_funcs.(b) and is_used_by_funcs.(b)) end), value_binds)
+  values_before_letrec = Nova.Array.filter((fn b -> not((depends_on_funcs.(b))) end), value_binds)
+  directly_cyclic_names = (Nova.Set.from_foldable).(Nova.Array.map_maybe((fn b -> get_pattern_var_name(b.pattern) end), directly_cyclic))
+  all_cyclic_names = compute_cyclic_closure.(directly_cyclic_names)
+  cyclic_values = Nova.Array.filter((fn b -> case get_pattern_var_name(b.pattern) do
+    {:just, n} -> Nova.Set.member(n, all_cyclic_names)
+    :nothing -> false
+  end end), value_binds)
+  values_after_letrec = Nova.Array.filter((fn b -> (depends_on_funcs.(b) and case get_pattern_var_name(b.pattern) do
+  {:just, n} -> not((Nova.Set.member(n, all_cyclic_names)))
+  :nothing -> true
+end) end), value_binds)
+  cyclic_as_funcs = Prelude.map((fn b -> %{b | value: Nova.Compiler.Ast.expr_lambda([], b.value)} end), cyclic_values)
+  dep_values_group1 = values_after_letrec
+  cyclic_funcs = Nova.Array.map_maybe((fn b -> (fn auto_p0 -> Prelude.map((fn n -> %{name: n, arity: 0} end), auto_p0) end).(get_pattern_var_name(b.pattern)) end), cyclic_values)
+  non_cyclic_values = Nova.Runtime.append(values_before_letrec, values_after_letrec)
+  func_group1 = Nova.Runtime.append(func_binds, cyclic_as_funcs)
+  all_funcs = Nova.Runtime.append(letrec_funcs, cyclic_funcs)
+  ctx_with_funcs = %{ctx | module_funcs: Data.Foldable.foldr((fn f -> fn s -> Nova.Set.insert(f.name, s) end end), ctx.module_funcs, all_funcs), func_arities: Nova.Runtime.append(ctx.func_arities, all_funcs)}
+  ctx_with_all_binds = Data.Foldable.foldr(add_value_bind_to_ctx, ctx_with_funcs, non_cyclic_values)
   if Nova.Array.null(func_binds) do
   gen_value_binds_with_body(ctx_with_all_binds, value_binds, body)
 else
@@ -1025,10 +1080,10 @@ else
       gen_value_binds_with_body_str_sorted(ctx_with_all_binds, (topo_sort_binds(dep_values_group1)), after_letrec2)
     end
     after_letrec1 = gen_letrec.(func_group1).(after_dep_values1)
-    result = if Nova.Array.null(independent_value_binds) do
+    result = if Nova.Array.null(values_before_letrec) do
       after_letrec1
     else
-      gen_value_binds_with_body_str_sorted(ctx_with_all_binds, (topo_sort_binds(independent_value_binds)), after_letrec1)
+      gen_value_binds_with_body_str_sorted(ctx_with_all_binds, (topo_sort_binds(values_before_letrec)), after_letrec1)
     end
     result
 end
@@ -1403,6 +1458,18 @@ end
 
 
 
+  def gen_curried_apply(ctx, base_call, extra_args) do
+    if (Nova.Array.length(extra_args) == 0) do
+      base_call
+    else
+      
+        apply_one = fn acc -> fn arg -> Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("apply ", acc), "("), gen_expr(ctx, arg)), ")") end end
+        Nova.Runtime.append(Nova.Runtime.append(Nova.Runtime.append("let <_Oa0> = ", base_call), "\n      in "), Nova.Array.foldl(apply_one, "_Oa0", extra_args))
+    end
+  end
+
+
+
   def gen_core_list(ctx, elems) do
     if (Nova.List.length(elems) <= 50) do
       Nova.Runtime.append(Nova.Runtime.append("[", Nova.String.join_with(", ", (Prelude.map((fn auto_p0 -> gen_expr(ctx, auto_p0) end), (Nova.List.to_unfoldable(elems)))))), "]")
@@ -1433,5 +1500,109 @@ end
       {:just, f} -> f.arity
       :nothing -> 0
     end
+  end
+
+
+
+  def get_used_vars(({:expr_var, n})) do
+    [n]
+  end
+
+  def get_used_vars(({:expr_app, f, a})) do
+    Nova.Runtime.append(get_used_vars(f), get_used_vars(a))
+  end
+
+  def get_used_vars(({:expr_lambda, _, body})) do
+    get_used_vars(body)
+  end
+
+  def get_used_vars(({:expr_let, binds, body})) do
+    Nova.Runtime.append(list_concat_map((fn b -> get_used_vars(b.value) end), binds), get_used_vars(body))
+  end
+
+  def get_used_vars(({:expr_if, c, t, e})) do
+    Nova.Runtime.append(Nova.Runtime.append(get_used_vars(c), get_used_vars(t)), get_used_vars(e))
+  end
+
+  def get_used_vars(({:expr_case, scrut, clauses})) do
+    Nova.Runtime.append(get_used_vars(scrut), list_concat_map((fn cl -> get_used_vars(cl.body) end), clauses))
+  end
+
+  def get_used_vars(({:expr_bin_op, _, l, r})) do
+    Nova.Runtime.append(get_used_vars(l), get_used_vars(r))
+  end
+
+  def get_used_vars(({:expr_list, elems})) do
+    list_concat_map((&get_used_vars/1), elems)
+  end
+
+  def get_used_vars(({:expr_record, fields})) do
+    list_concat_map((fn ({:tuple, _, v}) -> get_used_vars(v) end), fields)
+  end
+
+  def get_used_vars(({:expr_record_access, rec, _})) do
+    get_used_vars(rec)
+  end
+
+  def get_used_vars(({:expr_record_update, rec, fields})) do
+    Nova.Runtime.append(get_used_vars(rec), list_concat_map((fn ({:tuple, _, v}) -> get_used_vars(v) end), fields))
+  end
+
+  def get_used_vars(({:expr_do, stmts})) do
+    
+      get_used_vars_stmt = fn auto_arg0 -> case auto_arg0 do
+        ({:do_let, binds}) -> list_concat_map((fn b -> get_used_vars(b.value) end), binds)
+        ({:do_bind, _, e}) -> get_used_vars(e)
+        ({:do_expr, e}) -> get_used_vars(e)
+      end end
+      list_concat_map_array(get_used_vars_stmt, stmts)
+  end
+
+  def get_used_vars(({:expr_tuple, elems})) do
+    list_concat_map((&get_used_vars/1), elems)
+  end
+
+  def get_used_vars(({:expr_typed, e, _})) do
+    get_used_vars(e)
+  end
+
+  def get_used_vars(({:expr_parens, e})) do
+    get_used_vars(e)
+  end
+
+  def get_used_vars(({:expr_section, _})) do
+    []
+  end
+
+  def get_used_vars(({:expr_section_left, e, _})) do
+    get_used_vars(e)
+  end
+
+  def get_used_vars(({:expr_section_right, _, e})) do
+    get_used_vars(e)
+  end
+
+  def get_used_vars(({:expr_qualified, _, _})) do
+    []
+  end
+
+  def get_used_vars(({:expr_unary_op, _, e})) do
+    get_used_vars(e)
+  end
+
+  def get_used_vars(_) do
+    []
+  end
+
+
+
+  def list_concat_map(f, lst) do
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
+  end
+
+
+
+  def list_concat_map_array(f, lst) do
+    Data.Foldable.foldl((fn acc -> fn x -> Nova.Runtime.append(acc, f.(x)) end end), [], lst)
   end
 end

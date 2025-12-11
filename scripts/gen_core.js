@@ -1,48 +1,84 @@
 const fs = require('fs');
-const { parseModule } = require('../output/Nova.Compiler.Parser/index.js');
-const { tokenize } = require('../output/Nova.Compiler.Tokenizer/index.js');
+const path = require('path');
+const { parseModuleCst } = require('../output/Nova.Compiler.CstPipeline/index.js');
 const { genModule } = require('../output/Nova.Compiler.CodeGenCoreErlang/index.js');
 
-const files = [
-  'Ast', 'Types', 'Tokenizer', 'Unify', 'TypeChecker', 'CodeGen', 'Parser', 'Dependencies'
+// Recursively find all .purs files
+function findPursFiles(dir) {
+  let results = [];
+  try {
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        results = results.concat(findPursFiles(fullPath));
+      } else if (item.endsWith('.purs')) {
+        results.push(fullPath);
+      }
+    }
+  } catch (e) {
+    // Directory doesn't exist or not readable
+  }
+  return results;
+}
+
+// Directories to search
+const searchDirs = [
+  './src/Nova/Compiler',
+  './test',
+  './nova_lang/purs_tests',
+  './nova_lang/test/purs'
 ];
 
-files.forEach(name => {
-  const path = './src/Nova/Compiler/' + name + '.purs';
-  const src = fs.readFileSync(path, 'utf8');
-  const tokens = tokenize(src);
-  const result = parseModule(tokens);
+let allFiles = [];
+for (const dir of searchDirs) {
+  allFiles = allFiles.concat(findPursFiles(dir));
+}
 
-  // Parse result is Right(Tuple(AST, rest)) on success
-  // In PureScript FFI: Right = { value0: undefined, value1: Tuple }
-  // Where Tuple = { value0: AST, value1: rest }
-  // But parseModule actually returns the raw tuple from success()
+console.log(`Found ${allFiles.length} .purs files\n`);
 
-  // Debug: show the structure
-  // console.log('Result keys:', Object.keys(result));
+// Ensure output directory exists
+const outDir = '/tmp/nova_core';
+if (!fs.existsSync(outDir)) {
+  fs.mkdirSync(outDir, { recursive: true });
+}
 
-  let mod;
-  // Result structure is: result.value0 = Tuple, result.value0.value0 = AST
-  if (result.value0 && result.value0.value0 && result.value0.value0.name) {
-    mod = result.value0.value0;
-  } else if (result.value1 && result.value1.value0) {
-    // Right case
-    mod = result.value1.value0;
-  } else if (result.value0 && result.value0.name) {
-    // AST directly in value0
-    mod = result.value0;
-  } else {
-    console.log('Parse error for ' + name + ': structure=' + JSON.stringify(Object.keys(result)));
+let success = 0, failed = 0, parseErrors = 0, codegenErrors = 0;
+
+allFiles.forEach(filePath => {
+  const name = path.basename(filePath, '.purs');
+  const src = fs.readFileSync(filePath, 'utf8');
+  const result = parseModuleCst(src);
+
+  // Either: Left has value0 (error string), Right has value0 (AST)
+  if (result.value0 && typeof result.value0 === 'string') {
+    // console.log('Parse error for ' + name + ': ' + result.value0.substring(0, 80));
+    parseErrors++;
     return;
   }
 
+  // Right case: result.value0 is the AST module
+  const mod = result.value0;
   if (!mod || !mod.name) {
-    console.log('Invalid AST for ' + name + ': ' + JSON.stringify(mod ? Object.keys(mod) : null));
+    // console.log('Invalid AST for ' + name);
+    failed++;
     return;
   }
 
-  const code = genModule(mod);
-  const outFile = '/tmp/nova_core/nova_compiler_' + name.toLowerCase() + '.core';
-  fs.writeFileSync(outFile, code);
-  console.log('Generated ' + outFile + ' (' + code.split('\n').length + ' lines)');
+  try {
+    const code = genModule(mod);
+    // Use module name for output file (replace . with _)
+    const outName = mod.name.replace(/\./g, '_').toLowerCase();
+    const outFile = path.join(outDir, outName + '.core');
+    fs.writeFileSync(outFile, code);
+    console.log('Generated ' + outFile + ' (' + code.split('\n').length + ' lines)');
+    success++;
+  } catch (e) {
+    // console.log('Codegen error for ' + name + ': ' + e.message);
+    codegenErrors++;
+  }
 });
+
+console.log(`\nResults: ${success} generated, ${parseErrors} parse errors, ${codegenErrors} codegen errors, ${failed} other failures`);
+console.log(`Total .purs files: ${allFiles.length}`);

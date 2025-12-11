@@ -4,12 +4,13 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Map as Map
 import Data.Set as Set
-import Data.Array (zip, length, take, fromFoldable, last) as Array
+import Data.Array as Array
 import Data.Array (length, zip)
 import Data.Foldable (foldM)
 import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.String (Pattern(..))
 import Nova.Compiler.Types (Type(..), TVar, TCon, Record, Subst, emptySubst, singleSubst, composeSubst, applySubst, freeTypeVars, mkTyApp)
 
 -- | Unification error type
@@ -65,7 +66,7 @@ bindVar v t =
 
 -- | Strip module prefix from a type name (e.g., "Set.Set" -> "Set", "Data.Map.Map" -> "Map")
 stripModulePrefix :: String -> String
-stripModulePrefix name = case String.lastIndexOf (String.Pattern ".") name of
+stripModulePrefix name = case String.lastIndexOf ((Pattern ".")) name of
   Just idx -> String.drop (idx + 1) name
   Nothing -> name
 
@@ -92,10 +93,10 @@ isRecordTypeAliasInMap aliasMap name =
     Just _ -> false  -- Alias exists but expands to non-record
     Nothing ->
       -- Also check unqualified name
-      let unqualifiedName = case indexOf (String.Pattern ".") name of
+      let unqualifiedName = case indexOf ((Pattern ".")) name of
             Just idx -> String.drop (idx + 1) name
             Nothing -> name
-      in if unqualifiedName /= name
+      in if not (unqualifiedName == name)
          then case Map.lookup unqualifiedName aliasMap of
                 Just (TyRecord _) -> true
                 _ -> false
@@ -114,10 +115,10 @@ lookupRecordAlias aliasMap name =
     Just _ -> Nothing  -- Alias exists but expands to non-record
     Nothing ->
       -- Also check unqualified name
-      let unqualifiedName = case indexOf (String.Pattern ".") name of
+      let unqualifiedName = case indexOf ((Pattern ".")) name of
             Just idx -> String.drop (idx + 1) name
             Nothing -> name
-      in if unqualifiedName /= name
+      in if not (unqualifiedName == name)
          then case Map.lookup unqualifiedName aliasMap of
                 Just (TyRecord r) -> Just r
                 _ -> Nothing
@@ -131,7 +132,7 @@ unifyWithAliases aliases (TyVar v) t = bindVar v t
 unifyWithAliases aliases t (TyVar v) = bindVar v t
 unifyWithAliases aliases (TyCon c1) (TyCon c2)
   | not (areEquivalentTypes c1.name c2.name) = Left (TypeMismatch (TyCon c1) (TyCon c2))
-  | length c1.args /= length c2.args = Left (ArityMismatch c1.name (length c1.args) (length c2.args))
+  | not (length c1.args == length c2.args) = Left (ArityMismatch c1.name (length c1.args) (length c2.args))
   | otherwise = unifyManyWithAliases aliases c1.args c2.args
 -- Treat record type aliases as unifying with their record expansions
 unifyWithAliases aliases (TyCon c) (TyRecord r)

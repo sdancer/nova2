@@ -14,7 +14,8 @@ import Data.Set as Set
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Foldable (foldr, foldl)
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, DataType, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), ImportDeclaration, ImportItem(..), GuardedExpr, GuardClause(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, DataType, Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), ImportItem(..), GuardedExpr, GuardClause(..))
+-- getUsedVars is defined locally below to avoid cross-module import issues
 
 -- Core Erlang Code Generation
 -- Core Erlang is a simpler intermediate language used by the BEAM compiler.
@@ -532,9 +533,18 @@ genExpr ctx (ExprApp f arg) =
                       then -- Function returns a function - call it first, then apply result
                            "let <_Fn0> = apply " <> atom name <> "/0()\n" <>
                            "      in apply _Fn0(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
-                      else if numArgs >= declaredArity
-                      then "apply " <> atom name <> "/" <> show declaredArity <>
+                      else if numArgs == declaredArity
+                      then -- Exact match - call directly
+                           "apply " <> atom name <> "/" <> show declaredArity <>
                            "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
+                      else if numArgs > declaredArity
+                      then -- Over-application: function returns a curried function
+                           -- Call with declared arity first, then apply result to remaining args
+                           let directArgs = Array.take declaredArity args
+                               extraArgs = Array.drop declaredArity args
+                               baseCall = "apply " <> atom name <> "/" <> show declaredArity <>
+                                         "(" <> String.joinWith ", " (map (genExpr ctx) directArgs) <> ")"
+                           in genCurriedApply ctx baseCall extraArgs
                       else -- Partial application - generate a closure
                            let remaining = declaredArity - numArgs
                                paramNames = Array.range 0 (remaining - 1) # map (\i -> "_Pc" <> show i)
@@ -794,35 +804,101 @@ genLetBindsWithBody ctx binds body =
       -- For letrec functions, add them to moduleFuncs with their arities
       -- This makes genExpr generate proper 'apply funcname/arity(...)' calls
       letrecFuncs = Array.mapMaybe (\b -> getPatternVarName b.pattern # map (\n -> { name: n, arity: getLambdaArity b.value })) funcBinds
-      funcNames = Set.fromFoldable (map _.name letrecFuncs)
 
-      -- Add function bindings to moduleFuncs for proper apply syntax
-      ctxWithFuncs = ctx { moduleFuncs = foldr (\f s -> Set.insert f.name s) ctx.moduleFuncs letrecFuncs
-                        , funcArities = ctx.funcArities <> letrecFuncs
+      -- Collect variables used by letrec functions
+      funcNames = Set.fromFoldable (map _.name letrecFuncs)
+      usedByFuncs = Set.fromFoldable (Array.concatMap (\b -> getUsedVars b.value) funcBinds)
+
+      -- Compute transitive dependencies on letrec functions
+      -- A value transitively depends on funcs if it directly uses a func name,
+      -- OR if it uses another value that transitively depends on funcs.
+      -- We iterate to a fixpoint.
+      computeTransitiveFuncDeps :: Set String -> Set String
+      computeTransitiveFuncDeps currentDeps =
+        let depsOrFuncs = Set.union funcNames currentDeps
+            newDeps = Set.fromFoldable $ Array.mapMaybe (\b ->
+              let used = Set.fromFoldable (getUsedVars b.value)
+              in if not (Set.isEmpty (Set.intersection used depsOrFuncs))
+                 then getPatternVarName b.pattern
+                 else Nothing
+            ) valueBinds
+        in if newDeps == currentDeps
+           then newDeps
+           else computeTransitiveFuncDeps newDeps
+
+      -- Values that transitively depend on funcs (by name)
+      valuesThatDependOnFuncs = computeTransitiveFuncDeps Set.empty
+
+      -- Check if a value binding depends on any letrec function (directly or transitively)
+      dependsOnFuncs :: LetBind -> Boolean
+      dependsOnFuncs b = case getPatternVarName b.pattern of
+        Just n -> Set.member n valuesThatDependOnFuncs
+        Nothing ->
+          -- For pattern bindings without a simple name, check directly
+          let used = Set.fromFoldable (getUsedVars b.value)
+          in not (Set.isEmpty (Set.intersection used (Set.union funcNames valuesThatDependOnFuncs)))
+
+      -- Check if a value binding is used by any letrec function
+      isUsedByFuncs :: LetBind -> Boolean
+      isUsedByFuncs b = case getPatternVarName b.pattern of
+        Just n -> Set.member n usedByFuncs
+        Nothing -> false
+
+      -- Values that depend on funcs AND are used by funcs → must become 0-arity letrec functions
+      -- Values that DON'T depend on funcs → BEFORE letrec
+      -- Values that depend on funcs but NOT used by funcs → AFTER letrec
+      --
+      -- IMPORTANT: Cyclicity must propagate! If a cyclic value depends on another value,
+      -- that value must also be cyclic (in the letrec) or the cyclic value will have
+      -- an unbound reference.
+
+      -- Start with values that are directly cyclic (used by funcs AND depend on funcs)
+      directlyCyclic = Array.filter (\b -> dependsOnFuncs b && isUsedByFuncs b) valueBinds
+      directlyCyclicNames = Set.fromFoldable $ Array.mapMaybe (\b -> getPatternVarName b.pattern) directlyCyclic
+
+      -- Propagate cyclicity: if a cyclic value uses another value, that value must also be cyclic
+      computeCyclicClosure :: Set String -> Set String
+      computeCyclicClosure currentCyclic =
+        let cyclicBinds = Array.filter (\b -> case getPatternVarName b.pattern of
+              Just n -> Set.member n currentCyclic
+              Nothing -> false) valueBinds
+            usedByCyclic = Set.fromFoldable $ Array.concatMap (\b -> getUsedVars b.value) cyclicBinds
+            -- Value names that are used by cyclic values and are themselves values (not funcs)
+            valueNames = Set.fromFoldable $ Array.mapMaybe (\b -> getPatternVarName b.pattern) valueBinds
+            newCyclic = Set.union currentCyclic (Set.intersection usedByCyclic valueNames)
+        in if newCyclic == currentCyclic
+           then newCyclic
+           else computeCyclicClosure newCyclic
+
+      allCyclicNames = computeCyclicClosure directlyCyclicNames
+      cyclicValues = Array.filter (\b -> case getPatternVarName b.pattern of
+        Just n -> Set.member n allCyclicNames
+        Nothing -> false) valueBinds
+
+      valuesBeforeLetrec = Array.filter (\b -> not (dependsOnFuncs b)) valueBinds
+      valuesAfterLetrec = Array.filter (\b -> dependsOnFuncs b && case getPatternVarName b.pattern of
+        Just n -> not (Set.member n allCyclicNames)
+        Nothing -> true) valueBinds
+
+      -- Convert cyclic values to 0-arity function bindings
+      cyclicAsFuncs = map (\b -> b { value = ExprLambda Nil b.value }) cyclicValues
+      funcGroup1 = funcBinds <> cyclicAsFuncs
+      funcGroup2 = []  -- No second function group
+      depValuesGroup1 = valuesAfterLetrec  -- Values that depend on functions go after
+      depValuesGroup2 = []  -- No second value group
+
+      -- Add cyclic values to letrecFuncs with arity 0
+      cyclicFuncs = Array.mapMaybe (\b -> getPatternVarName b.pattern # map (\n -> { name: n, arity: 0 })) cyclicValues
+      allFuncs = letrecFuncs <> cyclicFuncs
+
+      -- Add all function bindings to moduleFuncs for proper apply syntax
+      ctxWithFuncs = ctx { moduleFuncs = foldr (\f s -> Set.insert f.name s) ctx.moduleFuncs allFuncs
+                        , funcArities = ctx.funcArities <> allFuncs
                         }
 
-      -- Get value binding names
-      valueNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) valueBinds)
-
-      -- Add non-lambda bindings to locals
-      ctxWithAllBinds = foldr addValueBindToCtx ctxWithFuncs valueBinds
-
-      -- SIMPLIFIED: Put ALL value bindings after the letrec
-      -- This avoids complex transitive dependency detection and is always correct.
-      -- Value bindings may depend on letrec functions (directly or transitively),
-      -- so the safest approach is to generate them all after the letrec.
-      -- They'll be topo-sorted among themselves to handle inter-dependencies.
-      dependentValueBinds = valueBinds
-      independentValueBinds = []  -- No independent values - all go after letrec
-      dependentValueNames = Set.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern) valueBinds)
-
-      -- SIMPLIFIED: All functions go in a single letrec, all values after
-      -- This avoids complex grouping that creates bootstrap dependency issues.
-      -- The two-letrec approach was trying to optimize, but it's not worth the complexity.
-      funcGroup1 = funcBinds
-      funcGroup2 = []  -- No second function group
-      depValuesGroup1 = dependentValueBinds  -- All values in one group
-      depValuesGroup2 = []  -- No second value group
+      -- Add remaining value bindings (non-cyclic) to locals
+      nonCyclicValues = valuesBeforeLetrec <> valuesAfterLetrec
+      ctxWithAllBinds = foldr addValueBindToCtx ctxWithFuncs nonCyclicValues
 
   in if Array.null funcBinds
      then genValueBindsWithBody ctxWithAllBinds valueBinds body
@@ -847,7 +923,7 @@ genLetBindsWithBody ctx binds body =
                          defs = String.joinWith "\n       " (map (genLetrecDefGrouped ctxWithAllBinds) grouped)
                      in "letrec " <> defs <> "\n      in " <> bodyStr
 
-              -- Build from inside out: body <- depValues2 <- letrec2 <- depValues1 <- letrec1 <- independent values
+              -- Build from inside out: body <- depValues2 <- letrec2 <- depValues1 <- letrec1 <- valuesBeforeLetrec
               finalBody = genExpr ctxWithAllBinds body
               afterDepValues2 = if Array.null depValuesGroup2
                                 then finalBody
@@ -857,9 +933,10 @@ genLetBindsWithBody ctx binds body =
                                 then afterLetrec2
                                 else genValueBindsWithBodyStrSorted ctxWithAllBinds (topoSortBinds depValuesGroup1) afterLetrec2
               afterLetrec1 = genLetrec funcGroup1 afterDepValues1
-              result = if Array.null independentValueBinds
+              -- Values that don't depend on letrec functions go BEFORE the letrec
+              result = if Array.null valuesBeforeLetrec
                        then afterLetrec1
-                       else genValueBindsWithBodyStrSorted ctxWithAllBinds (topoSortBinds independentValueBinds) afterLetrec1
+                       else genValueBindsWithBodyStrSorted ctxWithAllBinds (topoSortBinds valuesBeforeLetrec) afterLetrec1
           in result
   where
     -- Add a value binding's name to locals
@@ -903,11 +980,11 @@ genLetBindsWithBody ctx binds body =
     genLetrecClauseAsCase :: CoreCtx -> Array String -> LetBind -> String
     genLetrecClauseAsCase ctx' paramNames' bind =
       case bind.value of
-        ExprLambda pats body ->
+        ExprLambda pats lambdaBody ->
           let patsResult = genPatsWithCounter (Array.fromFoldable pats) 0
               patTuple = "{" <> String.joinWith ", " patsResult.strs <> "}"
               ctxWithParams = foldr addLocalsFromPattern ctx' pats
-              bodyStr = genExpr ctxWithParams body
+              bodyStr = genExpr ctxWithParams lambdaBody
           in "        <" <> patTuple <> "> when 'true' -> " <> bodyStr
         ExprParens e -> genLetrecClauseAsCase ctx' paramNames' (bind { value = e })
         _ ->
@@ -1207,6 +1284,19 @@ toSnakeCase s =
     toLower c =
       fromMaybe c (SCU.charAt 0 (String.toLower (SCU.singleton c)))
 
+-- | Generate curried apply for over-application
+-- When a function is called with more args than its declared arity,
+-- we call with the declared arity first, then apply the result to remaining args.
+-- E.g., func/1 called with 3 args becomes: let <_Oa0> = apply 'func'/1(a) in apply (apply _Oa0(b))(c)
+genCurriedApply :: CoreCtx -> String -> Array Expr -> String
+genCurriedApply ctx baseCall extraArgs =
+  if Array.length extraArgs == 0
+  then baseCall
+  else
+    -- Nest the applies: apply (apply (apply _Oa0(arg1))(arg2))(arg3)
+    let applyOne acc arg = "apply " <> acc <> "(" <> genExpr ctx arg <> ")"
+    in "let <_Oa0> = " <> baseCall <> "\n      in " <> Array.foldl applyOne "_Oa0" extraArgs
+
 -- | Generate Core Erlang list
 -- For small lists, use flat [e1, e2, ...] syntax which is valid Core Erlang
 -- For large lists or those with cons patterns, use nested cons
@@ -1232,3 +1322,39 @@ lookupArity name ctx =
   case Array.find (\f -> f.name == name) ctx.funcArities of
     Just f -> f.arity
     Nothing -> 0
+
+-- | Extract all variable names used in an expression (for dependency analysis)
+getUsedVars :: Expr -> Array String
+getUsedVars (ExprVar n) = [n]
+getUsedVars (ExprApp f a) = getUsedVars f <> getUsedVars a
+getUsedVars (ExprLambda _ body) = getUsedVars body
+getUsedVars (ExprLet binds body) = listConcatMap (\b -> getUsedVars b.value) binds <> getUsedVars body
+getUsedVars (ExprIf c t e) = getUsedVars c <> getUsedVars t <> getUsedVars e
+getUsedVars (ExprCase scrut clauses) = getUsedVars scrut <> listConcatMap (\cl -> getUsedVars cl.body) clauses
+getUsedVars (ExprBinOp _ l r) = getUsedVars l <> getUsedVars r
+getUsedVars (ExprList elems) = listConcatMap getUsedVars elems
+getUsedVars (ExprRecord fields) = listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprRecordAccess rec _) = getUsedVars rec
+getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
+getUsedVars (ExprDo stmts) = listConcatMapArray getUsedVarsStmt stmts
+  where
+    getUsedVarsStmt (DoLet binds) = listConcatMap (\b -> getUsedVars b.value) binds
+    getUsedVarsStmt (DoBind _ e) = getUsedVars e
+    getUsedVarsStmt (DoExpr e) = getUsedVars e
+getUsedVars (ExprTuple elems) = listConcatMap getUsedVars elems
+getUsedVars (ExprTyped e _) = getUsedVars e
+getUsedVars (ExprParens e) = getUsedVars e
+getUsedVars (ExprSection _) = []
+getUsedVars (ExprSectionLeft e _) = getUsedVars e
+getUsedVars (ExprSectionRight _ e) = getUsedVars e
+getUsedVars (ExprQualified _ _) = []
+getUsedVars (ExprUnaryOp _ e) = getUsedVars e
+getUsedVars _ = []
+
+-- | Helper: concatMap for List returning Array
+listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
+
+-- | Helper: concatMap for Array containing DoStatement
+listConcatMapArray :: forall a b. (a -> Array b) -> List a -> Array b
+listConcatMapArray f lst = foldl (\acc x -> acc <> f x) [] lst

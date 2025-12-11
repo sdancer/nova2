@@ -22,6 +22,8 @@ defmodule Nova.Compiler.Unify do
 
   # import Data.String
 
+  # import Data.String
+
   # import Nova.Compiler.Types
 
   # Data type: UnifyError
@@ -124,7 +126,7 @@ end
 
 
   def strip_module_prefix(name) do
-    case Nova.String.last_index_of((Nova.String.pattern(".")), name) do
+    case Nova.String.last_index_of(((Data.String.pattern("."))), name) do
       {:just, idx} -> Nova.String.drop(((idx + 1)), name)
       :nothing -> name
     end
@@ -160,11 +162,11 @@ end
   {:just, ({:ty_record, _})} -> true
   {:just, _} -> false
   :nothing -> 
-      unqualified_name = case index_of.((Nova.String.pattern("."))).(name) do
+      unqualified_name = case index_of.(((Data.String.pattern(".")))).(name) do
         {:just, idx} -> Nova.String.drop(((idx + 1)), name)
         :nothing -> name
       end
-      if (unqualified_name != name) do
+      if not(((unqualified_name == name))) do
   case Nova.Map.lookup(unqualified_name, alias_map) do
     {:just, ({:ty_record, _})} -> true
     _ -> false
@@ -186,11 +188,11 @@ end
   {:just, ({:ty_record, r})} -> {:just, r}
   {:just, _} -> :nothing
   :nothing -> 
-      unqualified_name = case index_of.((Nova.String.pattern("."))).(name) do
+      unqualified_name = case index_of.(((Data.String.pattern(".")))).(name) do
         {:just, idx} -> Nova.String.drop(((idx + 1)), name)
         :nothing -> name
       end
-      if (unqualified_name != name) do
+      if not(((unqualified_name == name))) do
   case Nova.Map.lookup(unqualified_name, alias_map) do
     {:just, ({:ty_record, r})} -> {:just, r}
     _ -> :nothing
@@ -215,7 +217,7 @@ end
     cond do
       (not((are_equivalent_types(c1.name, c2.name)))) ->
         {:left, ({:type_mismatch, ({:ty_con, c1}), ({:ty_con, c2})})}
-      ((Data.Array.length(c1.args) != Data.Array.length(c2.args))) ->
+      (not(((Data.Array.length(c1.args) == Data.Array.length(c2.args))))) ->
         {:left, ({:arity_mismatch, c1.name, (Data.Array.length(c1.args)), (Data.Array.length(c2.args))})}
       (true) ->
         unify_many_with_aliases(aliases, c1.args, c2.args)
