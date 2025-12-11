@@ -154,7 +154,10 @@ freeVarsInExprFor candidates bound expr = case expr of
 topoSortBinds :: Array LetBind -> Array LetBind
 topoSortBinds binds =
   let -- Build map of name -> binding
-      bindMap = Map.fromFoldable (Array.mapMaybe (\b -> getPatternVarName b.pattern # map (\n -> Tuple n b)) binds)
+      bindMap = Map.fromFoldable (Array.mapMaybe (\b ->
+        case getPatternVarName b.pattern of
+          Nothing -> Nothing
+          Just n -> Just (Tuple n b)) binds)
       -- Get all binding names
       bindNames = Set.fromFoldable (Map.keys bindMap)
       -- For each binding, find its dependencies (other bindings it references)
@@ -394,7 +397,7 @@ genMergedFunction :: CoreCtx -> FunctionGroup -> String
 genMergedFunction ctx group =
   let arity = group.arity
       -- Generate fresh parameter names
-      paramNames = Array.range 0 (arity - 1) # map (\i -> "_P" <> show i)
+      paramNames = map (\i -> "_P" <> show i) (Array.range 0 (arity - 1))
       paramsStr = String.joinWith ", " paramNames
       -- Generate case clauses from each function clause
       caseClauses = map (genFunctionClauseAsCase ctx paramNames) group.clauses
@@ -526,8 +529,11 @@ genPattern pat = (genPatternWithCounter pat 0).str
 -- | Generate pattern with unique wildcard counter
 -- Returns { str: pattern string, counter: updated counter }
 genPatternWithCounter :: Pattern -> Int -> { str :: String, counter :: Int }
-genPatternWithCounter (PatVar name) n | String.take 1 name == "_" = { str: "_W" <> show n, counter: n + 1 }  -- Treat PatVar "_" and "_x" as wildcard
-genPatternWithCounter (PatVar name) n = { str: coreVar name, counter: n }
+genPatternWithCounter (PatVar name) n =
+  -- Treat PatVar "_" and "_x" as wildcard (use if instead of guard for self-hosting)
+  if String.take 1 name == "_"
+  then { str: "_W" <> show n, counter: n + 1 }
+  else { str: coreVar name, counter: n }
 genPatternWithCounter PatWildcard n = { str: "_W" <> show n, counter: n + 1 }
 genPatternWithCounter (PatLit lit) n = { str: genLiteral lit, counter: n }
 genPatternWithCounter (PatCon name pats) n =
@@ -605,7 +611,7 @@ genExpr ctx (ExprVar name) =
       else case getPreludeFunc name of
         -- Prelude function as first-class value - wrap in lambda
         Just info ->
-          let paramNames = Array.range 0 (info.arity - 1) # map (\i -> "_Pf" <> show i)
+          let paramNames = map (\i -> "_Pf" <> show i) (Array.range 0 (info.arity - 1))
               paramsStr = String.joinWith ", " paramNames
           in "fun (" <> paramsStr <> ") -> call " <> atom info.mod <> ":" <> atom info.func <>
              "(" <> paramsStr <> ")"
@@ -615,7 +621,7 @@ genExpr ctx (ExprVar name) =
                let arity = lookupArity name ctx
                in if arity == 0
                   then "apply " <> atom name <> "/0()"
-                  else let paramNames = safeRange 0 (arity - 1) # map (\i -> "_Mf" <> show i)
+                  else let paramNames = map (\i -> "_Mf" <> show i) (safeRange 0 (arity - 1))
                            paramsStr = String.joinWith ", " paramNames
                        in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show arity <>
                           "(" <> paramsStr <> ")"
@@ -701,7 +707,7 @@ genExpr ctx (ExprApp f arg) =
                            in genCurriedApply ctx baseCall extraArgs
                       else -- Partial application - generate a closure
                            let remaining = declaredArity - numArgs
-                               paramNames = Array.range 0 (remaining - 1) # map (\i -> "_Pc" <> show i)
+                               paramNames = map (\i -> "_Pc" <> show i) (Array.range 0 (remaining - 1))
                                paramsStr = String.joinWith ", " paramNames
                                allArgs = String.joinWith ", " (map (genExpr ctx) args <> paramNames)
                            in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show declaredArity <>
@@ -940,7 +946,7 @@ genExprLetrec ctx expr = case expr of
     if hasComplexPattern pats
     then
       let arity = List.length pats
-          paramNames = Array.range 0 (arity - 1) # map (\i -> "_L" <> show i)
+          paramNames = map (\i -> "_L" <> show i) (Array.range 0 (arity - 1))
           paramsStr = String.joinWith ", " paramNames
           patResult = genPatsWithCounter (Array.fromFoldable pats) 0
           patTuple = "{" <> String.joinWith ", " patResult.strs <> "}"
@@ -1022,7 +1028,10 @@ genLetBindsWithBody ctx binds body =
 
       -- For letrec functions, add them to moduleFuncs with their arities
       -- This makes genExpr generate proper 'apply funcname/arity(...)' calls
-      letrecFuncs = Array.mapMaybe (\b -> getPatternVarName b.pattern # map (\n -> { name: n, arity: getLambdaArity b.value })) funcBinds
+      letrecFuncs = Array.mapMaybe (\b ->
+        case getPatternVarName b.pattern of
+          Nothing -> Nothing
+          Just n -> Just { name: n, arity: getLambdaArity b.value }) funcBinds
 
       -- Collect variables used by letrec functions
       funcNames = Set.fromFoldable (map _.name letrecFuncs)
@@ -1107,7 +1116,10 @@ genLetBindsWithBody ctx binds body =
       depValuesGroup2 = []  -- No second value group
 
       -- Add cyclic values to letrecFuncs with arity 0
-      cyclicFuncs = Array.mapMaybe (\b -> getPatternVarName b.pattern # map (\n -> { name: n, arity: 0 })) cyclicValues
+      cyclicFuncs = Array.mapMaybe (\b ->
+        case getPatternVarName b.pattern of
+          Nothing -> Nothing
+          Just n -> Just { name: n, arity: 0 }) cyclicValues
       allFuncs = letrecFuncs <> cyclicFuncs
 
       -- Add all function bindings to moduleFuncs for proper apply syntax
@@ -1185,7 +1197,7 @@ genLetBindsWithBody ctx binds body =
         [single] -> genLetrecDef ctx' single  -- Single clause - use simple generation
         multiple ->
           -- Multiple clauses - generate a function with case
-          let paramNames = Array.range 0 (group.arity - 1) # map (\i -> "_L" <> show i)
+          let paramNames = map (\i -> "_L" <> show i) (Array.range 0 (group.arity - 1))
               paramsStr = String.joinWith ", " paramNames
               -- Generate case clauses from each binding's lambda
               caseClauses = map (genLetrecClauseAsCase ctx' paramNames) multiple

@@ -7,13 +7,13 @@ module Data.Foldable where
 foldl :: forall a b t. (b -> a -> b) -> b -> t a -> b
 foldl f acc xs = foldlImpl f acc xs
 
-foreign import foldlImpl :: forall a b t. (b -> a -> b) -> b -> t a -> b
+foreign import foldlImpl :: forall a b t. (b -> a -> b) -> b -> t a -> b = "call 'lists':'foldl'(fun (E, A) -> apply $0 (A, E), $1, $2)"
 
 -- Fold right (lazy)
 foldr :: forall a b t. (a -> b -> b) -> b -> t a -> b
 foldr f acc xs = foldrImpl f acc xs
 
-foreign import foldrImpl :: forall a b t. (a -> b -> b) -> b -> t a -> b
+foreign import foldrImpl :: forall a b t. (a -> b -> b) -> b -> t a -> b = "call 'lists':'foldr'(fun (E, A) -> apply $0 (E, A), $1, $2)"
 
 -- Monadic fold left
 foldM :: forall m a b t. (b -> a -> m b) -> b -> t a -> m b

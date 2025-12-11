@@ -156,7 +156,10 @@ convertModule cstMod = do
 convertImportDecl :: CstImportDecl -> Either String Ast.ImportDeclaration
 convertImportDecl imp = do
   let moduleName = unwrapModuleName imp.module.name
-  let alias = map (\(Tuple _ qualName) -> unwrapModuleName qualName.name) imp.qualified
+  -- Use explicit pattern matching instead of map on Maybe (type class resolution not supported)
+  let alias = case imp.qualified of
+        Nothing -> Nothing
+        Just (Tuple _ qualName) -> Just (unwrapModuleName qualName.name)
   items <- case imp.names of
     Nothing -> Right Nil  -- Implicit import of everything
     Just (Tuple _ delim) -> do

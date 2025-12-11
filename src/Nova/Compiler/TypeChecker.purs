@@ -350,6 +350,48 @@ infer env (ExprSection name) =
         let { ty, env: env2 } = instantiate env scheme
         in Right { ty, sub: Map.empty, env: env2 }
 
+-- ExprSectionLeft: (expr op) - left operand provided, e.g., (1 +) :: Int -> Int
+-- The result is a function that takes the right operand
+infer env (ExprSectionLeft expr op) =
+  case Map.lookup op env.bindings of
+    Nothing -> Left (UnboundVariable op)
+    Just opScheme ->
+      let { ty: opTy, env: env1 } = instantiate env opScheme
+      in case infer env1 expr of
+        Left e -> Left e
+        Right exprRes ->
+          -- opTy should be a -> b -> c, we have the left arg 'a', result is b -> c
+          let Tuple resTv env2 = freshVar exprRes.env "secres"
+              Tuple rightTv env3 = freshVar env2 "secright"
+              expectedOpTy = tArrow exprRes.ty (tArrow (TyVar rightTv) (TyVar resTv))
+          in case unifyEnv env3 opTy expectedOpTy of
+            Left ue -> Left (UnifyErr ue)
+            Right s ->
+              let sub = composeSubst s exprRes.sub
+                  resultTy = tArrow (applySubst sub (TyVar rightTv)) (applySubst sub (TyVar resTv))
+              in Right { ty: resultTy, sub, env: env3 }
+
+-- ExprSectionRight: (op expr) or (_ op expr) - right operand provided, e.g., (_ == x) :: a -> Bool
+-- The result is a function that takes the left operand
+infer env (ExprSectionRight op expr) =
+  case Map.lookup op env.bindings of
+    Nothing -> Left (UnboundVariable op)
+    Just opScheme ->
+      let { ty: opTy, env: env1 } = instantiate env opScheme
+      in case infer env1 expr of
+        Left e -> Left e
+        Right exprRes ->
+          -- opTy should be a -> b -> c, we have the right arg 'b', result is a -> c
+          let Tuple resTv env2 = freshVar exprRes.env "secres"
+              Tuple leftTv env3 = freshVar env2 "secleft"
+              expectedOpTy = tArrow (TyVar leftTv) (tArrow exprRes.ty (TyVar resTv))
+          in case unifyEnv env3 opTy expectedOpTy of
+            Left ue -> Left (UnifyErr ue)
+            Right s ->
+              let sub = composeSubst s exprRes.sub
+                  resultTy = tArrow (applySubst sub (TyVar leftTv)) (applySubst sub (TyVar resTv))
+              in Right { ty: resultTy, sub, env: env3 }
+
 infer _ _ = Left (NotImplemented "expression form")
 
 -- | Infer record update: rec { field = value, ... }

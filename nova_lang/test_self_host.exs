@@ -51,13 +51,18 @@ compiler_modules = [
   "Nova/Compiler/Ast.core",
   "Nova/Compiler/Types.core",
   "Nova/Compiler/Cst.core",
-  "Nova/Compiler/Unify.core",
+  "Nova/Compiler/CstLayout.core",
+  "Nova/Compiler/CstLexer.core",
+  "Nova/Compiler/CstParser.core",
   "Nova/Compiler/CstToAst.core",
+  "Nova/Compiler/CstPipeline.core",
+  "Nova/Compiler/Unify.core",
   "Nova/Compiler/ImportProcessor.core",
   "Nova/Compiler/TypeChecker.core",
   "Nova/Compiler/RefEq.core",
   "Nova/Compiler/Dependencies.core",
-  "Nova/Compiler/CodeGenCoreErlang.core"
+  "Nova/Compiler/CodeGenCoreErlang.core",
+  "Nova/Compiler/Regenerate.core"
 ]
 
 all_modules = lib_modules ++ compiler_modules
