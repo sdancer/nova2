@@ -26,6 +26,7 @@ function findPursFiles(dir) {
 // Directories to search
 const searchDirs = [
   './src/Nova/Compiler',
+  './lib',  // PureScript stdlib (Data.Array, Data.List, etc.)
   './test',
   './nova_lang/purs_tests',
   './nova_lang/test/purs'
