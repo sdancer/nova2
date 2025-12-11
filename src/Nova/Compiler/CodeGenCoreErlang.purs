@@ -318,16 +318,10 @@ genFunctionClauseAsCase ctx _paramNames func =
              else genGuardedExprs ctxWithParams (Array.fromFoldable func.guards)
   in "      <" <> patTuple <> "> when 'true' ->\n        " <> body
 
--- | Translate module name (e.g., "Test.SumTest" -> "test_sum_test")
--- Special mappings to avoid shadowing Erlang built-in modules
+-- | Translate module name - preserve exact PureScript name (e.g., "Nova.Compiler.Ast")
+-- The name is quoted as an atom in Core Erlang, so dots are preserved
 translateModuleName :: String -> String
-translateModuleName name =
-  let baseName = String.toLower (String.replaceAll (String.Pattern ".") (String.Replacement "_") name)
-  in case baseName of
-    -- Avoid shadowing Erlang's built-in string module
-    "string" -> "nova_string"
-    -- Add other special mappings as needed
-    _ -> baseName
+translateModuleName name = name
 
 -- NOTE: genDecl replaced by genFunctionGroup and genDeclNonFunc in genModule
 

@@ -349,7 +349,7 @@ insertLayout src nextPos stack =
         else state
       _ -> state
 
-  indentedP = const isIndented
+  indentedP _ lyt = isIndented lyt
 
   offsideP lytPos lyt =
     isIndented lyt && tokPos.column < lytPos.column
