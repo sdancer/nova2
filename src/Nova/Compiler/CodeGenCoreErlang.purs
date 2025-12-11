@@ -29,6 +29,7 @@ type CoreCtx =
   , funcArities :: Array { name :: String, arity :: Int }
   , varCounter :: Int  -- For generating unique variable names
   , imports :: Map String String  -- Imported name -> source module
+  , aliasMap :: Map String String  -- Module alias -> full module name (e.g., "Array" -> "Data.Array")
   }
 
 emptyCtx :: String -> CoreCtx
@@ -39,6 +40,7 @@ emptyCtx modName =
   , funcArities: []
   , varCounter: 0
   , imports: Map.empty
+  , aliasMap: Map.empty
   }
 
 -- | Prelude functions that map to Erlang BIFs or stdlib
@@ -214,6 +216,9 @@ genModule m =
       -- Collect all imports
       allImports = Array.concatMap getImports (Array.fromFoldable m.declarations)
       importMap = Map.fromFoldable allImports
+      -- Build alias map from import declarations
+      aliasMapArr = Array.mapMaybe getAliasMapping (Array.fromFoldable m.declarations)
+      aliasMp = Map.fromFoldable aliasMapArr
       -- Group functions by name/arity
       grouped = groupFunctions allFuncs
       -- Extract unique name/arity pairs for exports
@@ -222,7 +227,8 @@ genModule m =
       exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) uniqueFuncs)
       ctx = (emptyCtx modName) { moduleFuncs = Set.fromFoldable (map _.name uniqueFuncs)
                                , funcArities = uniqueFuncs
-                               , imports = importMap }
+                               , imports = importMap
+                               , aliasMap = aliasMp }
       -- Generate function definitions (merging multiple clauses)
       funcDefs = String.joinWith "\n\n" (map (genFunctionGroup ctx) grouped)
       -- Generate data type comments
@@ -236,6 +242,19 @@ genModule m =
     getFunc _ = Nothing
     getImports (DeclImport imp) = importItemsToTuples imp.moduleName (Array.fromFoldable imp.items)
     getImports _ = []
+    -- Extract alias -> full module name mapping from import declarations
+    getAliasMapping (DeclImport imp) =
+      let fullName = imp.moduleName
+          -- If alias is specified, use it; otherwise derive from last component of module name
+          aliasName = case imp.alias of
+            Just a -> a
+            Nothing -> getLastComponent fullName
+      in Just (Tuple aliasName fullName)
+    getAliasMapping _ = Nothing
+    -- Get the last component of a dotted module name (e.g., "Data.Array" -> "Array")
+    getLastComponent name = case String.lastIndexOf (String.Pattern ".") name of
+      Just idx -> String.drop (idx + 1) name
+      Nothing -> name
     genDeclNonFunc ctx (DeclDataType dt) = Just (genDataType ctx dt)
     genDeclNonFunc _ _ = Nothing
 
@@ -322,6 +341,13 @@ genFunctionClauseAsCase ctx _paramNames func =
 -- The name is quoted as an atom in Core Erlang, so dots are preserved
 translateModuleName :: String -> String
 translateModuleName name = name
+
+-- | Resolve a module alias to its full name using the context's aliasMap
+-- If the alias is not found, return the name as-is (it may already be a full name)
+resolveModuleName :: CoreCtx -> String -> String
+resolveModuleName ctx alias = case Map.lookup alias ctx.aliasMap of
+  Just fullName -> fullName
+  Nothing -> alias  -- May already be a full name or external module
 
 -- NOTE: genDecl replaced by genFunctionGroup and genDeclNonFunc in genModule
 
@@ -449,9 +475,11 @@ genExpr ctx (ExprVar name) =
   case String.indexOf (String.Pattern ".") name of
     Just idx ->
       -- Qualified name - wrap in lambda for use as first-class value
-      let modName = translateModuleName (String.take idx name)
+      -- Resolve module alias to full name
+      let modAlias = String.take idx name
+          fullModName = resolveModuleName ctx modAlias
           funcName = String.drop (idx + 1) name
-      in "fun (_Qv0, _Qv1) -> call " <> atom modName <> ":" <> atom funcName <> "(_Qv0, _Qv1)"
+      in "fun (_Qv0, _Qv1) -> call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "(_Qv0, _Qv1)"
     Nothing ->
       if Set.member name ctx.locals
       then coreVar name
@@ -489,9 +517,11 @@ genExpr ctx (ExprVar name) =
     isConstructorName s = case String.take 1 s of
       c -> c >= "A" && c <= "Z"
 
-genExpr _ctx (ExprQualified modName funcName) =
+genExpr ctx (ExprQualified modAlias funcName) =
   -- When used as a value (not applied), assume 0-arity call
-  "call " <> atom (translateModuleName modName) <> ":" <> atom funcName <> "()"
+  -- Resolve module alias to full name
+  let fullModName = resolveModuleName ctx modAlias
+  in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
 
 genExpr ctx (ExprApp f arg) =
   let { func, args } = collectArgs (ExprApp f arg)
@@ -500,9 +530,11 @@ genExpr ctx (ExprApp f arg) =
       -- Check if it's a qualified name (like "Array.elem" from backtick syntax)
       case String.indexOf (String.Pattern ".") name of
         Just idx ->
-          let modName = translateModuleName (String.take idx name)
+          -- Resolve module alias to full name
+          let modAlias = String.take idx name
+              fullModName = resolveModuleName ctx modAlias
               funcName = String.drop (idx + 1) name
-          in "call " <> atom modName <> ":" <> atom funcName <>
+          in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <>
              "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
         Nothing ->
           -- Handle special monad functions
@@ -560,9 +592,11 @@ genExpr ctx (ExprApp f arg) =
                           else "{" <> atom (toSnakeCase name) <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
                      else "apply " <> coreVar name <>
                           "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
-    ExprQualified modName funcName ->
-      "call " <> atom (translateModuleName modName) <> ":" <> atom funcName <>
-      "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
+    ExprQualified modAlias funcName ->
+      -- Resolve module alias to full name
+      let fullModName = resolveModuleName ctx modAlias
+      in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <>
+         "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
     _ ->
       "apply " <> genExpr ctx func <>
       "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
@@ -638,9 +672,11 @@ genExpr ctx (ExprBinOp op l r) =
   -- Check if it's a qualified operator like "Array.elem"
   case String.indexOf (String.Pattern ".") op of
     Just idx ->
-      let modName = translateModuleName (String.take idx op)
+      -- Resolve module alias to full name
+      let modAlias = String.take idx op
+          fullModName = resolveModuleName ctx modAlias
           funcName = String.drop (idx + 1) op
-      in "call " <> atom modName <> ":" <> atom funcName <> "(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+      in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
     Nothing ->
       -- Special handling for short-circuit operators (not functions in Erlang)
       case op of
