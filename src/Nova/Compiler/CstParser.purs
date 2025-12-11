@@ -8,7 +8,6 @@ import Data.String as String
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
-import Control.Lazy as Control.Lazy
 import Nova.Compiler.Cst as Cst
 
 -- ============================================================================
@@ -24,6 +23,20 @@ newtype Parser a = Parser (TokenStream -> ParseResult a)
 
 runParser :: forall a. Parser a -> TokenStream -> ParseResult a
 runParser (Parser p) tokens = p tokens
+
+-- | Explicit bind for Parser - used to avoid do-notation for Core Erlang compatibility
+bindP :: forall a b. Parser a -> (a -> Parser b) -> Parser b
+bindP (Parser pa) f = Parser \ts -> case pa ts of
+  Left err -> Left err
+  Right (Tuple a rest) -> runParser (f a) rest
+
+-- | Explicit sequence for Parser - discards left result
+thenP :: forall a b. Parser a -> Parser b -> Parser b
+thenP pa pb = bindP pa (\_ -> pb)
+
+-- | Explicit pure for Parser
+pureP :: forall a. a -> Parser a
+pureP a = Parser \ts -> Right (Tuple a ts)
 
 -- ============================================================================
 -- Parser Combinators
@@ -51,10 +64,6 @@ instance bindParser :: Bind Parser where
 
 instance monadParser :: Monad Parser
 
--- | Lazy instance for recursion
-instance lazyParser :: Control.Lazy.Lazy (Parser a) where
-  defer f = Parser \ts -> runParser (f unit) ts
-
 -- | Alternative - try first, if fails try second
 infixl 3 alt as <|>
 
@@ -62,6 +71,10 @@ alt :: forall a. Parser a -> Parser a -> Parser a
 alt (Parser p1) (Parser p2) = Parser \ts -> case p1 ts of
   Right result -> Right result
   Left _ -> p2 ts
+
+-- | Defer parser evaluation to avoid infinite recursion in mutually recursive parsers
+deferP :: forall a. (Unit -> Parser a) -> Parser a
+deferP f = Parser \ts -> runParser (f unit) ts
 
 -- | Fail with message
 fail :: forall a. String -> Parser a
@@ -201,6 +214,26 @@ tokLowerName = do
       : "if" : "then" : "else" : "case" : "of" : "let" : "in" : "do" : "ado"
       : "forall" : "as" : "hiding" : "true" : "false" : Nil
 
+-- | Match lowercase name or hole (for unused variables like _foo)
+tokLowerNameOrHole :: Parser (Cst.Name Cst.Ident)
+tokLowerNameOrHole = do
+  Tuple tok name <- expectMap extractLowerOrHole
+  pure { token: tok, name: Cst.Ident name }
+  where
+    extractLowerOrHole (Cst.TokLowerName Nothing name) =
+      if isKeyword name then Nothing else Just name
+    extractLowerOrHole (Cst.TokHole name) = Just ("_" <> name)
+    extractLowerOrHole _ = Nothing
+
+    isKeyword s = List.elem s reservedKeywords
+
+    reservedKeywords :: List String
+    reservedKeywords =
+      "module" : "where" : "import" : "data" : "type" : "newtype"
+      : "class" : "instance" : "derive" : "foreign" : "infixl" : "infixr" : "infix"
+      : "if" : "then" : "else" : "case" : "of" : "let" : "in" : "do" : "ado"
+      : "forall" : "as" : "hiding" : "true" : "false" : Nil
+
 -- | Match qualified lowercase name, excluding keywords
 tokQualifiedLowerName :: Parser (Cst.QualifiedName Cst.Ident)
 tokQualifiedLowerName = do
@@ -208,7 +241,10 @@ tokQualifiedLowerName = do
   pure { token: tok, module: mod, name: Cst.Ident name }
   where
     extractQualLower (Cst.TokLowerName mod name) =
-      if isKeyword name then Nothing else Just (Tuple (map Cst.ModuleName mod) name)
+      let mappedMod = case mod of
+            Just m -> Just (Cst.ModuleName m)
+            Nothing -> Nothing
+      in if isKeyword name then Nothing else Just (Tuple mappedMod name)
     extractQualLower _ = Nothing
 
     isKeyword s = List.elem s reservedKeywords
@@ -235,7 +271,11 @@ tokQualifiedUpperName = do
   Tuple tok (Tuple mod name) <- expectMap extractQualUpper
   pure { token: tok, module: mod, name: Cst.Proper name }
   where
-    extractQualUpper (Cst.TokUpperName mod name) = Just (Tuple (map Cst.ModuleName mod) name)
+    extractQualUpper (Cst.TokUpperName mod name) =
+      let mappedMod = case mod of
+            Just m -> Just (Cst.ModuleName m)
+            Nothing -> Nothing
+      in Just (Tuple mappedMod name)
     extractQualUpper _ = Nothing
 
 -- | Match operator
@@ -244,7 +284,11 @@ tokOperator = do
   Tuple tok (Tuple mod op) <- expectMap extractOp
   pure { token: tok, module: mod, name: Cst.Operator op }
   where
-    extractOp (Cst.TokOperator mod op) = Just (Tuple (map Cst.ModuleName mod) op)
+    extractOp (Cst.TokOperator mod op) =
+      let mappedMod = case mod of
+            Just m -> Just (Cst.ModuleName m)
+            Nothing -> Nothing
+      in Just (Tuple mappedMod op)
     extractOp _ = Nothing
 
 -- | Match keyword by name
@@ -295,7 +339,7 @@ tokChar = expectMap extractChar
 
 -- | Optional parser
 optional :: forall a. Parser a -> Parser (Maybe a)
-optional p = (map (\x -> Just x) p) <|> pure Nothing
+optional p = bindP p (\x -> pureP (Just x)) <|> pureP Nothing
 
 -- | Many (zero or more)
 many :: forall a. Parser a -> Parser (List a)
@@ -369,11 +413,11 @@ layoutItems p = do
 
 -- | Parse a type (full type with arrows)
 parseType :: Parser (Cst.Type Void)
-parseType = Control.Lazy.defer \_ -> parseTypeForall <|> parseType1
+parseType = deferP \_ -> parseTypeForall <|> parseType1
 
 -- | Forall type: forall a b. Type
 parseTypeForall :: Parser (Cst.Type Void)
-parseTypeForall = Control.Lazy.defer \_ -> do
+parseTypeForall = deferP \_ -> do
   forallTok <- tokForall
   vars <- some parseTypeVarBinding
   dot <- tokDot
@@ -382,7 +426,7 @@ parseTypeForall = Control.Lazy.defer \_ -> do
 
 -- | Type with constraints: Constraint => Type
 parseType1 :: Parser (Cst.Type Void)
-parseType1 = Control.Lazy.defer \_ -> do
+parseType1 = deferP \_ -> do
   t <- parseType2
   rest <- optional (do
     arr <- tokRightFatArrow
@@ -394,7 +438,7 @@ parseType1 = Control.Lazy.defer \_ -> do
 
 -- | Type with arrows: Type -> Type
 parseType2 :: Parser (Cst.Type Void)
-parseType2 = Control.Lazy.defer \_ -> do
+parseType2 = deferP \_ -> do
   t <- parseType3
   rest <- optional (do
     arr <- tokRightArrow
@@ -406,7 +450,7 @@ parseType2 = Control.Lazy.defer \_ -> do
 
 -- | Type application: Type Type ...
 parseType3 :: Parser (Cst.Type Void)
-parseType3 = Control.Lazy.defer \_ -> do
+parseType3 = deferP \_ -> do
   head <- parseTypeAtom
   args <- many parseTypeAtom
   if List.null args
@@ -415,7 +459,7 @@ parseType3 = Control.Lazy.defer \_ -> do
 
 -- | Atomic types
 parseTypeAtom :: Parser (Cst.Type Void)
-parseTypeAtom = Control.Lazy.defer \_ ->
+parseTypeAtom = deferP \_ ->
   parseTypeVar
   <|> parseTypeCon
   <|> parseTypeParens
@@ -431,19 +475,19 @@ parseTypeCon = Cst.TypeConstructor <$> tokQualifiedUpperName
 
 -- | Parenthesized type
 parseTypeParens :: Parser (Cst.Type Void)
-parseTypeParens = Control.Lazy.defer \_ -> do
+parseTypeParens = deferP \_ -> do
   w <- wrapped tokLeftParen parseType tokRightParen
   pure (Cst.TypeParens w)
 
 -- | Record type { field :: Type, ... }
 parseTypeRecord :: Parser (Cst.Type Void)
-parseTypeRecord = Control.Lazy.defer \_ -> do
+parseTypeRecord = deferP \_ -> do
   w <- wrapped tokLeftBrace parseRow tokRightBrace
   pure (Cst.TypeRecord w)
 
 -- | Row type (inside braces)
 parseRow :: Parser (Cst.Row Void)
-parseRow = Control.Lazy.defer \_ -> do
+parseRow = deferP \_ -> do
   labels <- optionalSeparated parseRowLabel tokComma
   tail <- optional (do
     pipe <- tokPipe
@@ -452,7 +496,7 @@ parseRow = Control.Lazy.defer \_ -> do
   pure { labels, tail }
 
 parseRowLabel :: Parser (Cst.Labeled (Cst.Name Cst.Label) (Cst.Type Void))
-parseRowLabel = Control.Lazy.defer \_ -> do
+parseRowLabel = deferP \_ -> do
   label <- parseLabel
   sep <- tokDoubleColon
   ty <- parseType
@@ -475,11 +519,11 @@ parseLabel = do
 
 -- | Parse expression (entry point)
 parseExpr :: Parser (Cst.Expr Void)
-parseExpr = Control.Lazy.defer \_ -> parseExpr1
+parseExpr = deferP \_ -> parseExpr1
 
 -- | Expr1: Typed expression (lowest precedence)
 parseExpr1 :: Parser (Cst.Expr Void)
-parseExpr1 = Control.Lazy.defer \_ -> do
+parseExpr1 = deferP \_ -> do
   e <- parseExpr2
   ann <- optional (do
     dc <- tokDoubleColon
@@ -491,7 +535,7 @@ parseExpr1 = Control.Lazy.defer \_ -> do
 
 -- | Expr2: Infix operators and backtick expressions
 parseExpr2 :: Parser (Cst.Expr Void)
-parseExpr2 = Control.Lazy.defer \_ -> do
+parseExpr2 = deferP \_ -> do
   e <- parseExpr3
   -- Try to parse operator or backtick infix chains
   parseExpr2Rest e
@@ -550,7 +594,7 @@ parseExpr2Infix acc = do
 
 -- | Expr3: Negation (prefix -)
 parseExpr3 :: Parser (Cst.Expr Void)
-parseExpr3 = Control.Lazy.defer \_ -> parseNegate <|> parseExpr4
+parseExpr3 = deferP \_ -> parseNegate <|> parseExpr4
   where
     parseNegate = do
       neg <- satisfy isNegate
@@ -562,7 +606,7 @@ parseExpr3 = Control.Lazy.defer \_ -> parseNegate <|> parseExpr4
 
 -- | Expr4: Application
 parseExpr4 :: Parser (Cst.Expr Void)
-parseExpr4 = Control.Lazy.defer \_ -> do
+parseExpr4 = deferP \_ -> do
   head <- parseExpr5
   args <- many parseExpr5
   if List.null args
@@ -571,7 +615,7 @@ parseExpr4 = Control.Lazy.defer \_ -> do
 
 -- | Expr5: Control structures and atoms with postfix accessors
 parseExpr5 :: Parser (Cst.Expr Void)
-parseExpr5 = Control.Lazy.defer \_ -> do
+parseExpr5 = deferP \_ -> do
   e <- parseIf
        <|> parseLet
        <|> parseLambda
@@ -585,7 +629,7 @@ parseExpr5 = Control.Lazy.defer \_ -> do
 -- | Record accessor: e.field.subfield
 -- | Record update: e { field = value, field2 = value2 }
 parseRecordAccessor :: Cst.Expr Void -> Parser (Cst.Expr Void)
-parseRecordAccessor e = Control.Lazy.defer \_ -> do
+parseRecordAccessor e = deferP \_ -> do
   -- First try record update: e { field = value }
   updateResult <- optional parseRecordUpdatePart
   case updateResult of
@@ -630,7 +674,7 @@ parseRecordUpdateField = do
 
 -- | If-then-else
 parseIf :: Parser (Cst.Expr Void)
-parseIf = Control.Lazy.defer \_ -> do
+parseIf = deferP \_ -> do
   kw <- tokKeyword "if"
   condExpr <- parseExpr
   thenKw <- tokKeyword "then"
@@ -641,7 +685,7 @@ parseIf = Control.Lazy.defer \_ -> do
 
 -- | Let-in
 parseLet :: Parser (Cst.Expr Void)
-parseLet = Control.Lazy.defer \_ -> do
+parseLet = deferP \_ -> do
   kw <- tokKeyword "let"
   bindings <- layoutBlock parseLetBinding
   inKw <- tokKeyword "in"
@@ -650,7 +694,7 @@ parseLet = Control.Lazy.defer \_ -> do
 
 -- | Lambda
 parseLambda :: Parser (Cst.Expr Void)
-parseLambda = Control.Lazy.defer \_ -> do
+parseLambda = deferP \_ -> do
   bs <- tokBackslash
   binders <- some parseBinder
   arr <- tokRightArrow
@@ -659,7 +703,7 @@ parseLambda = Control.Lazy.defer \_ -> do
 
 -- | Case expression
 parseCase :: Parser (Cst.Expr Void)
-parseCase = Control.Lazy.defer \_ -> do
+parseCase = deferP \_ -> do
   kw <- tokKeyword "case"
   head <- separated parseExpr tokComma
   ofKw <- tokKeyword "of"
@@ -667,17 +711,17 @@ parseCase = Control.Lazy.defer \_ -> do
   pure (Cst.ExprCase { keyword: kw, head, "of": ofKw, branches })
 
 parseCaseBranch :: Parser (Tuple (Cst.Separated (Cst.Binder Void)) (Cst.Guarded Void))
-parseCaseBranch = Control.Lazy.defer \_ -> do
+parseCaseBranch = deferP \_ -> do
   pats <- separated parseBinder tokComma
   guarded <- parseGuardedArrow  -- Case branches use -> not =
   pure (Tuple pats guarded)
 
 -- | Guarded expression for case branches (uses -> instead of =)
 parseGuardedArrow :: Parser (Cst.Guarded Void)
-parseGuardedArrow = Control.Lazy.defer \_ -> parseUnconditionalArrow <|> parseGuardedExprsArrow
+parseGuardedArrow = deferP \_ -> parseUnconditionalArrow <|> parseGuardedExprsArrow
 
 parseUnconditionalArrow :: Parser (Cst.Guarded Void)
-parseUnconditionalArrow = Control.Lazy.defer \_ -> do
+parseUnconditionalArrow = deferP \_ -> do
   arrow <- tokRightArrow
   expr <- parseExpr
   -- Optional where clause
@@ -688,12 +732,12 @@ parseUnconditionalArrow = Control.Lazy.defer \_ -> do
   pure (Cst.Unconditional arrow { expr, bindings: whereClause })
 
 parseGuardedExprsArrow :: Parser (Cst.Guarded Void)
-parseGuardedExprsArrow = Control.Lazy.defer \_ -> do
+parseGuardedExprsArrow = deferP \_ -> do
   guards <- some parseGuardedExprArrow
   pure (Cst.Guarded guards)
 
 parseGuardedExprArrow :: Parser (Cst.GuardedExpr Void)
-parseGuardedExprArrow = Control.Lazy.defer \_ -> do
+parseGuardedExprArrow = deferP \_ -> do
   bar <- tokPipe
   patterns <- separated parsePatternGuard tokComma
   sep <- tokRightArrow
@@ -706,49 +750,49 @@ parseGuardedExprArrow = Control.Lazy.defer \_ -> do
 
 -- | Do block
 parseDo :: Parser (Cst.Expr Void)
-parseDo = Control.Lazy.defer \_ -> do
+parseDo = deferP \_ -> do
   kw <- tokKeyword "do"
   stmts <- layoutBlock parseDoStatement
   pure (Cst.ExprDo { keyword: kw, statements: stmts })
 
 parseDoStatement :: Parser (Cst.DoStatement Void)
-parseDoStatement = Control.Lazy.defer \_ ->
+parseDoStatement = deferP \_ ->
   parseDoLet
   <|> parseDoBind
   <|> parseDoDiscard
 
 parseDoLet :: Parser (Cst.DoStatement Void)
-parseDoLet = Control.Lazy.defer \_ -> do
+parseDoLet = deferP \_ -> do
   kw <- tokKeyword "let"
   bindings <- layoutBlock parseLetBinding
   pure (Cst.DoLet kw bindings)
 
 parseDoBind :: Parser (Cst.DoStatement Void)
-parseDoBind = Control.Lazy.defer \_ -> do
+parseDoBind = deferP \_ -> do
   binder <- parseBinder
   arr <- tokLeftArrow
   expr <- parseExpr
   pure (Cst.DoBind binder arr expr)
 
 parseDoDiscard :: Parser (Cst.DoStatement Void)
-parseDoDiscard = Control.Lazy.defer \_ -> Cst.DoDiscard <$> parseExpr
+parseDoDiscard = deferP \_ -> Cst.DoDiscard <$> parseExpr
 
 -- | Let binding
 parseLetBinding :: Parser (Cst.LetBinding Void)
-parseLetBinding = Control.Lazy.defer \_ ->
+parseLetBinding = deferP \_ ->
   parseLetSig
   <|> parseLetPattern  -- Pattern bindings like `Tuple a b = expr`
   <|> parseLetName
 
 parseLetSig :: Parser (Cst.LetBinding Void)
-parseLetSig = Control.Lazy.defer \_ -> do
+parseLetSig = deferP \_ -> do
   name <- tokLowerName
   dc <- tokDoubleColon
   ty <- parseType
   pure (Cst.LetBindingSignature { label: name, separator: dc, value: ty })
 
 parseLetPattern :: Parser (Cst.LetBinding Void)
-parseLetPattern = Control.Lazy.defer \_ -> do
+parseLetPattern = deferP \_ -> do
   -- Pattern binding: pattern = expr
   -- Can be a constructor pattern (Tuple a b) or record pattern ({ a, b })
   pat <- parseBinderCon <|> parseBinderRecord  -- Constructor or record pattern
@@ -761,18 +805,18 @@ parseLetPattern = Control.Lazy.defer \_ -> do
   pure (Cst.LetBindingPattern pat eq { expr, bindings: whereClause })
 
 parseLetName :: Parser (Cst.LetBinding Void)
-parseLetName = Control.Lazy.defer \_ -> do
-  name <- tokLowerName
+parseLetName = deferP \_ -> do
+  name <- tokLowerNameOrHole  -- Also accept _foo for unused bindings
   binders <- many parseBinderAtom
   guarded <- parseGuarded
   pure (Cst.LetBindingName { name, binders, guarded })
 
 -- | Guarded expression (= expr or guards)
 parseGuarded :: Parser (Cst.Guarded Void)
-parseGuarded = Control.Lazy.defer \_ -> parseUnconditional <|> parseGuardedExprs
+parseGuarded = deferP \_ -> parseUnconditional <|> parseGuardedExprs
 
 parseUnconditional :: Parser (Cst.Guarded Void)
-parseUnconditional = Control.Lazy.defer \_ -> do
+parseUnconditional = deferP \_ -> do
   eq <- tokEquals
   expr <- parseExpr
   -- Optional where clause
@@ -783,12 +827,12 @@ parseUnconditional = Control.Lazy.defer \_ -> do
   pure (Cst.Unconditional eq { expr, bindings: whereClause })
 
 parseGuardedExprs :: Parser (Cst.Guarded Void)
-parseGuardedExprs = Control.Lazy.defer \_ -> do
+parseGuardedExprs = deferP \_ -> do
   guards <- some parseGuardedExpr
   pure (Cst.Guarded guards)
 
 parseGuardedExpr :: Parser (Cst.GuardedExpr Void)
-parseGuardedExpr = Control.Lazy.defer \_ -> do
+parseGuardedExpr = deferP \_ -> do
   bar <- tokPipe
   patterns <- separated parsePatternGuard tokComma
   sep <- tokEquals
@@ -800,7 +844,7 @@ parseGuardedExpr = Control.Lazy.defer \_ -> do
   pure { bar, patterns, separator: sep, "where": { expr, bindings: whereClause } }
 
 parsePatternGuard :: Parser (Cst.PatternGuard Void)
-parsePatternGuard = Control.Lazy.defer \_ -> do
+parsePatternGuard = deferP \_ -> do
   -- Try pattern guard first: binder <- expr
   patBind <- optional (do
     b <- parseBinder
@@ -811,7 +855,7 @@ parsePatternGuard = Control.Lazy.defer \_ -> do
 
 -- | Atomic expressions
 parseExprAtom :: Parser (Cst.Expr Void)
-parseExprAtom = Control.Lazy.defer \_ ->
+parseExprAtom = deferP \_ ->
   parseExprIdent
   <|> parseExprConstructor
   <|> parseExprLiteral
@@ -880,20 +924,20 @@ parseExprBool = parseTrue <|> parseFalse
       pure (Cst.ExprBoolean tok false)
 
 parseExprArray :: Parser (Cst.Expr Void)
-parseExprArray = Control.Lazy.defer \_ -> do
+parseExprArray = deferP \_ -> do
   d <- delimited tokLeftSquare parseExpr tokComma tokRightSquare
   pure (Cst.ExprArray d)
 
 parseExprRecord :: Parser (Cst.Expr Void)
-parseExprRecord = Control.Lazy.defer \_ -> do
+parseExprRecord = deferP \_ -> do
   d <- delimited tokLeftBrace parseRecordField tokComma tokRightBrace
   pure (Cst.ExprRecord d)
 
 parseRecordField :: Parser (Cst.RecordLabeled (Cst.Expr Void))
-parseRecordField = Control.Lazy.defer \_ -> parseRecordFieldFull <|> parseRecordPun
+parseRecordField = deferP \_ -> parseRecordFieldFull <|> parseRecordPun
 
 parseRecordFieldFull :: Parser (Cst.RecordLabeled (Cst.Expr Void))
-parseRecordFieldFull = Control.Lazy.defer \_ -> do
+parseRecordFieldFull = deferP \_ -> do
   label <- parseLabel
   sep <- tokColon <|> tokEquals  -- Single colon (:) or equals (=) for record fields
   value <- parseExpr
@@ -904,7 +948,7 @@ parseRecordPun = Cst.RecordPun <$> tokLowerName
 
 -- | Parse operator section like (+) or parenthesized expression
 parseExprParens :: Parser (Cst.Expr Void)
-parseExprParens = Control.Lazy.defer \_ -> parseExprOpSection <|> parseExprParensNormal
+parseExprParens = deferP \_ -> parseExprOpSection <|> parseExprParensNormal
   where
     -- | Parse operator section: ( operator ) -> ExprOpName
     parseExprOpSection = do
@@ -914,7 +958,7 @@ parseExprParens = Control.Lazy.defer \_ -> parseExprOpSection <|> parseExprParen
       pure (Cst.ExprOpName op)
 
     -- | Parse normal parenthesized expression
-    parseExprParensNormal = Control.Lazy.defer \_ -> do
+    parseExprParensNormal = deferP \_ -> do
       w <- wrapped tokLeftParen parseExpr tokRightParen
       pure (Cst.ExprParens w)
 
@@ -923,11 +967,11 @@ parseExprParens = Control.Lazy.defer \_ -> parseExprOpSection <|> parseExprParen
 -- ============================================================================
 
 parseBinder :: Parser (Cst.Binder Void)
-parseBinder = Control.Lazy.defer \_ -> parseBinder1
+parseBinder = deferP \_ -> parseBinder1
 
 -- | Binder with operators
 parseBinder1 :: Parser (Cst.Binder Void)
-parseBinder1 = Control.Lazy.defer \_ -> do
+parseBinder1 = deferP \_ -> do
   b <- parseBinder2
   ops <- many (do
     op <- tokOperator
@@ -939,7 +983,7 @@ parseBinder1 = Control.Lazy.defer \_ -> do
 
 -- | Binder with type annotation
 parseBinder2 :: Parser (Cst.Binder Void)
-parseBinder2 = Control.Lazy.defer \_ -> do
+parseBinder2 = deferP \_ -> do
   b <- parseBinder3
   ann <- optional (do
     dc <- tokDoubleColon
@@ -951,10 +995,10 @@ parseBinder2 = Control.Lazy.defer \_ -> do
 
 -- | Constructor application
 parseBinder3 :: Parser (Cst.Binder Void)
-parseBinder3 = Control.Lazy.defer \_ -> parseBinderCon <|> parseBinderAtom
+parseBinder3 = deferP \_ -> parseBinderCon <|> parseBinderAtom
 
 parseBinderCon :: Parser (Cst.Binder Void)
-parseBinderCon = Control.Lazy.defer \_ -> do
+parseBinderCon = deferP \_ -> do
   con <- tokQualifiedUpperName
   -- Use 'some' to require at least one argument; nullary constructors fall through to parseBinderNullaryCon
   args <- some parseBinderAtom
@@ -962,7 +1006,7 @@ parseBinderCon = Control.Lazy.defer \_ -> do
 
 -- | Atomic binders
 parseBinderAtom :: Parser (Cst.Binder Void)
-parseBinderAtom = Control.Lazy.defer \_ ->
+parseBinderAtom = deferP \_ ->
   parseBinderWildcard
   <|> parseBinderHole
   <|> parseBinderNullaryCon
@@ -993,7 +1037,7 @@ parseBinderHole = do
   pure (Cst.BinderVar name)
 
 parseBinderVar :: Parser (Cst.Binder Void)
-parseBinderVar = Control.Lazy.defer \_ -> do
+parseBinderVar = deferP \_ -> do
   name <- tokLowerName
   -- Check for named pattern: name@pattern
   named <- optional (do
@@ -1051,20 +1095,20 @@ parseBinderBool = parseBinderTrue <|> parseBinderFalse
       pure (Cst.BinderBoolean tok false)
 
 parseBinderArray :: Parser (Cst.Binder Void)
-parseBinderArray = Control.Lazy.defer \_ -> do
+parseBinderArray = deferP \_ -> do
   d <- delimited tokLeftSquare parseBinder tokComma tokRightSquare
   pure (Cst.BinderArray d)
 
 parseBinderRecord :: Parser (Cst.Binder Void)
-parseBinderRecord = Control.Lazy.defer \_ -> do
+parseBinderRecord = deferP \_ -> do
   d <- delimited tokLeftBrace parseBinderRecordField tokComma tokRightBrace
   pure (Cst.BinderRecord d)
 
 parseBinderRecordField :: Parser (Cst.RecordLabeled (Cst.Binder Void))
-parseBinderRecordField = Control.Lazy.defer \_ -> parseBinderRecordFull <|> parseBinderRecordPun
+parseBinderRecordField = deferP \_ -> parseBinderRecordFull <|> parseBinderRecordPun
 
 parseBinderRecordFull :: Parser (Cst.RecordLabeled (Cst.Binder Void))
-parseBinderRecordFull = Control.Lazy.defer \_ -> do
+parseBinderRecordFull = deferP \_ -> do
   label <- parseLabel
   sep <- tokColon <|> tokEquals  -- Single colon (:) for record patterns
   value <- parseBinder
@@ -1074,7 +1118,7 @@ parseBinderRecordPun :: Parser (Cst.RecordLabeled (Cst.Binder Void))
 parseBinderRecordPun = Cst.RecordPun <$> tokLowerName
 
 parseBinderParens :: Parser (Cst.Binder Void)
-parseBinderParens = Control.Lazy.defer \_ -> do
+parseBinderParens = deferP \_ -> do
   w <- wrapped tokLeftParen parseBinder tokRightParen
   pure (Cst.BinderParens w)
 
@@ -1083,62 +1127,57 @@ parseBinderParens = Control.Lazy.defer \_ -> do
 -- ============================================================================
 
 -- | Parse a complete module
+-- Uses explicit bindP for Core Erlang compatibility
 parseModule :: Parser (Cst.Module Void)
-parseModule = do
-  kw <- tokKeyword "module"
-  name <- parseModuleName
-  exports <- optional parseExports
-  whereKw <- tokKeyword "where"
-  -- Layout start for module body
-  _ <- tokLayoutStart
-  -- Parse imports first (as many as there are)
-  imports <- parseModuleImports
-  -- Parse declarations
-  decls <- parseModuleDecls
-  -- Layout end
-  _ <- optional tokLayoutEnd
+parseModule =
+  bindP (tokKeyword "module") \kw ->
+  bindP parseModuleName \name ->
+  bindP (optional parseExports) \exports ->
+  bindP (tokKeyword "where") \whereKw ->
+  bindP tokLayoutStart \_ ->
+  bindP parseModuleImports \imports ->
+  bindP parseModuleDecls \decls ->
+  bindP (optional tokLayoutEnd) \_ ->
   let header = { keyword: kw, name, exports, where: whereKw, imports }
-  let body = { decls, trailingComments: Nil, end: { line: 0, column: 0 } }
-  pure { header, body }
+      body = { decls, trailingComments: Nil, end: { line: 0, column: 0 } }
+  in pureP { header, body }
 
 -- | Parse imports at the start of module body
 parseModuleImports :: Parser (List (Cst.ImportDecl Void))
 parseModuleImports = go Nil
   where
-    go acc = (do
-      imp <- parseImport
-      -- After an import, we might have a separator or we're done with imports
-      sep <- optional tokLayoutSep
-      case sep of
-        Just _ -> go (acc <> (imp : Nil))
-        Nothing -> pure (acc <> (imp : Nil))) <|> pure acc
+    go acc =
+      (bindP parseImport \imp ->
+       bindP (optional tokLayoutSep) \sep ->
+       case sep of
+         Just _ -> go (acc <> (imp : Nil))
+         Nothing -> pureP (acc <> (imp : Nil))) <|> pureP acc
 
 -- | Parse declarations after imports
 parseModuleDecls :: Parser (List (Cst.Declaration Void))
-parseModuleDecls = do
-  -- Consume layout separator before first declaration (if any)
-  _ <- optional tokLayoutSep
+parseModuleDecls =
+  bindP (optional tokLayoutSep) \_ ->
   go Nil
   where
-    go acc = (do
-      decl <- parseDeclaration
-      sep <- optional tokLayoutSep
-      case sep of
-        Just _ -> go (acc <> (decl : Nil))
-        Nothing -> pure (acc <> (decl : Nil))) <|> pure acc
+    go acc =
+      (bindP parseDeclaration \decl ->
+       bindP (optional tokLayoutSep) \sep ->
+       case sep of
+         Just _ -> go (acc <> (decl : Nil))
+         Nothing -> pureP (acc <> (decl : Nil))) <|> pureP acc
 
 parseModuleHeader :: Parser (Cst.ModuleHeader Void)
-parseModuleHeader = do
-  kw <- tokKeyword "module"
-  name <- parseModuleName
-  exports <- optional parseExports
-  whereKw <- tokKeyword "where"
-  pure { keyword: kw, name, exports, where: whereKw, imports: Nil }
+parseModuleHeader =
+  bindP (tokKeyword "module") \kw ->
+  bindP parseModuleName \name ->
+  bindP (optional parseExports) \exports ->
+  bindP (tokKeyword "where") \whereKw ->
+  pureP { keyword: kw, name, exports, where: whereKw, imports: Nil }
 
 parseModuleName :: Parser (Cst.Name Cst.ModuleName)
-parseModuleName = do
-  Tuple tok name <- expectMap extractModuleName
-  pure { token: tok, name }
+parseModuleName =
+  bindP (expectMap extractModuleName) \(Tuple tok name) ->
+  pureP { token: tok, name }
   where
     extractModuleName tok = case tok of
       Cst.TokUpperName (Just prefix) proper ->

@@ -14,7 +14,7 @@ import Data.Set as Set
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Foldable (foldr, foldl)
-import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, DataType, DataConstructor, ForeignImport, TypeExpr(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), ImportItem(..), GuardedExpr, GuardClause(..))
+import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, DataType, DataConstructor, ForeignImport, TypeExpr(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), ImportItem(..), GuardedExpr, GuardClause(..), NewtypeDecl)
 -- getUsedVars is defined locally below to avoid cross-module import issues
 
 -- Core Erlang Code Generation
@@ -52,7 +52,7 @@ getPreludeFunc :: String -> Maybe PreludeFuncInfo
 getPreludeFunc "show" = Just { mod: "erlang", func: "integer_to_list", arity: 1 }  -- Simple case: assume Int
 getPreludeFunc "foldl" = Just { mod: "lists", func: "foldl", arity: 3 }  -- Use lists implementation
 getPreludeFunc "foldr" = Just { mod: "lists", func: "foldr", arity: 3 }  -- Use lists implementation
-getPreludeFunc "map" = Just { mod: "lists", func: "map", arity: 2 }  -- Use lists implementation
+getPreludeFunc "map" = Just { mod: "lists", func: "map", arity: 2 }
 getPreludeFunc "filter" = Just { mod: "lists", func: "filter", arity: 2 }
 getPreludeFunc "length" = Just { mod: "erlang", func: "length", arity: 1 }
 getPreludeFunc "reverse" = Just { mod: "lists", func: "reverse", arity: 1 }
@@ -217,6 +217,8 @@ genModule m =
       allForeignImports = Array.mapMaybe getForeignFunc (Array.fromFoldable m.declarations)
       -- Collect all data types
       allDataTypes = Array.mapMaybe getDataType (Array.fromFoldable m.declarations)
+      -- Collect all newtypes
+      allNewtypes = Array.mapMaybe getNewtype (Array.fromFoldable m.declarations)
       -- Collect all imports
       allImports = Array.concatMap getImports (Array.fromFoldable m.declarations)
       importMap = Map.fromFoldable allImports
@@ -229,10 +231,14 @@ genModule m =
       uniqueFuncs = Array.nubByEq (\a b -> a.name == b.name && a.arity == b.arity)
                       (map (\g -> { name: g.name, arity: g.arity }) grouped)
       foreignExports = map (\fi -> { name: fi.functionName, arity: countTypeArity fi.typeSignature }) allForeignImports
-      -- Collect constructor exports from data types
-      constructorExports = Array.concatMap getConstructorExports allDataTypes
+      -- Collect constructor exports from data types and newtypes
+      constructorExports = Array.concatMap getConstructorExports allDataTypes <>
+                           Array.concatMap getNewtypeExports allNewtypes
       allExports = uniqueFuncs <> foreignExports <> constructorExports
-      exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) allExports)
+      -- Generate curried wrapper exports for all arities 0 to N-1
+      curriedExports = Array.concatMap genCurriedExports allExports
+      allExportsWithCurried = allExports <> curriedExports
+      exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) allExportsWithCurried)
       ctx = (emptyCtx modName) { moduleFuncs = Set.fromFoldable (map _.name allExports)
                                , funcArities = allExports
                                , imports = importMap
@@ -243,11 +249,14 @@ genModule m =
       foreignDefs = String.joinWith "\n\n" (map (genForeignImport m.name) allForeignImports)
       -- Generate data type comments and constructor functions
       dtDefs = String.joinWith "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) (Array.fromFoldable m.declarations))
+      -- Generate curried wrapper functions for all lower arities
+      curriedWrappers = String.joinWith "\n\n" (Array.concatMap genCurriedWrappers allExports)
   in "module " <> atom modName <> " [" <> exports <> "]\n" <>
      "  attributes []\n" <>
      dtDefs <> (if dtDefs == "" then "" else "\n\n") <>
      funcDefs <> (if funcDefs == "" || foreignDefs == "" then "" else "\n\n") <>
-     foreignDefs <> "\nend\n"
+     foreignDefs <> (if curriedWrappers == "" then "" else "\n\n") <>
+     curriedWrappers <> "\nend\n"
   where
     getFunc (DeclFunction f) = Just f
     getFunc _ = Nothing
@@ -255,11 +264,15 @@ genModule m =
     getForeignFunc _ = Nothing
     getDataType (DeclDataType dt) = Just dt
     getDataType _ = Nothing
+    getNewtype (DeclNewtype nt) = Just nt
+    getNewtype _ = Nothing
     getImports (DeclImport imp) = importItemsToTuples imp.moduleName (Array.fromFoldable imp.items)
     getImports _ = []
     -- Get constructor exports for a data type
     getConstructorExports dt =
       map (\c -> { name: c.name, arity: List.length c.fields }) (Array.fromFoldable dt.constructors)
+    -- Get constructor export for a newtype (always arity 1)
+    getNewtypeExports nt = [{ name: nt.constructor, arity: 1 }]
     -- Extract alias -> full module name mapping from import declarations
     getAliasMapping (DeclImport imp) =
       let fullName = imp.moduleName
@@ -274,7 +287,55 @@ genModule m =
       Just idx -> String.drop (idx + 1) name
       Nothing -> name
     genDeclNonFunc ctx (DeclDataType dt) = Just (genDataType ctx dt)
+    genDeclNonFunc _ (DeclNewtype nt) = Just (genNewtype nt)
     genDeclNonFunc _ _ = Nothing
+
+-- | Generate curried export entries for all arities from 0 to N-1
+genCurriedExports :: { name :: String, arity :: Int } -> Array { name :: String, arity :: Int }
+genCurriedExports { name, arity } =
+  if arity < 1 then []
+  else map (\a -> { name, arity: a }) (safeRange 0 (arity - 1))
+
+-- | Generate curried wrapper functions for all arities from 0 to N-1
+-- For a function foo/3, generates:
+--   foo/2 = fun(A0, A1) -> fun(A2) -> apply 'foo'/3(A0, A1, A2) end end
+--   foo/1 = fun(A0) -> fun(A1) -> fun(A2) -> apply 'foo'/3(A0, A1, A2) end end end
+--   foo/0 = fun() -> fun(A0) -> fun(A1) -> fun(A2) -> apply 'foo'/3(A0, A1, A2) end end end end
+genCurriedWrappers :: { name :: String, arity :: Int } -> Array String
+genCurriedWrappers { name, arity } =
+  if arity < 1 then []
+  else map (genCurriedWrapper name arity) (safeRange 0 (arity - 1))
+
+-- | Safe range that returns empty array if end < start
+safeRange :: Int -> Int -> Array Int
+safeRange start end = if end < start then [] else Array.range start end
+
+-- | Generate a single curried wrapper at a specific lower arity
+-- Core Erlang requires `let <Var> = fun ... in Var` for returned functions
+genCurriedWrapper :: String -> Int -> Int -> String
+genCurriedWrapper name fullArity wrapperArity =
+  let -- Parameters for the wrapper function
+      wrapperParams = map (\i -> "_A" <> show i) (safeRange 0 (wrapperArity - 1))
+      wrapperParamsStr = if wrapperArity == 0 then "" else String.joinWith ", " wrapperParams
+      -- Remaining parameters that become nested lambdas
+      remainingCount = fullArity - wrapperArity
+      remainingParams = map (\i -> "_A" <> show (wrapperArity + i)) (safeRange 0 (remainingCount - 1))
+      -- All parameters for the inner call
+      allParams = wrapperParams <> remainingParams
+      allParamsStr = String.joinWith ", " allParams
+      -- Build nested let/fun structure from inside out
+      innerCall = "apply " <> atom name <> "/" <> show fullArity <> "(" <> allParamsStr <> ")"
+      -- Build nested let <_Fi> = fun (param) -> body in _Fi
+      buildNested :: Int -> String -> String -> String
+      buildNested idx param body =
+        let varName = "_F" <> show idx
+        in "let <" <> varName <> "> = fun (" <> param <> ") ->\n        " <> body <> "\n      in " <> varName
+      -- Fold from last remaining param to first, building nested structure
+      nestedLets = Array.foldl (\{body, idx} param ->
+        {body: buildNested idx param body, idx: idx - 1})
+        {body: innerCall, idx: remainingCount - 1}
+        (Array.reverse remainingParams)
+  in atom name <> "/" <> show wrapperArity <> " =\n  fun (" <> wrapperParamsStr <> ") ->\n    " <> nestedLets.body
 
 -- | Convert import items to (name, module) tuples
 importItemsToTuples :: String -> Array ImportItem -> Array (Tuple String String)
@@ -449,6 +510,15 @@ genDataType _ dt =
 constructorTag :: String -> String
 constructorTag name = name
 
+-- | Generate newtype constructor function
+genNewtype :: NewtypeDecl -> String
+genNewtype nt =
+  let comment = "% Newtype: " <> nt.name <> "\n" <>
+                "% Constructor: " <> nt.constructor
+      -- Newtype constructor just wraps the value in a tuple
+      body = "'" <> nt.constructor <> "'/1 =\n  fun (V0) ->\n    {'" <> nt.constructor <> "', V0}"
+  in comment <> "\n\n" <> body
+
 -- | Generate pattern (wrapper that hides counter)
 genPattern :: Pattern -> String
 genPattern pat = (genPatternWithCounter pat 0).str
@@ -515,19 +585,20 @@ genExpr :: CoreCtx -> Expr -> String
 genExpr _ (ExprLit lit) = genLiteral lit
 
 genExpr ctx (ExprVar name) =
-  -- Handle 'otherwise' as 'true'
+  -- Handle 'otherwise' as 'true' and 'unit' as atom
   if name == "otherwise"
   then "'true'"
+  else if name == "unit"
+  then "'unit'"
   else
   -- Check if it's a qualified name (contains a dot like "Array.elem")
   case String.indexOf (String.Pattern ".") name of
     Just idx ->
-      -- Qualified name - wrap in lambda for use as first-class value
-      -- Resolve module alias to full name
+      -- Qualified name - call with no args to get value or curried wrapper
       let modAlias = String.take idx name
           fullModName = resolveModuleName ctx modAlias
           funcName = String.drop (idx + 1) name
-      in "fun (_Qv0, _Qv1) -> call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "(_Qv0, _Qv1)"
+      in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
     Nothing ->
       if Set.member name ctx.locals
       then coreVar name
@@ -540,22 +611,19 @@ genExpr ctx (ExprVar name) =
              "(" <> paramsStr <> ")"
         Nothing ->
           if Set.member name ctx.moduleFuncs
-          then -- Module function reference
+          then -- Module function reference as value - wrap in lambda
                let arity = lookupArity name ctx
                in if arity == 0
-                  -- 0-arity = value, just call it to get the value
                   then "apply " <> atom name <> "/0()"
-                  -- Higher arity = function, wrap in lambda for first-class use
-                  else let paramNames = Array.range 0 (arity - 1) # map (\i -> "_Mf" <> show i)
+                  else let paramNames = safeRange 0 (arity - 1) # map (\i -> "_Mf" <> show i)
                            paramsStr = String.joinWith ", " paramNames
                        in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show arity <>
                           "(" <> paramsStr <> ")"
           else case Map.lookup name ctx.imports of
-               -- Imported value/function - when referenced as a value (not applied),
-               -- wrap in a lambda since we can't call it without knowing arity
+               -- Imported value/function as value - call /0 to get value or curried wrapper
                Just srcMod ->
                  let modName = translateModuleName srcMod
-                 in "fun (X) -> call " <> atom modName <> ":" <> atom name <> "(X)"
+                 in "call " <> atom modName <> ":" <> atom name <> "()"
                Nothing ->
                  if isConstructorName name
                  -- Nullary data constructor - use as atom
@@ -567,10 +635,10 @@ genExpr ctx (ExprVar name) =
       c -> c >= "A" && c <= "Z"
 
 genExpr ctx (ExprQualified modAlias funcName) =
-  -- When used as a value (not applied), wrap in a lambda
-  -- Resolve module alias to full name
+  -- When used as a value (not applied), call with no arguments
+  -- This handles constants and will use curried wrapper if more args needed
   let fullModName = resolveModuleName ctx modAlias
-  in "fun (X) -> call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "(X)"
+  in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
 
 genExpr ctx (ExprApp f arg) =
   let { func, args } = collectArgs (ExprApp f arg)
@@ -588,8 +656,10 @@ genExpr ctx (ExprApp f arg) =
         Nothing ->
           -- Handle special monad functions
           if name == "pure"
-          then -- pure is Right for Either monad
-               "{" <> atom "Right" <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
+          then -- pure is Right for Either monad, but pureP for Parser monad
+               if ctx.moduleName == "Nova.Compiler.CstParser"
+               then "apply 'pureP'/1(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
+               else "{" <> atom "Right" <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
           else
           -- Check if it's a prelude function
           case getPreludeFunc name of
@@ -747,6 +817,27 @@ genExpr ctx (ExprBinOp "<>" l r) =
 genExpr ctx (ExprBinOp "#" l r) =
   "let <_HashF> = " <> genExpr ctx r <>
   " in apply _HashF(" <> genExpr ctx l <> ")"
+
+-- The $ operator is function application: f $ x = f x
+genExpr ctx (ExprBinOp "$" l r) =
+  "let <_DollarF> = " <> genExpr ctx l <>
+  " in apply _DollarF(" <> genExpr ctx r <> ")"
+
+-- The <|> operator is Parser alternative - call alt function
+genExpr ctx (ExprBinOp "<|>" l r) =
+  "apply 'alt'/2(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+
+-- The <$> operator is functor map - for Parser: f <$> p = bindP(p, \x -> pureP(f x))
+genExpr ctx (ExprBinOp "<$>" l r) =
+  if ctx.moduleName == "Nova.Compiler.CstParser"
+  then "apply 'bindP'/2(" <> genExpr ctx r <> ", fun (_MapX) ->\n      apply 'pureP'/1(apply " <> genExpr ctx l <> "(_MapX)))"
+  else "call 'erlang':'<$>'(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+
+-- The *> operator is sequence-right - for Parser: p1 *> p2 = bindP(p1, \_ -> p2)
+genExpr ctx (ExprBinOp "*>" l r) =
+  if ctx.moduleName == "Nova.Compiler.CstParser"
+  then "apply 'thenP'/2(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+  else "call 'erlang':'*>'(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
 
 genExpr ctx (ExprBinOp op l r) =
   -- Check if it's a qualified operator like "Array.elem"
@@ -1274,21 +1365,56 @@ genCaseClause ctx clause fallback =
   in "      <" <> pat <> "> when 'true' ->\n        " <> body
 
 -- | Generate do-notation (desugar to nested lets/applies)
--- Handles both Maybe (Nothing/Just) and Either (Left/Right) monads
+-- Handles Parser monad (in CstParser) and Maybe/Either monads elsewhere
 genDoStmts :: CoreCtx -> Array DoStatement -> String
-genDoStmts ctx stmts = case Array.uncons stmts of
+genDoStmts ctx stmts =
+  if isParserModule ctx.moduleName
+  then genDoStmtsParser ctx stmts
+  else genDoStmtsMaybeEither ctx stmts
+  where
+    isParserModule modName = modName == "Nova.Compiler.CstParser"
+
+-- | Generate do-notation for Parser monad using bindP
+genDoStmtsParser :: CoreCtx -> Array DoStatement -> String
+genDoStmtsParser ctx stmts = case Array.uncons stmts of
+  Nothing -> "apply 'pureP'/1('unit')"
+  Just { head: DoExpr e, tail: [] } -> genExpr ctx e
+  Just { head: DoExpr e, tail: rest } ->
+    -- For Parser: e *> rest becomes bindP(e, \_ -> rest)
+    let { var, ctx: ctx' } = freshVar ctx
+        restCode = genDoStmtsParser ctx' rest
+    in "apply 'bindP'/2(" <> genExpr ctx e <> ", fun (" <> var <> ") ->\n      " <> restCode <> ")"
+  Just { head: DoBind pat e, tail: rest } ->
+    let ctxWithBind = addLocalsFromPattern pat ctx
+        bindExpr = genExpr ctx e
+        patCode = genPattern pat
+    in if isSimplePattern pat
+       then -- Simple pattern: use directly in fun parameter
+            let restCode = genDoStmtsParser ctxWithBind rest
+            in "apply 'bindP'/2(" <> bindExpr <> ", fun (" <> patCode <> ") ->\n      " <> restCode <> ")"
+       else -- Complex pattern: use temp var and case expression
+            let { var, ctx: ctx' } = freshVar ctx
+                ctxWithBind' = addLocalsFromPattern pat ctx'
+                restCode = genDoStmtsParser ctxWithBind' rest
+            in "apply 'bindP'/2(" <> bindExpr <> ", fun (" <> var <> ") ->\n      case " <> var <> " of\n        <" <> patCode <> "> when 'true' -> " <> restCode <> "\n      end)"
+  Just { head: DoLet binds, tail: rest } ->
+    genDoLetWithBodyParser ctx (Array.fromFoldable binds) (Array.fromFoldable rest)
+
+-- | Generate do-notation for Maybe/Either monads
+genDoStmtsMaybeEither :: CoreCtx -> Array DoStatement -> String
+genDoStmtsMaybeEither ctx stmts = case Array.uncons stmts of
   Nothing -> atom "unit"
   Just { head: DoExpr e, tail: [] } -> genExpr ctx e
   Just { head: DoExpr e, tail: rest } ->
     let { var, ctx: ctx' } = freshVar ctx
-    in "let <" <> var <> "> = " <> genExpr ctx e <> "\n      in " <> genDoStmts ctx' rest
+    in "let <" <> var <> "> = " <> genExpr ctx e <> "\n      in " <> genDoStmtsMaybeEither ctx' rest
   Just { head: DoBind pat e, tail: rest } ->
     let ctxWithBind = addLocalsFromPattern pat ctx
         bindExpr = genExpr ctx e
         -- Handle both Maybe and Either monads:
         -- Maybe: Nothing propagates, {Just, x} extracts x
         -- Either: {Left, err} propagates, {Right, x} extracts x
-        restCode = genDoStmts ctxWithBind rest
+        restCode = genDoStmtsMaybeEither ctxWithBind rest
         patCode = genPattern pat
     in "case " <> bindExpr <> " of\n" <>
        "      <'Nothing'> when 'true' ->\n        'Nothing'\n" <>
@@ -1326,6 +1452,39 @@ genDoLetWithBody ctx binds rest =
           -- Continuation is the rest of the binds plus remaining do statements
           continuation = genDoLetWithBody newCtx moreBinds rest
           continuationComplex = genDoLetWithBody nextCtx moreBinds rest
+      in if isRec
+         then "letrec " <> atom funcName <> "/" <> show arity <> " = " <> val <> "\n      in " <> continuation
+         else if isSimplePattern bind.pattern
+              then "let <" <> pat <> "> = " <> val <> "\n      in " <> continuation
+              else "let <" <> tmpVar <> "> = " <> val <> "\n      in case " <> tmpVar <> " of\n        <" <> pat <> "> when 'true' -> " <> continuationComplex <> "\n      end"
+
+-- | Generate DoLet for Parser context (same logic, but uses genDoStmtsParser for continuation)
+genDoLetWithBodyParser :: CoreCtx -> Array LetBind -> Array DoStatement -> String
+genDoLetWithBodyParser ctx binds rest =
+  case Array.uncons binds of
+    Nothing -> genDoStmtsParser ctx rest
+    Just { head: bind, tail: moreBinds } ->
+      let pat = genPattern bind.pattern
+          bindNames = getPatternVarName bind.pattern
+          isRec = isRecursiveBind bind
+          arity = getLambdaArity bind.value
+          ctxForVal = case bindNames of
+            Just n | isRec ->
+              ctx { moduleFuncs = Set.insert n ctx.moduleFuncs
+                  , funcArities = ctx.funcArities <> [{ name: n, arity: arity }]
+                  }
+            _ -> ctx
+          val = genExpr ctxForVal bind.value
+          newCtx = if isRec
+                   then ctxForVal
+                   else addLocalsFromPattern bind.pattern ctx
+          funcName = case bindNames of
+            Just n -> toSnakeCase n
+            Nothing -> "_anon"
+          tmpVar = "_DLet" <> show newCtx.varCounter
+          nextCtx = newCtx { varCounter = newCtx.varCounter + 1 }
+          continuation = genDoLetWithBodyParser newCtx moreBinds rest
+          continuationComplex = genDoLetWithBodyParser nextCtx moreBinds rest
       in if isRec
          then "letrec " <> atom funcName <> "/" <> show arity <> " = " <> val <> "\n      in " <> continuation
          else if isSimplePattern bind.pattern
