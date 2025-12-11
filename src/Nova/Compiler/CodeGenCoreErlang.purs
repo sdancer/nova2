@@ -445,12 +445,9 @@ genDataType _ dt =
                  else "{'" <> tag <> "', " <> String.joinWith ", " params <> "}"
       in "'" <> c.name <> "'/" <> show arity <> " =\n  fun (" <> paramStr <> ") ->\n    " <> body
 
--- | Convert constructor name to tag (lowercase with underscore prefix)
+-- | Convert constructor name to tag - preserve original name for 1:1 mapping
 constructorTag :: String -> String
-constructorTag name =
-  "_" <> toLowerFirst name
-  where
-    toLowerFirst s = String.toLower (String.take 1 s) <> String.drop 1 s
+constructorTag name = name
 
 -- | Generate pattern (wrapper that hides counter)
 genPattern :: Pattern -> String
@@ -592,7 +589,7 @@ genExpr ctx (ExprApp f arg) =
           -- Handle special monad functions
           if name == "pure"
           then -- pure is Right for Either monad
-               "{" <> atom "_right" <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
+               "{" <> atom "Right" <> ", " <> String.joinWith ", " (map (genExpr ctx) args) <> "}"
           else
           -- Check if it's a prelude function
           case getPreludeFunc name of
@@ -1294,7 +1291,7 @@ genCaseClause ctx clause fallback =
   in "      <" <> pat <> "> when 'true' ->\n        " <> body
 
 -- | Generate do-notation (desugar to nested lets/applies)
--- Handles both Maybe (_nothing/_just) and Either (_left/_right) monads
+-- Handles both Maybe (Nothing/Just) and Either (Left/Right) monads
 genDoStmts :: CoreCtx -> Array DoStatement -> String
 genDoStmts ctx stmts = case Array.uncons stmts of
   Nothing -> atom "unit"
@@ -1306,15 +1303,15 @@ genDoStmts ctx stmts = case Array.uncons stmts of
     let ctxWithBind = addLocalsFromPattern pat ctx
         bindExpr = genExpr ctx e
         -- Handle both Maybe and Either monads:
-        -- Maybe: _nothing propagates, {_just, x} extracts x
-        -- Either: {_left, err} propagates, {_right, x} extracts x
+        -- Maybe: Nothing propagates, {Just, x} extracts x
+        -- Either: {Left, err} propagates, {Right, x} extracts x
         restCode = genDoStmts ctxWithBind rest
         patCode = genPattern pat
     in "case " <> bindExpr <> " of\n" <>
-       "      <'_nothing'> when 'true' ->\n        '_nothing'\n" <>
-       "      <{'_left', _Err}> when 'true' ->\n        {'_left', _Err}\n" <>
-       "      <{'_just', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n" <>
-       "      <{'_right', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n      end"
+       "      <'Nothing'> when 'true' ->\n        'Nothing'\n" <>
+       "      <{'Left', _Err}> when 'true' ->\n        {'Left', _Err}\n" <>
+       "      <{'Just', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n" <>
+       "      <{'Right', " <> patCode <> "}> when 'true' ->\n        " <> restCode <> "\n      end"
   Just { head: DoLet binds, tail: rest } ->
     genDoLetWithBody ctx (Array.fromFoldable binds) (Array.fromFoldable rest)
 
@@ -1400,19 +1397,9 @@ translateOp "&&" = "andalso"
 translateOp "||" = "orelse"
 translateOp op = op
 
--- | Convert to snake_case
+-- | Preserve original name for 1:1 mapping with source code
 toSnakeCase :: String -> String
-toSnakeCase s =
-  let chars = SCU.toCharArray s
-  in SCU.fromCharArray (Array.concatMap convertChar chars)
-  where
-    convertChar c =
-      if isUpper c
-      then ['_', toLower c]
-      else [c]
-    isUpper c = c >= 'A' && c <= 'Z'
-    toLower c =
-      fromMaybe c (SCU.charAt 0 (String.toLower (SCU.singleton c)))
+toSnakeCase s = s
 
 -- | Generate curried apply for over-application
 -- When a function is called with more args than its declared arity,
@@ -1527,9 +1514,9 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.String.CodeUnits" "toCharArrayImpl" -> p 0  -- identity: strings are char arrays
     Tuple "Data.String.CodeUnits" "fromCharArrayImpl" -> p 0  -- identity
     Tuple "Data.String.CodeUnits" "charAtImpl" ->
-      "case call 'erlang':'>'(" <> p 0 <> ", call 'erlang':'length'(" <> p 1 <> ")) of\n        <'true'> when 'true' -> '_nothing'\n        <'false'> when 'true' -> {'_just', call 'lists':'nth'(call 'erlang':'+'(" <> p 0 <> ", 1), " <> p 1 <> ")}\n      end"
+      "case call 'erlang':'>'(" <> p 0 <> ", call 'erlang':'length'(" <> p 1 <> ")) of\n        <'true'> when 'true' -> 'Nothing'\n        <'false'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(" <> p 0 <> ", 1), " <> p 1 <> ")}\n      end"
     Tuple "Data.String.CodeUnits" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[H|T]> when 'true' -> {'_just', {'head', H, 'tail', T}}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
 
     -- ===== Data.String =====
     Tuple "Data.String" "lengthImpl" -> "call 'erlang':'length'(" <> p 0 <> ")"
@@ -1571,15 +1558,15 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.Array" "consImpl" -> "[" <> p 0 <> "|" <> p 1 <> "]"
     Tuple "Data.Array" "snocImpl" -> "call 'lists':'append'(" <> p 0 <> ", [" <> p 1 <> "])"
     Tuple "Data.Array" "headImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[H|_]> when 'true' -> {'_just', H}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|_]> when 'true' -> {'Just', H}\n      end"
     Tuple "Data.Array" "tailImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[_|T]> when 'true' -> {'_just', T}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[_|T]> when 'true' -> {'Just', T}\n      end"
     Tuple "Data.Array" "lastImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <_> when 'true' -> {'_just', call 'lists':'last'(" <> p 0 <> ")}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <_> when 'true' -> {'Just', call 'lists':'last'(" <> p 0 <> ")}\n      end"
     Tuple "Data.Array" "initImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <_> when 'true' -> {'_just', call 'lists':'droplast'(" <> p 0 <> ")}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <_> when 'true' -> {'Just', call 'lists':'droplast'(" <> p 0 <> ")}\n      end"
     Tuple "Data.Array" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[H|T]> when 'true' -> {'_just', {'head', H, 'tail', T}}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
     Tuple "Data.Array" "takeImpl" -> "call 'lists':'sublist'(" <> p 1 <> ", " <> p 0 <> ")"
     Tuple "Data.Array" "dropImpl" ->
       "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
@@ -1588,7 +1575,7 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.Array" "rangeImpl" -> "call 'lists':'seq'(" <> p 0 <> ", " <> p 1 <> ")"
     Tuple "Data.Array" "singletonImpl" -> "[" <> p 0 <> "]"
     Tuple "Data.Array" "indexImpl" ->
-      "let <Arr> = " <> p 0 <> " in\n        let <Idx> = " <> p 1 <> " in\n          case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, call 'erlang':'length'(Arr))) of\n            <'true'> when 'true' -> '_nothing'\n            <'false'> when 'true' -> {'_just', call 'lists':'nth'(call 'erlang':'+'(Idx, 1), Arr)}\n          end"
+      "let <Arr> = " <> p 0 <> " in\n        let <Idx> = " <> p 1 <> " in\n          case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, call 'erlang':'length'(Arr))) of\n            <'true'> when 'true' -> 'Nothing'\n            <'false'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(Idx, 1), Arr)}\n          end"
     Tuple "Data.Array" "replicateImpl" -> "call 'lists':'duplicate'(" <> p 0 <> ", " <> p 1 <> ")"
     Tuple "Data.Array" "mapImpl" -> "call 'lists':'map'(" <> p 0 <> ", " <> p 1 <> ")"
     Tuple "Data.Array" "filterImpl" -> "call 'lists':'filter'(" <> p 0 <> ", " <> p 1 <> ")"
@@ -1614,11 +1601,11 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.List" "dropImpl" ->
       "case " <> p 0 <> " of\n        <0> when 'true' -> " <> p 1 <> "\n        <N> when 'true' -> call 'lists':'nthtail'(N, " <> p 1 <> ")\n      end"
     Tuple "Data.List" "headImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[H|_]> when 'true' -> {'_just', H}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|_]> when 'true' -> {'Just', H}\n      end"
     Tuple "Data.List" "tailImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[_|T]> when 'true' -> {'_just', T}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[_|T]> when 'true' -> {'Just', T}\n      end"
     Tuple "Data.List" "unconsImpl" ->
-      "case " <> p 0 <> " of\n        <[]> when 'true' -> '_nothing'\n        <[H|T]> when 'true' -> {'_just', {'head', H, 'tail', T}}\n      end"
+      "case " <> p 0 <> " of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
     Tuple "Data.List" "fromFoldableImpl" -> p 0  -- identity for Array -> List
     Tuple "Data.List" "toUnfoldableImpl" -> p 0  -- identity for List -> Array
     Tuple "Data.List" "rangeImpl" -> "call 'lists':'seq'(" <> p 0 <> ", " <> p 1 <> ")"
@@ -1629,7 +1616,7 @@ lookupFFIBody modName funcName _arity params =
     Tuple "Data.Map" "singletonImpl" -> "call 'maps':'from_list'([{" <> p 0 <> ", " <> p 1 <> "}])"
     Tuple "Data.Map" "insertImpl" -> "call 'maps':'put'(" <> p 0 <> ", " <> p 1 <> ", " <> p 2 <> ")"
     Tuple "Data.Map" "lookupImpl" ->
-      "case call 'maps':'find'(" <> p 0 <> ", " <> p 1 <> ") of\n        <{'ok', V}> when 'true' -> {'_just', V}\n        <'error'> when 'true' -> '_nothing'\n      end"
+      "case call 'maps':'find'(" <> p 0 <> ", " <> p 1 <> ") of\n        <{'ok', V}> when 'true' -> {'Just', V}\n        <'error'> when 'true' -> 'Nothing'\n      end"
     Tuple "Data.Map" "memberImpl" -> "call 'maps':'is_key'(" <> p 0 <> ", " <> p 1 <> ")"
     Tuple "Data.Map" "deleteImpl" -> "call 'maps':'remove'(" <> p 0 <> ", " <> p 1 <> ")"
     Tuple "Data.Map" "sizeImpl" -> "call 'maps':'size'(" <> p 0 <> ")"

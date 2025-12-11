@@ -1,7 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const { parseModuleCst } = require('../output/Nova.Compiler.CstPipeline/index.js');
-const { genModule } = require('../output/Nova.Compiler.CodeGenCoreErlang/index.js');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const { parseModuleCst } = await import('../output/Nova.Compiler.CstPipeline/index.js');
+const { genModule } = await import('../output/Nova.Compiler.CodeGenCoreErlang/index.js');
 
 // Recursively find all .purs files
 function findPursFiles(dir) {
@@ -179,9 +184,8 @@ let success = 0, codegenErrors = 0;
 for (const { filePath, ast } of sortedModules) {
   try {
     const code = genModule(ast);
-    // Use module name for output file (replace . with _)
-    const outName = ast.name.replace(/\./g, '_').toLowerCase();
-    const outFile = path.join(outDir, outName + '.core');
+    // Use exact module name for output file (Erlang allows dots in quoted atoms)
+    const outFile = path.join(outDir, ast.name + '.core');
     fs.writeFileSync(outFile, code);
     console.log('Generated ' + outFile + ' (' + code.split('\n').length + ' lines)');
     success++;
