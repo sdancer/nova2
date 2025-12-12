@@ -113,3 +113,63 @@ foldr :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foldr f acc xs = foldrImpl f acc xs
 
 foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b
+
+-- | Unit value
+unit :: Unit
+unit = Unit
+
+-- | Apply a function
+apply :: forall a b. (a -> b) -> a -> b
+apply f x = f x
+
+-- | Apply with arguments flipped
+applyFlipped :: forall a b. a -> (a -> b) -> b
+applyFlipped x f = f x
+
+-- | Void - discard a value, returning Unit
+void :: forall a. a -> Unit
+void _ = Unit
+
+-- | Error/crash with message
+unsafeCrashWith :: forall a. String -> a
+unsafeCrashWith msg = unsafeCrashWithImpl msg
+
+foreign import unsafeCrashWithImpl :: forall a. String -> a = "call 'erlang':'error'($0)"
+
+-- | Unsafe coerce between types
+unsafeCoerce :: forall a b. a -> b
+unsafeCoerce x = unsafeCoerceImpl x
+
+foreign import unsafeCoerceImpl :: forall a b. a -> b = "$0"
+
+-- | Bounded class for Int
+top :: Int
+top = topImpl
+
+foreign import topImpl :: Int = "9223372036854775807"
+
+bottom :: Int
+bottom = bottomImpl
+
+foreign import bottomImpl :: Int = "-9223372036854775808"
+
+-- | Not function for Boolean
+not :: Boolean -> Boolean
+not true = false
+not false = true
+
+-- | Boolean conjunction
+conj :: Boolean -> Boolean -> Boolean
+conj true true = true
+conj _ _ = false
+
+-- | Boolean disjunction
+disj :: Boolean -> Boolean -> Boolean
+disj false false = false
+disj _ _ = true
+
+-- | String concatenation
+concatStrings :: String -> String -> String
+concatStrings a b = concatStringsImpl a b
+
+foreign import concatStringsImpl :: String -> String -> String = "call 'erlang':'++'($0, $1)"
