@@ -590,6 +590,90 @@ defmodule Nova.Set do
   end
 end
 
+defmodule Nova.GenServer do
+  @moduledoc """
+  GenServer-like pattern for Nova.
+  Provides message passing and process management.
+  """
+
+  @doc """
+  Start a new server process with initial state and callbacks.
+  Returns {:Right, pid} on success.
+  """
+  def start_link(initial_state, callbacks) do
+    handle_call = Map.get(callbacks, :handleCall)
+    handle_cast = Map.get(callbacks, :handleCast)
+
+    pid = spawn(fn -> loop(initial_state, handle_call, handle_cast) end)
+    {:Right, pid}
+  end
+
+  defp loop(state, handle_call, handle_cast) do
+    receive do
+      {:"$call", from, msg} ->
+        result = handle_call.(msg).(state)
+        reply = Map.get(result, :reply)
+        new_state = Map.get(result, :newState)
+        send(from, {:"$reply", reply})
+        loop(new_state, handle_call, handle_cast)
+
+      {:"$cast", msg} ->
+        result = handle_cast.(msg).(state)
+        new_state = Map.get(result, :newState)
+        loop(new_state, handle_call, handle_cast)
+
+      :"$stop" ->
+        :stopped
+    end
+  end
+
+  @doc """
+  Make a synchronous call to the server.
+  """
+  def call(server, msg) do
+    send(server, {:"$call", self(), msg})
+    receive do
+      {:"$reply", reply} -> reply
+    after
+      5000 -> raise "timeout"
+    end
+  end
+
+  @doc """
+  Make a synchronous call with timeout.
+  Returns {:Just, reply} or :Nothing on timeout.
+  """
+  def call_timeout(server, msg, timeout) do
+    send(server, {:"$call", self(), msg})
+    receive do
+      {:"$reply", reply} -> {:Just, reply}
+    after
+      timeout -> :Nothing
+    end
+  end
+
+  @doc """
+  Send an asynchronous cast to the server.
+  """
+  def cast(server, msg) do
+    send(server, {:"$cast", msg})
+    :unit
+  end
+
+  @doc """
+  Stop the server.
+  """
+  def stop(server) do
+    send(server, :"$stop")
+    :unit
+  end
+
+  @doc """
+  Check if server is alive.
+  """
+  def is_alive(server), do: Process.alive?(server)
+end
+
 defmodule Nova.String do
   def length(s), do: String.length(s)
   def null(s), do: s == ""
