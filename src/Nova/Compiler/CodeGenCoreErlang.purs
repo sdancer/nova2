@@ -609,7 +609,7 @@ genExpr ctx (ExprVar name) =
       if Set.member name ctx.locals
       then coreVar name
       else case getPreludeFunc name of
-        -- Prelude function as first-class value - wrap in lambda
+        -- Prelude function as first-class value - wrap in uncurried lambda
         Just info ->
           let paramNames = map (\i -> "_Pf" <> show i) (Array.range 0 (info.arity - 1))
               paramsStr = String.joinWith ", " paramNames
@@ -617,7 +617,7 @@ genExpr ctx (ExprVar name) =
              "(" <> paramsStr <> ")"
         Nothing ->
           if Set.member name ctx.moduleFuncs
-          then -- Module function reference as value - wrap in lambda
+          then -- Module function reference as value - wrap in uncurried lambda
                let arity = lookupArity name ctx
                in if arity == 0
                   then "apply " <> atom name <> "/0()"
@@ -764,45 +764,25 @@ genExpr ctx (ExprApp f arg) =
       c -> c >= "A" && c <= "Z"
 
 genExpr ctx (ExprLambda pats body) =
-  -- Generate curried lambdas: \x y -> e becomes fun(x) -> fun(y) -> e end end
-  case List.uncons pats of
-    Nothing -> genExpr ctx body  -- No params, just the body
-    Just { head: pat, tail: restPats } ->
-      -- Check if this is the last param or if there are more
-      if List.null restPats
-      then
-        -- Single param - generate one fun
-        if hasComplexPatternSingle pat
-        then
-          let { var, ctx: ctx' } = freshVar ctx
-              ctxWithParam = addLocalsFromPattern pat ctx'
-              bodyCode = genExpr ctxWithParam body
-              patResult = genPatternWithCounter pat 0
-          in "fun (" <> var <> ") ->\n" <>
-             "      case " <> var <> " of\n" <>
-             "        <" <> patResult.str <> "> when 'true' -> " <> bodyCode <> "\n" <>
-             "      end"
-        else
-          let patResult = genPatternWithCounter pat 0
-              ctxWithParam = addLocalsFromPattern pat ctx
-          in "fun (" <> patResult.str <> ") ->\n      " <> genExpr ctxWithParam body
-      else
-        -- Multiple params - curry: fun(x) -> (recursive for rest) end
-        if hasComplexPatternSingle pat
-        then
-          let { var, ctx: ctx' } = freshVar ctx
-              ctxWithParam = addLocalsFromPattern pat ctx'
-              innerLambda = genExpr ctxWithParam (ExprLambda restPats body)
-              patResult = genPatternWithCounter pat 0
-          in "fun (" <> var <> ") ->\n" <>
-             "      case " <> var <> " of\n" <>
-             "        <" <> patResult.str <> "> when 'true' -> " <> innerLambda <> "\n" <>
-             "      end"
-        else
-          let patResult = genPatternWithCounter pat 0
-              ctxWithParam = addLocalsFromPattern pat ctx
-              innerLambda = genExpr ctxWithParam (ExprLambda restPats body)
-          in "fun (" <> patResult.str <> ") ->\n      " <> innerLambda
+  -- Generate uncurried lambdas: \x y -> e becomes fun(x, y) -> e end
+  -- This matches how module functions are called and how FFI works
+  if hasComplexPattern pats
+  then
+    let arity = List.length pats
+        paramNames = map (\i -> "_L" <> show i) (Array.range 0 (arity - 1))
+        paramsStr = String.joinWith ", " paramNames
+        patResult = genPatsWithCounter (Array.fromFoldable pats) 0
+        patTuple = "{" <> String.joinWith ", " patResult.strs <> "}"
+        ctxWithParams = foldr addLocalsFromPattern ctx pats
+        bodyCode = genExpr ctxWithParams body
+    in "fun (" <> paramsStr <> ") ->\n" <>
+       "      case {" <> paramsStr <> "} of\n" <>
+       "        <" <> patTuple <> "> when 'true' -> " <> bodyCode <> "\n" <>
+       "      end"
+  else
+    let patResult = genPatsWithCounter (Array.fromFoldable pats) 0
+        ctxWithParams = foldr addLocalsFromPattern ctx pats
+    in "fun (" <> String.joinWith ", " patResult.strs <> ") ->\n      " <> genExpr ctxWithParams body
 
 genExpr ctx (ExprLet binds body) =
   genLetBindsWithBody ctx (Array.fromFoldable binds) body
@@ -862,6 +842,24 @@ genExpr ctx (ExprBinOp "*>" l r) =
   if ctx.moduleName == "Nova.Compiler.CstParser"
   then "apply 'thenP'/2(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
   else "call 'erlang':'*>'(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+
+-- The <<< operator is function composition: (f <<< g)(x) = f(g(x))
+genExpr ctx (ExprBinOp "<<<" l r) =
+  let { var: fVar, ctx: ctx1 } = freshVar ctx
+      { var: gVar, ctx: ctx2 } = freshVar ctx1
+      { var: xVar, ctx: _ } = freshVar ctx2
+  in "let <" <> fVar <> "> = " <> genExpr ctx l <>
+     " in let <" <> gVar <> "> = " <> genExpr ctx r <>
+     " in fun (" <> xVar <> ") -> apply " <> fVar <> " (apply " <> gVar <> " (" <> xVar <> "))"
+
+-- The >>> operator is reverse composition: (f >>> g)(x) = g(f(x))
+genExpr ctx (ExprBinOp ">>>" l r) =
+  let { var: fVar, ctx: ctx1 } = freshVar ctx
+      { var: gVar, ctx: ctx2 } = freshVar ctx1
+      { var: xVar, ctx: _ } = freshVar ctx2
+  in "let <" <> fVar <> "> = " <> genExpr ctx l <>
+     " in let <" <> gVar <> "> = " <> genExpr ctx r <>
+     " in fun (" <> xVar <> ") -> apply " <> gVar <> " (apply " <> fVar <> " (" <> xVar <> "))"
 
 genExpr ctx (ExprBinOp op l r) =
   -- Check if it's a qualified operator like "Array.elem"
@@ -1572,6 +1570,13 @@ translateOp op = op
 -- | Preserve original name for 1:1 mapping with source code
 toSnakeCase :: String -> String
 toSnakeCase s = s
+
+-- | Generate a curried lambda from parameter names and body
+-- genCurriedLambda ["a", "b", "c"] "body" -> "fun (a) -> fun (b) -> fun (c) -> body"
+genCurriedLambda :: Array String -> String -> String
+genCurriedLambda params body = case Array.uncons params of
+  Nothing -> body
+  Just { head, tail } -> "fun (" <> head <> ") -> " <> genCurriedLambda tail body
 
 -- | Generate curried apply for over-application
 -- When a function is called with more args than its declared arity,

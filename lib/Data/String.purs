@@ -144,7 +144,7 @@ foreign import indexOfImpl :: String -> String -> Maybe Int = "case call 'string
 uncons :: String -> Maybe { head :: Char, tail :: String }
 uncons s = unconsImpl s
 
-foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
+foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}\n      end"
 
 -- String.CodePoints (SCU) functions
 

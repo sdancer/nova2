@@ -28,7 +28,7 @@ foreign import nullImpl :: forall a. List a -> Boolean = "case $0 of\n        <[
 uncons :: forall a. List a -> Maybe { head :: a, tail :: List a }
 uncons xs = unconsImpl xs
 
-foreign import unconsImpl :: forall a. List a -> Maybe { head :: a, tail :: List a } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
+foreign import unconsImpl :: forall a. List a -> Maybe { head :: a, tail :: List a } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}\n      end"
 
 -- Get head (first element)
 head :: forall a. List a -> Maybe a

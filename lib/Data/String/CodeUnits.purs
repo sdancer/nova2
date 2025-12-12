@@ -36,7 +36,7 @@ foreign import charAtImpl :: Int -> String -> Maybe Char = "case call 'erlang':'
 uncons :: String -> Maybe { head :: Char, tail :: String }
 uncons s = unconsImpl s
 
-foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', {'head', H, 'tail', T}}\n      end"
+foreign import unconsImpl :: String -> Maybe { head :: Char, tail :: String } = "case $0 of\n        <[]> when 'true' -> 'Nothing'\n        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}\n      end"
 
 -- | Convert string to array of characters
 toCharArray :: String -> Array Char
