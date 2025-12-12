@@ -4,7 +4,7 @@
 IO.puts("=== Nova Self-Hosting Test ===\n")
 
 # Directory containing compiled .core files
-core_dir = "lib/nova"
+core_dir = "priv/core"
 
 # Load a .core file and compile it into the BEAM VM
 load_core_module = fn path ->

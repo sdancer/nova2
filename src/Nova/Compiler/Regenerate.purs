@@ -59,7 +59,7 @@ defaultConfig =
   { srcBase: "./src/"
   , libBase: "./lib/"
   , outputDir: "./output/"
-  , targetDir: "./nova_lang/lib/nova/"
+  , targetDir: "./nova_lang/priv/core/"
   }
 
 -- ============================================================================

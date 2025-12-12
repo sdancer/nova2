@@ -2,7 +2,7 @@
 
 IO.puts("=== GenServer Test ===\n")
 
-core_dir = "lib/nova"
+core_dir = "priv/core"
 
 load_core_module = fn path ->
   case File.read(path) do
