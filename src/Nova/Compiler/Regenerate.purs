@@ -114,27 +114,22 @@ extractImports source =
   in Array.mapMaybe extractImport lines
 
 -- | Convert module name to file path
+-- | First checks lib/, then src/ - no hardcoded prefixes
 -- | e.g., "Nova.Compiler.Ast" -> "./src/Nova/Compiler/Ast.purs"
 -- | e.g., "Data.List" -> "./lib/Data/List.purs"
+-- | e.g., "Nova.NamespaceService" -> "./lib/Nova/NamespaceService.purs"
 moduleToPath :: FileSystem -> RegenerateConfig -> String -> Maybe String
 moduleToPath fs cfg modName =
-  -- Library modules (Data.*, Control.*, MCP.*, OTP.*, System.*, Effect.*, Prelude)
-  if String.indexOf (String.Pattern "Data.") modName == Just 0 ||
-     String.indexOf (String.Pattern "Control.") modName == Just 0 ||
-     String.indexOf (String.Pattern "MCP.") modName == Just 0 ||
-     String.indexOf (String.Pattern "OTP.") modName == Just 0 ||
-     String.indexOf (String.Pattern "System.") modName == Just 0 ||
-     String.indexOf (String.Pattern "Effect.") modName == Just 0 ||
-     modName == "Prelude"
-  then
-    let path = cfg.libBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
-    in if fs.fileExists path then Just path else Nothing
-  -- Source modules (Nova.*)
-  else if String.indexOf (String.Pattern "Nova.") modName == Just 0
-  then
-    let path = cfg.srcBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
-    in if fs.fileExists path then Just path else Nothing
-  else Nothing
+  let relPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
+      libPath = cfg.libBase <> relPath
+      srcPath = cfg.srcBase <> relPath
+  in -- First check lib/ (library modules can be anywhere)
+     if fs.fileExists libPath
+     then Just libPath
+     -- Then check src/ (compiler modules)
+     else if fs.fileExists srcPath
+     then Just srcPath
+     else Nothing
 
 -- | Discover dependencies for a module by parsing its imports
 discoverDependencies :: FileSystem -> RegenerateConfig -> String -> Boolean -> Array String
