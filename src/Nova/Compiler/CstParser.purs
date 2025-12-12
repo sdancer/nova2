@@ -298,11 +298,12 @@ tokKeyword kw = satisfy isKw
     isKw (Cst.TokLowerName Nothing name) = name == kw
     isKw _ = false
 
--- | Match string literal
+-- | Match string literal (including raw/triple-quoted strings)
 tokString :: Parser (Tuple Cst.SourceToken String)
 tokString = expectMap extractStr
   where
     extractStr (Cst.TokString _ s) = Just s
+    extractStr (Cst.TokRawString s) = Just s
     extractStr _ = Nothing
 
 -- | Match hole token (_name)
@@ -511,6 +512,7 @@ parseLabel = do
     -- Also accept string literals for reserved keywords like "in", "then", "else"
     extractLabel (Cst.TokLowerName Nothing name) = Just name
     extractLabel (Cst.TokString _ s) = Just s  -- Allow quoted labels like "in"
+    extractLabel (Cst.TokRawString s) = Just s  -- Allow triple-quoted strings as labels
     extractLabel _ = Nothing
 
 -- ============================================================================
