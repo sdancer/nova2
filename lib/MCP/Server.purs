@@ -5,6 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Nova.NamespaceService as NS
+import Nova.Eval as Eval
 
 -- | Server state (opaque - actually NS.ServiceState at runtime)
 type ServerState = Unit
@@ -85,6 +86,12 @@ handleToolCall state reqId jsonStr =
      then handleGetDeclaration state reqId jsonStr
      else if toolName == "list_declarations"
      then handleListDeclarations state reqId jsonStr
+     else if toolName == "eval_expr"
+     then handleEvalExpr state reqId jsonStr
+     else if toolName == "eval_snippet"
+     then handleEvalSnippet state reqId jsonStr
+     else if toolName == "compile_to_core"
+     then handleCompileToCore state reqId jsonStr
      else { response: mkErrorResponse reqId ("Unknown tool: " <> toolName), state: state }
 
 -- | Create namespace tool
@@ -127,6 +134,32 @@ handleListDeclarations state reqId jsonStr =
       decls = NS.getNamespaceDecls (fromServerState state) namespace
       json = declsToJson decls
   in { response: mkToolSuccess reqId json, state: state }
+
+-- | Evaluate a Nova expression
+handleEvalExpr :: ServerState -> String -> String -> RequestResult
+handleEvalExpr state reqId jsonStr =
+  let expr = extractArg jsonStr "expression"
+  in case Eval.eval expr of
+    Right result -> { response: mkToolSuccess reqId result, state: state }
+    Left err -> { response: mkToolError reqId err, state: state }
+
+-- | Evaluate a Nova snippet with declarations
+handleEvalSnippet :: ServerState -> String -> String -> RequestResult
+handleEvalSnippet state reqId jsonStr =
+  let code = extractArg jsonStr "code"
+      entry = extractArg jsonStr "entry_point"
+      entryPoint = if entry == "" then "result" else entry
+  in case Eval.evalSnippet code entryPoint of
+    Right result -> { response: mkToolSuccess reqId result, state: state }
+    Left err -> { response: mkToolError reqId err, state: state }
+
+-- | Compile Nova code to Core Erlang (for inspection)
+handleCompileToCore :: ServerState -> String -> String -> RequestResult
+handleCompileToCore state reqId jsonStr =
+  let code = extractArg jsonStr "code"
+  in case Eval.compileToCore code of
+    Right coreErlang -> { response: mkToolSuccess reqId coreErlang, state: state }
+    Left err -> { response: mkToolError reqId err, state: state }
 
 -- | Convert declaration to JSON
 declToJson :: NS.ManagedDecl -> String
@@ -171,9 +204,9 @@ mkToolError reqId msg =
 serverInfoJson :: String
 serverInfoJson = "{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"nova-compiler\",\"version\":\"0.1.0\"},\"capabilities\":{\"tools\":{}}}"
 
--- | Tools list JSON with namespace tools
+-- | Tools list JSON with namespace and eval tools
 toolsListJson :: String
-toolsListJson = "{\"tools\":[{\"name\":\"create_namespace\",\"description\":\"Create a new namespace for declarations\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name of the namespace\"}},\"required\":[\"name\"]}},{\"name\":\"list_namespaces\",\"description\":\"List all namespaces\",\"inputSchema\":{\"type\":\"object\",\"properties\":{}}},{\"name\":\"add_declaration\",\"description\":\"Add a declaration to a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Target namespace\"},\"name\":{\"type\":\"string\",\"description\":\"Declaration name\"},\"source\":{\"type\":\"string\",\"description\":\"Source code\"}},\"required\":[\"namespace\",\"name\",\"source\"]}},{\"name\":\"get_declaration\",\"description\":\"Get a declaration by ID\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"decl_id\":{\"type\":\"string\",\"description\":\"Declaration ID\"}},\"required\":[\"decl_id\"]}},{\"name\":\"list_declarations\",\"description\":\"List declarations in a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Namespace to list\"}},\"required\":[\"namespace\"]}}]}"
+toolsListJson = "{\"tools\":[{\"name\":\"create_namespace\",\"description\":\"Create a new namespace for declarations\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name of the namespace\"}},\"required\":[\"name\"]}},{\"name\":\"list_namespaces\",\"description\":\"List all namespaces\",\"inputSchema\":{\"type\":\"object\",\"properties\":{}}},{\"name\":\"add_declaration\",\"description\":\"Add a declaration to a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Target namespace\"},\"name\":{\"type\":\"string\",\"description\":\"Declaration name\"},\"source\":{\"type\":\"string\",\"description\":\"Source code\"}},\"required\":[\"namespace\",\"name\",\"source\"]}},{\"name\":\"get_declaration\",\"description\":\"Get a declaration by ID\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"decl_id\":{\"type\":\"string\",\"description\":\"Declaration ID\"}},\"required\":[\"decl_id\"]}},{\"name\":\"list_declarations\",\"description\":\"List declarations in a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Namespace to list\"}},\"required\":[\"namespace\"]}},{\"name\":\"eval_expr\",\"description\":\"Evaluate a Nova expression and return the result\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"expression\":{\"type\":\"string\",\"description\":\"Nova expression to evaluate (e.g. '1 + 2', 'let x = 5 in x * 2')\"}},\"required\":[\"expression\"]}},{\"name\":\"eval_snippet\",\"description\":\"Evaluate a Nova code snippet with function declarations\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"string\",\"description\":\"Nova code with declarations (e.g. 'double x = x * 2\\nresult = double 21')\"},\"entry_point\":{\"type\":\"string\",\"description\":\"Function to call as entry point (default: 'result')\"}},\"required\":[\"code\"]}},{\"name\":\"compile_to_core\",\"description\":\"Compile Nova code to Core Erlang for inspection\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"string\",\"description\":\"Nova code to compile\"}},\"required\":[\"code\"]}}]}"
 
 -- | Make success response
 mkSuccessResponse :: String -> String -> String
