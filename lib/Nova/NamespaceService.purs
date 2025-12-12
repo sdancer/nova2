@@ -212,7 +212,7 @@ emptyArray :: forall a. Array a
 emptyArray = emptyArrayImpl unit
 
 foreign import emptyArrayImpl :: forall a. Unit -> Array a
-  = "{'array', []}"
+  = "[]"
 
 -- | Shutdown the service (delete tables)
 shutdown :: ServiceState -> Unit

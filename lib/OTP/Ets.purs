@@ -107,14 +107,14 @@ allKeys :: forall k. Table -> Array k
 allKeys tab = allKeysImpl tab
 
 foreign import allKeysImpl :: forall k. Table -> Array k
-  = "let <F> = fun (T, Acc) -> [call 'erlang':'element'(1, T) | Acc] in {'array', call 'ets':'foldl'(F, [], $0)}"
+  = "let <F> = fun (T, Acc) -> [call 'erlang':'element'(1, T) | Acc] in call 'ets':'foldl'(F, [], $0)"
 
 -- | Get all values from the table
 allValues :: forall v. Table -> Array v
 allValues tab = allValuesImpl tab
 
 foreign import allValuesImpl :: forall v. Table -> Array v
-  = "let <F> = fun (T, Acc) -> [call 'erlang':'element'(2, T) | Acc] in {'array', call 'ets':'foldl'(F, [], $0)}"
+  = "let <F> = fun (T, Acc) -> [call 'erlang':'element'(2, T) | Acc] in call 'ets':'foldl'(F, [], $0)"
 
 -- | Update a value in place (same as insert, overwrites)
 update :: forall k v. Table -> k -> v -> Unit
