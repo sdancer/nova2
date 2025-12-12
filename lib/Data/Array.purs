@@ -196,13 +196,13 @@ foreign import dropWhileImpl :: forall a. (a -> Boolean) -> Array a -> Array a =
 span :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a }
 span f xs = spanImpl f xs
 
-foreign import spanImpl :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a } = "case call 'lists':'splitwith'($0, $1) of\n        <{Taken, Rest}> when 'true' -> {'init', Taken, 'rest', Rest}\n      end"
+foreign import spanImpl :: forall a. (a -> Boolean) -> Array a -> { init :: Array a, rest :: Array a } = "case call 'lists':'splitwith'($0, $1) of\n        <{Taken, Rest}> when 'true' -> ~{'init'=>Taken, 'rest'=>Rest}~\n      end"
 
 -- Partition by predicate
 partition :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a }
 partition f xs = partitionImpl f xs
 
-foreign import partitionImpl :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a } = "case call 'lists':'partition'($0, $1) of\n        <{Trues, Falses}> when 'true' -> {'yes', Trues, 'no', Falses}\n      end"
+foreign import partitionImpl :: forall a. (a -> Boolean) -> Array a -> { yes :: Array a, no :: Array a } = "case call 'lists':'partition'($0, $1) of\n        <{Trues, Falses}> when 'true' -> ~{'yes'=>Trues, 'no'=>Falses}~\n      end"
 
 -- Singleton array
 singleton :: forall a. a -> Array a
@@ -286,7 +286,7 @@ foreign import intercalateImpl :: forall a. Array a -> Array (Array a) -> Array 
 splitAt :: forall a. Int -> Array a -> { before :: Array a, after :: Array a }
 splitAt i xs = splitAtImpl i xs
 
-foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a } = "case call 'lists':'split'($0, $1) of\n        <{Before, After}> when 'true' -> {'before', Before, 'after', After}\n      end"
+foreign import splitAtImpl :: forall a. Int -> Array a -> { before :: Array a, after :: Array a } = "case call 'lists':'split'($0, $1) of\n        <{Before, After}> when 'true' -> ~{'before'=>Before, 'after'=>After}~\n      end"
 
 -- Map with Maybe (filter and map combined)
 mapMaybe :: forall a b. (a -> Maybe b) -> Array a -> Array b
