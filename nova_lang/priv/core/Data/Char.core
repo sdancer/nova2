@@ -1,0 +1,296 @@
+module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUpper'/1, 'isLower'/1, 'toUpper'/1, 'toLower'/1, 'toCharCode'/1, 'fromCharCode'/1, 'isControl'/1, 'isPrint'/1, 'isHexDigit'/1, 'isOctDigit'/1, 'isAscii'/1, 'isLatin1'/1, 'isAlphaImpl'/1, 'isDigitImpl'/1, 'isAlphaNumImpl'/1, 'isSpaceImpl'/1, 'isUpperImpl'/1, 'isLowerImpl'/1, 'toUpperImpl'/1, 'toLowerImpl'/1, 'toCharCodeImpl'/1, 'fromCharCodeImpl'/1, 'isControlImpl'/1, 'isPrintImpl'/1, 'isHexDigitImpl'/1, 'isOctDigitImpl'/1, 'isAsciiImpl'/1, 'isLatin1Impl'/1, 'isAlpha'/0, 'isDigit'/0, 'isAlphaNum'/0, 'isSpace'/0, 'isUpper'/0, 'isLower'/0, 'toUpper'/0, 'toLower'/0, 'toCharCode'/0, 'fromCharCode'/0, 'isControl'/0, 'isPrint'/0, 'isHexDigit'/0, 'isOctDigit'/0, 'isAscii'/0, 'isLatin1'/0, 'isAlphaImpl'/0, 'isDigitImpl'/0, 'isAlphaNumImpl'/0, 'isSpaceImpl'/0, 'isUpperImpl'/0, 'isLowerImpl'/0, 'toUpperImpl'/0, 'toLowerImpl'/0, 'toCharCodeImpl'/0, 'fromCharCodeImpl'/0, 'isControlImpl'/0, 'isPrintImpl'/0, 'isHexDigitImpl'/0, 'isOctDigitImpl'/0, 'isAsciiImpl'/0, 'isLatin1Impl'/0]
+  attributes []
+'isAlpha'/1 =
+  fun (C) ->
+    apply 'isAlphaImpl'/1(C)
+
+'isDigit'/1 =
+  fun (C) ->
+    apply 'isDigitImpl'/1(C)
+
+'isAlphaNum'/1 =
+  fun (C) ->
+    apply 'isAlphaNumImpl'/1(C)
+
+'isSpace'/1 =
+  fun (C) ->
+    apply 'isSpaceImpl'/1(C)
+
+'isUpper'/1 =
+  fun (C) ->
+    apply 'isUpperImpl'/1(C)
+
+'isLower'/1 =
+  fun (C) ->
+    apply 'isLowerImpl'/1(C)
+
+'toUpper'/1 =
+  fun (C) ->
+    apply 'toUpperImpl'/1(C)
+
+'toLower'/1 =
+  fun (C) ->
+    apply 'toLowerImpl'/1(C)
+
+'toCharCode'/1 =
+  fun (C) ->
+    apply 'toCharCodeImpl'/1(C)
+
+'fromCharCode'/1 =
+  fun (N) ->
+    apply 'fromCharCodeImpl'/1(N)
+
+'isControl'/1 =
+  fun (C) ->
+    apply 'isControlImpl'/1(C)
+
+'isPrint'/1 =
+  fun (C) ->
+    apply 'isPrintImpl'/1(C)
+
+'isHexDigit'/1 =
+  fun (C) ->
+    apply 'isHexDigitImpl'/1(C)
+
+'isOctDigit'/1 =
+  fun (C) ->
+    apply 'isOctDigitImpl'/1(C)
+
+'isAscii'/1 =
+  fun (C) ->
+    apply 'isAsciiImpl'/1(C)
+
+'isLatin1'/1 =
+  fun (C) ->
+    apply 'isLatin1Impl'/1(C)
+
+'isAlphaImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 90)), call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 122)))
+
+'isDigitImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 48), call 'erlang':'=<'(V0, 57))
+
+'isAlphaNumImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'or'(call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 90)), call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 122))), call 'erlang':'and'(call 'erlang':'>='(V0, 48), call 'erlang':'=<'(V0, 57)))
+
+'isSpaceImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'or'(call 'erlang':'=='(V0, 32), call 'erlang':'=='(V0, 9)), call 'erlang':'or'(call 'erlang':'=='(V0, 10), call 'erlang':'or'(call 'erlang':'=='(V0, 13), call 'erlang':'=='(V0, 12))))
+
+'isUpperImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 90))
+
+'isLowerImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 122))
+
+'toUpperImpl'/1 = fun (V0) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 122)) of
+        <'true'> when 'true' -> call 'erlang':'-'(V0, 32)
+        <'false'> when 'true' -> V0
+      end
+
+'toLowerImpl'/1 = fun (V0) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 90)) of
+        <'true'> when 'true' -> call 'erlang':'+'(V0, 32)
+        <'false'> when 'true' -> V0
+      end
+
+'toCharCodeImpl'/1 = fun (V0) -> V0
+
+'fromCharCodeImpl'/1 = fun (V0) -> V0
+
+'isControlImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'=<'(V0, 31), call 'erlang':'=='(V0, 127))
+
+'isPrintImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 32), call 'erlang':'=<'(V0, 126))
+
+'isHexDigitImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'or'(call 'erlang':'and'(call 'erlang':'>='(V0, 48), call 'erlang':'=<'(V0, 57)), call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 70))), call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 102)))
+
+'isOctDigitImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 48), call 'erlang':'=<'(V0, 55))
+
+'isAsciiImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'=<'(V0, 127))
+
+'isLatin1Impl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'=<'(V0, 255))
+
+'isAlpha'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlpha'/1(_A0)
+      in _F0
+
+'isDigit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isDigit'/1(_A0)
+      in _F0
+
+'isAlphaNum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlphaNum'/1(_A0)
+      in _F0
+
+'isSpace'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isSpace'/1(_A0)
+      in _F0
+
+'isUpper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isUpper'/1(_A0)
+      in _F0
+
+'isLower'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLower'/1(_A0)
+      in _F0
+
+'toUpper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUpper'/1(_A0)
+      in _F0
+
+'toLower'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toLower'/1(_A0)
+      in _F0
+
+'toCharCode'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toCharCode'/1(_A0)
+      in _F0
+
+'fromCharCode'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCharCode'/1(_A0)
+      in _F0
+
+'isControl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isControl'/1(_A0)
+      in _F0
+
+'isPrint'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isPrint'/1(_A0)
+      in _F0
+
+'isHexDigit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isHexDigit'/1(_A0)
+      in _F0
+
+'isOctDigit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isOctDigit'/1(_A0)
+      in _F0
+
+'isAscii'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAscii'/1(_A0)
+      in _F0
+
+'isLatin1'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLatin1'/1(_A0)
+      in _F0
+
+'isAlphaImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlphaImpl'/1(_A0)
+      in _F0
+
+'isDigitImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isDigitImpl'/1(_A0)
+      in _F0
+
+'isAlphaNumImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlphaNumImpl'/1(_A0)
+      in _F0
+
+'isSpaceImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isSpaceImpl'/1(_A0)
+      in _F0
+
+'isUpperImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isUpperImpl'/1(_A0)
+      in _F0
+
+'isLowerImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLowerImpl'/1(_A0)
+      in _F0
+
+'toUpperImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUpperImpl'/1(_A0)
+      in _F0
+
+'toLowerImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toLowerImpl'/1(_A0)
+      in _F0
+
+'toCharCodeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toCharCodeImpl'/1(_A0)
+      in _F0
+
+'fromCharCodeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCharCodeImpl'/1(_A0)
+      in _F0
+
+'isControlImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isControlImpl'/1(_A0)
+      in _F0
+
+'isPrintImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isPrintImpl'/1(_A0)
+      in _F0
+
+'isHexDigitImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isHexDigitImpl'/1(_A0)
+      in _F0
+
+'isOctDigitImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isOctDigitImpl'/1(_A0)
+      in _F0
+
+'isAsciiImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAsciiImpl'/1(_A0)
+      in _F0
+
+'isLatin1Impl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLatin1Impl'/1(_A0)
+      in _F0
+end

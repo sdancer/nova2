@@ -1,0 +1,1218 @@
+module 'Nova.Compiler.Types' ['mkTVar'/2, 'normalizeTypeName'/1, 'mkTCon'/2, 'mkTCon0'/1, 'tInt'/0, 'tString'/0, 'tChar'/0, 'tBool'/0, 'tList'/1, 'tArray'/1, 'tArrow'/2, 'tMaybe'/1, 'tEither'/2, 'tMap'/2, 'tSet'/1, 'tUnit'/0, 'tOrdering'/0, 'tNumber'/0, 'tTokenType'/0, 'mkTyApp'/2, 'tTuple'/1, 'emptySubst'/0, 'lookupSubst'/2, 'singleSubst'/2, 'applySubst'/2, 'composeSubst'/2, 'mkScheme'/2, 'freeTypeVars'/1, 'freeTypeVarsScheme'/1, 'mkTypedModule'/2, 'typedModuleToModule'/1, 'typedModuleEnv'/1, 'emptyEnv'/0, 'extendEnv'/3, 'extendTypeAlias'/3, 'lookupTypeAlias'/2, 'lookupEnv'/2, 'applySubstToEnv'/2, 'freshVar'/2, 'freeTypeVarsEnv'/1, 'builtinPrelude'/0, 'tSubst'/0, 'tEnv'/0, 'tScheme'/0, 'tType'/0, 'tTVar'/0, 'tTCon'/0, 'tTConRecord'/0, 'tRecord'/0, 'tTypeInfo'/0, 'tTypeAliasInfo'/0, 'tModuleExports'/0, 'tModuleRegistry'/0, 'tModule'/0, 'tTypedModule'/0, 'tPattern'/0, 'tExpr'/0, 'tLiteral'/0, 'tTypeExpr'/0, 'tLetBind'/0, 'tCaseClause'/0, 'tDeclaration'/0, 'tFunctionDecl'/0, 'tGuardedExprRec'/0, 'tTypeSigRec'/0, 'tTypeSig'/0, 'tDataType'/0, 'tDataConstructor'/0, 'tDataField'/0, 'tTypeAlias'/0, 'tModuleDecl'/0, 'tImportDecl'/0, 'tDoStatement'/0, 'tGuardedExpr'/0, 'tGuardClause'/0, 'tTypeClass'/0, 'tTypeClassInstance'/0, 'tInfixDecl'/0, 'tConstraint'/0, 'tImportItem'/0, 'tImportSpec'/0, 'tAssociativity'/0, 'tForeignImport'/0, 'tNewtypeDecl'/0, 'tTypeDecl'/0, 'tUnifyError'/0, 'tTCError'/0, 'tPatResult'/0, 'tInstantiateResult'/0, 'tInferResult'/0, 'getAliasInfoParams'/1, 'getAliasInfoBody'/1, 'emptyExports'/0, 'preludeExports'/0, 'effectConsoleExports'/0, 'defaultRegistry'/0, 'emptyRegistry'/0, 'lookupModule'/2, 'registerModule'/3, 'mergeExportsToEnv'/2, 'mergeExportsToEnvWithPrefix'/3, 'mergeSelectedExports'/3, 'mergeTypeExport'/4, 'showType'/1, 'showTyCon'/1, 'showTypeArg'/1, 'showRecord'/1, 'showScheme'/1, 'TyVar'/1, 'TyCon'/1, 'TyRecord'/1, 'TyApp'/2, 'mkTVar'/0, 'mkTVar'/1, 'normalizeTypeName'/0, 'mkTCon'/0, 'mkTCon'/1, 'mkTCon0'/0, 'tList'/0, 'tArray'/0, 'tArrow'/0, 'tArrow'/1, 'tMaybe'/0, 'tEither'/0, 'tEither'/1, 'tMap'/0, 'tMap'/1, 'tSet'/0, 'mkTyApp'/0, 'mkTyApp'/1, 'tTuple'/0, 'lookupSubst'/0, 'lookupSubst'/1, 'singleSubst'/0, 'singleSubst'/1, 'applySubst'/0, 'applySubst'/1, 'composeSubst'/0, 'composeSubst'/1, 'mkScheme'/0, 'mkScheme'/1, 'freeTypeVars'/0, 'freeTypeVarsScheme'/0, 'mkTypedModule'/0, 'mkTypedModule'/1, 'typedModuleToModule'/0, 'typedModuleEnv'/0, 'extendEnv'/0, 'extendEnv'/1, 'extendEnv'/2, 'extendTypeAlias'/0, 'extendTypeAlias'/1, 'extendTypeAlias'/2, 'lookupTypeAlias'/0, 'lookupTypeAlias'/1, 'lookupEnv'/0, 'lookupEnv'/1, 'applySubstToEnv'/0, 'applySubstToEnv'/1, 'freshVar'/0, 'freshVar'/1, 'freeTypeVarsEnv'/0, 'getAliasInfoParams'/0, 'getAliasInfoBody'/0, 'lookupModule'/0, 'lookupModule'/1, 'registerModule'/0, 'registerModule'/1, 'registerModule'/2, 'mergeExportsToEnv'/0, 'mergeExportsToEnv'/1, 'mergeExportsToEnvWithPrefix'/0, 'mergeExportsToEnvWithPrefix'/1, 'mergeExportsToEnvWithPrefix'/2, 'mergeSelectedExports'/0, 'mergeSelectedExports'/1, 'mergeSelectedExports'/2, 'mergeTypeExport'/0, 'mergeTypeExport'/1, 'mergeTypeExport'/2, 'mergeTypeExport'/3, 'showType'/0, 'showTyCon'/0, 'showTypeArg'/0, 'showRecord'/0, 'showScheme'/0, 'TyVar'/0, 'TyCon'/0, 'TyRecord'/0, 'TyApp'/0, 'TyApp'/1]
+  attributes []
+% Data type: Type
+% Constructors: TyVar, TyCon, TyRecord, TyApp
+
+'TyVar'/1 =
+  fun (V0) ->
+    {'TyVar', V0}
+
+'TyCon'/1 =
+  fun (V0) ->
+    {'TyCon', V0}
+
+'TyRecord'/1 =
+  fun (V0) ->
+    {'TyRecord', V0}
+
+'TyApp'/2 =
+  fun (V0, V1) ->
+    {'TyApp', V0, V1}
+
+'mkTVar'/2 =
+  fun (Id, Name) ->
+    ~{'id'=>Id,'name'=>Name}~
+
+'normalizeTypeName'/1 =
+  fun (Name) ->
+    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <'Nothing'> when 'true' ->
+        Name
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+    end
+
+'mkTCon'/2 =
+  fun (Name, Args) ->
+    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>Args}~
+
+'mkTCon0'/1 =
+  fun (Name) ->
+    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>[]}~
+
+'tInt'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Int"))
+
+'tString'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("String"))
+
+'tChar'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Char"))
+
+'tBool'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Bool"))
+
+'tList'/1 =
+  fun (El) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("List", [El]))
+
+'tArray'/1 =
+  fun (El) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Array", [El]))
+
+'tArrow'/2 =
+  fun (A, B) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Fun", [A, B]))
+
+'tMaybe'/1 =
+  fun (T) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Maybe", [T]))
+
+'tEither'/2 =
+  fun (L, R) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Either", [L, R]))
+
+'tMap'/2 =
+  fun (K, V) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Map", [K, V]))
+
+'tSet'/1 =
+  fun (T) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2("Set", [T]))
+
+'tUnit'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Unit"))
+
+'tOrdering'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Ordering"))
+
+'tNumber'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Number"))
+
+'tTokenType'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("TokenType"))
+
+'mkTyApp'/2 =
+  fun (F, A) ->
+    apply 'TyApp'/2(F, A)
+
+'tTuple'/1 =
+  fun (Ts) ->
+    let <N> = call 'Data.Array':'length'(Ts)
+      in let <Name> = case call 'erlang':'=:='(N, 2) of
+      <'true'> when 'true' -> "Tuple"
+      <'false'> when 'true' -> call 'erlang':'++'("Tuple", call 'erlang':'integer_to_list'(N))
+    end
+      in apply 'TyCon'/1(~{'name'=>Name,'args'=>Ts}~)
+
+'emptySubst'/0 =
+  fun () ->
+    call 'Data.Map':'empty'()
+
+'lookupSubst'/2 =
+  fun (Sub, V) ->
+    case call 'Data.Map':'lookup'(call 'maps':'get'('id', V), Sub) of
+      <{'Just', T}> when 'true' ->
+        T
+      <'Nothing'> when 'true' ->
+        apply 'TyVar'/1(V)
+    end
+
+'singleSubst'/2 =
+  fun (V, T) ->
+    call 'Data.Map':'singleton'(call 'maps':'get'('id', V), T)
+
+'applySubst'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Sub, {'TyVar', V}}> when 'true' ->
+        apply 'lookupSubst'/2(Sub, V)
+      <{Sub, {'TyCon', C}}> when 'true' ->
+        apply 'TyCon'/1(call 'maps':'merge'(C, ~{'args'=>call 'lists':'map'(fun (_Pc0) -> apply 'applySubst'/2(Sub, _Pc0), call 'maps':'get'('args', C))}~))
+      <{Sub, {'TyRecord', R}}> when 'true' ->
+        apply 'TyRecord'/1(call 'maps':'merge'(R, ~{'fields'=>call 'lists':'map'(fun (_Pc0) -> apply 'applySubst'/2(Sub, _Pc0), call 'maps':'get'('fields', R))}~))
+      <{Sub, {'TyApp', F, Arg}}> when 'true' ->
+        apply 'mkTyApp'/2(apply 'applySubst'/2(Sub, F), apply 'applySubst'/2(Sub, Arg))
+    end
+
+'composeSubst'/2 =
+  fun (S1, S2) ->
+    call 'Data.Map':'union'(S1, call 'lists':'map'(fun (_Pc0) -> apply 'applySubst'/2(S1, _Pc0), S2))
+
+'mkScheme'/2 =
+  fun (Vars, Ty) ->
+    ~{'vars'=>Vars,'ty'=>Ty}~
+
+'freeTypeVars'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyVar', V}}> when 'true' ->
+        call 'Data.Set':'singleton'(call 'maps':'get'('id', V))
+      <{{'TyCon', C}}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, T) ->
+      call 'Data.Set':'union'(Acc, apply 'freeTypeVars'/1(T)), call 'Data.Set':'empty'(), call 'maps':'get'('args', C))
+      <{{'TyRecord', R}}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, T) ->
+      call 'Data.Set':'union'(Acc, apply 'freeTypeVars'/1(T)), call 'Data.Set':'empty'(), call 'Data.Map':'values'(call 'maps':'get'('fields', R)))
+      <{{'TyApp', F, Arg}}> when 'true' ->
+        call 'Data.Set':'union'(apply 'freeTypeVars'/1(F), apply 'freeTypeVars'/1(Arg))
+    end
+
+'freeTypeVarsScheme'/1 =
+  fun (S) ->
+    let <BoundIds> = call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('id', _Ra), call 'maps':'get'('vars', S)))
+      in call 'Data.Set':'difference'(apply 'freeTypeVars'/1(call 'maps':'get'('ty', S)), BoundIds)
+
+'mkTypedModule'/2 =
+  fun (Mod, Env) ->
+    ~{'mod'=>Mod,'env'=>Env}~
+
+'typedModuleToModule'/1 =
+  fun (Tm) ->
+    call 'maps':'get'('mod', Tm)
+
+'typedModuleEnv'/1 =
+  fun (Tm) ->
+    call 'maps':'get'('env', Tm)
+
+'emptyEnv'/0 =
+  fun () ->
+    ~{'bindings'=>apply 'builtinPrelude'/0(),'counter'=>0,'registryLayer'=>'Nothing','namespace'=>'Nothing','typeAliases'=>call 'Data.Map':'empty'()}~
+
+'extendEnv'/3 =
+  fun (Env, Name, Scheme) ->
+    call 'maps':'merge'(Env, ~{'bindings'=>call 'Data.Map':'insert'(Name, Scheme, call 'maps':'get'('bindings', Env))}~)
+
+'extendTypeAlias'/3 =
+  fun (Env, Name, Ty) ->
+    call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', Env))}~)
+
+'lookupTypeAlias'/2 =
+  fun (Env, Name) ->
+    call 'Data.Map':'lookup'(Name, call 'maps':'get'('typeAliases', Env))
+
+'lookupEnv'/2 =
+  fun (Env, Name) ->
+    call 'Data.Map':'lookup'(Name, call 'maps':'get'('bindings', Env))
+
+'applySubstToEnv'/2 =
+  fun (Sub, Env) ->
+    letrec 'applyToScheme'/1 = fun (S) ->
+      call 'maps':'merge'(S, ~{'ty'=>apply 'applySubst'/2(Sub, call 'maps':'get'('ty', S))}~)
+      in call 'maps':'merge'(Env, ~{'bindings'=>call 'lists':'map'(fun (_Mf0) -> apply 'applyToScheme'/1(_Mf0), call 'maps':'get'('bindings', Env))}~)
+
+'freshVar'/2 =
+  fun (Env, Hint) ->
+    let <V> = apply 'mkTVar'/2(call 'maps':'get'('counter', Env), call 'erlang':'++'(Hint, call 'erlang':'integer_to_list'(call 'maps':'get'('counter', Env))))
+      in let <Env_> = call 'maps':'merge'(Env, ~{'counter'=>call 'erlang':'+'(call 'maps':'get'('counter', Env), 1)}~)
+      in call 'Data.Tuple':'Tuple'(V, Env_)
+
+'freeTypeVarsEnv'/1 =
+  fun (Env) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, S) ->
+      call 'Data.Set':'union'(Acc, apply 'freeTypeVarsScheme'/1(S)), call 'Data.Set':'empty'(), call 'Data.Map':'values'(call 'maps':'get'('bindings', Env)))
+
+'builtinPrelude'/0 =
+  fun () ->
+    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), "a")
+      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), "b")
+      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), "c")
+      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), "d")
+      in let <E> = apply 'mkTVar'/2(call 'erlang':'-'(7), "e")
+      in call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("Int", apply 'mkScheme'/2([], apply 'tInt'/0()))|[call 'Data.Tuple':'Tuple'("String", apply 'mkScheme'/2([], apply 'tString'/0()))|[call 'Data.Tuple':'Tuple'("Char", apply 'mkScheme'/2([], apply 'tChar'/0()))|[call 'Data.Tuple':'Tuple'("Bool", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("Boolean", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("True", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("False", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("true", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("false", apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'("Array", apply 'mkScheme'/2([A], apply 'tArray'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'("List", apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'("Cons", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tList'/1(apply 'TyVar'/1(A)), apply 'tList'/1(apply 'TyVar'/1(A))))))|[call 'Data.Tuple':'Tuple'("Nil", apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'("Maybe", apply 'mkScheme'/2([A], apply 'TyCon'/1(apply 'mkTCon'/2("Maybe", [apply 'TyVar'/1(A)]))))|[call 'Data.Tuple':'Tuple'("Either", apply 'mkScheme'/2([A, B], apply 'TyCon'/1(apply 'mkTCon'/2("Either", [apply 'TyVar'/1(A), apply 'TyVar'/1(B)])))), call 'Data.Tuple':'Tuple'("+", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'("-", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'("*", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'("/", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'("mod", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'("negate", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("top", apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'("bottom", apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'("<", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(">", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("<=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(">=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("==", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("/=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("&&", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("||", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("not", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("otherwise", apply 'mkScheme'/2([], apply 'tBool'/0())), call 'Data.Tuple':'Tuple'("<>", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(":", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("++", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("$", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(".", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'("<<<", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(">>>", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'("identity", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("const", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("#", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'("Just", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tMaybe'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("Nothing", apply 'mkScheme'/2([A], apply 'tMaybe'/1(apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("maybe", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'("fromMaybe", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("isJust", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("isNothing", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("Left", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'("Right", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'("either", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'("pure", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'("Tuple", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'("Tuple2", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'("Tuple3", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C)])))))), call 'Data.Tuple':'Tuple'("Tuple4", apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D)]))))))), call 'Data.Tuple':'Tuple'("Tuple5", apply 'mkScheme'/2([A, B, C, D, E], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tArrow'/2(apply 'TyVar'/1(E), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D), apply 'TyVar'/1(E)])))))))), call 'Data.Tuple':'Tuple'("fst", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("snd", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'("show", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'("log", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'("__guarded__", apply 'mkScheme'/2([A], apply 'TyVar'/1(A))), call 'Data.Tuple':'Tuple'("_", apply 'mkScheme'/2([A], apply 'TyVar'/1(A)))]]]]]]]]]]]]]]])
+
+'tSubst'/0 =
+  fun () ->
+    apply 'tMap'/2(apply 'tInt'/0(), apply 'tType'/0())
+
+'tEnv'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("bindings", apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'("counter", apply 'tInt'/0()), call 'Data.Tuple':'Tuple'("registryLayer", apply 'tMaybe'/1(apply 'tInt'/0())), call 'Data.Tuple':'Tuple'("namespace", apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tScheme'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("vars", apply 'tArray'/1(apply 'tTVar'/0())), call 'Data.Tuple':'Tuple'("ty", apply 'tType'/0())]),'row'=>'Nothing'}~)
+
+'tType'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Type"))
+
+'tTVar'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("id", apply 'tInt'/0()), call 'Data.Tuple':'Tuple'("name", apply 'tString'/0())]),'row'=>'Nothing'}~)
+
+'tTCon'/0 =
+  fun () ->
+    apply 'tTConRecord'/0()
+
+'tTConRecord'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("args", apply 'tArray'/1(apply 'tType'/0()))]),'row'=>'Nothing'}~)
+
+'tRecord'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("fields", apply 'tMap'/2(apply 'tString'/0(), apply 'tType'/0())), call 'Data.Tuple':'Tuple'("row", apply 'tMaybe'/1(apply 'tTVar'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeInfo'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("arity", apply 'tInt'/0()), call 'Data.Tuple':'Tuple'("constructors", apply 'tArray'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeAliasInfo'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("params", apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("body", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tModuleExports'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("types", apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeInfo'/0())), call 'Data.Tuple':'Tuple'("constructors", apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'("values", apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'("typeAliases", apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeAliasInfo'/0()))]),'row'=>'Nothing'}~)
+
+'tModuleRegistry'/0 =
+  fun () ->
+    apply 'tMap'/2(apply 'tString'/0(), apply 'tModuleExports'/0())
+
+'tModule'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Module"))
+
+'tTypedModule'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("mod", apply 'tModule'/0()), call 'Data.Tuple':'Tuple'("env", apply 'tEnv'/0())]),'row'=>'Nothing'}~)
+
+'tPattern'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Pattern"))
+
+'tExpr'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Expr"))
+
+'tLiteral'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Literal"))
+
+'tTypeExpr'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("TypeExpr"))
+
+'tLetBind'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("pattern", apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'("value", apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'("typeAnn", apply 'tMaybe'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
+
+'tCaseClause'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("pattern", apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'("guard", apply 'tMaybe'/1(apply 'tExpr'/0())), call 'Data.Tuple':'Tuple'("body", apply 'tExpr'/0())]),'row'=>'Nothing'}~)
+
+'tDeclaration'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Declaration"))
+
+'tFunctionDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("parameters", apply 'tList'/1(apply 'tPattern'/0())), call 'Data.Tuple':'Tuple'("body", apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'("guards", apply 'tList'/1(apply 'tGuardedExprRec'/0())), call 'Data.Tuple':'Tuple'("typeSignature", apply 'tMaybe'/1(apply 'tTypeSigRec'/0()))]),'row'=>'Nothing'}~)
+
+'tGuardedExprRec'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("guards", apply 'tList'/1(apply 'tGuardClause'/0())), call 'Data.Tuple':'Tuple'("body", apply 'tExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeSigRec'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("typeVars", apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("constraints", apply 'tArray'/1(apply 'tConstraint'/0())), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeSig'/0 =
+  fun () ->
+    apply 'tTypeSigRec'/0()
+
+'tDataType'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("typeVars", apply 'tList'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("constructors", apply 'tList'/1(apply 'tDataConstructor'/0()))]),'row'=>'Nothing'}~)
+
+'tDataConstructor'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("fields", apply 'tList'/1(apply 'tDataField'/0())), call 'Data.Tuple':'Tuple'("isRecord", apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tDataField'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("label", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeAlias'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("typeVars", apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tModuleDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("declarations", apply 'tList'/1(apply 'tDeclaration'/0()))]),'row'=>'Nothing'}~)
+
+'tImportDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("moduleName", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("alias", apply 'tMaybe'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("items", apply 'tArray'/1(apply 'tImportItem'/0())), call 'Data.Tuple':'Tuple'("hiding", apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tDoStatement'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("DoStatement"))
+
+'tGuardedExpr'/0 =
+  fun () ->
+    apply 'tGuardedExprRec'/0()
+
+'tGuardClause'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("GuardClause"))
+
+'tTypeClass'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("typeVars", apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("methods", apply 'tArray'/1(apply 'tTypeSig'/0())), call 'Data.Tuple':'Tuple'("kind", apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeClassInstance'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("className", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0()), call 'Data.Tuple':'Tuple'("methods", apply 'tArray'/1(apply 'tFunctionDecl'/0())), call 'Data.Tuple':'Tuple'("derived", apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tInfixDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("associativity", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("precedence", apply 'tInt'/0()), call 'Data.Tuple':'Tuple'("operator", apply 'tString'/0())]),'row'=>'Nothing'}~)
+
+'tConstraint'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("className", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("types", apply 'tArray'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
+
+'tImportItem'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("ImportItem"))
+
+'tImportSpec'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("ImportSpec"))
+
+'tAssociativity'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("Associativity"))
+
+'tForeignImport'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("moduleName", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("functionName", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tNewtypeDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("typeVars", apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'("constructor", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("wrappedType", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("name", apply 'tString'/0()), call 'Data.Tuple':'Tuple'("ty", apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tUnifyError'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("UnifyError"))
+
+'tTCError'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1("TCError"))
+
+'tPatResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("env", apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'("sub", apply 'tSubst'/0())]),'row'=>'Nothing'}~)
+
+'tInstantiateResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("ty", apply 'tType'/0()), call 'Data.Tuple':'Tuple'("env", apply 'tEnv'/0())]),'row'=>'Nothing'}~)
+
+'tInferResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("ty", apply 'tType'/0()), call 'Data.Tuple':'Tuple'("env", apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'("sub", apply 'tSubst'/0())]),'row'=>'Nothing'}~)
+
+'getAliasInfoParams'/1 =
+  fun (Info) ->
+    call 'maps':'get'('params', Info)
+
+'getAliasInfoBody'/1 =
+  fun (Info) ->
+    call 'maps':'get'('body', Info)
+
+'emptyExports'/0 =
+  fun () ->
+    ~{'types'=>call 'Data.Map':'empty'(),'constructors'=>call 'Data.Map':'empty'(),'values'=>call 'Data.Map':'empty'(),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
+
+'preludeExports'/0 =
+  fun () ->
+    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), "a")
+      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), "b")
+      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), "c")
+      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), "d")
+      in ~{'types'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("Boolean", ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("Int", ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("String", ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("Char", ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("Number", ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("Array", ~{'arity'=>1,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'("Unit", ~{'arity'=>0,'constructors'=>["Unit"]}~), call 'Data.Tuple':'Tuple'("Ordering", ~{'arity'=>0,'constructors'=>["LT", "EQ", "GT"]}~)]),'constructors'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("Unit", apply 'mkScheme'/2([], apply 'tUnit'/0())), call 'Data.Tuple':'Tuple'("LT", apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'("EQ", apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'("GT", apply 'mkScheme'/2([], apply 'tOrdering'/0()))]),'values'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("map", apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'TyVar'/1(D)))))|[call 'Data.Tuple':'Tuple'("<$>", apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'TyVar'/1(D)))))|[call 'Data.Tuple':'Tuple'("pure", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))|[call 'Data.Tuple':'Tuple'("apply", apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)))))|[call 'Data.Tuple':'Tuple'("applySecond", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(B)))))|[call 'Data.Tuple':'Tuple'("*>", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(B)))))|[call 'Data.Tuple':'Tuple'("applyFirst", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("<*", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("alt", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("bind", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'TyVar'/1(C)))))|[call 'Data.Tuple':'Tuple'("identity", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'("const", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("flip", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C))), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C))))))|[call 'Data.Tuple':'Tuple'("compose", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C))))))|[call 'Data.Tuple':'Tuple'("$", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)))))|[call 'Data.Tuple':'Tuple'("#", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B)))))|[call 'Data.Tuple':'Tuple'("show", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tString'/0())))|[call 'Data.Tuple':'Tuple'("eq", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("==", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("/=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("compare", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tOrdering'/0()))))|[call 'Data.Tuple':'Tuple'("<", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'(">", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("<=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'(">=", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("append", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("<>", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))))|[call 'Data.Tuple':'Tuple'("mempty", apply 'mkScheme'/2([A], apply 'TyVar'/1(A)))|[call 'Data.Tuple':'Tuple'("add", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("+", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("mul", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("*", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("sub", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("-", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("negate", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'("div", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("/", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("mod", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0()))))|[call 'Data.Tuple':'Tuple'("not", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))|[call 'Data.Tuple':'Tuple'("conj", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("&&", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("disj", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("||", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))))|[call 'Data.Tuple':'Tuple'("top", apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'("bottom", apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'("foldl", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'tList'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'("foldr", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(B))), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'("fst", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("snd", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'("fromMaybe", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("maybe", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'("isJust", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("isNothing", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("length", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tInt'/0()))), call 'Data.Tuple':'Tuple'("head", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tMaybe'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("tail", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tMaybe'/1(apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("null", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'("reverse", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("concat", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'tArray'/1(apply 'TyVar'/1(A))), apply 'tArray'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("filter", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("take", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("drop", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("elem", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("find", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tMaybe'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("findIndex", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tMaybe'/1(apply 'tInt'/0()))))), call 'Data.Tuple':'Tuple'("cons", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("snoc", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("singleton", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArray'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("empty", apply 'mkScheme'/2([A], apply 'tArray'/1(apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'("intercalate", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("replicate", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("concatMap", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArray'/1(apply 'TyVar'/1(B))), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'("any", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("all", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0()), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("zipWith", apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C))), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(B)), apply 'tArray'/1(apply 'TyVar'/1(C))))))), call 'Data.Tuple':'Tuple'("zip", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(B)), apply 'tArray'/1(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)])))))), call 'Data.Tuple':'Tuple'("unzip", apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArray'/1(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)])), apply 'tTuple'/1([apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(B))])))), call 'Data.Tuple':'Tuple'("sortBy", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tOrdering'/0())), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'("sort", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("nub", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'("split", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tArray'/1(apply 'tString'/0()))))), call 'Data.Tuple':'Tuple'("joinWith", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tArray'/1(apply 'tString'/0()), apply 'tString'/0())))), call 'Data.Tuple':'Tuple'("trim", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'("toLower", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'("toUpper", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'("contains", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'("indexOf", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tMaybe'/1(apply 'tInt'/0()))))), call 'Data.Tuple':'Tuple'("replaceAll", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tString'/0()))))), call 'Data.Tuple':'Tuple'("charAt", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tString'/0(), apply 'tMaybe'/1(apply 'tChar'/0()))))), call 'Data.Tuple':'Tuple'("toCharArray", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tArray'/1(apply 'tChar'/0())))), call 'Data.Tuple':'Tuple'("fromCharArray", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tArray'/1(apply 'tChar'/0()), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'("otherwise", apply 'mkScheme'/2([], apply 'tBool'/0())), call 'Data.Tuple':'Tuple'("unit", apply 'mkScheme'/2([], apply 'tUnit'/0()))]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
+
+'effectConsoleExports'/0 =
+  fun () ->
+    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), "a")
+      in ~{'types'=>call 'Data.Map':'empty'(),'constructors'=>call 'Data.Map':'empty'(),'values'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("log", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'("logShow", apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'("warn", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'("error", apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0())))]),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
+
+'defaultRegistry'/0 =
+  fun () ->
+    call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'("Prelude", apply 'preludeExports'/0()), call 'Data.Tuple':'Tuple'("Effect.Console", apply 'effectConsoleExports'/0())])
+
+'emptyRegistry'/0 =
+  fun () ->
+    call 'Data.Map':'empty'()
+
+'lookupModule'/2 =
+  fun (Reg, Name) ->
+    call 'Data.Map':'lookup'(Name, Reg)
+
+'registerModule'/3 =
+  fun (Reg, Name, Exports) ->
+    call 'Data.Map':'insert'(Name, Exports, Reg)
+
+'mergeExportsToEnv'/2 =
+  fun (Env, Exports) ->
+    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
+      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
+      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
+      end, Env, CtorList)
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
+      end, Env1, ValList)
+      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>call 'Data.Map':'union'(call 'maps':'get'('expandedTypeAliases', Exports), call 'maps':'get'('typeAliases', Env2))}~)
+      in Env3
+
+'mergeExportsToEnvWithPrefix'/3 =
+  fun (Env, Exports, Prefix) ->
+    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
+      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
+      in let <AliasList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('expandedTypeAliases', Exports))
+      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name), Scheme)
+      end, Env, CtorList)
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name), Scheme)
+      end, Env1, ValList)
+      in let <NewAliases> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{M, {'Tuple', Name, Ty}}> when 'true' -> call 'Data.Map':'insert'(call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name), Ty, M)
+      end, call 'maps':'get'('typeAliases', Env2), AliasList)
+      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>NewAliases}~)
+      in Env3
+
+'mergeSelectedExports'/3 =
+  fun (Env, Exports, Items) ->
+    letrec 'addItem'/2 = fun (E, Name) ->
+      let <E_> = case call 'Data.Map':'lookup'(Name, call 'maps':'get'('expandedTypeAliases', Exports)) of
+      <{'Just', Ty}> when 'true' ->
+        call 'maps':'merge'(E, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', E))}~)
+      <'Nothing'> when 'true' ->
+        E
+    end
+      in case call 'Data.Map':'lookup'(Name, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E_, Name, Scheme)
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, call 'maps':'get'('values', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E_, Name, Scheme)
+      <'Nothing'> when 'true' ->
+        E_
+    end
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addItem'/2(_Mf0, _Mf1), Env, Items)
+
+'mergeTypeExport'/4 =
+  fun (Env, Exports, TypeName, CtorNames) ->
+    letrec 'addCtor'/2 = fun (E, CtorName) ->
+      case call 'Data.Map':'lookup'(CtorName, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E, CtorName, Scheme)
+      <'Nothing'> when 'true' ->
+        E
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addCtor'/2(_Mf0, _Mf1), Env, CtorNames)
+
+'showType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyVar', V}}> when 'true' ->
+        call 'maps':'get'('name', V)
+      <{{'TyCon', C}}> when 'true' ->
+        apply 'showTyCon'/1(C)
+      <{{'TyRecord', R}}> when 'true' ->
+        apply 'showRecord'/1(R)
+      <{{'TyApp', F, Arg}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(F)), " "), apply 'showType'/1(Arg)), ")")
+    end
+
+'showTyCon'/1 =
+  fun (C) ->
+    case call 'maps':'get'('name', C) of
+      <"Fun"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[Arg, Ret]> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(apply 'showTypeArg'/1(Arg), " -> "), apply 'showType'/1(Ret))
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', C), " "), call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Mf0) -> apply 'showTypeArg'/1(_Mf0), call 'maps':'get'('args', C))))
+    end
+      <"Array"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[Elem]> when 'true' ->
+        call 'erlang':'++'("Array ", apply 'showTypeArg'/1(Elem))
+      <_W0> when 'true' ->
+        "Array"
+    end
+      <"List"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[Elem]> when 'true' ->
+        call 'erlang':'++'("List ", apply 'showTypeArg'/1(Elem))
+      <_W0> when 'true' ->
+        "List"
+    end
+      <"Maybe"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[Elem]> when 'true' ->
+        call 'erlang':'++'("Maybe ", apply 'showTypeArg'/1(Elem))
+      <_W0> when 'true' ->
+        "Maybe"
+    end
+      <"Either"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[L, R]> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("Either ", apply 'showTypeArg'/1(L)), " "), apply 'showTypeArg'/1(R))
+      <_W0> when 'true' ->
+        "Either"
+    end
+      <"Map"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[K, V]> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("Map ", apply 'showTypeArg'/1(K)), " "), apply 'showTypeArg'/1(V))
+      <_W0> when 'true' ->
+        "Map"
+    end
+      <"Set"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[Elem]> when 'true' ->
+        call 'erlang':'++'("Set ", apply 'showTypeArg'/1(Elem))
+      <_W0> when 'true' ->
+        "Set"
+    end
+      <"Tuple"> when 'true' ->
+        case call 'maps':'get'('args', C) of
+      <[]> when 'true' ->
+        "Unit"
+      <[_W0]> when 'true' ->
+        call 'erlang':'++'("Tuple ", call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Mf0) -> apply 'showTypeArg'/1(_Mf0), call 'maps':'get'('args', C))))
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("(", call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Mf0) -> apply 'showType'/1(_Mf0), call 'maps':'get'('args', C)))), ")")
+    end
+      <Name> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.String':'take'(5, Name), "Tuple") of
+          <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("(", call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Mf0) -> apply 'showType'/1(_Mf0), call 'maps':'get'('args', C)))), ")")
+          <_> when 'true' -> case call 'Data.Array':'null'(call 'maps':'get'('args', C)) of
+            <'true'> when 'true' -> call 'maps':'get'('name', C)
+            <_> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', C), " "), call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Mf0) -> apply 'showTypeArg'/1(_Mf0), call 'maps':'get'('args', C))))
+          end
+        end
+    end
+
+'showTypeArg'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TyVar', V}> when 'true' ->
+        call 'maps':'get'('name', V)
+      <{'TyCon', C}> when 'true' ->
+        case call 'maps':'get'('name', C) of
+      <"Fun"> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(Ty)), ")")
+      <_W0> when 'true' ->
+        case call 'erlang':'not'(call 'Data.Array':'null'(call 'maps':'get'('args', C))) of
+          <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(Ty)), ")")
+          <_> when 'true' -> call 'maps':'get'('name', C)
+        end
+    end
+      <{'TyRecord', R}> when 'true' ->
+        apply 'showRecord'/1(R)
+      <{'TyApp', _W0, _W1}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(Ty)), ")")
+    end
+
+'showRecord'/1 =
+  fun (R) ->
+    let <Fields> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R))
+      in let <FieldStrs> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Name, Ty}}> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(Name, " :: "), apply 'showType'/1(Ty))
+      end, Fields)
+      in let <Inner> = call 'Data.String':'joinWith'(", ", FieldStrs)
+      in case call 'maps':'get'('row', R) of
+      <'Nothing'> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{ ", Inner), " }")
+      <{'Just', Rv}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{ ", Inner), " | "), call 'maps':'get'('name', Rv)), " }")
+    end
+
+'showScheme'/1 =
+  fun (S) ->
+    let <TyStr> = apply 'showType'/1(call 'maps':'get'('ty', S))
+      in case call 'Data.Array':'null'(call 'maps':'get'('vars', S)) of
+      <'true'> when 'true' -> TyStr
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("forall ", call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), call 'maps':'get'('vars', S)))), ". "), TyStr)
+    end
+
+'mkTVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTVar'/2(_A0, _A1)
+      in _F0
+
+'normalizeTypeName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'normalizeTypeName'/1(_A0)
+      in _F0
+
+'mkTCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTCon'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTCon'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTCon'/2(_A0, _A1)
+      in _F0
+
+'mkTCon0'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'mkTCon0'/1(_A0)
+      in _F0
+
+'tList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tList'/1(_A0)
+      in _F0
+
+'tArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tArray'/1(_A0)
+      in _F0
+
+'tArrow'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tArrow'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tArrow'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tArrow'/2(_A0, _A1)
+      in _F0
+
+'tMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tMaybe'/1(_A0)
+      in _F0
+
+'tEither'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tEither'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tEither'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tEither'/2(_A0, _A1)
+      in _F0
+
+'tMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tMap'/2(_A0, _A1)
+      in _F0
+
+'tSet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tSet'/1(_A0)
+      in _F0
+
+'mkTyApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTyApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTyApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTyApp'/2(_A0, _A1)
+      in _F0
+
+'tTuple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tTuple'/1(_A0)
+      in _F0
+
+'lookupSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupSubst'/2(_A0, _A1)
+      in _F0
+
+'singleSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'singleSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'singleSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'singleSubst'/2(_A0, _A1)
+      in _F0
+
+'applySubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'applySubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'applySubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'applySubst'/2(_A0, _A1)
+      in _F0
+
+'composeSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'composeSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'composeSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'composeSubst'/2(_A0, _A1)
+      in _F0
+
+'mkScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkScheme'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkScheme'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkScheme'/2(_A0, _A1)
+      in _F0
+
+'freeTypeVars'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVars'/1(_A0)
+      in _F0
+
+'freeTypeVarsScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVarsScheme'/1(_A0)
+      in _F0
+
+'mkTypedModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTypedModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTypedModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTypedModule'/2(_A0, _A1)
+      in _F0
+
+'typedModuleToModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typedModuleToModule'/1(_A0)
+      in _F0
+
+'typedModuleEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typedModuleEnv'/1(_A0)
+      in _F0
+
+'extendEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'extendEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'extendEnv'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F0
+
+'extendTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'extendTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'extendTypeAlias'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F0
+
+'lookupTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupTypeAlias'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupTypeAlias'/2(_A0, _A1)
+      in _F0
+
+'lookupEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupEnv'/2(_A0, _A1)
+      in _F0
+
+'applySubstToEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'applySubstToEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'applySubstToEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'applySubstToEnv'/2(_A0, _A1)
+      in _F0
+
+'freshVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'freshVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'freshVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'freshVar'/2(_A0, _A1)
+      in _F0
+
+'freeTypeVarsEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVarsEnv'/1(_A0)
+      in _F0
+
+'getAliasInfoParams'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getAliasInfoParams'/1(_A0)
+      in _F0
+
+'getAliasInfoBody'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getAliasInfoBody'/1(_A0)
+      in _F0
+
+'lookupModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupModule'/2(_A0, _A1)
+      in _F0
+
+'registerModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'registerModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'registerModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeExportsToEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mergeExportsToEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mergeExportsToEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mergeExportsToEnv'/2(_A0, _A1)
+      in _F0
+
+'mergeExportsToEnvWithPrefix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'mergeExportsToEnvWithPrefix'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'mergeExportsToEnvWithPrefix'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'mergeExportsToEnvWithPrefix'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'mergeExportsToEnvWithPrefix'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'mergeExportsToEnvWithPrefix'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeSelectedExports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'mergeSelectedExports'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'mergeSelectedExports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'mergeSelectedExports'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'mergeSelectedExports'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'mergeSelectedExports'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeTypeExport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'mergeTypeExport'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'mergeTypeExport'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'mergeTypeExport'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'showType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showType'/1(_A0)
+      in _F0
+
+'showTyCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showTyCon'/1(_A0)
+      in _F0
+
+'showTypeArg'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showTypeArg'/1(_A0)
+      in _F0
+
+'showRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showRecord'/1(_A0)
+      in _F0
+
+'showScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showScheme'/1(_A0)
+      in _F0
+
+'TyVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyVar'/1(_A0)
+      in _F0
+
+'TyCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyCon'/1(_A0)
+      in _F0
+
+'TyRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyRecord'/1(_A0)
+      in _F0
+
+'TyApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyApp'/2(_A0, _A1)
+      in _F0
+end

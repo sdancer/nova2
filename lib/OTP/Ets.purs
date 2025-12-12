@@ -122,3 +122,17 @@ update tab key val = updateImpl tab key val
 
 foreign import updateImpl :: forall k v. Table -> k -> v -> Unit
   = "let <_> = call 'ets':'insert'($0, {$1, $2}) in 'unit'"
+
+-- | Save table to file
+tab2file :: Table -> String -> Either String Unit
+tab2file tab filename = tab2fileImpl tab filename
+
+foreign import tab2fileImpl :: Table -> String -> Either String Unit
+  = "case call 'ets':'tab2file'($0, $1) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_list'(Reason)} end"
+
+-- | Load table from file
+file2tab :: String -> Either String Table
+file2tab filename = file2tabImpl filename
+
+foreign import file2tabImpl :: String -> Either String Table
+  = "case call 'ets':'file2tab'($0) of <{'ok', Tab}> when 'true' -> {'Right', Tab} <{'error', Reason}> when 'true' -> {'Left', call 'lists':'flatten'(call 'io_lib':'format'([126,112], [Reason]))} end"

@@ -1,0 +1,2759 @@
+module 'Nova.Compiler.CodeGenCoreErlang' ['emptyCtx'/1, 'getPreludeFunc'/1, 'isPreludeFunc'/1, 'freshVar'/1, 'addLocalsFromPattern'/2, 'freeVarsInExprFor'/3, 'topoSortBinds'/1, 'atom'/1, 'coreVar'/1, 'genModule'/1, 'genCurriedExports'/1, 'genCurriedWrappers'/1, 'safeRange'/2, 'genCurriedWrapper'/3, 'importItemsToTuples'/2, 'groupFunctions'/1, 'genFunctionGroup'/2, 'hasComplexPattern'/1, 'hasComplexPatternSingle'/1, 'genMergedFunction'/2, 'genFunctionClauseAsCase'/3, 'translateModuleName'/1, 'resolveModuleName'/2, 'genFunction'/2, 'genGuardedExprs'/2, 'genOneGuardedExpr'/3, 'genDataType'/2, 'constructorTag'/1, 'genNewtype'/1, 'genPattern'/1, 'genPatternWithCounter'/2, 'genPatsWithCounter'/2, 'genExpr'/2, 'genExprLetrec'/2, 'exprContainsVar'/2, 'doStmtContainsVar'/2, 'getPatternVarName'/1, 'isRecursiveBind'/1, 'getLambdaArity'/1, 'isSimplePattern'/1, 'genLetBindsWithBody'/3, 'genValueBindsWithBody'/3, 'genValueBindsWithBodyStr'/3, 'genValueBindsWithBodyStrSorted'/3, 'genLetBinds'/2, 'isWildcardPattern'/1, 'genCaseClausesWithFallback'/3, 'splitSamePatternClauses'/2, 'genFallbackForSamePattern'/4, 'genFallbackForDifferent'/3, 'genGuardedWildcardClause'/4, 'genCaseClause'/3, 'genDoStmts'/2, 'genDoStmtsParser'/2, 'genDoStmtsMaybeEither'/2, 'genDoLetWithBody'/3, 'genDoLetWithBodyParser'/3, 'genLiteral'/1, 'escapeString'/1, 'escapeChar'/1, 'translateOp'/1, 'toSnakeCase'/1, 'genCurriedLambda'/2, 'genCurriedApply'/3, 'genCoreList'/2, 'collectArgs'/1, 'lookupArity'/2, 'getUsedVars'/1, 'listConcatMap'/2, 'listConcatMapArray'/2, 'countTypeArity'/1, 'genForeignImport'/2, 'substituteParams'/2, 'emptyCtx'/0, 'getPreludeFunc'/0, 'isPreludeFunc'/0, 'freshVar'/0, 'addLocalsFromPattern'/0, 'addLocalsFromPattern'/1, 'freeVarsInExprFor'/0, 'freeVarsInExprFor'/1, 'freeVarsInExprFor'/2, 'topoSortBinds'/0, 'atom'/0, 'coreVar'/0, 'genModule'/0, 'genCurriedExports'/0, 'genCurriedWrappers'/0, 'safeRange'/0, 'safeRange'/1, 'genCurriedWrapper'/0, 'genCurriedWrapper'/1, 'genCurriedWrapper'/2, 'importItemsToTuples'/0, 'importItemsToTuples'/1, 'groupFunctions'/0, 'genFunctionGroup'/0, 'genFunctionGroup'/1, 'hasComplexPattern'/0, 'hasComplexPatternSingle'/0, 'genMergedFunction'/0, 'genMergedFunction'/1, 'genFunctionClauseAsCase'/0, 'genFunctionClauseAsCase'/1, 'genFunctionClauseAsCase'/2, 'translateModuleName'/0, 'resolveModuleName'/0, 'resolveModuleName'/1, 'genFunction'/0, 'genFunction'/1, 'genGuardedExprs'/0, 'genGuardedExprs'/1, 'genOneGuardedExpr'/0, 'genOneGuardedExpr'/1, 'genOneGuardedExpr'/2, 'genDataType'/0, 'genDataType'/1, 'constructorTag'/0, 'genNewtype'/0, 'genPattern'/0, 'genPatternWithCounter'/0, 'genPatternWithCounter'/1, 'genPatsWithCounter'/0, 'genPatsWithCounter'/1, 'genExpr'/0, 'genExpr'/1, 'genExprLetrec'/0, 'genExprLetrec'/1, 'exprContainsVar'/0, 'exprContainsVar'/1, 'doStmtContainsVar'/0, 'doStmtContainsVar'/1, 'getPatternVarName'/0, 'isRecursiveBind'/0, 'getLambdaArity'/0, 'isSimplePattern'/0, 'genLetBindsWithBody'/0, 'genLetBindsWithBody'/1, 'genLetBindsWithBody'/2, 'genValueBindsWithBody'/0, 'genValueBindsWithBody'/1, 'genValueBindsWithBody'/2, 'genValueBindsWithBodyStr'/0, 'genValueBindsWithBodyStr'/1, 'genValueBindsWithBodyStr'/2, 'genValueBindsWithBodyStrSorted'/0, 'genValueBindsWithBodyStrSorted'/1, 'genValueBindsWithBodyStrSorted'/2, 'genLetBinds'/0, 'genLetBinds'/1, 'isWildcardPattern'/0, 'genCaseClausesWithFallback'/0, 'genCaseClausesWithFallback'/1, 'genCaseClausesWithFallback'/2, 'splitSamePatternClauses'/0, 'splitSamePatternClauses'/1, 'genFallbackForSamePattern'/0, 'genFallbackForSamePattern'/1, 'genFallbackForSamePattern'/2, 'genFallbackForSamePattern'/3, 'genFallbackForDifferent'/0, 'genFallbackForDifferent'/1, 'genFallbackForDifferent'/2, 'genGuardedWildcardClause'/0, 'genGuardedWildcardClause'/1, 'genGuardedWildcardClause'/2, 'genGuardedWildcardClause'/3, 'genCaseClause'/0, 'genCaseClause'/1, 'genCaseClause'/2, 'genDoStmts'/0, 'genDoStmts'/1, 'genDoStmtsParser'/0, 'genDoStmtsParser'/1, 'genDoStmtsMaybeEither'/0, 'genDoStmtsMaybeEither'/1, 'genDoLetWithBody'/0, 'genDoLetWithBody'/1, 'genDoLetWithBody'/2, 'genDoLetWithBodyParser'/0, 'genDoLetWithBodyParser'/1, 'genDoLetWithBodyParser'/2, 'genLiteral'/0, 'escapeString'/0, 'escapeChar'/0, 'translateOp'/0, 'toSnakeCase'/0, 'genCurriedLambda'/0, 'genCurriedLambda'/1, 'genCurriedApply'/0, 'genCurriedApply'/1, 'genCurriedApply'/2, 'genCoreList'/0, 'genCoreList'/1, 'collectArgs'/0, 'lookupArity'/0, 'lookupArity'/1, 'getUsedVars'/0, 'listConcatMap'/0, 'listConcatMap'/1, 'listConcatMapArray'/0, 'listConcatMapArray'/1, 'countTypeArity'/0, 'genForeignImport'/0, 'genForeignImport'/1, 'substituteParams'/0, 'substituteParams'/1]
+  attributes []
+'emptyCtx'/1 =
+  fun (ModName) ->
+    ~{'moduleName'=>ModName,'moduleFuncs'=>call 'Data.Set':'empty'(),'locals'=>call 'Data.Set':'empty'(),'funcArities'=>[],'varCounter'=>0,'imports'=>call 'Data.Map':'empty'(),'aliasMap'=>call 'Data.Map':'empty'()}~
+
+'getPreludeFunc'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{"show"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"integer_to_list",'arity'=>1}~}
+      <{"foldl"}> when 'true' ->
+        'Nothing'
+      <{"foldr"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"foldr",'arity'=>3}~}
+      <{"map"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"map",'arity'=>2}~}
+      <{"filter"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"filter",'arity'=>2}~}
+      <{"length"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"length",'arity'=>1}~}
+      <{"reverse"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"reverse",'arity'=>1}~}
+      <{"concat"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"concat",'arity'=>1}~}
+      <{"head"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"hd",'arity'=>1}~}
+      <{"tail"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"tl",'arity'=>1}~}
+      <{"take"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"sublist",'arity'=>2}~}
+      <{"drop"}> when 'true' ->
+        {'Just', ~{'mod'=>"lists",'func'=>"nthtail",'arity'=>2}~}
+      <{"not"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"not",'arity'=>1}~}
+      <{"negate"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"-",'arity'=>1}~}
+      <{"mod"}> when 'true' ->
+        {'Just', ~{'mod'=>"erlang",'func'=>"rem",'arity'=>2}~}
+      <{"pure"}> when 'true' ->
+        'Nothing'
+      <{_W0}> when 'true' ->
+        'Nothing'
+    end
+
+'isPreludeFunc'/1 =
+  fun (Name) ->
+    case apply 'getPreludeFunc'/1(Name) of
+      <{'Just', _W0}> when 'true' ->
+        'true'
+      <'Nothing'> when 'true' ->
+        'false'
+    end
+
+'freshVar'/1 =
+  fun (Ctx) ->
+    ~{'var'=>call 'erlang':'++'("_cor", call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', Ctx))),'ctx'=>call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 1)}~)}~
+
+'addLocalsFromPattern'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'PatVar', Name}, Ctx}> when 'true' ->
+        call 'maps':'merge'(Ctx, ~{'locals'=>call 'Data.Set':'insert'(Name, call 'maps':'get'('locals', Ctx))}~)
+      <{'PatWildcard', Ctx}> when 'true' ->
+        Ctx
+      <{{'PatLit', _W0}, Ctx}> when 'true' ->
+        Ctx
+      <{{'PatCon', _W0, Pats}, Ctx}> when 'true' ->
+        call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      <{{'PatRecord', Fields}, Ctx}> when 'true' ->
+        call 'lists':'foldr'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'Tuple', _W0, P}, C}> when 'true' -> apply 'addLocalsFromPattern'/2(P, C)
+      end, Ctx, Fields)
+      <{{'PatList', Pats}, Ctx}> when 'true' ->
+        call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      <{{'PatCons', Hd, Tl}, Ctx}> when 'true' ->
+        apply 'addLocalsFromPattern'/2(Tl, apply 'addLocalsFromPattern'/2(Hd, Ctx))
+      <{{'PatAs', Name, Pat}, Ctx}> when 'true' ->
+        apply 'addLocalsFromPattern'/2(Pat, call 'maps':'merge'(Ctx, ~{'locals'=>call 'Data.Set':'insert'(Name, call 'maps':'get'('locals', Ctx))}~))
+      <{{'PatParens', P}, Ctx}> when 'true' ->
+        apply 'addLocalsFromPattern'/2(P, Ctx)
+    end
+
+'freeVarsInExprFor'/3 =
+  fun (Candidates, Bound, Expr) ->
+    letrec 'addPatternVars'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'PatVar', N}, S}> when 'true' -> call 'Data.Set':'insert'(N, S)
+        <{'PatWildcard', S}> when 'true' -> S
+        <{{'PatLit', _W0}, S}> when 'true' -> S
+        <{{'PatCon', _W0, Pats}, S}> when 'true' -> call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addPatternVars'/2(_Mf0, _Mf1), S, Pats)
+        <{{'PatRecord', Fields}, S}> when 'true' -> call 'lists':'foldr'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'Tuple', _W0, P}, Acc}> when 'true' -> apply 'addPatternVars'/2(P, Acc)
+      end, S, Fields)
+        <{{'PatList', Pats}, S}> when 'true' -> call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addPatternVars'/2(_Mf0, _Mf1), S, Pats)
+        <{{'PatCons', Hd, Tl}, S}> when 'true' -> apply 'addPatternVars'/2(Hd, apply 'addPatternVars'/2(Tl, S))
+        <{{'PatAs', N, P}, S}> when 'true' -> apply 'addPatternVars'/2(P, call 'Data.Set':'insert'(N, S))
+        <{{'PatParens', P}, S}> when 'true' -> apply 'addPatternVars'/2(P, S)
+      end
+      in case Expr of
+      <{'ExprVar', Name}> when 'true' ->
+        case case call 'Data.Set':'member'(Name, Candidates) of <'true'> when 'true' -> call 'erlang':'not'(call 'Data.Set':'member'(Name, Bound)) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> call 'Data.Set':'singleton'(Name)
+      <'false'> when 'true' -> call 'Data.Set':'empty'()
+    end
+      <{'ExprLit', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprApp', F, Arg}> when 'true' ->
+        call 'Data.Set':'union'(apply 'freeVarsInExprFor'/3(Candidates, Bound, F), apply 'freeVarsInExprFor'/3(Candidates, Bound, Arg))
+      <{'ExprLambda', Pats, Body}> when 'true' ->
+        let <PatBound> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addPatternVars'/2(_Mf0, _Mf1), Bound, Pats)
+      in apply 'freeVarsInExprFor'/3(Candidates, PatBound, Body)
+      <{'ExprLet', Binds, Body}> when 'true' ->
+        let <BindNames> = call 'Data.Set':'fromFoldable'(call 'Data.List':'mapMaybe'(fun (B) ->
+      apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)), Binds))
+      in let <NewBound> = call 'Data.Set':'union'(Bound, BindNames)
+      in let <BindVars> = call 'lists':'foldr'(fun (B, S) ->
+      call 'Data.Set':'union'(S, apply 'freeVarsInExprFor'/3(Candidates, NewBound, call 'maps':'get'('value', B))), call 'Data.Set':'empty'(), Binds)
+      in call 'Data.Set':'union'(BindVars, apply 'freeVarsInExprFor'/3(Candidates, NewBound, Body))
+      <{'ExprCase', Scrut, Clauses}> when 'true' ->
+        let <ScrutVars> = apply 'freeVarsInExprFor'/3(Candidates, Bound, Scrut)
+      in let <ClauseVars> = call 'lists':'foldr'(fun (C, S) ->
+      let <ClauseBound> = apply 'addPatternVars'/2(call 'maps':'get'('pattern', C), Bound)
+      in let <GuardVars> = case call 'maps':'get'('guard', C) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', G}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, ClauseBound, G)
+    end
+      in let <BodyVars> = apply 'freeVarsInExprFor'/3(Candidates, ClauseBound, call 'maps':'get'('body', C))
+      in call 'Data.Set':'union'(S, call 'Data.Set':'union'(GuardVars, BodyVars)), call 'Data.Set':'empty'(), Clauses)
+      in call 'Data.Set':'union'(ScrutVars, ClauseVars)
+      <{'ExprIf', Cond, Thn, Els}> when 'true' ->
+        call 'Data.Set':'union'(apply 'freeVarsInExprFor'/3(Candidates, Bound, Cond), call 'Data.Set':'union'(apply 'freeVarsInExprFor'/3(Candidates, Bound, Thn), apply 'freeVarsInExprFor'/3(Candidates, Bound, Els)))
+      <{'ExprDo', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprList', Exprs}> when 'true' ->
+        call 'lists':'foldr'(fun (E, S) ->
+      call 'Data.Set':'union'(S, apply 'freeVarsInExprFor'/3(Candidates, Bound, E)), call 'Data.Set':'empty'(), Exprs)
+      <{'ExprTuple', Exprs}> when 'true' ->
+        call 'lists':'foldr'(fun (E, S) ->
+      call 'Data.Set':'union'(S, apply 'freeVarsInExprFor'/3(Candidates, Bound, E)), call 'Data.Set':'empty'(), Exprs)
+      <{'ExprRecord', Fields}> when 'true' ->
+        call 'lists':'foldr'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'Tuple', _W0, E}, S}> when 'true' -> call 'Data.Set':'union'(S, apply 'freeVarsInExprFor'/3(Candidates, Bound, E))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'ExprRecordAccess', E, _W0}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprRecordUpdate', E, Updates}> when 'true' ->
+        call 'Data.Set':'union'(apply 'freeVarsInExprFor'/3(Candidates, Bound, E), call 'lists':'foldr'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'Tuple', _W0, V}, S}> when 'true' -> call 'Data.Set':'union'(S, apply 'freeVarsInExprFor'/3(Candidates, Bound, V))
+      end, call 'Data.Set':'empty'(), Updates))
+      <{'ExprTyped', E, _W0}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprBinOp', _W0, L, R}> when 'true' ->
+        call 'Data.Set':'union'(apply 'freeVarsInExprFor'/3(Candidates, Bound, L), apply 'freeVarsInExprFor'/3(Candidates, Bound, R))
+      <{'ExprUnaryOp', _W0, E}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprParens', E}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprSection', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprSectionLeft', E, _W0}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprSectionRight', _W0, E}> when 'true' ->
+        apply 'freeVarsInExprFor'/3(Candidates, Bound, E)
+      <{'ExprQualified', _W0, _W1}> when 'true' ->
+        call 'Data.Set':'empty'()
+    end
+
+'topoSortBinds'/1 =
+  fun (Binds) ->
+    letrec 'kahnSort'/1 = fun (Items) ->
+      letrec 'go'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, []}> when 'true' -> Acc
+        <{Acc, Remaining}> when 'true' -> let <Processed> = call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (B) ->
+      call 'Data.Maybe':'fromMaybe'("", apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B))), Acc))
+      in let <Ready> = call 'Data.Array':'filter'(fun (Item) ->
+      let <UnresolvedDeps> = call 'Data.Set':'difference'(call 'maps':'get'('deps', Item), Processed)
+      in call 'Data.Set':'isEmpty'(UnresolvedDeps), Remaining)
+      in let <NotReady> = call 'Data.Array':'filter'(fun (Item) ->
+      let <UnresolvedDeps> = call 'Data.Set':'difference'(call 'maps':'get'('deps', Item), Processed)
+      in call 'erlang':'not'(call 'Data.Set':'isEmpty'(UnresolvedDeps)), Remaining)
+      in case call 'Data.Array':'null'(Ready) of
+      <'true'> when 'true' -> call 'erlang':'++'(Acc, call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('bind', _Ra), Remaining))
+      <'false'> when 'true' -> apply 'go'/2(call 'erlang':'++'(Acc, call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('bind', _Ra), Ready)), NotReady)
+    end
+      end
+      in apply 'go'/2([], Items)
+      in let <BindMap> = call 'Data.Map':'fromFoldable'(call 'Data.Array':'mapMaybe'(fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', N}> when 'true' ->
+        {'Just', call 'Data.Tuple':'Tuple'(N, B)}
+    end, Binds))
+      in let <BindNames> = call 'Data.Set':'fromFoldable'(call 'Data.Map':'keys'(BindMap))
+      in let <Deps> = call 'lists':'map'(fun (B) ->
+      let <Name> = call 'Data.Maybe':'fromMaybe'("", apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)))
+      in let <FreeVars> = apply 'freeVarsInExprFor'/3(BindNames, call 'Data.Set':'empty'(), call 'maps':'get'('value', B))
+      in let <LocalDeps> = FreeVars
+      in ~{'name'=>Name,'bind'=>B,'deps'=>LocalDeps}~, Binds)
+      in let <Sorted> = apply 'kahnSort'/1(Deps)
+      in Sorted
+
+'atom'/1 =
+  fun (S) ->
+    letrec 'escapeAtom'/1 = fun (Str) ->
+      let <S1> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\\"), call 'Data.String':'Replacement'("\\\\"), Str)
+      in let <S2> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("'"), call 'Data.String':'Replacement'("\\'"), S1)
+      in S2
+      in call 'erlang':'++'(call 'erlang':'++'("'", apply 'escapeAtom'/1(S)), "'")
+
+'coreVar'/1 =
+  fun (Name) ->
+    letrec 'toSnake'/1 = fun (S) ->
+      call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("'"), call 'Data.String':'Replacement'("_"), S)
+      in let <First> = call 'Data.String':'take'(1, Name)
+      in let <Rest> = call 'Data.String':'drop'(1, Name)
+      in call 'erlang':'++'(call 'Data.String':'toUpper'(First), apply 'toSnake'/1(Rest))
+
+'genModule'/1 =
+  fun (M) ->
+    letrec 'getFunc'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclFunction', F}}> when 'true' -> {'Just', F}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'getForeignFunc'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclForeignImport', Fi}}> when 'true' -> {'Just', Fi}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'getDataType'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclDataType', Dt}}> when 'true' -> {'Just', Dt}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'getNewtype'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclNewtype', Nt}}> when 'true' -> {'Just', Nt}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'getImports'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclImport', Imp}}> when 'true' -> apply 'importItemsToTuples'/2(call 'maps':'get'('moduleName', Imp), call 'Data.Array':'fromFoldable'(call 'maps':'get'('items', Imp)))
+        <{_W0}> when 'true' -> []
+      end
+       'getConstructorExports'/1 = fun (Dt) ->
+      call 'lists':'map'(fun (C) ->
+      ~{'name'=>call 'maps':'get'('name', C),'arity'=>call 'Data.List':'length'(call 'maps':'get'('fields', C))}~, call 'Data.Array':'fromFoldable'(call 'maps':'get'('constructors', Dt)))
+       'getNewtypeExports'/1 = fun (Nt) ->
+      [~{'name'=>call 'maps':'get'('constructor', Nt),'arity'=>1}~]
+       'getAliasMapping'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DeclImport', Imp}}> when 'true' -> let <FullName> = call 'maps':'get'('moduleName', Imp)
+      in let <AliasName> = case call 'maps':'get'('alias', Imp) of
+      <{'Just', A}> when 'true' ->
+        A
+      <'Nothing'> when 'true' ->
+        apply 'getLastComponent'/1(FullName)
+    end
+      in {'Just', call 'Data.Tuple':'Tuple'(AliasName, FullName)}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'getLastComponent'/1 = fun (Name) ->
+      case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+       'genDeclNonFunc'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Ctx, {'DeclDataType', Dt}}> when 'true' -> {'Just', apply 'genDataType'/2(Ctx, Dt)}
+        <{_W0, {'DeclNewtype', Nt}}> when 'true' -> {'Just', apply 'genNewtype'/1(Nt)}
+        <{_W0, _W1}> when 'true' -> 'Nothing'
+      end
+      in let <ModName> = apply 'translateModuleName'/1(call 'maps':'get'('name', M))
+      in let <AllFuncs> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getFunc'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <AllForeignImports> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getForeignFunc'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <AllDataTypes> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getDataType'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <AllNewtypes> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getNewtype'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <AllImports> = call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'getImports'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <AliasMapArr> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getAliasMapping'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
+      in let <ImportMap> = call 'Data.Map':'fromFoldable'(AllImports)
+      in let <AliasMp> = call 'Data.Map':'fromFoldable'(AliasMapArr)
+      in let <Grouped> = apply 'groupFunctions'/1(AllFuncs)
+      in let <ForeignExports> = call 'lists':'map'(fun (Fi) ->
+      ~{'name'=>call 'maps':'get'('functionName', Fi),'arity'=>apply 'countTypeArity'/1(call 'maps':'get'('typeSignature', Fi))}~, AllForeignImports)
+      in let <ConstructorExports> = call 'erlang':'++'(call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'getConstructorExports'/1(_Mf0), AllDataTypes), call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'getNewtypeExports'/1(_Mf0), AllNewtypes))
+      in let <ForeignDefs> = call 'Data.String':'joinWith'("\n\n", call 'lists':'map'(fun (_Pc0) -> apply 'genForeignImport'/2(call 'maps':'get'('name', M), _Pc0), AllForeignImports))
+      in let <UniqueFuncs> = call 'Data.Array':'nubByEq'(fun (A, B) ->
+      case call 'erlang':'=:='(call 'maps':'get'('name', A), call 'maps':'get'('name', B)) of <'true'> when 'true' -> call 'erlang':'=:='(call 'maps':'get'('arity', A), call 'maps':'get'('arity', B)) <_> when 'true' -> 'false' end, call 'lists':'map'(fun (G) ->
+      ~{'name'=>call 'maps':'get'('name', G),'arity'=>call 'maps':'get'('arity', G)}~, Grouped))
+      in let <AllExports> = call 'erlang':'++'(call 'erlang':'++'(UniqueFuncs, ForeignExports), ConstructorExports)
+      in let <CurriedExports> = call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'genCurriedExports'/1(_Mf0), AllExports)
+      in let <Ctx> = call 'maps':'merge'(apply 'emptyCtx'/1(ModName), ~{'moduleFuncs'=>call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), AllExports)),'funcArities'=>AllExports,'imports'=>ImportMap,'aliasMap'=>AliasMp}~)
+      in let <CurriedWrappers> = call 'Data.String':'joinWith'("\n\n", call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'genCurriedWrappers'/1(_Mf0), AllExports))
+      in let <AllExportsWithCurried> = call 'erlang':'++'(AllExports, CurriedExports)
+      in let <FuncDefs> = call 'Data.String':'joinWith'("\n\n", call 'lists':'map'(fun (_Pc0) -> apply 'genFunctionGroup'/2(Ctx, _Pc0), Grouped))
+      in let <DtDefs> = call 'Data.String':'joinWith'("\n\n", call 'Data.Array':'mapMaybe'(fun (_Pc0) -> apply 'genDeclNonFunc'/2(Ctx, _Pc0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M))))
+      in let <Exports> = call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (F) ->
+      call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(call 'maps':'get'('name', F)), "/"), call 'erlang':'integer_to_list'(call 'maps':'get'('arity', F))), AllExportsWithCurried))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("module ", apply 'atom'/1(ModName)), " ["), Exports), "]\n"), "  attributes []\n"), DtDefs), case call 'erlang':'=:='(DtDefs, "") of
+      <'true'> when 'true' -> ""
+      <'false'> when 'true' -> "\n\n"
+    end), FuncDefs), case case call 'erlang':'=:='(FuncDefs, "") of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(ForeignDefs, "") end of
+      <'true'> when 'true' -> ""
+      <'false'> when 'true' -> "\n\n"
+    end), ForeignDefs), case call 'erlang':'=:='(CurriedWrappers, "") of
+      <'true'> when 'true' -> ""
+      <'false'> when 'true' -> "\n\n"
+    end), CurriedWrappers), "\nend\n")
+
+'genCurriedExports'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{~{'name':=Name,'arity':=Arity}~}> when 'true' ->
+        case call 'erlang':'<'(Arity, 1) of
+      <'true'> when 'true' -> []
+      <'false'> when 'true' -> call 'lists':'map'(fun (A) ->
+      ~{'name'=>Name,'arity'=>A}~, apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
+    end
+    end
+
+'genCurriedWrappers'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{~{'name':=Name,'arity':=Arity}~}> when 'true' ->
+        case call 'erlang':'<'(Arity, 1) of
+      <'true'> when 'true' -> []
+      <'false'> when 'true' -> call 'lists':'map'(fun (_Pc0) -> apply 'genCurriedWrapper'/3(Name, Arity, _Pc0), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
+    end
+    end
+
+'safeRange'/2 =
+  fun (Start, End) ->
+    case call 'erlang':'<'(End, Start) of
+      <'true'> when 'true' -> []
+      <'false'> when 'true' -> call 'Data.Array':'range'(Start, End)
+    end
+
+'genCurriedWrapper'/3 =
+  fun (Name, FullArity, WrapperArity) ->
+    let <WrapperParams> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_A", call 'erlang':'integer_to_list'(I)), apply 'safeRange'/2(0, call 'erlang':'-'(WrapperArity, 1)))
+      in let <RemainingCount> = call 'erlang':'-'(FullArity, WrapperArity)
+      in let <WrapperParamsStr> = case call 'erlang':'=:='(WrapperArity, 0) of
+      <'true'> when 'true' -> ""
+      <'false'> when 'true' -> call 'Data.String':'joinWith'(", ", WrapperParams)
+    end
+      in let <RemainingParams> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_A", call 'erlang':'integer_to_list'(call 'erlang':'+'(WrapperArity, I))), apply 'safeRange'/2(0, call 'erlang':'-'(RemainingCount, 1)))
+      in let <AllParams> = call 'erlang':'++'(WrapperParams, RemainingParams)
+      in let <AllParamsStr> = call 'Data.String':'joinWith'(", ", AllParams)
+      in let <InnerCall> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'atom'/1(Name)), "/"), call 'erlang':'integer_to_list'(FullArity)), "("), AllParamsStr), ")")
+      in letrec 'buildNested'/3 = fun (Idx, Param, Body) ->
+      let <VarName> = call 'erlang':'++'("_F", call 'erlang':'integer_to_list'(Idx))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", VarName), "> = fun ("), Param), ") ->\n        "), Body), "\n      in "), VarName)
+      in let <NestedLets> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{~{'body':=Body,'idx':=Idx}~, Param}> when 'true' -> ~{'body'=>apply 'buildNested'/3(Idx, Param, Body),'idx'=>call 'erlang':'-'(Idx, 1)}~
+      end, ~{'body'=>InnerCall,'idx'=>call 'erlang':'-'(RemainingCount, 1)}~, call 'Data.Array':'reverse'(RemainingParams))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(Name), "/"), call 'erlang':'integer_to_list'(WrapperArity)), " =\n  fun ("), WrapperParamsStr), ") ->\n    "), call 'maps':'get'('body', NestedLets))
+
+'importItemsToTuples'/2 =
+  fun (ModName, Items) ->
+    letrec 'toTuples'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'ImportValue', Name}}> when 'true' -> [call 'Data.Tuple':'Tuple'(Name, ModName)]
+        <{{'ImportType', Name, _W0}}> when 'true' -> [call 'Data.Tuple':'Tuple'(Name, ModName)]
+      end
+      in call 'Data.Array':'concatMap'(fun (_Mf0) -> apply 'toTuples'/1(_Mf0), Items)
+
+'groupFunctions'/1 =
+  fun (Funcs) ->
+    let <Keys> = call 'Data.Array':'nubByEq'(fun (A, B) ->
+      case call 'erlang':'=:='(call 'maps':'get'('name', A), call 'maps':'get'('name', B)) of <'true'> when 'true' -> call 'erlang':'=:='(call 'maps':'get'('arity', A), call 'maps':'get'('arity', B)) <_> when 'true' -> 'false' end, call 'lists':'map'(fun (F) ->
+      ~{'name'=>call 'maps':'get'('name', F),'arity'=>call 'Data.List':'length'(call 'maps':'get'('parameters', F))}~, Funcs))
+      in letrec 'mkGroup'/1 = fun (K) ->
+      ~{'name'=>call 'maps':'get'('name', K),'arity'=>call 'maps':'get'('arity', K),'clauses'=>call 'Data.Array':'filter'(fun (F) ->
+      case call 'erlang':'=:='(call 'maps':'get'('name', F), call 'maps':'get'('name', K)) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.List':'length'(call 'maps':'get'('parameters', F)), call 'maps':'get'('arity', K)) <_> when 'true' -> 'false' end, Funcs)}~
+      in call 'lists':'map'(fun (_Mf0) -> apply 'mkGroup'/1(_Mf0), Keys)
+
+'genFunctionGroup'/2 =
+  fun (Ctx, Group) ->
+    case call 'Data.Array':'uncons'(call 'maps':'get'('clauses', Group)) of
+      <'Nothing'> when 'true' ->
+        ""
+      <{'Just', ~{'head':=First,'tail':=[]}~}> when 'true' ->
+        case apply 'hasComplexPattern'/1(call 'maps':'get'('parameters', First)) of
+      <'true'> when 'true' -> apply 'genMergedFunction'/2(Ctx, Group)
+      <'false'> when 'true' -> apply 'genFunction'/2(Ctx, First)
+    end
+      <{'Just', _W0}> when 'true' ->
+        apply 'genMergedFunction'/2(Ctx, Group)
+    end
+
+'hasComplexPattern'/1 =
+  fun (Pats) ->
+    letrec 'isComplex'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'PatVar', _W0}}> when 'true' -> 'false'
+        <{'PatWildcard'}> when 'true' -> 'false'
+        <{_W0}> when 'true' -> 'true'
+      end
+      in call 'Data.List':'any'(fun (_Mf0) -> apply 'isComplex'/1(_Mf0), Pats)
+
+'hasComplexPatternSingle'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'PatVar', _W0}}> when 'true' ->
+        'false'
+      <{'PatWildcard'}> when 'true' ->
+        'false'
+      <{_W0}> when 'true' ->
+        'true'
+    end
+
+'genMergedFunction'/2 =
+  fun (Ctx, Group) ->
+    let <Arity> = call 'maps':'get'('arity', Group)
+      in let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_P", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in let <CaseClauses> = call 'lists':'map'(fun (_Pc0) -> apply 'genFunctionClauseAsCase'/3(Ctx, ParamNames, _Pc0), call 'maps':'get'('clauses', Group))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(call 'maps':'get'('name', Group)), "/"), call 'erlang':'integer_to_list'(Arity)), " =\n"), "  fun ("), ParamsStr), ") ->\n"), "    case {"), ParamsStr), "} of\n"), call 'Data.String':'joinWith'("\n", CaseClauses)), "\n"), "    end")
+
+'genFunctionClauseAsCase'/3 =
+  fun (Ctx, _W0, Func) ->
+    let <PatsResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(call 'maps':'get'('parameters', Func)), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, call 'maps':'get'('parameters', Func))
+      in let <PatTuple> = call 'erlang':'++'(call 'erlang':'++'("{", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatsResult))), "}")
+      in let <Body> = case call 'Data.List':'null'(call 'maps':'get'('guards', Func)) of
+      <'true'> when 'true' -> apply 'genExpr'/2(CtxWithParams, call 'maps':'get'('body', Func))
+      <'false'> when 'true' -> apply 'genGuardedExprs'/2(CtxWithParams, call 'Data.Array':'fromFoldable'(call 'maps':'get'('guards', Func)))
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("      <", PatTuple), "> when 'true' ->\n        "), Body)
+
+'translateModuleName'/1 =
+  fun (Name) ->
+    Name
+
+'resolveModuleName'/2 =
+  fun (Ctx, Alias) ->
+    case call 'Data.Map':'lookup'(Alias, call 'maps':'get'('aliasMap', Ctx)) of
+      <{'Just', FullName}> when 'true' ->
+        FullName
+      <'Nothing'> when 'true' ->
+        Alias
+    end
+
+'genFunction'/2 =
+  fun (Ctx, Func) ->
+    let <Params> = call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Mf0) -> apply 'genPattern'/1(_Mf0), call 'maps':'get'('parameters', Func)))
+      in let <Arity> = call 'Data.List':'length'(call 'maps':'get'('parameters', Func))
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, call 'maps':'get'('parameters', Func))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", Params)
+      in let <Body> = case call 'Data.List':'null'(call 'maps':'get'('guards', Func)) of
+      <'true'> when 'true' -> apply 'genExpr'/2(CtxWithParams, call 'maps':'get'('body', Func))
+      <'false'> when 'true' -> apply 'genGuardedExprs'/2(CtxWithParams, call 'Data.Array':'fromFoldable'(call 'maps':'get'('guards', Func)))
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(call 'maps':'get'('name', Func)), "/"), call 'erlang':'integer_to_list'(Arity)), " =\n"), "  fun ("), ParamsStr), ") ->\n"), "    "), Body)
+
+'genGuardedExprs'/2 =
+  fun (Ctx, Guards) ->
+    case call 'Data.Array':'uncons'(Guards) of
+      <'Nothing'> when 'true' ->
+        apply 'atom'/1("error_no_matching_guard")
+      <{'Just', ~{'head':=G,'tail':=Rest}~}> when 'true' ->
+        apply 'genOneGuardedExpr'/3(Ctx, G, Rest)
+    end
+
+'genOneGuardedExpr'/3 =
+  fun (Ctx, GuardedExpr, Rest) ->
+    case call 'Data.List':'uncons'(call 'maps':'get'('guards', GuardedExpr)) of
+      <'Nothing'> when 'true' ->
+        apply 'genExpr'/2(Ctx, call 'maps':'get'('body', GuardedExpr))
+      <{'Just', ~{'head':=Clause,'tail':=MoreClauses}~}> when 'true' ->
+        case Clause of
+      <{'GuardExpr', Expr}> when 'true' ->
+        let <Fallback> = case case call 'Data.Array':'null'(Rest) of <'true'> when 'true' -> call 'Data.List':'null'(MoreClauses) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> apply 'atom'/1("error_no_matching_guard")
+      <'false'> when 'true' -> case call 'Data.List':'null'(MoreClauses) of
+      <'true'> when 'true' -> apply 'genGuardedExprs'/2(Ctx, Rest)
+      <'false'> when 'true' -> apply 'genOneGuardedExpr'/3(Ctx, ~{'guards'=>MoreClauses,'body'=>call 'maps':'get'('body', GuardedExpr)}~, Rest)
+    end
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, Expr)), " of\n"), "        <'true'> when 'true' -> "), apply 'genExpr'/2(Ctx, call 'maps':'get'('body', GuardedExpr))), "\n"), "        <_> when 'true' -> "), Fallback), "\n"), "      end")
+      <{'GuardPat', Pat, BindExpr}> when 'true' ->
+        let <CtxWithBind> = apply 'addLocalsFromPattern'/2(Pat, Ctx)
+      in let <Fallback> = case call 'Data.Array':'null'(Rest) of
+      <'true'> when 'true' -> apply 'atom'/1("error_no_matching_guard")
+      <'false'> when 'true' -> apply 'genGuardedExprs'/2(Ctx, Rest)
+    end
+      in let <InnerBody> = case call 'Data.List':'null'(MoreClauses) of
+      <'true'> when 'true' -> apply 'genExpr'/2(CtxWithBind, call 'maps':'get'('body', GuardedExpr))
+      <'false'> when 'true' -> apply 'genOneGuardedExpr'/3(CtxWithBind, ~{'guards'=>MoreClauses,'body'=>call 'maps':'get'('body', GuardedExpr)}~, Rest)
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, BindExpr)), " of\n"), "        <"), apply 'genPattern'/1(Pat)), "> when 'true' -> "), InnerBody), "\n"), "        <_> when 'true' -> "), Fallback), "\n"), "      end")
+    end
+    end
+
+'genDataType'/2 =
+  fun (_W0, Dt) ->
+    letrec 'genConstructor'/1 = fun (C) ->
+      let <Arity> = call 'Data.List':'length'(call 'maps':'get'('fields', C))
+      in let <Tag> = apply 'constructorTag'/1(call 'maps':'get'('name', C))
+      in let <Params> = case call 'erlang':'=<'(Arity, 0) of
+      <'true'> when 'true' -> []
+      <'false'> when 'true' -> call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("V", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
+    end
+      in let <ParamStr> = call 'Data.String':'joinWith'(", ", Params)
+      in let <Body> = case call 'erlang':'=:='(Arity, 0) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("'", Tag), "'")
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{'", Tag), "', "), call 'Data.String':'joinWith'(", ", Params)), "}")
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("'", call 'maps':'get'('name', C)), "'/"), call 'erlang':'integer_to_list'(Arity)), " =\n  fun ("), ParamStr), ") ->\n    "), Body)
+      in let <Comment> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("% Data type: ", call 'maps':'get'('name', Dt)), "\n"), "% Constructors: "), call 'Data.String':'joinWith'(", ", call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), call 'maps':'get'('constructors', Dt)))))
+      in let <ConstructorDefs> = call 'lists':'map'(fun (_Mf0) -> apply 'genConstructor'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('constructors', Dt)))
+      in call 'erlang':'++'(call 'erlang':'++'(Comment, "\n\n"), call 'Data.String':'joinWith'("\n\n", ConstructorDefs))
+
+'constructorTag'/1 =
+  fun (Name) ->
+    Name
+
+'genNewtype'/1 =
+  fun (Nt) ->
+    let <Comment> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("% Newtype: ", call 'maps':'get'('name', Nt)), "\n"), "% Constructor: "), call 'maps':'get'('constructor', Nt))
+      in let <Body> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("'", call 'maps':'get'('constructor', Nt)), "'/1 =\n  fun (V0) ->\n    {'"), call 'maps':'get'('constructor', Nt)), "', V0}")
+      in call 'erlang':'++'(call 'erlang':'++'(Comment, "\n\n"), Body)
+
+'genPattern'/1 =
+  fun (Pat) ->
+    call 'maps':'get'('str', apply 'genPatternWithCounter'/2(Pat, 0))
+
+'genPatternWithCounter'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'PatVar', Name}, N}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), "_") of
+      <'true'> when 'true' -> ~{'str'=>call 'erlang':'++'("_W", call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 1)}~
+      <'false'> when 'true' -> ~{'str'=>apply 'coreVar'/1(Name),'counter'=>N}~
+    end
+      <{'PatWildcard', N}> when 'true' ->
+        ~{'str'=>call 'erlang':'++'("_W", call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 1)}~
+      <{{'PatLit', Lit}, N}> when 'true' ->
+        ~{'str'=>apply 'genLiteral'/1(Lit),'counter'=>N}~
+      <{{'PatCon', Name, Pats}, N}> when 'true' ->
+        let <BaseName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <'Nothing'> when 'true' ->
+        Name
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+    end
+      in case call 'erlang':'=:='(BaseName, "Nil") of
+      <'true'> when 'true' -> ~{'str'=>"[]",'counter'=>N}~
+      <'false'> when 'true' -> case case call 'erlang':'=:='(BaseName, "Cons") of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.List':'length'(Pats), 2) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> case call 'Data.List':'uncons'(Pats) of
+      <{'Just', ~{'head':=H,'tail':=Rest}~}> when 'true' ->
+        case call 'Data.List':'head'(Rest) of
+      <{'Just', T}> when 'true' ->
+        let <R1> = apply 'genPatternWithCounter'/2(H, N)
+      in let <R2> = apply 'genPatternWithCounter'/2(T, call 'maps':'get'('counter', R1))
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("[", call 'maps':'get'('str', R1)), "|"), call 'maps':'get'('str', R2)), "]"),'counter'=>call 'maps':'get'('counter', R2)}~
+      <'Nothing'> when 'true' ->
+        ~{'str'=>"[]",'counter'=>N}~
+    end
+      <'Nothing'> when 'true' ->
+        ~{'str'=>"[]",'counter'=>N}~
+    end
+      <'false'> when 'true' -> case call 'Data.List':'null'(Pats) of
+      <'true'> when 'true' -> ~{'str'=>apply 'atom'/1(apply 'toSnakeCase'/1(BaseName)),'counter'=>N}~
+      <'false'> when 'true' -> let <Result> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), N)
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{", apply 'atom'/1(apply 'toSnakeCase'/1(BaseName))), ", "), call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', Result))), "}"),'counter'=>call 'maps':'get'('counter', Result)}~
+    end
+    end
+    end
+      <{{'PatRecord', Fields}, N}> when 'true' ->
+        letrec 'genFieldPat'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', Label, Pat}}> when 'true' -> let <R> = apply 'genPatternWithCounter'/2(Pat, call 'maps':'get'('counter', Acc))
+      in ~{'strs'=>call 'erlang':'++'(call 'maps':'get'('strs', Acc), [call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(apply 'toSnakeCase'/1(Label)), ":="), call 'maps':'get'('str', R))]),'counter'=>call 'maps':'get'('counter', R)}~
+      end
+      in let <Result> = call 'Data.Foldable':'foldl'(fun (_Mf0, _Mf1) -> apply 'genFieldPat'/2(_Mf0, _Mf1), ~{'strs'=>[],'counter'=>N}~, Fields)
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'("~{", call 'Data.String':'joinWith'(",", call 'maps':'get'('strs', Result))), "}~"),'counter'=>call 'maps':'get'('counter', Result)}~
+      <{{'PatList', Pats}, N}> when 'true' ->
+        let <Result> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), N)
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'("[", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', Result))), "]"),'counter'=>call 'maps':'get'('counter', Result)}~
+      <{{'PatCons', Hd, Tl}, N}> when 'true' ->
+        let <R1> = apply 'genPatternWithCounter'/2(Hd, N)
+      in let <R2> = apply 'genPatternWithCounter'/2(Tl, call 'maps':'get'('counter', R1))
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("[", call 'maps':'get'('str', R1)), " | "), call 'maps':'get'('str', R2)), "]"),'counter'=>call 'maps':'get'('counter', R2)}~
+      <{{'PatAs', Name, Pat}, N}> when 'true' ->
+        let <R> = apply 'genPatternWithCounter'/2(Pat, N)
+      in ~{'str'=>call 'erlang':'++'(call 'erlang':'++'(apply 'coreVar'/1(Name), " = "), call 'maps':'get'('str', R)),'counter'=>call 'maps':'get'('counter', R)}~
+      <{{'PatParens', P}, N}> when 'true' ->
+        apply 'genPatternWithCounter'/2(P, N)
+    end
+
+'genPatsWithCounter'/2 =
+  fun (Pats, N) ->
+    letrec 'step'/2 = fun (Acc, Pat) ->
+      let <R> = apply 'genPatternWithCounter'/2(Pat, call 'maps':'get'('counter', Acc))
+      in ~{'strs'=>call 'erlang':'++'(call 'maps':'get'('strs', Acc), [call 'maps':'get'('str', R)]),'counter'=>call 'maps':'get'('counter', R)}~
+      in call 'Data.Foldable':'foldl'(fun (_Mf0, _Mf1) -> apply 'step'/2(_Mf0, _Mf1), ~{'strs'=>[],'counter'=>N}~, Pats)
+
+'genExpr'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{_W0, {'ExprLit', Lit}}> when 'true' ->
+        apply 'genLiteral'/1(Lit)
+      <{Ctx, {'ExprVar', Name}}> when 'true' ->
+        letrec 'isConstructorName'/1 = fun (S) ->
+      case call 'Data.String':'take'(1, S) of
+      <C> when 'true' ->
+        case call 'erlang':'>='(C, "A") of <'true'> when 'true' -> call 'erlang':'=<'(C, "Z") <_> when 'true' -> 'false' end
+    end
+      in case call 'erlang':'=:='(Name, "otherwise") of
+      <'true'> when 'true' -> "'true'"
+      <'false'> when 'true' -> case call 'erlang':'=:='(Name, "unit") of
+      <'true'> when 'true' -> "'unit'"
+      <'false'> when 'true' -> case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        let <ModAlias> = call 'Data.String':'take'(Idx, Name)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), ":"), apply 'atom'/1(FuncName)), "()")
+      <'Nothing'> when 'true' ->
+        case call 'Data.Set':'member'(Name, call 'maps':'get'('locals', Ctx)) of
+      <'true'> when 'true' -> apply 'coreVar'/1(Name)
+      <'false'> when 'true' -> case apply 'getPreludeFunc'/1(Name) of
+      <{'Just', Info}> when 'true' ->
+        let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_Pf", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Info), 1)))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", ParamsStr), ") -> call "), apply 'atom'/1(call 'maps':'get'('mod', Info))), ":"), apply 'atom'/1(call 'maps':'get'('func', Info))), "("), ParamsStr), ")")
+      <'Nothing'> when 'true' ->
+        case call 'Data.Set':'member'(Name, call 'maps':'get'('moduleFuncs', Ctx)) of
+      <'true'> when 'true' -> let <Arity> = apply 'lookupArity'/2(Name, Ctx)
+      in case call 'erlang':'=:='(Arity, 0) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'atom'/1(Name)), "/0()")
+      <'false'> when 'true' -> let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_Mf", call 'erlang':'integer_to_list'(I)), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", ParamsStr), ") -> apply "), apply 'atom'/1(Name)), "/"), call 'erlang':'integer_to_list'(Arity)), "("), ParamsStr), ")")
+    end
+      <'false'> when 'true' -> case call 'Data.Map':'lookup'(Name, call 'maps':'get'('imports', Ctx)) of
+      <{'Just', SrcMod}> when 'true' ->
+        let <ModName> = apply 'translateModuleName'/1(SrcMod)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(ModName)), ":"), apply 'atom'/1(Name)), "()")
+      <'Nothing'> when 'true' ->
+        case apply 'isConstructorName'/1(Name) of
+      <'true'> when 'true' -> case call 'erlang':'=:='(Name, "Nil") of
+      <'true'> when 'true' -> "[]"
+      <'false'> when 'true' -> apply 'atom'/1(apply 'toSnakeCase'/1(Name))
+    end
+      <'false'> when 'true' -> apply 'coreVar'/1(Name)
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+      <{Ctx, {'ExprQualified', ModAlias, FuncName}}> when 'true' ->
+        letrec 'isConstructorName'/1 = fun (S) ->
+      case call 'Data.String':'take'(1, S) of
+      <C> when 'true' ->
+        case call 'erlang':'>='(C, "A") of <'true'> when 'true' -> call 'erlang':'=<'(C, "Z") <_> when 'true' -> 'false' end
+    end
+      in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
+      in case apply 'isConstructorName'/1(FuncName) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), ":"), apply 'atom'/1(FuncName)), "()")
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), ":"), apply 'atom'/1(FuncName)), "()")
+    end
+      <{Ctx, {'ExprApp', F, Arg}}> when 'true' ->
+        letrec 'isConstructorName'/1 = fun (S) ->
+      case call 'Data.String':'take'(1, S) of
+      <C> when 'true' ->
+        case call 'erlang':'>='(C, "A") of <'true'> when 'true' -> call 'erlang':'=<'(C, "Z") <_> when 'true' -> 'false' end
+    end
+      in let <_Let0> = apply 'collectArgs'/1({'ExprApp', F, Arg})
+      in case _Let0 of
+        <~{'func':=Func,'args':=Args}~> when 'true' -> case Func of
+      <{'ExprVar', Name}> when 'true' ->
+        case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        let <ModAlias> = call 'Data.String':'take'(Idx, Name)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), ":"), apply 'atom'/1(FuncName)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'Nothing'> when 'true' ->
+        case call 'erlang':'=:='(Name, "pure") of
+      <'true'> when 'true' -> case call 'erlang':'=:='(call 'maps':'get'('moduleName', Ctx), "Nova.Compiler.CstParser") of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("apply 'pureP'/1(", call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{", apply 'atom'/1("Right")), ", "), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), "}")
+    end
+      <'false'> when 'true' -> case apply 'getPreludeFunc'/1(Name) of
+      <{'Just', Info}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(call 'maps':'get'('mod', Info))), ":"), apply 'atom'/1(call 'maps':'get'('func', Info))), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'Nothing'> when 'true' ->
+        case call 'Data.Set':'member'(Name, call 'maps':'get'('locals', Ctx)) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'coreVar'/1(Name)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'false'> when 'true' -> case call 'Data.Set':'member'(Name, call 'maps':'get'('moduleFuncs', Ctx)) of
+      <'true'> when 'true' -> let <DeclaredArity> = apply 'lookupArity'/2(Name, Ctx)
+      in let <NumArgs> = call 'erlang':'length'(Args)
+      in case case call 'erlang':'=:='(DeclaredArity, 0) of <'true'> when 'true' -> call 'erlang':'>'(NumArgs, 0) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <_Fn0> = apply ", apply 'atom'/1(Name)), "/0()\n"), "      in apply _Fn0("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'false'> when 'true' -> case call 'erlang':'=:='(NumArgs, DeclaredArity) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'atom'/1(Name)), "/"), call 'erlang':'integer_to_list'(DeclaredArity)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'false'> when 'true' -> case call 'erlang':'>'(NumArgs, DeclaredArity) of
+      <'true'> when 'true' -> let <DirectArgs> = call 'Data.Array':'take'(DeclaredArity, Args)
+      in let <ExtraArgs> = call 'Data.Array':'drop'(DeclaredArity, Args)
+      in let <BaseCall> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'atom'/1(Name)), "/"), call 'erlang':'integer_to_list'(DeclaredArity)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), DirectArgs))), ")")
+      in apply 'genCurriedApply'/3(Ctx, BaseCall, ExtraArgs)
+      <'false'> when 'true' -> let <Remaining> = call 'erlang':'-'(DeclaredArity, NumArgs)
+      in let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_Pc", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Remaining, 1)))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in let <AllArgs> = call 'Data.String':'joinWith'(", ", call 'erlang':'++'(call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args), ParamNames))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", ParamsStr), ") -> apply "), apply 'atom'/1(Name)), "/"), call 'erlang':'integer_to_list'(DeclaredArity)), "("), AllArgs), ")")
+    end
+    end
+    end
+      <'false'> when 'true' -> case call 'Data.Map':'lookup'(Name, call 'maps':'get'('imports', Ctx)) of
+      <{'Just', SrcMod}> when 'true' ->
+        let <ModName> = apply 'translateModuleName'/1(SrcMod)
+      in let <IsLibModule> = case case call 'erlang':'=:='(call 'Data.String':'take'(5, SrcMod), "Data.") of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(8, SrcMod), "Control.") end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'take'(5, SrcMod), "Nova.") of <'true'> when 'true' -> call 'erlang':'=/='(call 'Data.String':'take'(14, SrcMod), "Nova.Compiler.") <_> when 'true' -> 'false' end end
+      in case IsLibModule of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(ModName)), ":"), apply 'atom'/1(Name)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <'false'> when 'true' -> case call 'Data.Array':'uncons'(Args) of
+      <'Nothing'> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(ModName)), ":"), apply 'atom'/1(Name)), "()")
+      <{'Just', ~{'head':=FirstArg,'tail':=RestArgs}~}> when 'true' ->
+        let <BaseCall> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(ModName)), ":"), apply 'atom'/1(Name)), "("), apply 'genExpr'/2(Ctx, FirstArg)), ")")
+      in apply 'genCurriedApply'/3(Ctx, BaseCall, RestArgs)
+    end
+    end
+      <'Nothing'> when 'true' ->
+        case apply 'isConstructorName'/1(Name) of
+      <'true'> when 'true' -> case call 'erlang':'=:='(Name, "Nil") of
+      <'true'> when 'true' -> "[]"
+      <'false'> when 'true' -> case case call 'erlang':'=:='(Name, "Cons") of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Args), 2) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> case Args of
+      <[H, T]> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("[", apply 'genExpr'/2(Ctx, H)), "|"), apply 'genExpr'/2(Ctx, T)), "]")
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{", apply 'atom'/1(apply 'toSnakeCase'/1(Name))), ", "), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), "}")
+    end
+      <'false'> when 'true' -> case call 'erlang':'=:='(call 'erlang':'length'(Args), 0) of
+      <'true'> when 'true' -> apply 'atom'/1(apply 'toSnakeCase'/1(Name))
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{", apply 'atom'/1(apply 'toSnakeCase'/1(Name))), ", "), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), "}")
+    end
+    end
+    end
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'coreVar'/1(Name)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+      <{'ExprQualified', ModAlias, FuncName}> when 'true' ->
+        let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
+      in let <ModName> = apply 'translateModuleName'/1(FullModName)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(ModName)), ":"), apply 'atom'/1(FuncName)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", apply 'genExpr'/2(Ctx, Func)), "("), call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), ")")
+    end
+      end
+      <{Ctx, {'ExprLambda', Pats, Body}}> when 'true' ->
+        case apply 'hasComplexPattern'/1(Pats) of
+      <'true'> when 'true' -> let <Arity> = call 'Data.List':'length'(Pats)
+      in let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      in let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_L", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
+      in let <PatTuple> = call 'erlang':'++'(call 'erlang':'++'("{", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatResult))), "}")
+      in let <BodyCode> = apply 'genExpr'/2(CtxWithParams, Body)
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", ParamsStr), ") ->\n"), "      case {"), ParamsStr), "} of\n"), "        <"), PatTuple), "> when 'true' -> "), BodyCode), "\n"), "      end")
+      <'false'> when 'true' -> let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatResult))), ") ->\n      "), apply 'genExpr'/2(CtxWithParams, Body))
+    end
+      <{Ctx, {'ExprLet', Binds, Body}}> when 'true' ->
+        apply 'genLetBindsWithBody'/3(Ctx, call 'Data.Array':'fromFoldable'(Binds), Body)
+      <{Ctx, {'ExprIf', Cond, ThenE, ElseE}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, Cond)), " of\n"), "      <"), apply 'atom'/1("true")), "> when 'true' -> "), apply 'genExpr'/2(Ctx, ThenE)), "\n"), "      <"), apply 'atom'/1("false")), "> when 'true' -> "), apply 'genExpr'/2(Ctx, ElseE)), "\n"), "    end")
+      <{Ctx, {'ExprCase', Scrutinee, Clauses}}> when 'true' ->
+        let <ScrutExpr> = apply 'genExpr'/2(Ctx, Scrutinee)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", ScrutExpr), " of\n"), apply 'genCaseClausesWithFallback'/3(Ctx, ScrutExpr, Clauses)), "\n"), "    end")
+      <{Ctx, {'ExprBinOp', ":", L, R}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("[", apply 'genExpr'/2(Ctx, L)), " | "), apply 'genExpr'/2(Ctx, R)), "]")
+      <{Ctx, {'ExprBinOp', "<>", L, R}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'++'(", apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+      <{Ctx, {'ExprBinOp', "#", L, R}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <_HashF> = ", apply 'genExpr'/2(Ctx, R)), " in apply _HashF("), apply 'genExpr'/2(Ctx, L)), ")")
+      <{Ctx, {'ExprBinOp', "$", L, R}}> when 'true' ->
+        letrec 'isConstructorName'/1 = fun (S) ->
+      case call 'Data.String':'take'(1, S) of
+      <C> when 'true' ->
+        case call 'erlang':'>='(C, "A") of <'true'> when 'true' -> call 'erlang':'=<'(C, "Z") <_> when 'true' -> 'false' end
+    end
+      in case L of
+      <{'ExprVar', Name}> when 'true' ->
+        case apply 'isConstructorName'/1(Name) of
+          <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{", apply 'atom'/1(Name)), ", "), apply 'genExpr'/2(Ctx, R)), "}")
+          <_> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <_DollarF> = ", apply 'genExpr'/2(Ctx, L)), " in apply _DollarF("), apply 'genExpr'/2(Ctx, R)), ")")
+        end
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <_DollarF> = ", apply 'genExpr'/2(Ctx, L)), " in apply _DollarF("), apply 'genExpr'/2(Ctx, R)), ")")
+    end
+      <{Ctx, {'ExprBinOp', "<|>", L, R}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'alt'/2(", apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+      <{Ctx, {'ExprBinOp', "<$>", L, R}}> when 'true' ->
+        case call 'erlang':'=:='(call 'maps':'get'('moduleName', Ctx), "Nova.Compiler.CstParser") of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'bindP'/2(", apply 'genExpr'/2(Ctx, R)), ", fun (_MapX) ->\n      apply 'pureP'/1(apply "), apply 'genExpr'/2(Ctx, L)), "(_MapX)))")
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'<$>'(", apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+    end
+      <{Ctx, {'ExprBinOp', "*>", L, R}}> when 'true' ->
+        case call 'erlang':'=:='(call 'maps':'get'('moduleName', Ctx), "Nova.Compiler.CstParser") of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'thenP'/2(", apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'*>'(", apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+    end
+      <{Ctx, {'ExprBinOp', "<<<", L, R}}> when 'true' ->
+        let <_Let0> = apply 'freshVar'/1(Ctx)
+      in case _Let0 of
+        <~{'var':=FVar,'ctx':=Ctx1}~> when 'true' -> let <_Let1> = apply 'freshVar'/1(Ctx1)
+      in case _Let1 of
+        <~{'var':=GVar,'ctx':=Ctx2}~> when 'true' -> let <_Let2> = apply 'freshVar'/1(Ctx2)
+      in case _Let2 of
+        <~{'var':=XVar,'ctx':=_W0}~> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", FVar), "> = "), apply 'genExpr'/2(Ctx, L)), " in let <"), GVar), "> = "), apply 'genExpr'/2(Ctx, R)), " in fun ("), XVar), ") -> apply "), FVar), " (apply "), GVar), " ("), XVar), "))")
+      end
+      end
+      end
+      <{Ctx, {'ExprBinOp', ">>>", L, R}}> when 'true' ->
+        let <_Let0> = apply 'freshVar'/1(Ctx)
+      in case _Let0 of
+        <~{'var':=FVar,'ctx':=Ctx1}~> when 'true' -> let <_Let1> = apply 'freshVar'/1(Ctx1)
+      in case _Let1 of
+        <~{'var':=GVar,'ctx':=Ctx2}~> when 'true' -> let <_Let2> = apply 'freshVar'/1(Ctx2)
+      in case _Let2 of
+        <~{'var':=XVar,'ctx':=_W0}~> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", FVar), "> = "), apply 'genExpr'/2(Ctx, L)), " in let <"), GVar), "> = "), apply 'genExpr'/2(Ctx, R)), " in fun ("), XVar), ") -> apply "), GVar), " (apply "), FVar), " ("), XVar), "))")
+      end
+      end
+      end
+      <{Ctx, {'ExprBinOp', Op, L, R}}> when 'true' ->
+        case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("."), Op) of
+      <{'Just', Idx}> when 'true' ->
+        let <ModAlias> = call 'Data.String':'take'(Idx, Op)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Op)
+      in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call ", apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), ":"), apply 'atom'/1(FuncName)), "("), apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+      <'Nothing'> when 'true' ->
+        case Op of
+      <"&&"> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, L)), " of <'true'> when 'true' -> "), apply 'genExpr'/2(Ctx, R)), " <_> when 'true' -> 'false' end")
+      <"||"> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, L)), " of <'true'> when 'true' -> 'true'"), " <_> when 'true' -> "), apply 'genExpr'/2(Ctx, R)), " end")
+      <_W0> when 'true' ->
+        let <ErlOp> = apply 'translateOp'/1(Op)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'", ErlOp), "'("), apply 'genExpr'/2(Ctx, L)), ", "), apply 'genExpr'/2(Ctx, R)), ")")
+    end
+    end
+      <{Ctx, {'ExprUnaryOp', "-", E}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'-'(", apply 'genExpr'/2(Ctx, E)), ")")
+      <{Ctx, {'ExprUnaryOp', "!", E}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("call 'erlang':'not'(", apply 'genExpr'/2(Ctx, E)), ")")
+      <{Ctx, {'ExprUnaryOp', _W0, E}}> when 'true' ->
+        apply 'genExpr'/2(Ctx, E)
+      <{Ctx, {'ExprList', Elems}}> when 'true' ->
+        apply 'genCoreList'/2(Ctx, Elems)
+      <{Ctx, {'ExprTuple', Elems}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{", call 'Data.String':'joinWith'(", ", call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Elems)))), "}")
+      <{Ctx, {'ExprRecord', Fields}}> when 'true' ->
+        letrec 'genField'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Label, Expr}}> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(apply 'toSnakeCase'/1(Label)), "=>"), apply 'genExpr'/2(Ctx, Expr))
+      end
+      in call 'erlang':'++'(call 'erlang':'++'("~{", call 'Data.String':'joinWith'(",", call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Mf0) -> apply 'genField'/1(_Mf0), Fields)))), "}~")
+      <{Ctx, {'ExprRecordAccess', Expr, Field}}> when 'true' ->
+        case Expr of
+      <{'ExprSection', "_"}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("fun (_Ra) -> call 'maps':'get'(", apply 'atom'/1(apply 'toSnakeCase'/1(Field))), ", _Ra)")
+      <_W0> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'maps':'get'(", apply 'atom'/1(apply 'toSnakeCase'/1(Field))), ", "), apply 'genExpr'/2(Ctx, Expr)), ")")
+    end
+      <{Ctx, {'ExprRecordUpdate', Expr, Fields}}> when 'true' ->
+        letrec 'genFieldUpdate'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Label, Val}}> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(apply 'toSnakeCase'/1(Label)), "=>"), apply 'genExpr'/2(Ctx, Val))
+      end
+      in let <Updates> = call 'Data.String':'joinWith'(",", call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Mf0) -> apply 'genFieldUpdate'/1(_Mf0), Fields)))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("call 'maps':'merge'(", apply 'genExpr'/2(Ctx, Expr)), ", ~{"), Updates), "}~)")
+      <{Ctx, {'ExprParens', E}}> when 'true' ->
+        apply 'genExpr'/2(Ctx, E)
+      <{Ctx, {'ExprDo', Stmts}}> when 'true' ->
+        apply 'genDoStmts'/2(Ctx, call 'Data.Array':'fromFoldable'(Stmts))
+      <{Ctx, {'ExprTyped', E, _W0}}> when 'true' ->
+        apply 'genExpr'/2(Ctx, E)
+      <{_W0, {'ExprSection', Op}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("fun (X, Y) -> call 'erlang':'", apply 'translateOp'/1(Op)), "'(X, Y)")
+      <{Ctx, {'ExprSectionLeft', E, Op}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (X) -> call 'erlang':'", apply 'translateOp'/1(Op)), "'("), apply 'genExpr'/2(Ctx, E)), ", X)")
+      <{Ctx, {'ExprSectionRight', Op, E}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (X) -> call 'erlang':'", apply 'translateOp'/1(Op)), "'(X, "), apply 'genExpr'/2(Ctx, E)), ")")
+    end
+
+'genExprLetrec'/2 =
+  fun (Ctx, Expr) ->
+    case Expr of
+      <{'ExprLambda', Pats, Body}> when 'true' ->
+        case apply 'hasComplexPattern'/1(Pats) of
+      <'true'> when 'true' -> let <Arity> = call 'Data.List':'length'(Pats)
+      in let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      in let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_L", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
+      in let <PatTuple> = call 'erlang':'++'(call 'erlang':'++'("{", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatResult))), "}")
+      in let <BodyCode> = apply 'genExpr'/2(CtxWithParams, Body)
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", ParamsStr), ") ->\n"), "      case {"), ParamsStr), "} of\n"), "        <"), PatTuple), "> when 'true' -> "), BodyCode), "\n"), "      end")
+      <'false'> when 'true' -> let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatResult))), ") ->\n      "), apply 'genExpr'/2(CtxWithParams, Body))
+    end
+      <_W0> when 'true' ->
+        apply 'genExpr'/2(Ctx, Expr)
+    end
+
+'exprContainsVar'/2 =
+  fun (Name, Expr) ->
+    case Expr of
+      <{'ExprVar', V}> when 'true' ->
+        call 'erlang':'=:='(V, Name)
+      <{'ExprQualified', _W0, _W1}> when 'true' ->
+        'false'
+      <{'ExprLit', _W0}> when 'true' ->
+        'false'
+      <{'ExprApp', F, A}> when 'true' ->
+        case apply 'exprContainsVar'/2(Name, F) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'exprContainsVar'/2(Name, A) end
+      <{'ExprLambda', _W0, Body}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, Body)
+      <{'ExprLet', Binds, Body}> when 'true' ->
+        case call 'Data.List':'any'(fun (B) ->
+      apply 'exprContainsVar'/2(Name, call 'maps':'get'('value', B)), Binds) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'exprContainsVar'/2(Name, Body) end
+      <{'ExprIf', C, T, E}> when 'true' ->
+        case case apply 'exprContainsVar'/2(Name, C) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'exprContainsVar'/2(Name, T) end of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'exprContainsVar'/2(Name, E) end
+      <{'ExprCase', Scrut, Clauses}> when 'true' ->
+        case apply 'exprContainsVar'/2(Name, Scrut) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'Data.List':'any'(fun (Cl) ->
+      apply 'exprContainsVar'/2(Name, call 'maps':'get'('body', Cl)), Clauses) end
+      <{'ExprDo', Stmts}> when 'true' ->
+        call 'Data.List':'any'(fun (_Pc0) -> apply 'doStmtContainsVar'/2(Name, _Pc0), Stmts)
+      <{'ExprBinOp', _W0, L, R}> when 'true' ->
+        case apply 'exprContainsVar'/2(Name, L) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'exprContainsVar'/2(Name, R) end
+      <{'ExprUnaryOp', _W0, E}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'ExprList', Elems}> when 'true' ->
+        call 'Data.List':'any'(fun (_Pc0) -> apply 'exprContainsVar'/2(Name, _Pc0), Elems)
+      <{'ExprTuple', Elems}> when 'true' ->
+        call 'Data.List':'any'(fun (_Pc0) -> apply 'exprContainsVar'/2(Name, _Pc0), Elems)
+      <{'ExprRecord', Fields}> when 'true' ->
+        call 'Data.List':'any'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, E}}> when 'true' -> apply 'exprContainsVar'/2(Name, E)
+      end, Fields)
+      <{'ExprRecordAccess', E, _W0}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'ExprRecordUpdate', E, Updates}> when 'true' ->
+        case apply 'exprContainsVar'/2(Name, E) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'Data.List':'any'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, E_}}> when 'true' -> apply 'exprContainsVar'/2(Name, E_)
+      end, Updates) end
+      <{'ExprTyped', E, _W0}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'ExprParens', E}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'ExprSection', _W0}> when 'true' ->
+        'false'
+      <{'ExprSectionLeft', E, _W0}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'ExprSectionRight', _W0, E}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+    end
+
+'doStmtContainsVar'/2 =
+  fun (Name, Stmt) ->
+    case Stmt of
+      <{'DoLet', Binds}> when 'true' ->
+        call 'Data.List':'any'(fun (B) ->
+      apply 'exprContainsVar'/2(Name, call 'maps':'get'('value', B)), Binds)
+      <{'DoBind', _W0, E}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+      <{'DoExpr', E}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, E)
+    end
+
+'getPatternVarName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'PatVar', N}}> when 'true' ->
+        {'Just', N}
+      <{_W0}> when 'true' ->
+        'Nothing'
+    end
+
+'isRecursiveBind'/1 =
+  fun (Bind) ->
+    case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind)) of
+      <{'Just', Name}> when 'true' ->
+        apply 'exprContainsVar'/2(Name, call 'maps':'get'('value', Bind))
+      <'Nothing'> when 'true' ->
+        'false'
+    end
+
+'getLambdaArity'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ExprLambda', Pats, _W0}}> when 'true' ->
+        call 'Data.List':'length'(Pats)
+      <{{'ExprParens', E}}> when 'true' ->
+        apply 'getLambdaArity'/1(E)
+      <{_W0}> when 'true' ->
+        0
+    end
+
+'isSimplePattern'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'PatVar', _W0}}> when 'true' ->
+        'true'
+      <{'PatWildcard'}> when 'true' ->
+        'true'
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'genLetBindsWithBody'/3 =
+  fun (Ctx, Binds, Body) ->
+    letrec 'addValueBindToCtx'/2 = fun (Bind, Ctx_) ->
+      let <BindName> = apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind))
+      in case BindName of
+      <{'Just', N}> when 'true' ->
+        call 'maps':'merge'(Ctx_, ~{'locals'=>call 'Data.Set':'insert'(N, call 'maps':'get'('locals', Ctx_))}~)
+      <'Nothing'> when 'true' ->
+        apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), Ctx_)
+    end
+       'genLetrecDef'/2 = fun (Ctx_, Bind) ->
+      let <BindName> = call 'Data.Maybe':'fromMaybe'("_anon", apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind)))
+      in let <Arity> = apply 'getLambdaArity'/1(call 'maps':'get'('value', Bind))
+      in let <Val> = apply 'genExprLetrec'/2(Ctx_, call 'maps':'get'('value', Bind))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(BindName), "/"), call 'erlang':'integer_to_list'(Arity)), " = "), Val)
+       'genLetrecDefGrouped'/2 = fun (Ctx_, Group) ->
+      case call 'maps':'get'('binds', Group) of
+      <[]> when 'true' ->
+        ""
+      <[Single]> when 'true' ->
+        apply 'genLetrecDef'/2(Ctx_, Single)
+      <Multiple> when 'true' ->
+        let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("_L", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Group), 1)))
+      in let <ParamsStr> = call 'Data.String':'joinWith'(", ", ParamNames)
+      in let <CaseClauses> = call 'lists':'map'(fun (_Pc0) -> apply 'genLetrecClauseAsCase'/3(Ctx_, ParamNames, _Pc0), Multiple)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(apply 'atom'/1(call 'maps':'get'('name', Group)), "/"), call 'erlang':'integer_to_list'(call 'maps':'get'('arity', Group))), " = fun ("), ParamsStr), ") ->\n"), "      case {"), ParamsStr), "} of\n"), call 'Data.String':'joinWith'("\n", CaseClauses)), "\n"), "      end")
+    end
+       'genLetrecClauseAsCase'/3 = fun (Ctx_, ParamNames_, Bind) ->
+      case call 'maps':'get'('value', Bind) of
+      <{'ExprLambda', Pats, LambdaBody}> when 'true' ->
+        let <PatsResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
+      in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx_, Pats)
+      in let <PatTuple> = call 'erlang':'++'(call 'erlang':'++'("{", call 'Data.String':'joinWith'(", ", call 'maps':'get'('strs', PatsResult))), "}")
+      in let <BodyStr> = apply 'genExpr'/2(CtxWithParams, LambdaBody)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("        <", PatTuple), "> when 'true' -> "), BodyStr)
+      <{'ExprParens', E}> when 'true' ->
+        apply 'genLetrecClauseAsCase'/3(Ctx_, ParamNames_, call 'maps':'merge'(Bind, ~{'value'=>E}~))
+      <_W0> when 'true' ->
+        call 'erlang':'++'("        <_W0> when 'true' -> ", apply 'genExpr'/2(Ctx_, call 'maps':'get'('value', Bind)))
+    end
+      in let <FuncGroup2> = []
+      in let <DepValuesGroup2> = []
+      in letrec 'isLambdaBind'/1 = fun (B) ->
+      call 'erlang':'>'(apply 'getLambdaArity'/1(call 'maps':'get'('value', B)), 0)
+       'computeTransitiveFuncDeps'/1 = fun (CurrentDeps) ->
+      let <DepsOrFuncs> = call 'Data.Set':'union'(apply 'funcNames'/0(), CurrentDeps)
+      in let <NewDeps> = let <_DollarF> = call 'Data.Set':'fromFoldable'() in apply _DollarF(call 'Data.Array':'mapMaybe'(fun (B) ->
+      let <Used> = call 'Data.Set':'fromFoldable'(apply 'getUsedVars'/1(call 'maps':'get'('value', B)))
+      in case call 'erlang':'not'(call 'Data.Set':'isEmpty'(call 'Data.Set':'intersection'(Used, DepsOrFuncs))) of
+      <'true'> when 'true' -> apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B))
+      <'false'> when 'true' -> 'Nothing'
+    end, apply 'valueBinds'/0()))
+      in case call 'erlang':'=:='(NewDeps, CurrentDeps) of
+      <'true'> when 'true' -> NewDeps
+      <'false'> when 'true' -> apply 'computeTransitiveFuncDeps'/1(NewDeps)
+    end
+       'dependsOnFuncs'/1 = fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <{'Just', N}> when 'true' ->
+        call 'Data.Set':'member'(N, apply 'valuesThatDependOnFuncs'/0())
+      <'Nothing'> when 'true' ->
+        let <Used> = call 'Data.Set':'fromFoldable'(apply 'getUsedVars'/1(call 'maps':'get'('value', B)))
+      in call 'erlang':'not'(call 'Data.Set':'isEmpty'(call 'Data.Set':'intersection'(Used, call 'Data.Set':'union'(apply 'funcNames'/0(), apply 'valuesThatDependOnFuncs'/0()))))
+    end
+       'isUsedByFuncs'/1 = fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <{'Just', N}> when 'true' ->
+        call 'Data.Set':'member'(N, apply 'usedByFuncs'/0())
+      <'Nothing'> when 'true' ->
+        'false'
+    end
+       'computeCyclicClosure'/1 = fun (CurrentCyclic) ->
+      let <CyclicBinds> = call 'Data.Array':'filter'(fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <{'Just', N}> when 'true' ->
+        call 'Data.Set':'member'(N, CurrentCyclic)
+      <'Nothing'> when 'true' ->
+        'false'
+    end, apply 'valueBinds'/0())
+      in let <ValueNames> = let <_DollarF> = call 'Data.Set':'fromFoldable'() in apply _DollarF(call 'Data.Array':'mapMaybe'(fun (B) ->
+      apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)), apply 'valueBinds'/0()))
+      in let <UsedByCyclic> = let <_DollarF> = call 'Data.Set':'fromFoldable'() in apply _DollarF(call 'Data.Array':'concatMap'(fun (B) ->
+      apply 'getUsedVars'/1(call 'maps':'get'('value', B)), CyclicBinds))
+      in let <NewCyclic> = call 'Data.Set':'union'(CurrentCyclic, call 'Data.Set':'intersection'(UsedByCyclic, ValueNames))
+      in case call 'erlang':'=:='(NewCyclic, CurrentCyclic) of
+      <'true'> when 'true' -> NewCyclic
+      <'false'> when 'true' -> apply 'computeCyclicClosure'/1(NewCyclic)
+    end
+       'funcBinds'/0 = fun () ->
+      call 'Data.Array':'filter'(fun (_Mf0) -> apply 'isLambdaBind'/1(_Mf0), Binds)
+       'valueBinds'/0 = fun () ->
+      call 'Data.Array':'filter'(let <_cor0> = fun (_Pf0) -> call 'erlang':'not'(_Pf0) in let <_cor1> = fun (_Mf0) -> apply 'isLambdaBind'/1(_Mf0) in fun (_cor2) -> apply _cor0 (apply _cor1 (_cor2)), Binds)
+       'letrecFuncs'/0 = fun () ->
+      call 'Data.Array':'mapMaybe'(fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', N}> when 'true' ->
+        {'Just', ~{'name'=>N,'arity'=>apply 'getLambdaArity'/1(call 'maps':'get'('value', B))}~}
+    end, apply 'funcBinds'/0())
+       'funcNames'/0 = fun () ->
+      call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), apply 'letrecFuncs'/0()))
+       'usedByFuncs'/0 = fun () ->
+      call 'Data.Set':'fromFoldable'(call 'Data.Array':'concatMap'(fun (B) ->
+      apply 'getUsedVars'/1(call 'maps':'get'('value', B)), apply 'funcBinds'/0()))
+       'valuesThatDependOnFuncs'/0 = fun () ->
+      apply 'computeTransitiveFuncDeps'/1(call 'Data.Set':'empty'())
+      in let <DirectlyCyclic> = call 'Data.Array':'filter'(fun (B) ->
+      case apply 'dependsOnFuncs'/1(B) of <'true'> when 'true' -> apply 'isUsedByFuncs'/1(B) <_> when 'true' -> 'false' end, apply 'valueBinds'/0())
+      in let <ValuesBeforeLetrec> = call 'Data.Array':'filter'(fun (B) ->
+      call 'erlang':'not'(apply 'dependsOnFuncs'/1(B)), apply 'valueBinds'/0())
+      in let <DirectlyCyclicNames> = let <_DollarF> = call 'Data.Set':'fromFoldable'() in apply _DollarF(call 'Data.Array':'mapMaybe'(fun (B) ->
+      apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)), DirectlyCyclic))
+      in let <AllCyclicNames> = apply 'computeCyclicClosure'/1(DirectlyCyclicNames)
+      in let <CyclicValues> = call 'Data.Array':'filter'(fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <{'Just', N}> when 'true' ->
+        call 'Data.Set':'member'(N, AllCyclicNames)
+      <'Nothing'> when 'true' ->
+        'false'
+    end, apply 'valueBinds'/0())
+      in let <ValuesAfterLetrec> = call 'Data.Array':'filter'(fun (B) ->
+      case apply 'dependsOnFuncs'/1(B) of <'true'> when 'true' -> case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <{'Just', N}> when 'true' ->
+        call 'erlang':'not'(call 'Data.Set':'member'(N, AllCyclicNames))
+      <'Nothing'> when 'true' ->
+        'true'
+    end <_> when 'true' -> 'false' end, apply 'valueBinds'/0())
+      in let <CyclicAsFuncs> = call 'lists':'map'(fun (B) ->
+      call 'maps':'merge'(B, ~{'value'=>{'ExprLambda', [], call 'maps':'get'('value', B)}}~), CyclicValues)
+      in let <DepValuesGroup1> = ValuesAfterLetrec
+      in let <CyclicFuncs> = call 'Data.Array':'mapMaybe'(fun (B) ->
+      case apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', N}> when 'true' ->
+        {'Just', ~{'name'=>N,'arity'=>0}~}
+    end, CyclicValues)
+      in let <NonCyclicValues> = call 'erlang':'++'(ValuesBeforeLetrec, ValuesAfterLetrec)
+      in let <FuncGroup1> = call 'erlang':'++'(apply 'funcBinds'/0(), CyclicAsFuncs)
+      in let <AllFuncs> = call 'erlang':'++'(apply 'letrecFuncs'/0(), CyclicFuncs)
+      in let <CtxWithFuncs> = call 'maps':'merge'(Ctx, ~{'moduleFuncs'=>call 'lists':'foldr'(fun (F, S) ->
+      call 'Data.Set':'insert'(call 'maps':'get'('name', F), S), call 'maps':'get'('moduleFuncs', Ctx), AllFuncs),'funcArities'=>call 'erlang':'++'(call 'maps':'get'('funcArities', Ctx), AllFuncs)}~)
+      in let <CtxWithAllBinds> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addValueBindToCtx'/2(_Mf0, _Mf1), CtxWithFuncs, NonCyclicValues)
+      in case call 'Data.Array':'null'(apply 'funcBinds'/0()) of
+      <'true'> when 'true' -> apply 'genValueBindsWithBody'/3(CtxWithAllBinds, apply 'valueBinds'/0(), Body)
+      <'false'> when 'true' -> let <FinalBody> = apply 'genExpr'/2(CtxWithAllBinds, Body)
+      in let <AfterDepValues2> = case call 'Data.Array':'null'(DepValuesGroup2) of
+      <'true'> when 'true' -> FinalBody
+      <'false'> when 'true' -> apply 'genValueBindsWithBodyStrSorted'/3(CtxWithAllBinds, apply 'topoSortBinds'/1(DepValuesGroup2), FinalBody)
+    end
+      in letrec 'groupByName'/1 = fun (Binds_) ->
+      let <Names> = call 'Data.Array':'nub'(call 'Data.Array':'mapMaybe'(fun (B) ->
+      apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)), Binds_))
+      in letrec 'mkGroup'/1 = fun (N) ->
+      let <Matching> = call 'Data.Array':'filter'(fun (B) ->
+      call 'erlang':'=:='(apply 'getPatternVarName'/1(call 'maps':'get'('pattern', B)), {'Just', N}), Binds_)
+      in let <Arity> = case call 'Data.Array':'head'(Matching) of
+      <{'Just', B}> when 'true' ->
+        apply 'getLambdaArity'/1(call 'maps':'get'('value', B))
+      <'Nothing'> when 'true' ->
+        0
+    end
+      in ~{'name'=>N,'binds'=>Matching,'arity'=>Arity}~
+      in call 'lists':'map'(fun (_Mf0) -> apply 'mkGroup'/1(_Mf0), Names)
+       'genLetrec'/2 = fun (Fs, BodyStr) ->
+      case call 'Data.Array':'null'(Fs) of
+      <'true'> when 'true' -> BodyStr
+      <'false'> when 'true' -> let <Grouped> = apply 'groupByName'/1(Fs)
+      in let <Defs> = call 'Data.String':'joinWith'("\n       ", call 'lists':'map'(fun (_Pc0) -> apply 'genLetrecDefGrouped'/2(CtxWithAllBinds, _Pc0), Grouped))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("letrec ", Defs), "\n      in "), BodyStr)
+    end
+      in let <AfterLetrec2> = apply 'genLetrec'/2(FuncGroup2, AfterDepValues2)
+      in let <AfterDepValues1> = case call 'Data.Array':'null'(DepValuesGroup1) of
+      <'true'> when 'true' -> AfterLetrec2
+      <'false'> when 'true' -> apply 'genValueBindsWithBodyStrSorted'/3(CtxWithAllBinds, apply 'topoSortBinds'/1(DepValuesGroup1), AfterLetrec2)
+    end
+      in let <AfterLetrec1> = apply 'genLetrec'/2(FuncGroup1, AfterDepValues1)
+      in let <Result> = case call 'Data.Array':'null'(ValuesBeforeLetrec) of
+      <'true'> when 'true' -> AfterLetrec1
+      <'false'> when 'true' -> apply 'genValueBindsWithBodyStrSorted'/3(CtxWithAllBinds, apply 'topoSortBinds'/1(ValuesBeforeLetrec), AfterLetrec1)
+    end
+      in Result
+    end
+
+'genValueBindsWithBody'/3 =
+  fun (Ctx, Binds, Body) ->
+    let <SortedBinds> = apply 'topoSortBinds'/1(Binds)
+      in apply 'genValueBindsWithBodyStrSorted'/3(Ctx, SortedBinds, apply 'genExpr'/2(Ctx, Body))
+
+'genValueBindsWithBodyStr'/3 =
+  fun (Ctx, Binds, BodyStr) ->
+    let <SortedBinds> = apply 'topoSortBinds'/1(Binds)
+      in apply 'genValueBindsWithBodyStrSorted'/3(Ctx, SortedBinds, BodyStr)
+
+'genValueBindsWithBodyStrSorted'/3 =
+  fun (Ctx, Binds, BodyStr) ->
+    case call 'Data.Array':'uncons'(Binds) of
+      <'Nothing'> when 'true' ->
+        BodyStr
+      <{'Just', ~{'head':=Bind,'tail':=Rest}~}> when 'true' ->
+        let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Bind))
+      in let <Val> = apply 'genExpr'/2(Ctx, call 'maps':'get'('value', Bind))
+      in let <TmpVar> = call 'erlang':'++'("_Let", call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', Ctx)))
+      in let <NextCtx> = call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 1)}~)
+      in let <Continuation> = apply 'genValueBindsWithBodyStrSorted'/3(Ctx, Rest, BodyStr)
+      in let <ContinuationComplex> = apply 'genValueBindsWithBodyStrSorted'/3(NextCtx, Rest, BodyStr)
+      in case apply 'isSimplePattern'/1(call 'maps':'get'('pattern', Bind)) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", Pat), "> = "), Val), "\n      in "), Continuation)
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", TmpVar), "> = "), Val), "\n      in case "), TmpVar), " of\n        <"), Pat), "> when 'true' -> "), ContinuationComplex), "\n      end")
+    end
+    end
+
+'genLetBinds'/2 =
+  fun (Ctx, Binds) ->
+    letrec 'genBind'/2 = fun (Bind, Acc) ->
+      let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Bind))
+      in let <BindNames> = apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind))
+      in let <IsRec> = apply 'isRecursiveBind'/1(Bind)
+      in let <Arity> = apply 'getLambdaArity'/1(call 'maps':'get'('value', Bind))
+      in let <CtxForVal> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        case IsRec of
+          <'true'> when 'true' -> call 'maps':'merge'(call 'maps':'get'('snd', Acc), ~{'moduleFuncs'=>call 'Data.Set':'insert'(N, call 'maps':'get'('moduleFuncs', call 'maps':'get'('snd', Acc))),'funcArities'=>call 'erlang':'++'(call 'maps':'get'('funcArities', call 'maps':'get'('snd', Acc)), [~{'name'=>N,'arity'=>Arity}~])}~)
+          <_> when 'true' -> call 'maps':'get'('snd', Acc)
+        end
+      <_W0> when 'true' ->
+        call 'maps':'get'('snd', Acc)
+    end
+      in let <FuncName> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        apply 'toSnakeCase'/1(N)
+      <'Nothing'> when 'true' ->
+        "_anon"
+    end
+      in let <Val> = apply 'genExpr'/2(CtxForVal, call 'maps':'get'('value', Bind))
+      in let <NewCtx> = case IsRec of
+      <'true'> when 'true' -> CtxForVal
+      <'false'> when 'true' -> apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), call 'maps':'get'('snd', Acc))
+    end
+      in case IsRec of
+      <'true'> when 'true' -> ~{'fst'=>call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("letrec ", apply 'atom'/1(FuncName)), "/"), call 'erlang':'integer_to_list'(Arity)), " = "), Val), "\n      in "), call 'maps':'get'('fst', Acc)),'snd'=>NewCtx}~
+      <'false'> when 'true' -> ~{'fst'=>call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", Pat), "> = "), Val), "\n      in "), call 'maps':'get'('fst', Acc)),'snd'=>NewCtx}~
+    end
+      in call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'genBind'/2(_Mf0, _Mf1), ~{'fst'=>"",'snd'=>Ctx}~, Binds)
+
+'isWildcardPattern'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'PatVar', _W0}}> when 'true' ->
+        'true'
+      <{'PatWildcard'}> when 'true' ->
+        'true'
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'genCaseClausesWithFallback'/3 =
+  fun (Ctx, ScrutExpr, Clauses) ->
+    case call 'Data.List':'uncons'(Clauses) of
+      <'Nothing'> when 'true' ->
+        "      <_> when 'true' -> primop 'match_fail'({'case_clause', 'no_clause'})"
+      <{'Just', ~{'head':=Clause,'tail':=Rest}~}> when 'true' ->
+        case case apply 'isWildcardPattern'/1(call 'maps':'get'('pattern', Clause)) of <'true'> when 'true' -> call 'Data.Maybe':'isJust'(call 'maps':'get'('guard', Clause)) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> apply 'genGuardedWildcardClause'/4(Ctx, ScrutExpr, Clause, Rest)
+      <'false'> when 'true' -> let <_Let0> = apply 'splitSamePatternClauses'/2(call 'maps':'get'('pattern', Clause), Rest)
+      in case _Let0 of
+        <~{'samePattern':=SamePattern,'different':=Different}~> when 'true' -> let <CtxWithVars> = apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Clause), Ctx)
+      in let <Fallback> = case case call 'Data.List':'null'(SamePattern) of <'true'> when 'true' -> case call 'Data.List':'null'(Different) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'Data.Maybe':'isNothing'(call 'maps':'get'('guard', Clause)) end <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', apply 'genFallbackForSamePattern'/4(CtxWithVars, ScrutExpr, SamePattern, Different)}
+    end
+      in call 'erlang':'++'(apply 'genCaseClause'/3(Ctx, Clause, Fallback), case call 'Data.List':'null'(Different) of
+      <'true'> when 'true' -> ""
+      <'false'> when 'true' -> call 'erlang':'++'("\n", apply 'genCaseClausesWithFallback'/3(Ctx, ScrutExpr, Different))
+    end)
+      end
+    end
+    end
+
+'splitSamePatternClauses'/2 =
+  fun (Pat, Clauses) ->
+    letrec 'isSameGuarded'/1 = fun (C) ->
+      case call 'erlang':'=:='(apply 'genPattern'/1(call 'maps':'get'('pattern', C)), apply 'genPattern'/1(Pat)) of <'true'> when 'true' -> call 'Data.Maybe':'isJust'(call 'maps':'get'('guard', C)) <_> when 'true' -> 'false' end
+      in let <SamePattern> = call 'Data.List':'takeWhile'(fun (_Mf0) -> apply 'isSameGuarded'/1(_Mf0), Clauses)
+      in let <Different> = call 'Data.List':'drop'(call 'Data.List':'length'(SamePattern), Clauses)
+      in ~{'samePattern'=>SamePattern,'different'=>Different}~
+
+'genFallbackForSamePattern'/4 =
+  fun (Ctx, ScrutExpr, SamePattern, Different) ->
+    case call 'Data.List':'uncons'(SamePattern) of
+      <'Nothing'> when 'true' ->
+        apply 'genFallbackForDifferent'/3(Ctx, ScrutExpr, Different)
+      <{'Just', ~{'head':=Clause,'tail':=Rest}~}> when 'true' ->
+        let <GuardExpr> = case call 'maps':'get'('guard', Clause) of
+      <{'Just', G}> when 'true' ->
+        apply 'genExpr'/2(Ctx, G)
+      <'Nothing'> when 'true' ->
+        "'true'"
+    end
+      in let <Body> = apply 'genExpr'/2(Ctx, call 'maps':'get'('body', Clause))
+      in let <Fallback> = apply 'genFallbackForSamePattern'/4(Ctx, ScrutExpr, Rest, Different)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", GuardExpr), " of\n"), "            <'true'> when 'true' -> "), Body), "\n"), "            <_> when 'true' -> "), Fallback), "\n"), "          end")
+    end
+
+'genFallbackForDifferent'/3 =
+  fun (Ctx, ScrutExpr, Clauses) ->
+    case call 'Data.List':'uncons'(Clauses) of
+      <'Nothing'> when 'true' ->
+        "primop 'match_fail'({'case_clause', 'no_match'})"
+      <{'Just', ~{'head':=Clause,'tail':=Rest}~}> when 'true' ->
+        case apply 'isWildcardPattern'/1(call 'maps':'get'('pattern', Clause)) of
+      <'true'> when 'true' -> case call 'maps':'get'('guard', Clause) of
+      <{'Just', G}> when 'true' ->
+        let <Body> = apply 'genExpr'/2(Ctx, call 'maps':'get'('body', Clause))
+      in let <Fallback> = apply 'genFallbackForDifferent'/3(Ctx, ScrutExpr, Rest)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(Ctx, G)), " of\n"), "            <'true'> when 'true' -> "), Body), "\n"), "            <_> when 'true' -> "), Fallback), "\n"), "          end")
+      <'Nothing'> when 'true' ->
+        apply 'genExpr'/2(Ctx, call 'maps':'get'('body', Clause))
+    end
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", ScrutExpr), " of\n"), apply 'genCaseClausesWithFallback'/3(Ctx, ScrutExpr, Clauses)), "\n"), "          end")
+    end
+    end
+
+'genGuardedWildcardClause'/4 =
+  fun (Ctx, ScrutExpr, Clause, Rest) ->
+    let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Clause))
+      in let <CtxWithVars> = apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Clause), Ctx)
+      in let <GuardExpr> = case call 'maps':'get'('guard', Clause) of
+      <{'Just', G}> when 'true' ->
+        apply 'genExpr'/2(CtxWithVars, G)
+      <'Nothing'> when 'true' ->
+        "'true'"
+    end
+      in let <Body> = apply 'genExpr'/2(CtxWithVars, call 'maps':'get'('body', Clause))
+      in let <Fallback> = case call 'Data.List':'null'(Rest) of
+      <'true'> when 'true' -> "primop 'match_fail'({'case_clause', 'guard_failed'})"
+      <'false'> when 'true' -> apply 'genFallbackForDifferent'/3(CtxWithVars, ScrutExpr, Rest)
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("      <", Pat), "> when 'true' ->\n"), "        case "), GuardExpr), " of\n"), "          <'true'> when 'true' -> "), Body), "\n"), "          <_> when 'true' -> "), Fallback), "\n"), "        end")
+
+'genCaseClause'/3 =
+  fun (Ctx, Clause, Fallback) ->
+    let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Clause))
+      in let <CtxWithVars> = apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Clause), Ctx)
+      in let <Body> = case call 'maps':'get'('guard', Clause) of
+      <'Nothing'> when 'true' ->
+        apply 'genExpr'/2(CtxWithVars, call 'maps':'get'('body', Clause))
+      <{'Just', G}> when 'true' ->
+        let <FallbackCode> = case Fallback of
+      <{'Just', Fb}> when 'true' ->
+        Fb
+      <'Nothing'> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("primop 'match_fail'({'case_clause', ", apply 'genExpr'/2(CtxWithVars, G)), "})")
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", apply 'genExpr'/2(CtxWithVars, G)), " of\n"), "          <'true'> when 'true' -> "), apply 'genExpr'/2(CtxWithVars, call 'maps':'get'('body', Clause))), "\n"), "          <_> when 'true' -> "), FallbackCode), "\n"), "        end")
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("      <", Pat), "> when 'true' ->\n        "), Body)
+
+'genDoStmts'/2 =
+  fun (Ctx, Stmts) ->
+    letrec 'isParserModule'/1 = fun (ModName) ->
+      call 'erlang':'=:='(ModName, "Nova.Compiler.CstParser")
+      in case apply 'isParserModule'/1(call 'maps':'get'('moduleName', Ctx)) of
+      <'true'> when 'true' -> apply 'genDoStmtsParser'/2(Ctx, Stmts)
+      <'false'> when 'true' -> apply 'genDoStmtsMaybeEither'/2(Ctx, Stmts)
+    end
+
+'genDoStmtsParser'/2 =
+  fun (Ctx, Stmts) ->
+    case call 'Data.Array':'uncons'(Stmts) of
+      <'Nothing'> when 'true' ->
+        "apply 'pureP'/1('unit')"
+      <{'Just', ~{'head':={'DoExpr', E},'tail':=[]}~}> when 'true' ->
+        apply 'genExpr'/2(Ctx, E)
+      <{'Just', ~{'head':={'DoExpr', E},'tail':=Rest}~}> when 'true' ->
+        let <_Let0> = apply 'freshVar'/1(Ctx)
+      in case _Let0 of
+        <~{'var':=Var,'ctx':=Ctx_}~> when 'true' -> let <RestCode> = apply 'genDoStmtsParser'/2(Ctx_, Rest)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'bindP'/2(", apply 'genExpr'/2(Ctx, E)), ", fun ("), Var), ") ->\n      "), RestCode), ")")
+      end
+      <{'Just', ~{'head':={'DoBind', Pat, E},'tail':=Rest}~}> when 'true' ->
+        let <CtxWithBind> = apply 'addLocalsFromPattern'/2(Pat, Ctx)
+      in let <BindExpr> = apply 'genExpr'/2(Ctx, E)
+      in let <PatCode> = apply 'genPattern'/1(Pat)
+      in case apply 'isSimplePattern'/1(Pat) of
+      <'true'> when 'true' -> let <RestCode> = apply 'genDoStmtsParser'/2(CtxWithBind, Rest)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'bindP'/2(", BindExpr), ", fun ("), PatCode), ") ->\n      "), RestCode), ")")
+      <'false'> when 'true' -> let <_Let0> = apply 'freshVar'/1(Ctx)
+      in case _Let0 of
+        <~{'var':=Var,'ctx':=Ctx_}~> when 'true' -> let <CtxWithBind_> = apply 'addLocalsFromPattern'/2(Pat, Ctx_)
+      in let <RestCode> = apply 'genDoStmtsParser'/2(CtxWithBind_, Rest)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply 'bindP'/2(", BindExpr), ", fun ("), Var), ") ->\n      case "), Var), " of\n        <"), PatCode), "> when 'true' -> "), RestCode), "\n      end)")
+      end
+    end
+      <{'Just', ~{'head':={'DoLet', Binds},'tail':=Rest}~}> when 'true' ->
+        apply 'genDoLetWithBodyParser'/3(Ctx, call 'Data.Array':'fromFoldable'(Binds), call 'Data.Array':'fromFoldable'(Rest))
+    end
+
+'genDoStmtsMaybeEither'/2 =
+  fun (Ctx, Stmts) ->
+    case call 'Data.Array':'uncons'(Stmts) of
+      <'Nothing'> when 'true' ->
+        apply 'atom'/1("unit")
+      <{'Just', ~{'head':={'DoExpr', E},'tail':=[]}~}> when 'true' ->
+        apply 'genExpr'/2(Ctx, E)
+      <{'Just', ~{'head':={'DoExpr', E},'tail':=Rest}~}> when 'true' ->
+        let <_Let0> = apply 'freshVar'/1(Ctx)
+      in case _Let0 of
+        <~{'var':=Var,'ctx':=Ctx_}~> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", Var), "> = "), apply 'genExpr'/2(Ctx, E)), "\n      in "), apply 'genDoStmtsMaybeEither'/2(Ctx_, Rest))
+      end
+      <{'Just', ~{'head':={'DoBind', Pat, E},'tail':=Rest}~}> when 'true' ->
+        let <CtxWithBind> = apply 'addLocalsFromPattern'/2(Pat, Ctx)
+      in let <BindExpr> = apply 'genExpr'/2(Ctx, E)
+      in let <PatCode> = apply 'genPattern'/1(Pat)
+      in let <RestCode> = apply 'genDoStmtsMaybeEither'/2(CtxWithBind, Rest)
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("case ", BindExpr), " of\n"), "      <'Nothing'> when 'true' ->\n        'Nothing'\n"), "      <{'Left', _Err}> when 'true' ->\n        {'Left', _Err}\n"), "      <{'Just', "), PatCode), "}> when 'true' ->\n        "), RestCode), "\n"), "      <{'Right', "), PatCode), "}> when 'true' ->\n        "), RestCode), "\n      end")
+      <{'Just', ~{'head':={'DoLet', Binds},'tail':=Rest}~}> when 'true' ->
+        apply 'genDoLetWithBody'/3(Ctx, call 'Data.Array':'fromFoldable'(Binds), call 'Data.Array':'fromFoldable'(Rest))
+    end
+
+'genDoLetWithBody'/3 =
+  fun (Ctx, Binds, Rest) ->
+    case call 'Data.Array':'uncons'(Binds) of
+      <'Nothing'> when 'true' ->
+        apply 'genDoStmts'/2(Ctx, Rest)
+      <{'Just', ~{'head':=Bind,'tail':=MoreBinds}~}> when 'true' ->
+        let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Bind))
+      in let <BindNames> = apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind))
+      in let <IsRec> = apply 'isRecursiveBind'/1(Bind)
+      in let <Arity> = apply 'getLambdaArity'/1(call 'maps':'get'('value', Bind))
+      in let <CtxForVal> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        case IsRec of
+          <'true'> when 'true' -> call 'maps':'merge'(Ctx, ~{'moduleFuncs'=>call 'Data.Set':'insert'(N, call 'maps':'get'('moduleFuncs', Ctx)),'funcArities'=>call 'erlang':'++'(call 'maps':'get'('funcArities', Ctx), [~{'name'=>N,'arity'=>Arity}~])}~)
+          <_> when 'true' -> Ctx
+        end
+      <_W0> when 'true' ->
+        Ctx
+    end
+      in let <FuncName> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        apply 'toSnakeCase'/1(N)
+      <'Nothing'> when 'true' ->
+        "_anon"
+    end
+      in let <Val> = apply 'genExpr'/2(CtxForVal, call 'maps':'get'('value', Bind))
+      in let <NewCtx> = case IsRec of
+      <'true'> when 'true' -> CtxForVal
+      <'false'> when 'true' -> apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), Ctx)
+    end
+      in let <TmpVar> = call 'erlang':'++'("_DLet", call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', NewCtx)))
+      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 1)}~)
+      in let <Continuation> = apply 'genDoLetWithBody'/3(NewCtx, MoreBinds, Rest)
+      in let <ContinuationComplex> = apply 'genDoLetWithBody'/3(NextCtx, MoreBinds, Rest)
+      in case IsRec of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("letrec ", apply 'atom'/1(FuncName)), "/"), call 'erlang':'integer_to_list'(Arity)), " = "), Val), "\n      in "), Continuation)
+      <'false'> when 'true' -> case apply 'isSimplePattern'/1(call 'maps':'get'('pattern', Bind)) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", Pat), "> = "), Val), "\n      in "), Continuation)
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", TmpVar), "> = "), Val), "\n      in case "), TmpVar), " of\n        <"), Pat), "> when 'true' -> "), ContinuationComplex), "\n      end")
+    end
+    end
+    end
+
+'genDoLetWithBodyParser'/3 =
+  fun (Ctx, Binds, Rest) ->
+    case call 'Data.Array':'uncons'(Binds) of
+      <'Nothing'> when 'true' ->
+        apply 'genDoStmtsParser'/2(Ctx, Rest)
+      <{'Just', ~{'head':=Bind,'tail':=MoreBinds}~}> when 'true' ->
+        let <Pat> = apply 'genPattern'/1(call 'maps':'get'('pattern', Bind))
+      in let <BindNames> = apply 'getPatternVarName'/1(call 'maps':'get'('pattern', Bind))
+      in let <IsRec> = apply 'isRecursiveBind'/1(Bind)
+      in let <Arity> = apply 'getLambdaArity'/1(call 'maps':'get'('value', Bind))
+      in let <CtxForVal> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        case IsRec of
+          <'true'> when 'true' -> call 'maps':'merge'(Ctx, ~{'moduleFuncs'=>call 'Data.Set':'insert'(N, call 'maps':'get'('moduleFuncs', Ctx)),'funcArities'=>call 'erlang':'++'(call 'maps':'get'('funcArities', Ctx), [~{'name'=>N,'arity'=>Arity}~])}~)
+          <_> when 'true' -> Ctx
+        end
+      <_W0> when 'true' ->
+        Ctx
+    end
+      in let <FuncName> = case BindNames of
+      <{'Just', N}> when 'true' ->
+        apply 'toSnakeCase'/1(N)
+      <'Nothing'> when 'true' ->
+        "_anon"
+    end
+      in let <Val> = apply 'genExpr'/2(CtxForVal, call 'maps':'get'('value', Bind))
+      in let <NewCtx> = case IsRec of
+      <'true'> when 'true' -> CtxForVal
+      <'false'> when 'true' -> apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), Ctx)
+    end
+      in let <TmpVar> = call 'erlang':'++'("_DLet", call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', NewCtx)))
+      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 1)}~)
+      in let <Continuation> = apply 'genDoLetWithBodyParser'/3(NewCtx, MoreBinds, Rest)
+      in let <ContinuationComplex> = apply 'genDoLetWithBodyParser'/3(NextCtx, MoreBinds, Rest)
+      in case IsRec of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("letrec ", apply 'atom'/1(FuncName)), "/"), call 'erlang':'integer_to_list'(Arity)), " = "), Val), "\n      in "), Continuation)
+      <'false'> when 'true' -> case apply 'isSimplePattern'/1(call 'maps':'get'('pattern', Bind)) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", Pat), "> = "), Val), "\n      in "), Continuation)
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <", TmpVar), "> = "), Val), "\n      in case "), TmpVar), " of\n        <"), Pat), "> when 'true' -> "), ContinuationComplex), "\n      end")
+    end
+    end
+    end
+
+'genLiteral'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'LitInt', N}}> when 'true' ->
+        call 'erlang':'integer_to_list'(N)
+      <{{'LitNumber', N}}> when 'true' ->
+        call 'erlang':'integer_to_list'(N)
+      <{{'LitString', S}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("\"", apply 'escapeString'/1(S)), "\"")
+      <{{'LitChar', C}}> when 'true' ->
+        call 'erlang':'++'("$", apply 'escapeChar'/1(C))
+      <{{'LitBool', 'true'}}> when 'true' ->
+        apply 'atom'/1("true")
+      <{{'LitBool', 'false'}}> when 'true' ->
+        apply 'atom'/1("false")
+    end
+
+'escapeString'/1 =
+  fun (S) ->
+    let <S1> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\\"), call 'Data.String':'Replacement'("\\\\"), S)
+      in let <S2> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\""), call 'Data.String':'Replacement'("\\\""), S1)
+      in let <S3> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\n"), call 'Data.String':'Replacement'("\\n"), S2)
+      in let <S4> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\t"), call 'Data.String':'Replacement'("\\t"), S3)
+      in let <S5> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("\r"), call 'Data.String':'Replacement'("\\r"), S4)
+      in S5
+
+'escapeChar'/1 =
+  fun (C) ->
+    case C of
+      <$\n> when 'true' ->
+        "\\n"
+      <$\r> when 'true' ->
+        "\\r"
+      <$\t> when 'true' ->
+        "\\t"
+      <$\\> when 'true' ->
+        "\\\\"
+      <_W0> when 'true' ->
+        call 'Data.String.CodeUnits':'singleton'(C)
+    end
+
+'translateOp'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{"+"}> when 'true' ->
+        "+"
+      <{"-"}> when 'true' ->
+        "-"
+      <{"*"}> when 'true' ->
+        "*"
+      <{"/"}> when 'true' ->
+        "div"
+      <{"=="}> when 'true' ->
+        "=:="
+      <{"/="}> when 'true' ->
+        "=/="
+      <{"<"}> when 'true' ->
+        "<"
+      <{">"}> when 'true' ->
+        ">"
+      <{"<="}> when 'true' ->
+        "=<"
+      <{">="}> when 'true' ->
+        ">="
+      <{"&&"}> when 'true' ->
+        "andalso"
+      <{"||"}> when 'true' ->
+        "orelse"
+      <{Op}> when 'true' ->
+        Op
+    end
+
+'toSnakeCase'/1 =
+  fun (S) ->
+    S
+
+'genCurriedLambda'/2 =
+  fun (Params, Body) ->
+    case call 'Data.Array':'uncons'(Params) of
+      <'Nothing'> when 'true' ->
+        Body
+      <{'Just', ~{'head':=Head,'tail':=Tail}~}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("fun (", Head), ") -> "), apply 'genCurriedLambda'/2(Tail, Body))
+    end
+
+'genCurriedApply'/3 =
+  fun (Ctx, BaseCall, ExtraArgs) ->
+    case call 'erlang':'=:='(call 'Data.Array':'length'(ExtraArgs), 0) of
+      <'true'> when 'true' -> BaseCall
+      <'false'> when 'true' -> letrec 'applyOne'/2 = fun (Acc, Arg) ->
+      call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("apply ", Acc), "("), apply 'genExpr'/2(Ctx, Arg)), ")")
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("let <_Oa0> = ", BaseCall), "\n      in "), call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'applyOne'/2(_Mf0, _Mf1), "_Oa0", ExtraArgs))
+    end
+
+'genCoreList'/2 =
+  fun (Ctx, Elems) ->
+    case call 'erlang':'=<'(call 'Data.List':'length'(Elems), 50) of
+      <'true'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'("[", call 'Data.String':'joinWith'(", ", call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), call 'Data.List':'toUnfoldable'(Elems)))), "]")
+      <'false'> when 'true' -> case call 'Data.List':'uncons'(Elems) of
+      <'Nothing'> when 'true' ->
+        "[]"
+      <{'Just', ~{'head':=H,'tail':=[]}~}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("[", apply 'genExpr'/2(Ctx, H)), "]")
+      <{'Just', ~{'head':=H,'tail':=T}~}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("[", apply 'genExpr'/2(Ctx, H)), "|"), apply 'genCoreList'/2(Ctx, T)), "]")
+    end
+    end
+
+'collectArgs'/1 =
+  fun (Expr) ->
+    letrec 'go'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{{'ExprApp', F, A}, Acc}> when 'true' -> apply 'go'/2(F, [A | Acc])
+        <{F, Acc}> when 'true' -> ~{'func'=>F,'args'=>Acc}~
+      end
+      in apply 'go'/2(Expr, [])
+
+'lookupArity'/2 =
+  fun (Name, Ctx) ->
+    case call 'Data.Array':'find'(fun (F) ->
+      call 'erlang':'=:='(call 'maps':'get'('name', F), Name), call 'maps':'get'('funcArities', Ctx)) of
+      <{'Just', F}> when 'true' ->
+        call 'maps':'get'('arity', F)
+      <'Nothing'> when 'true' ->
+        0
+    end
+
+'getUsedVars'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ExprVar', N}}> when 'true' ->
+        [N]
+      <{{'ExprApp', F, A}}> when 'true' ->
+        call 'erlang':'++'(apply 'getUsedVars'/1(F), apply 'getUsedVars'/1(A))
+      <{{'ExprLambda', _W0, Body}}> when 'true' ->
+        apply 'getUsedVars'/1(Body)
+      <{{'ExprLet', Binds, Body}}> when 'true' ->
+        call 'erlang':'++'(apply 'listConcatMap'/2(fun (B) ->
+      apply 'getUsedVars'/1(call 'maps':'get'('value', B)), Binds), apply 'getUsedVars'/1(Body))
+      <{{'ExprIf', C, T, E}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(apply 'getUsedVars'/1(C), apply 'getUsedVars'/1(T)), apply 'getUsedVars'/1(E))
+      <{{'ExprCase', Scrut, Clauses}}> when 'true' ->
+        call 'erlang':'++'(apply 'getUsedVars'/1(Scrut), apply 'listConcatMap'/2(fun (Cl) ->
+      apply 'getUsedVars'/1(call 'maps':'get'('body', Cl)), Clauses))
+      <{{'ExprBinOp', _W0, L, R}}> when 'true' ->
+        call 'erlang':'++'(apply 'getUsedVars'/1(L), apply 'getUsedVars'/1(R))
+      <{{'ExprList', Elems}}> when 'true' ->
+        apply 'listConcatMap'/2(fun (_Mf0) -> apply 'getUsedVars'/1(_Mf0), Elems)
+      <{{'ExprRecord', Fields}}> when 'true' ->
+        apply 'listConcatMap'/2(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, V}}> when 'true' -> apply 'getUsedVars'/1(V)
+      end, Fields)
+      <{{'ExprRecordAccess', Rec, _W0}}> when 'true' ->
+        apply 'getUsedVars'/1(Rec)
+      <{{'ExprRecordUpdate', Rec, Fields}}> when 'true' ->
+        call 'erlang':'++'(apply 'getUsedVars'/1(Rec), apply 'listConcatMap'/2(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, V}}> when 'true' -> apply 'getUsedVars'/1(V)
+      end, Fields))
+      <{{'ExprDo', Stmts}}> when 'true' ->
+        letrec 'getUsedVarsStmt'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'DoLet', Binds}}> when 'true' -> apply 'listConcatMap'/2(fun (B) ->
+      apply 'getUsedVars'/1(call 'maps':'get'('value', B)), Binds)
+        <{{'DoBind', _W0, E}}> when 'true' -> apply 'getUsedVars'/1(E)
+        <{{'DoExpr', E}}> when 'true' -> apply 'getUsedVars'/1(E)
+      end
+      in apply 'listConcatMapArray'/2(fun (_Mf0) -> apply 'getUsedVarsStmt'/1(_Mf0), Stmts)
+      <{{'ExprTuple', Elems}}> when 'true' ->
+        apply 'listConcatMap'/2(fun (_Mf0) -> apply 'getUsedVars'/1(_Mf0), Elems)
+      <{{'ExprTyped', E, _W0}}> when 'true' ->
+        apply 'getUsedVars'/1(E)
+      <{{'ExprParens', E}}> when 'true' ->
+        apply 'getUsedVars'/1(E)
+      <{{'ExprSection', _W0}}> when 'true' ->
+        []
+      <{{'ExprSectionLeft', E, _W0}}> when 'true' ->
+        apply 'getUsedVars'/1(E)
+      <{{'ExprSectionRight', _W0, E}}> when 'true' ->
+        apply 'getUsedVars'/1(E)
+      <{{'ExprQualified', _W0, _W1}}> when 'true' ->
+        []
+      <{{'ExprUnaryOp', _W0, E}}> when 'true' ->
+        apply 'getUsedVars'/1(E)
+      <{_W0}> when 'true' ->
+        []
+    end
+
+'listConcatMap'/2 =
+  fun (F, Lst) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, X) ->
+      call 'erlang':'++'(Acc, apply F(X)), [], Lst)
+
+'listConcatMapArray'/2 =
+  fun (F, Lst) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, X) ->
+      call 'erlang':'++'(Acc, apply F(X)), [], Lst)
+
+'countTypeArity'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyExprArrow', _W0, Result}}> when 'true' ->
+        call 'erlang':'+'(1, apply 'countTypeArity'/1(Result))
+      <{{'TyExprParens', Inner}}> when 'true' ->
+        apply 'countTypeArity'/1(Inner)
+      <{{'TyExprConstrained', _W0, Inner}}> when 'true' ->
+        apply 'countTypeArity'/1(Inner)
+      <{{'TyExprForAll', _W0, Inner}}> when 'true' ->
+        apply 'countTypeArity'/1(Inner)
+      <{_W0}> when 'true' ->
+        0
+    end
+
+'genForeignImport'/2 =
+  fun (_W0, Fi) ->
+    let <FuncName> = call 'maps':'get'('functionName', Fi)
+      in let <Arity> = apply 'countTypeArity'/1(call 'maps':'get'('typeSignature', Fi))
+      in let <Params> = case call 'erlang':'=<'(Arity, 0) of
+      <'true'> when 'true' -> []
+      <'false'> when 'true' -> call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("V", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
+    end
+      in let <ParamStr> = call 'Data.String':'joinWith'(", ", Params)
+      in let <Body> = case call 'maps':'get'('inlineImpl', Fi) of
+      <{'Just', Impl}> when 'true' ->
+        apply 'substituteParams'/2(Impl, Params)
+      <'Nothing'> when 'true' ->
+        "'ffi_not_implemented'"
+    end
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("'", FuncName), "'/"), call 'erlang':'integer_to_list'(Arity)), " = fun ("), ParamStr), ") -> "), Body)
+
+'substituteParams'/2 =
+  fun (Impl, Params) ->
+    call 'Data.Foldable':'foldl'(fun (S, I) ->
+      call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(call 'erlang':'++'("$", call 'erlang':'integer_to_list'(I))), call 'Data.String':'Replacement'(call 'Data.Maybe':'fromMaybe'(call 'erlang':'++'("V", call 'erlang':'integer_to_list'(I)), call 'Data.Array':'index'(Params, I))), S), Impl, call 'Data.Array':'range'(0, call 'erlang':'-'(call 'Data.Array':'length'(Params), 1)))
+
+'emptyCtx'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'emptyCtx'/1(_A0)
+      in _F0
+
+'getPreludeFunc'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getPreludeFunc'/1(_A0)
+      in _F0
+
+'isPreludeFunc'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isPreludeFunc'/1(_A0)
+      in _F0
+
+'freshVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freshVar'/1(_A0)
+      in _F0
+
+'addLocalsFromPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'addLocalsFromPattern'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'addLocalsFromPattern'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'addLocalsFromPattern'/2(_A0, _A1)
+      in _F0
+
+'freeVarsInExprFor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'freeVarsInExprFor'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'freeVarsInExprFor'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'freeVarsInExprFor'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'freeVarsInExprFor'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'freeVarsInExprFor'/3(_A0, _A1, _A2)
+      in _F0
+
+'topoSortBinds'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'topoSortBinds'/1(_A0)
+      in _F0
+
+'atom'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'atom'/1(_A0)
+      in _F0
+
+'coreVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'coreVar'/1(_A0)
+      in _F0
+
+'genModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genModule'/1(_A0)
+      in _F0
+
+'genCurriedExports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genCurriedExports'/1(_A0)
+      in _F0
+
+'genCurriedWrappers'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genCurriedWrappers'/1(_A0)
+      in _F0
+
+'safeRange'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'safeRange'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'safeRange'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'safeRange'/2(_A0, _A1)
+      in _F0
+
+'genCurriedWrapper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genCurriedWrapper'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genCurriedWrapper'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genCurriedWrapper'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genCurriedWrapper'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genCurriedWrapper'/3(_A0, _A1, _A2)
+      in _F0
+
+'importItemsToTuples'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'importItemsToTuples'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'importItemsToTuples'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'importItemsToTuples'/2(_A0, _A1)
+      in _F0
+
+'groupFunctions'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'groupFunctions'/1(_A0)
+      in _F0
+
+'genFunctionGroup'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genFunctionGroup'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genFunctionGroup'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genFunctionGroup'/2(_A0, _A1)
+      in _F0
+
+'hasComplexPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'hasComplexPattern'/1(_A0)
+      in _F0
+
+'hasComplexPatternSingle'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'hasComplexPatternSingle'/1(_A0)
+      in _F0
+
+'genMergedFunction'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genMergedFunction'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genMergedFunction'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genMergedFunction'/2(_A0, _A1)
+      in _F0
+
+'genFunctionClauseAsCase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genFunctionClauseAsCase'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genFunctionClauseAsCase'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genFunctionClauseAsCase'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genFunctionClauseAsCase'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genFunctionClauseAsCase'/3(_A0, _A1, _A2)
+      in _F0
+
+'translateModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'translateModuleName'/1(_A0)
+      in _F0
+
+'resolveModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'resolveModuleName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'resolveModuleName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'resolveModuleName'/2(_A0, _A1)
+      in _F0
+
+'genFunction'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genFunction'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genFunction'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genFunction'/2(_A0, _A1)
+      in _F0
+
+'genGuardedExprs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genGuardedExprs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genGuardedExprs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genGuardedExprs'/2(_A0, _A1)
+      in _F0
+
+'genOneGuardedExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genOneGuardedExpr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genOneGuardedExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genOneGuardedExpr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genOneGuardedExpr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genOneGuardedExpr'/3(_A0, _A1, _A2)
+      in _F0
+
+'genDataType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genDataType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genDataType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genDataType'/2(_A0, _A1)
+      in _F0
+
+'constructorTag'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'constructorTag'/1(_A0)
+      in _F0
+
+'genNewtype'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genNewtype'/1(_A0)
+      in _F0
+
+'genPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genPattern'/1(_A0)
+      in _F0
+
+'genPatternWithCounter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genPatternWithCounter'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genPatternWithCounter'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genPatternWithCounter'/2(_A0, _A1)
+      in _F0
+
+'genPatsWithCounter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genPatsWithCounter'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genPatsWithCounter'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genPatsWithCounter'/2(_A0, _A1)
+      in _F0
+
+'genExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genExpr'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genExpr'/2(_A0, _A1)
+      in _F0
+
+'genExprLetrec'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genExprLetrec'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genExprLetrec'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genExprLetrec'/2(_A0, _A1)
+      in _F0
+
+'exprContainsVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'exprContainsVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'exprContainsVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'exprContainsVar'/2(_A0, _A1)
+      in _F0
+
+'doStmtContainsVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'doStmtContainsVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'doStmtContainsVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'doStmtContainsVar'/2(_A0, _A1)
+      in _F0
+
+'getPatternVarName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getPatternVarName'/1(_A0)
+      in _F0
+
+'isRecursiveBind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isRecursiveBind'/1(_A0)
+      in _F0
+
+'getLambdaArity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getLambdaArity'/1(_A0)
+      in _F0
+
+'isSimplePattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isSimplePattern'/1(_A0)
+      in _F0
+
+'genLetBindsWithBody'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genLetBindsWithBody'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genLetBindsWithBody'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genLetBindsWithBody'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genLetBindsWithBody'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genLetBindsWithBody'/3(_A0, _A1, _A2)
+      in _F0
+
+'genValueBindsWithBody'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genValueBindsWithBody'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genValueBindsWithBody'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genValueBindsWithBody'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genValueBindsWithBody'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genValueBindsWithBody'/3(_A0, _A1, _A2)
+      in _F0
+
+'genValueBindsWithBodyStr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genValueBindsWithBodyStr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genValueBindsWithBodyStr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStr'/3(_A0, _A1, _A2)
+      in _F0
+
+'genValueBindsWithBodyStrSorted'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStrSorted'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genValueBindsWithBodyStrSorted'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStrSorted'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genValueBindsWithBodyStrSorted'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genValueBindsWithBodyStrSorted'/3(_A0, _A1, _A2)
+      in _F0
+
+'genLetBinds'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genLetBinds'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genLetBinds'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genLetBinds'/2(_A0, _A1)
+      in _F0
+
+'isWildcardPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isWildcardPattern'/1(_A0)
+      in _F0
+
+'genCaseClausesWithFallback'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genCaseClausesWithFallback'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genCaseClausesWithFallback'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genCaseClausesWithFallback'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genCaseClausesWithFallback'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genCaseClausesWithFallback'/3(_A0, _A1, _A2)
+      in _F0
+
+'splitSamePatternClauses'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'splitSamePatternClauses'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'splitSamePatternClauses'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'splitSamePatternClauses'/2(_A0, _A1)
+      in _F0
+
+'genFallbackForSamePattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'genFallbackForSamePattern'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'genFallbackForSamePattern'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'genFallbackForSamePattern'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'genFallbackForSamePattern'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'genFallbackForSamePattern'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'genFallbackForSamePattern'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'genFallbackForSamePattern'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'genFallbackForDifferent'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genFallbackForDifferent'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genFallbackForDifferent'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genFallbackForDifferent'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genFallbackForDifferent'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genFallbackForDifferent'/3(_A0, _A1, _A2)
+      in _F0
+
+'genGuardedWildcardClause'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'genGuardedWildcardClause'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'genGuardedWildcardClause'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'genGuardedWildcardClause'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'genGuardedWildcardClause'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'genGuardedWildcardClause'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'genGuardedWildcardClause'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'genGuardedWildcardClause'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'genCaseClause'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genCaseClause'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genCaseClause'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genCaseClause'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genCaseClause'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genCaseClause'/3(_A0, _A1, _A2)
+      in _F0
+
+'genDoStmts'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genDoStmts'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genDoStmts'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genDoStmts'/2(_A0, _A1)
+      in _F0
+
+'genDoStmtsParser'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genDoStmtsParser'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genDoStmtsParser'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genDoStmtsParser'/2(_A0, _A1)
+      in _F0
+
+'genDoStmtsMaybeEither'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genDoStmtsMaybeEither'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genDoStmtsMaybeEither'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genDoStmtsMaybeEither'/2(_A0, _A1)
+      in _F0
+
+'genDoLetWithBody'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genDoLetWithBody'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genDoLetWithBody'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genDoLetWithBody'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genDoLetWithBody'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genDoLetWithBody'/3(_A0, _A1, _A2)
+      in _F0
+
+'genDoLetWithBodyParser'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genDoLetWithBodyParser'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genDoLetWithBodyParser'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genDoLetWithBodyParser'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genDoLetWithBodyParser'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genDoLetWithBodyParser'/3(_A0, _A1, _A2)
+      in _F0
+
+'genLiteral'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genLiteral'/1(_A0)
+      in _F0
+
+'escapeString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'escapeString'/1(_A0)
+      in _F0
+
+'escapeChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'escapeChar'/1(_A0)
+      in _F0
+
+'translateOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'translateOp'/1(_A0)
+      in _F0
+
+'toSnakeCase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toSnakeCase'/1(_A0)
+      in _F0
+
+'genCurriedLambda'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genCurriedLambda'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genCurriedLambda'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genCurriedLambda'/2(_A0, _A1)
+      in _F0
+
+'genCurriedApply'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'genCurriedApply'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'genCurriedApply'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'genCurriedApply'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'genCurriedApply'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'genCurriedApply'/3(_A0, _A1, _A2)
+      in _F0
+
+'genCoreList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genCoreList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genCoreList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genCoreList'/2(_A0, _A1)
+      in _F0
+
+'collectArgs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectArgs'/1(_A0)
+      in _F0
+
+'lookupArity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupArity'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupArity'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupArity'/2(_A0, _A1)
+      in _F0
+
+'getUsedVars'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getUsedVars'/1(_A0)
+      in _F0
+
+'listConcatMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'listConcatMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'listConcatMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'listConcatMap'/2(_A0, _A1)
+      in _F0
+
+'listConcatMapArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'listConcatMapArray'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'listConcatMapArray'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'listConcatMapArray'/2(_A0, _A1)
+      in _F0
+
+'countTypeArity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'countTypeArity'/1(_A0)
+      in _F0
+
+'genForeignImport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'genForeignImport'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'genForeignImport'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'genForeignImport'/2(_A0, _A1)
+      in _F0
+
+'substituteParams'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'substituteParams'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'substituteParams'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'substituteParams'/2(_A0, _A1)
+      in _F0
+end

@@ -1,0 +1,65 @@
+module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/1, 'isNaNImpl'/1, 'isFiniteImpl'/1, 'fromString'/0, 'isNaN'/0, 'isFinite'/0, 'fromStringImpl'/0, 'isNaNImpl'/0, 'isFiniteImpl'/0]
+  attributes []
+'fromString'/1 =
+  fun (S) ->
+    apply 'fromStringImpl'/1(S)
+
+'isNaN'/1 =
+  fun (N) ->
+    apply 'isNaNImpl'/1(N)
+
+'isFinite'/1 =
+  fun (N) ->
+    apply 'isFiniteImpl'/1(N)
+
+'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_float'(V0) of
+        <{F, []}> when 'true' -> {'Just', F}
+        <_> when 'true' -> case call 'string':'to_integer'(V0) of
+          <{I, []}> when 'true' -> {'Just', call 'erlang':'float'(I)}
+          <_> when 'true' -> 'Nothing'
+        end
+      end
+
+'isNaNImpl'/1 = fun (V0) -> case call 'erlang':'is_float'(V0) of
+        <'false'> when 'true' -> 'false'
+        <'true'> when 'true' -> call 'erlang':'not'(call 'erlang':'=='(V0, V0))
+      end
+
+'isFiniteImpl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'=='(V0, V0), call 'erlang':'and'(call 'erlang':'/='(V0, call 'math':'exp'(710.0)), call 'erlang':'/='(V0, call 'erlang':'-'(0.0, call 'math':'exp'(710.0)))))
+
+'fromString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromString'/1(_A0)
+      in _F0
+
+'isNaN'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isNaN'/1(_A0)
+      in _F0
+
+'isFinite'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isFinite'/1(_A0)
+      in _F0
+
+'fromStringImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromStringImpl'/1(_A0)
+      in _F0
+
+'isNaNImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isNaNImpl'/1(_A0)
+      in _F0
+
+'isFiniteImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isFiniteImpl'/1(_A0)
+      in _F0
+end

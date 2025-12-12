@@ -1,0 +1,288 @@
+module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/1, 'dirExists'/1, 'mkdirP'/1, 'listDir'/1, 'deleteFile'/1, 'basename'/1, 'basenameNoExt'/2, 'dirname'/1, 'joinPath'/2, 'cwd'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'appendFileImpl'/2, 'fileExistsImpl'/1, 'dirExistsImpl'/1, 'mkdirPImpl'/1, 'listDirImpl'/1, 'deleteFileImpl'/1, 'basenameImpl'/1, 'basenameNoExtImpl'/2, 'dirnameImpl'/1, 'joinPathImpl'/2, 'cwdImpl'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'appendFile'/0, 'appendFile'/1, 'fileExists'/0, 'dirExists'/0, 'mkdirP'/0, 'listDir'/0, 'deleteFile'/0, 'basename'/0, 'basenameNoExt'/0, 'basenameNoExt'/1, 'dirname'/0, 'joinPath'/0, 'joinPath'/1, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'appendFileImpl'/0, 'appendFileImpl'/1, 'fileExistsImpl'/0, 'dirExistsImpl'/0, 'mkdirPImpl'/0, 'listDirImpl'/0, 'deleteFileImpl'/0, 'basenameImpl'/0, 'basenameNoExtImpl'/0, 'basenameNoExtImpl'/1, 'dirnameImpl'/0, 'joinPathImpl'/0, 'joinPathImpl'/1]
+  attributes []
+'readFile'/1 =
+  fun (Path) ->
+    apply 'readFileImpl'/1(Path)
+
+'writeFile'/2 =
+  fun (Path, Content) ->
+    apply 'writeFileImpl'/2(Path, Content)
+
+'appendFile'/2 =
+  fun (Path, Content) ->
+    apply 'appendFileImpl'/2(Path, Content)
+
+'fileExists'/1 =
+  fun (Path) ->
+    apply 'fileExistsImpl'/1(Path)
+
+'dirExists'/1 =
+  fun (Path) ->
+    apply 'dirExistsImpl'/1(Path)
+
+'mkdirP'/1 =
+  fun (Path) ->
+    apply 'mkdirPImpl'/1(Path)
+
+'listDir'/1 =
+  fun (Path) ->
+    apply 'listDirImpl'/1(Path)
+
+'deleteFile'/1 =
+  fun (Path) ->
+    apply 'deleteFileImpl'/1(Path)
+
+'basename'/1 =
+  fun (Path) ->
+    apply 'basenameImpl'/1(Path)
+
+'basenameNoExt'/2 =
+  fun (Path, Ext) ->
+    apply 'basenameNoExtImpl'/2(Path, Ext)
+
+'dirname'/1 =
+  fun (Path) ->
+    apply 'dirnameImpl'/1(Path)
+
+'joinPath'/2 =
+  fun (A, B) ->
+    apply 'joinPathImpl'/2(A, B)
+
+'cwd'/0 =
+  fun () ->
+    apply 'cwdImpl'/0()
+
+'readFileImpl'/1 = fun (V0) -> case call 'file':'read_file'(V0) of <{'ok', Content}> when 'true' -> {'Right', Content} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'writeFileImpl'/2 = fun (V0, V1) -> case call 'file':'write_file'(V0, V1) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'appendFileImpl'/2 = fun (V0, V1) -> case call 'file':'write_file'(V0, V1, ['append']) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'fileExistsImpl'/1 = fun (V0) -> call 'filelib':'is_regular'(V0)
+
+'dirExistsImpl'/1 = fun (V0) -> call 'filelib':'is_dir'(V0)
+
+'mkdirPImpl'/1 = fun (V0) -> case call 'filelib':'ensure_dir'(call 'erlang':'++'(V0, "/")) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'listDirImpl'/1 = fun (V0) -> case call 'file':'list_dir'(V0) of <{'ok', Files}> when 'true' -> {'Right', call 'lists':'map'(fun (F) -> call 'erlang':'list_to_binary'(F), Files)} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'deleteFileImpl'/1 = fun (V0) -> case call 'file':'delete'(V0) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'basenameImpl'/1 = fun (V0) -> call 'filename':'basename'(V0)
+
+'basenameNoExtImpl'/2 = fun (V0, V1) -> call 'filename':'basename'(V0, V1)
+
+'dirnameImpl'/1 = fun (V0) -> call 'filename':'dirname'(V0)
+
+'joinPathImpl'/2 = fun (V0, V1) -> call 'filename':'join'(V0, V1)
+
+'cwdImpl'/0 = fun () -> case call 'file':'get_cwd'() of <{'ok', Dir}> when 'true' -> {'Right', call 'erlang':'list_to_binary'(Dir)} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'readFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'readFile'/1(_A0)
+      in _F0
+
+'writeFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'writeFile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'writeFile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'writeFile'/2(_A0, _A1)
+      in _F0
+
+'appendFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'appendFile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'appendFile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'appendFile'/2(_A0, _A1)
+      in _F0
+
+'fileExists'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fileExists'/1(_A0)
+      in _F0
+
+'dirExists'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirExists'/1(_A0)
+      in _F0
+
+'mkdirP'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'mkdirP'/1(_A0)
+      in _F0
+
+'listDir'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listDir'/1(_A0)
+      in _F0
+
+'deleteFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'deleteFile'/1(_A0)
+      in _F0
+
+'basename'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'basename'/1(_A0)
+      in _F0
+
+'basenameNoExt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'basenameNoExt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'basenameNoExt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'basenameNoExt'/2(_A0, _A1)
+      in _F0
+
+'dirname'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirname'/1(_A0)
+      in _F0
+
+'joinPath'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'joinPath'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'joinPath'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'joinPath'/2(_A0, _A1)
+      in _F0
+
+'readFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'readFileImpl'/1(_A0)
+      in _F0
+
+'writeFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'writeFileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'writeFileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'writeFileImpl'/2(_A0, _A1)
+      in _F0
+
+'appendFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'appendFileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'appendFileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'appendFileImpl'/2(_A0, _A1)
+      in _F0
+
+'fileExistsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fileExistsImpl'/1(_A0)
+      in _F0
+
+'dirExistsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirExistsImpl'/1(_A0)
+      in _F0
+
+'mkdirPImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'mkdirPImpl'/1(_A0)
+      in _F0
+
+'listDirImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listDirImpl'/1(_A0)
+      in _F0
+
+'deleteFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'deleteFileImpl'/1(_A0)
+      in _F0
+
+'basenameImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'basenameImpl'/1(_A0)
+      in _F0
+
+'basenameNoExtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'basenameNoExtImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'basenameNoExtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'basenameNoExtImpl'/2(_A0, _A1)
+      in _F0
+
+'dirnameImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirnameImpl'/1(_A0)
+      in _F0
+
+'joinPathImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'joinPathImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'joinPathImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'joinPathImpl'/2(_A0, _A1)
+      in _F0
+end

@@ -1,0 +1,616 @@
+module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0]
+  attributes []
+% Data type: DeclStatus
+% Constructors: Fresh, Valid, Invalid, Stale
+
+'Fresh'/0 =
+  fun () ->
+    'Fresh'
+
+'Valid'/0 =
+  fun () ->
+    'Valid'
+
+'Invalid'/0 =
+  fun () ->
+    'Invalid'
+
+'Stale'/0 =
+  fun () ->
+    'Stale'
+
+% Data type: DeclKind
+% Constructors: FunctionDecl, DatatypeDecl, TypeAliasDecl, ForeignDecl
+
+'FunctionDecl'/0 =
+  fun () ->
+    'FunctionDecl'
+
+'DatatypeDecl'/0 =
+  fun () ->
+    'DatatypeDecl'
+
+'TypeAliasDecl'/0 =
+  fun () ->
+    'TypeAliasDecl'
+
+'ForeignDecl'/0 =
+  fun () ->
+    'ForeignDecl'
+
+'init'/1 =
+  fun (_W0) ->
+    case call 'OTP.Ets':'new'("nova_namespaces", call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', NsTab}> when 'true' ->
+        case call 'OTP.Ets':'new'("nova_declarations", call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', DeclTab}> when 'true' ->
+        case call 'OTP.Ets':'new'("nova_name_index", call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', IdxTab}> when 'true' ->
+        case call 'OTP.Ets':'new'("nova_counter", call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', CntTab}> when 'true' ->
+        let <_W0> = call 'OTP.Ets':'insert'(CntTab, "counter", 0)
+      in {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab}~}
+    end
+    end
+    end
+    end
+
+'createNamespace'/2 =
+  fun (St, Name) ->
+    case call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name) of
+      <'true'> when 'true' -> {'Left', "Namespace already exists"}
+      <'false'> when 'true' -> let <NsInfo> = ~{'name'=>Name,'imports'=>apply 'emptyArray'/0()}~
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('namespaces', St), Name, NsInfo)
+      in {'Right', 'unit'}
+    end
+
+'deleteNamespace'/2 =
+  fun (St, Name) ->
+    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)) of
+      <'true'> when 'true' -> {'Left', "Namespace not found"}
+      <'false'> when 'true' -> let <Decls> = apply 'getNamespaceDecls'/2(St, Name)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('namespaces', St), Name)
+      in let <_W0> = call 'Data.Array':'foldl'(fun (Acc, D) ->
+      let <_W0> = apply 'removeDecl'/2(St, call 'maps':'get'('declId', D))
+      in Acc, 'unit', Decls)
+      in {'Right', 'unit'}
+    end
+
+'genDeclId'/1 =
+  fun (St) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('counter', St), "counter") of
+      <'Nothing'> when 'true' ->
+        "decl_0"
+      <{'Just', N}> when 'true' ->
+        let <Next> = call 'erlang':'+'(N, 1)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('counter', St), "counter", Next)
+      in call 'erlang':'++'("decl_", apply 'intToString'/1(Next))
+    end
+
+'addDecl'/5 =
+  fun (St, Namespace, Name, SourceText, Kind) ->
+    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Namespace)) of
+      <'true'> when 'true' -> {'Left', "Namespace not found"}
+      <'false'> when 'true' -> let <DeclId> = apply 'genDeclId'/1(St)
+      in let <IdxKey> = call 'erlang':'++'(call 'erlang':'++'(Namespace, ":"), Name)
+      in let <Decl> = ~{'declId'=>DeclId,'namespace'=>Namespace,'name'=>Name,'kind'=>Kind,'sourceText'=>SourceText,'status'=>apply 'Fresh'/0(),'inferredType'=>'Nothing','errors'=>apply 'emptyArray'/0()}~
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('nameIndex', St), IdxKey, DeclId)
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('declarations', St), DeclId, Decl)
+      in {'Right', DeclId}
+    end
+
+'updateDecl'/3 =
+  fun (St, DeclId, NewSourceText) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', "Declaration not found"}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'sourceText'=>NewSourceText,'status'=>apply 'Stale'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'removeDecl'/2 =
+  fun (St, DeclId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', "Declaration not found"}
+      <{'Just', Decl}> when 'true' ->
+        let <IdxKey> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('namespace', Decl), ":"), call 'maps':'get'('name', Decl))
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('declarations', St), DeclId)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('nameIndex', St), IdxKey)
+      in {'Right', 'unit'}
+    end
+
+'getDecl'/2 =
+  fun (St, DeclId) ->
+    call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
+
+'getDeclByName'/3 =
+  fun (St, Namespace, Name) ->
+    let <IdxKey> = call 'erlang':'++'(call 'erlang':'++'(Namespace, ":"), Name)
+      in case call 'OTP.Ets':'lookup'(call 'maps':'get'('nameIndex', St), IdxKey) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', DeclId}> when 'true' ->
+        call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
+    end
+
+'getNamespaceDecls'/2 =
+  fun (St, Namespace) ->
+    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
+      in call 'Data.Array':'filter'(fun (D) ->
+      call 'erlang':'=:='(call 'maps':'get'('namespace', D), Namespace), AllDecls)
+
+'listNamespaces'/1 =
+  fun (St) ->
+    call 'OTP.Ets':'allKeys'(call 'maps':'get'('namespaces', St))
+
+'namespaceExists'/2 =
+  fun (St, Name) ->
+    call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)
+
+'setDeclStatus'/3 =
+  fun (St, DeclId, Status) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', "Declaration not found"}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'status'=>Status}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'setDeclErrors'/3 =
+  fun (St, DeclId, Errors) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', "Declaration not found"}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'errors'=>Errors,'status'=>apply 'Invalid'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'setDeclType'/3 =
+  fun (St, DeclId, TypeStr) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', "Declaration not found"}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'inferredType'=>{'Just', TypeStr},'status'=>apply 'Valid'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'getDeclsByStatus'/2 =
+  fun (St, Status) ->
+    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
+      in call 'Data.Array':'filter'(fun (D) ->
+      apply 'statusEq'/2(call 'maps':'get'('status', D), Status), AllDecls)
+
+'statusEq'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'Fresh', 'Fresh'}> when 'true' ->
+        'true'
+      <{'Valid', 'Valid'}> when 'true' ->
+        'true'
+      <{'Invalid', 'Invalid'}> when 'true' ->
+        'true'
+      <{'Stale', 'Stale'}> when 'true' ->
+        'true'
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'emptyArray'/0 =
+  fun () ->
+    apply 'emptyArrayImpl'/1('unit')
+
+'shutdown'/1 =
+  fun (St) ->
+    let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('namespaces', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('declarations', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('nameIndex', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('counter', St))
+      in 'unit'
+
+'save'/2 =
+  fun (St, Dir) ->
+    case call 'OTP.Ets':'tab2file'(call 'maps':'get'('namespaces', St), call 'erlang':'++'(Dir, "/namespaces.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to save namespaces: ", Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('declarations', St), call 'erlang':'++'(Dir, "/declarations.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to save declarations: ", Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('nameIndex', St), call 'erlang':'++'(Dir, "/name_index.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to save name index: ", Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('counter', St), call 'erlang':'++'(Dir, "/counter.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to save counter: ", Err)}
+      <{'Right', _W0}> when 'true' ->
+        {'Right', 'unit'}
+    end
+    end
+    end
+    end
+
+'load'/1 =
+  fun (Dir) ->
+    case call 'OTP.Ets':'file2tab'(call 'erlang':'++'(Dir, "/namespaces.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to load namespaces: ", Err)}
+      <{'Right', NsTab}> when 'true' ->
+        case call 'OTP.Ets':'file2tab'(call 'erlang':'++'(Dir, "/declarations.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to load declarations: ", Err)}
+      <{'Right', DeclTab}> when 'true' ->
+        case call 'OTP.Ets':'file2tab'(call 'erlang':'++'(Dir, "/name_index.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to load name index: ", Err)}
+      <{'Right', IdxTab}> when 'true' ->
+        case call 'OTP.Ets':'file2tab'(call 'erlang':'++'(Dir, "/counter.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to load counter: ", Err)}
+      <{'Right', CntTab}> when 'true' ->
+        {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab}~}
+    end
+    end
+    end
+    end
+
+'intToString'/1 = fun (V0) -> call 'erlang':'integer_to_list'(V0)
+
+'emptyArrayImpl'/1 = fun (V0) -> []
+
+'init'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'init'/1(_A0)
+      in _F0
+
+'createNamespace'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'createNamespace'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'createNamespace'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'createNamespace'/2(_A0, _A1)
+      in _F0
+
+'deleteNamespace'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'deleteNamespace'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'deleteNamespace'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'deleteNamespace'/2(_A0, _A1)
+      in _F0
+
+'genDeclId'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genDeclId'/1(_A0)
+      in _F0
+
+'addDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'addDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'addDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'addDecl'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'addDecl'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'updateDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'updateDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'updateDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
+      in _F0
+
+'removeDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'removeDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'removeDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'removeDecl'/2(_A0, _A1)
+      in _F0
+
+'getDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDecl'/2(_A0, _A1)
+      in _F0
+
+'getDeclByName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'getDeclByName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'getDeclByName'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F0
+
+'getNamespaceDecls'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getNamespaceDecls'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getNamespaceDecls'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getNamespaceDecls'/2(_A0, _A1)
+      in _F0
+
+'listNamespaces'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listNamespaces'/1(_A0)
+      in _F0
+
+'namespaceExists'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'namespaceExists'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'namespaceExists'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'namespaceExists'/2(_A0, _A1)
+      in _F0
+
+'setDeclStatus'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclStatus'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclStatus'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F0
+
+'setDeclErrors'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclErrors'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclErrors'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F0
+
+'setDeclType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F0
+
+'getDeclsByStatus'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getDeclsByStatus'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDeclsByStatus'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDeclsByStatus'/2(_A0, _A1)
+      in _F0
+
+'statusEq'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'statusEq'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'statusEq'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'statusEq'/2(_A0, _A1)
+      in _F0
+
+'shutdown'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'shutdown'/1(_A0)
+      in _F0
+
+'save'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'save'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'save'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'save'/2(_A0, _A1)
+      in _F0
+
+'load'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'load'/1(_A0)
+      in _F0
+
+'intToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'intToString'/1(_A0)
+      in _F0
+
+'emptyArrayImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'emptyArrayImpl'/1(_A0)
+      in _F0
+end

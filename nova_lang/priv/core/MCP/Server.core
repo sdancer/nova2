@@ -1,0 +1,704 @@
+module 'MCP.Server' ['toServerState'/1, 'fromServerState'/1, 'runStdio'/1, 'serverLoop'/1, 'handleRequest'/2, 'handleToolCall'/3, 'handleCreateNamespace'/3, 'handleListNamespaces'/2, 'handleAddDeclaration'/3, 'handleGetDeclaration'/3, 'handleListDeclarations'/3, 'handleEvalExpr'/3, 'handleEvalSnippet'/3, 'handleCompileToCore'/3, 'declToJson'/1, 'declsToJson'/1, 'joinDecls'/1, 'arrayToJson'/1, 'escapeJson'/1, 'mkToolSuccess'/2, 'mkToolError'/2, 'serverInfoJson'/0, 'toolsListJson'/0, 'mkSuccessResponse'/2, 'mkErrorResponse'/2, 'extractMethod'/1, 'extractId'/1, 'extractToolName'/1, 'extractArg'/2, 'logInfo'/1, 'toServerStateImpl'/1, 'fromServerStateImpl'/1, 'joinDeclsImpl'/1, 'arrayToJsonImpl'/1, 'escapeJsonImpl'/1, 'extractMethodImpl'/1, 'extractIdImpl'/1, 'extractToolNameImpl'/1, 'extractArgImpl'/2, 'readLineImpl'/1, 'writeLineImpl'/1, 'logInfoImpl'/1, 'toServerState'/0, 'fromServerState'/0, 'runStdio'/0, 'serverLoop'/0, 'handleRequest'/0, 'handleRequest'/1, 'handleToolCall'/0, 'handleToolCall'/1, 'handleToolCall'/2, 'handleCreateNamespace'/0, 'handleCreateNamespace'/1, 'handleCreateNamespace'/2, 'handleListNamespaces'/0, 'handleListNamespaces'/1, 'handleAddDeclaration'/0, 'handleAddDeclaration'/1, 'handleAddDeclaration'/2, 'handleGetDeclaration'/0, 'handleGetDeclaration'/1, 'handleGetDeclaration'/2, 'handleListDeclarations'/0, 'handleListDeclarations'/1, 'handleListDeclarations'/2, 'handleEvalExpr'/0, 'handleEvalExpr'/1, 'handleEvalExpr'/2, 'handleEvalSnippet'/0, 'handleEvalSnippet'/1, 'handleEvalSnippet'/2, 'handleCompileToCore'/0, 'handleCompileToCore'/1, 'handleCompileToCore'/2, 'declToJson'/0, 'declsToJson'/0, 'joinDecls'/0, 'arrayToJson'/0, 'escapeJson'/0, 'mkToolSuccess'/0, 'mkToolSuccess'/1, 'mkToolError'/0, 'mkToolError'/1, 'mkSuccessResponse'/0, 'mkSuccessResponse'/1, 'mkErrorResponse'/0, 'mkErrorResponse'/1, 'extractMethod'/0, 'extractId'/0, 'extractToolName'/0, 'extractArg'/0, 'extractArg'/1, 'logInfo'/0, 'toServerStateImpl'/0, 'fromServerStateImpl'/0, 'joinDeclsImpl'/0, 'arrayToJsonImpl'/0, 'escapeJsonImpl'/0, 'extractMethodImpl'/0, 'extractIdImpl'/0, 'extractToolNameImpl'/0, 'extractArgImpl'/0, 'extractArgImpl'/1, 'readLineImpl'/0, 'writeLineImpl'/0, 'logInfoImpl'/0]
+  attributes []
+'toServerState'/1 =
+  fun (St) ->
+    apply 'toServerStateImpl'/1(St)
+
+'fromServerState'/1 =
+  fun (St) ->
+    apply 'fromServerStateImpl'/1(St)
+
+'runStdio'/1 =
+  fun (_W0) ->
+    let <_W0> = apply 'logInfo'/1("Nova MCP Server starting (STDIO)")
+      in case call 'Nova.NamespaceService':'init'('unit') of
+      <{'Left', Err}> when 'true' ->
+        let <_W0> = apply 'logInfo'/1(call 'erlang':'++'("Failed to init NamespaceService: ", Err))
+      in 'unit'
+      <{'Right', State}> when 'true' ->
+        let <_W0> = apply 'logInfo'/1("NamespaceService initialized")
+      in apply 'serverLoop'/1(apply 'toServerState'/1(State))
+    end
+
+'serverLoop'/1 =
+  fun (State) ->
+    case apply 'readLineImpl'/1('unit') of
+      <{'Left', Err}> when 'true' ->
+        let <_W0> = apply 'logInfo'/1(call 'erlang':'++'("Server shutting down: ", Err))
+      in let <_W0> = call 'Nova.NamespaceService':'shutdown'(apply 'fromServerState'/1(State))
+      in 'unit'
+      <{'Right', Line}> when 'true' ->
+        case call 'erlang':'=:='(Line, "") of
+      <'true'> when 'true' -> apply 'serverLoop'/1(State)
+      <'false'> when 'true' -> let <Result> = apply 'handleRequest'/2(State, Line)
+      in let <_W0> = apply 'writeLineImpl'/1(call 'maps':'get'('response', Result))
+      in apply 'serverLoop'/1(call 'maps':'get'('state', Result))
+    end
+    end
+
+'handleRequest'/2 =
+  fun (State, JsonStr) ->
+    let <Method> = apply 'extractMethod'/1(JsonStr)
+      in let <ReqId> = apply 'extractId'/1(JsonStr)
+      in case call 'erlang':'=:='(Method, "initialize") of
+      <'true'> when 'true' -> ~{'response'=>apply 'mkSuccessResponse'/2(ReqId, apply 'serverInfoJson'/0()),'state'=>State}~
+      <'false'> when 'true' -> case call 'erlang':'=:='(Method, "notifications/initialized") of
+      <'true'> when 'true' -> ~{'response'=>"",'state'=>State}~
+      <'false'> when 'true' -> case call 'erlang':'=:='(Method, "tools/list") of
+      <'true'> when 'true' -> ~{'response'=>apply 'mkSuccessResponse'/2(ReqId, apply 'toolsListJson'/0()),'state'=>State}~
+      <'false'> when 'true' -> case call 'erlang':'=:='(Method, "tools/call") of
+      <'true'> when 'true' -> apply 'handleToolCall'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(Method, "ping") of
+      <'true'> when 'true' -> ~{'response'=>apply 'mkSuccessResponse'/2(ReqId, "{}"),'state'=>State}~
+      <'false'> when 'true' -> ~{'response'=>apply 'mkErrorResponse'/2(ReqId, call 'erlang':'++'("Method not found: ", Method)),'state'=>State}~
+    end
+    end
+    end
+    end
+    end
+
+'handleToolCall'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <ToolName> = apply 'extractToolName'/1(JsonStr)
+      in case call 'erlang':'=:='(ToolName, "create_namespace") of
+      <'true'> when 'true' -> apply 'handleCreateNamespace'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "list_namespaces") of
+      <'true'> when 'true' -> apply 'handleListNamespaces'/2(State, ReqId)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "add_declaration") of
+      <'true'> when 'true' -> apply 'handleAddDeclaration'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "get_declaration") of
+      <'true'> when 'true' -> apply 'handleGetDeclaration'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "list_declarations") of
+      <'true'> when 'true' -> apply 'handleListDeclarations'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "eval_expr") of
+      <'true'> when 'true' -> apply 'handleEvalExpr'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "eval_snippet") of
+      <'true'> when 'true' -> apply 'handleEvalSnippet'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> case call 'erlang':'=:='(ToolName, "compile_to_core") of
+      <'true'> when 'true' -> apply 'handleCompileToCore'/3(State, ReqId, JsonStr)
+      <'false'> when 'true' -> ~{'response'=>apply 'mkErrorResponse'/2(ReqId, call 'erlang':'++'("Unknown tool: ", ToolName)),'state'=>State}~
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+    end
+
+'handleCreateNamespace'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Name> = apply 'extractArg'/2(JsonStr, "name")
+      in case call 'Nova.NamespaceService':'createNamespace'(apply 'fromServerState'/1(State), Name) of
+      <{'Right', _W0}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, call 'erlang':'++'("Created namespace: ", Name)),'state'=>State}~
+      <{'Left', Err}> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, Err),'state'=>State}~
+    end
+
+'handleListNamespaces'/2 =
+  fun (State, ReqId) ->
+    let <Namespaces> = call 'Nova.NamespaceService':'listNamespaces'(apply 'fromServerState'/1(State))
+      in let <Json> = apply 'arrayToJson'/1(Namespaces)
+      in ~{'response'=>apply 'mkToolSuccess'/2(ReqId, Json),'state'=>State}~
+
+'handleAddDeclaration'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Namespace> = apply 'extractArg'/2(JsonStr, "namespace")
+      in let <Name> = apply 'extractArg'/2(JsonStr, "name")
+      in let <Source> = apply 'extractArg'/2(JsonStr, "source")
+      in case call 'Nova.NamespaceService':'addDecl'(apply 'fromServerState'/1(State), Namespace, Name, Source, call 'Nova.NamespaceService':'FunctionDecl'()) of
+      <{'Right', DeclId}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, call 'erlang':'++'("Added declaration: ", DeclId)),'state'=>State}~
+      <{'Left', Err}> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, Err),'state'=>State}~
+    end
+
+'handleGetDeclaration'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <DeclId> = apply 'extractArg'/2(JsonStr, "decl_id")
+      in case call 'Nova.NamespaceService':'getDecl'(apply 'fromServerState'/1(State), DeclId) of
+      <{'Just', Decl}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, apply 'declToJson'/1(Decl)),'state'=>State}~
+      <'Nothing'> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, "Declaration not found"),'state'=>State}~
+    end
+
+'handleListDeclarations'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Namespace> = apply 'extractArg'/2(JsonStr, "namespace")
+      in let <Decls> = call 'Nova.NamespaceService':'getNamespaceDecls'(apply 'fromServerState'/1(State), Namespace)
+      in let <Json> = apply 'declsToJson'/1(Decls)
+      in ~{'response'=>apply 'mkToolSuccess'/2(ReqId, Json),'state'=>State}~
+
+'handleEvalExpr'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Expr> = apply 'extractArg'/2(JsonStr, "expression")
+      in case call 'Nova.Eval':'eval'(Expr) of
+      <{'Right', Result}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, Result),'state'=>State}~
+      <{'Left', Err}> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, Err),'state'=>State}~
+    end
+
+'handleEvalSnippet'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Code> = apply 'extractArg'/2(JsonStr, "code")
+      in let <Entry> = apply 'extractArg'/2(JsonStr, "entry_point")
+      in let <EntryPoint> = case call 'erlang':'=:='(Entry, "") of
+      <'true'> when 'true' -> "result"
+      <'false'> when 'true' -> Entry
+    end
+      in case call 'Nova.Eval':'evalSnippet'(Code, EntryPoint) of
+      <{'Right', Result}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, Result),'state'=>State}~
+      <{'Left', Err}> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, Err),'state'=>State}~
+    end
+
+'handleCompileToCore'/3 =
+  fun (State, ReqId, JsonStr) ->
+    let <Code> = apply 'extractArg'/2(JsonStr, "code")
+      in case call 'Nova.Eval':'compileToCore'(Code) of
+      <{'Right', CoreErlang}> when 'true' ->
+        ~{'response'=>apply 'mkToolSuccess'/2(ReqId, CoreErlang),'state'=>State}~
+      <{'Left', Err}> when 'true' ->
+        ~{'response'=>apply 'mkToolError'/2(ReqId, Err),'state'=>State}~
+    end
+
+'declToJson'/1 =
+  fun (Decl) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{\"declId\":\"", call 'maps':'get'('declId', Decl)), "\",\"name\":\""), call 'maps':'get'('name', Decl)), "\",\"namespace\":\""), call 'maps':'get'('namespace', Decl)), "\",\"source\":\""), apply 'escapeJson'/1(call 'maps':'get'('sourceText', Decl))), "\"}")
+
+'declsToJson'/1 =
+  fun (Decls) ->
+    call 'erlang':'++'(call 'erlang':'++'("[", apply 'joinDecls'/1(Decls)), "]")
+
+'joinDecls'/1 =
+  fun (Decls) ->
+    apply 'joinDeclsImpl'/1(Decls)
+
+'arrayToJson'/1 =
+  fun (Arr) ->
+    apply 'arrayToJsonImpl'/1(Arr)
+
+'escapeJson'/1 =
+  fun (S) ->
+    apply 'escapeJsonImpl'/1(S)
+
+'mkToolSuccess'/2 =
+  fun (ReqId, Content) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{\"jsonrpc\":\"2.0\",\"id\":", ReqId), ",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\""), apply 'escapeJson'/1(Content)), "\"}]}}")
+
+'mkToolError'/2 =
+  fun (ReqId, Msg) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{\"jsonrpc\":\"2.0\",\"id\":", ReqId), ",\"result\":{\"isError\":true,\"content\":[{\"type\":\"text\",\"text\":\""), apply 'escapeJson'/1(Msg)), "\"}]}}")
+
+'serverInfoJson'/0 =
+  fun () ->
+    "{\"protocolVersion\":\"2024-11-05\",\"serverInfo\":{\"name\":\"nova-compiler\",\"version\":\"0.1.0\"},\"capabilities\":{\"tools\":{}}}"
+
+'toolsListJson'/0 =
+  fun () ->
+    "{\"tools\":[{\"name\":\"create_namespace\",\"description\":\"Create a new namespace for declarations\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name of the namespace\"}},\"required\":[\"name\"]}},{\"name\":\"list_namespaces\",\"description\":\"List all namespaces\",\"inputSchema\":{\"type\":\"object\",\"properties\":{}}},{\"name\":\"add_declaration\",\"description\":\"Add a declaration to a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Target namespace\"},\"name\":{\"type\":\"string\",\"description\":\"Declaration name\"},\"source\":{\"type\":\"string\",\"description\":\"Source code\"}},\"required\":[\"namespace\",\"name\",\"source\"]}},{\"name\":\"get_declaration\",\"description\":\"Get a declaration by ID\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"decl_id\":{\"type\":\"string\",\"description\":\"Declaration ID\"}},\"required\":[\"decl_id\"]}},{\"name\":\"list_declarations\",\"description\":\"List declarations in a namespace\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"namespace\":{\"type\":\"string\",\"description\":\"Namespace to list\"}},\"required\":[\"namespace\"]}},{\"name\":\"eval_expr\",\"description\":\"Evaluate a Nova expression and return the result\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"expression\":{\"type\":\"string\",\"description\":\"Nova expression to evaluate (e.g. '1 + 2', 'let x = 5 in x * 2')\"}},\"required\":[\"expression\"]}},{\"name\":\"eval_snippet\",\"description\":\"Evaluate a Nova code snippet with function declarations\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"string\",\"description\":\"Nova code with declarations (e.g. 'double x = x * 2\\nresult = double 21')\"},\"entry_point\":{\"type\":\"string\",\"description\":\"Function to call as entry point (default: 'result')\"}},\"required\":[\"code\"]}},{\"name\":\"compile_to_core\",\"description\":\"Compile Nova code to Core Erlang for inspection\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"code\":{\"type\":\"string\",\"description\":\"Nova code to compile\"}},\"required\":[\"code\"]}}]}"
+
+'mkSuccessResponse'/2 =
+  fun (ReqId, Result) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{\"jsonrpc\":\"2.0\",\"id\":", ReqId), ",\"result\":"), Result), "}")
+
+'mkErrorResponse'/2 =
+  fun (ReqId, Msg) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{\"jsonrpc\":\"2.0\",\"id\":", ReqId), ",\"error\":{\"code\":-32601,\"message\":\""), Msg), "\"}}")
+
+'extractMethod'/1 =
+  fun (S) ->
+    apply 'extractMethodImpl'/1(S)
+
+'extractId'/1 =
+  fun (S) ->
+    apply 'extractIdImpl'/1(S)
+
+'extractToolName'/1 =
+  fun (S) ->
+    apply 'extractToolNameImpl'/1(S)
+
+'extractArg'/2 =
+  fun (JsonStr, ArgName) ->
+    apply 'extractArgImpl'/2(JsonStr, ArgName)
+
+'logInfo'/1 =
+  fun (Msg) ->
+    apply 'logInfoImpl'/1(Msg)
+
+'toServerStateImpl'/1 = fun (V0) -> V0
+
+'fromServerStateImpl'/1 = fun (V0) -> V0
+
+'joinDeclsImpl'/1 = fun (V0) -> let <Jsons> = call 'lists':'map'(fun (D) -> let <Id> = call 'maps':'get'('declId', D) in let <Name> = call 'maps':'get'('name', D) in let <Ns> = call 'maps':'get'('namespace', D) in call 'erlang':'++'([123,34,100,101,99,108,73,100,34,58,34], call 'erlang':'++'(Id, call 'erlang':'++'([34,44,34,110,97,109,101,34,58,34], call 'erlang':'++'(Name, call 'erlang':'++'([34,44,34,110,97,109,101,115,112,97,99,101,34,58,34], call 'erlang':'++'(Ns, [34,125])))))), V0) in call 'string':'join'(Jsons, [44])
+
+'arrayToJsonImpl'/1 = fun (V0) -> let <Quoted> = call 'lists':'map'(fun (S) -> call 'erlang':'++'([34], call 'erlang':'++'(S, [34])), V0) in call 'erlang':'++'([91], call 'erlang':'++'(call 'string':'join'(Quoted, [44]), [93]))
+
+'escapeJsonImpl'/1 = fun (V0) -> call 'lists':'flatten'(call 'lists':'map'(fun (C) -> case C of <34> when 'true' -> [92,34] <92> when 'true' -> [92,92] <10> when 'true' -> [92,110] <_> when 'true' -> [C] end, V0))
+
+'extractMethodImpl'/1 = fun (V0) -> let <Map> = call 'json':'decode'(call 'erlang':'list_to_binary'(V0)) in let <Key> = call 'erlang':'list_to_binary'([109,101,116,104,111,100]) in case call 'maps':'find'(Key, Map) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> call 'erlang':'binary_to_list'(V) <_> when 'true' -> [] end
+
+'extractIdImpl'/1 = fun (V0) -> let <Map> = call 'json':'decode'(call 'erlang':'list_to_binary'(V0)) in let <Key> = call 'erlang':'list_to_binary'([105,100]) in case call 'maps':'find'(Key, Map) of <{'ok', V}> when call 'erlang':'is_integer'(V) -> call 'erlang':'integer_to_list'(V) <{'ok', V}> when call 'erlang':'is_binary'(V) -> call 'erlang':'++'([34], call 'erlang':'++'(call 'erlang':'binary_to_list'(V), [34])) <_> when 'true' -> [110,117,108,108] end
+
+'extractToolNameImpl'/1 = fun (V0) -> let <Map> = call 'json':'decode'(call 'erlang':'list_to_binary'(V0)) in let <ParamsKey> = call 'erlang':'list_to_binary'([112,97,114,97,109,115]) in let <NameKey> = call 'erlang':'list_to_binary'([110,97,109,101]) in case call 'maps':'find'(ParamsKey, Map) of <{'ok', Params}> when call 'erlang':'is_map'(Params) -> case call 'maps':'find'(NameKey, Params) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> call 'erlang':'binary_to_list'(V) <_> when 'true' -> [] end <_> when 'true' -> [] end
+
+'extractArgImpl'/2 = fun (V0, V1) -> let <Map> = call 'json':'decode'(call 'erlang':'list_to_binary'(V0)) in let <ParamsKey> = call 'erlang':'list_to_binary'([112,97,114,97,109,115]) in let <ArgsKey> = call 'erlang':'list_to_binary'([97,114,103,117,109,101,110,116,115]) in let <ArgKey> = call 'erlang':'list_to_binary'(V1) in case call 'maps':'find'(ParamsKey, Map) of <{'ok', Params}> when call 'erlang':'is_map'(Params) -> case call 'maps':'find'(ArgsKey, Params) of <{'ok', Args}> when call 'erlang':'is_map'(Args) -> case call 'maps':'find'(ArgKey, Args) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> call 'erlang':'binary_to_list'(V) <_> when 'true' -> [] end <_> when 'true' -> [] end <_> when 'true' -> [] end
+
+'readLineImpl'/1 = fun (V0) -> let <Line0> = call 'io':'get_line'('') in case Line0 of <'eof'> when 'true' -> {'Left', [101,111,102]} <{'error', _R}> when 'true' -> {'Left', [101,114,114]} <_> when 'true' -> let <Trimmed> = call 'string':'trim'(Line0) in let <AsList> = case call 'erlang':'is_binary'(Trimmed) of <'true'> when 'true' -> call 'erlang':'binary_to_list'(Trimmed) <'false'> when 'true' -> Trimmed end in {'Right', AsList} end
+
+'writeLineImpl'/1 = fun (V0) -> let <_> = call 'io':'put_chars'(V0) in let <_> = call 'io':'nl'() in 'unit'
+
+'logInfoImpl'/1 = fun (V0) -> let <_> = call 'io':'put_chars'('standard_error', [[91,73,78,70,79,93,32], V0]) in let <_> = call 'io':'nl'('standard_error') in 'unit'
+
+'toServerState'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toServerState'/1(_A0)
+      in _F0
+
+'fromServerState'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromServerState'/1(_A0)
+      in _F0
+
+'runStdio'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'runStdio'/1(_A0)
+      in _F0
+
+'serverLoop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'serverLoop'/1(_A0)
+      in _F0
+
+'handleRequest'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'handleRequest'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'handleRequest'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'handleRequest'/2(_A0, _A1)
+      in _F0
+
+'handleToolCall'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleToolCall'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleToolCall'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleToolCall'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleToolCall'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleToolCall'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleCreateNamespace'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleCreateNamespace'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleCreateNamespace'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleCreateNamespace'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleCreateNamespace'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleCreateNamespace'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleListNamespaces'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'handleListNamespaces'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'handleListNamespaces'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'handleListNamespaces'/2(_A0, _A1)
+      in _F0
+
+'handleAddDeclaration'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleAddDeclaration'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleAddDeclaration'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleAddDeclaration'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleAddDeclaration'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleAddDeclaration'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleGetDeclaration'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleGetDeclaration'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleGetDeclaration'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleGetDeclaration'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleGetDeclaration'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleGetDeclaration'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleListDeclarations'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleListDeclarations'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleListDeclarations'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleListDeclarations'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleListDeclarations'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleListDeclarations'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleEvalExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleEvalExpr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleEvalExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleEvalExpr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleEvalExpr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleEvalExpr'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleEvalSnippet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleEvalSnippet'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleEvalSnippet'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleEvalSnippet'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleEvalSnippet'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleEvalSnippet'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleCompileToCore'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handleCompileToCore'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handleCompileToCore'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handleCompileToCore'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handleCompileToCore'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handleCompileToCore'/3(_A0, _A1, _A2)
+      in _F0
+
+'declToJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'declToJson'/1(_A0)
+      in _F0
+
+'declsToJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'declsToJson'/1(_A0)
+      in _F0
+
+'joinDecls'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'joinDecls'/1(_A0)
+      in _F0
+
+'arrayToJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'arrayToJson'/1(_A0)
+      in _F0
+
+'escapeJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'escapeJson'/1(_A0)
+      in _F0
+
+'mkToolSuccess'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkToolSuccess'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkToolSuccess'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkToolSuccess'/2(_A0, _A1)
+      in _F0
+
+'mkToolError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkToolError'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkToolError'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkToolError'/2(_A0, _A1)
+      in _F0
+
+'mkSuccessResponse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkSuccessResponse'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkSuccessResponse'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkSuccessResponse'/2(_A0, _A1)
+      in _F0
+
+'mkErrorResponse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkErrorResponse'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkErrorResponse'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkErrorResponse'/2(_A0, _A1)
+      in _F0
+
+'extractMethod'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractMethod'/1(_A0)
+      in _F0
+
+'extractId'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractId'/1(_A0)
+      in _F0
+
+'extractToolName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractToolName'/1(_A0)
+      in _F0
+
+'extractArg'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'extractArg'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'extractArg'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'extractArg'/2(_A0, _A1)
+      in _F0
+
+'logInfo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'logInfo'/1(_A0)
+      in _F0
+
+'toServerStateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toServerStateImpl'/1(_A0)
+      in _F0
+
+'fromServerStateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromServerStateImpl'/1(_A0)
+      in _F0
+
+'joinDeclsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'joinDeclsImpl'/1(_A0)
+      in _F0
+
+'arrayToJsonImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'arrayToJsonImpl'/1(_A0)
+      in _F0
+
+'escapeJsonImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'escapeJsonImpl'/1(_A0)
+      in _F0
+
+'extractMethodImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractMethodImpl'/1(_A0)
+      in _F0
+
+'extractIdImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractIdImpl'/1(_A0)
+      in _F0
+
+'extractToolNameImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractToolNameImpl'/1(_A0)
+      in _F0
+
+'extractArgImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'extractArgImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'extractArgImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'extractArgImpl'/2(_A0, _A1)
+      in _F0
+
+'readLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'readLineImpl'/1(_A0)
+      in _F0
+
+'writeLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'writeLineImpl'/1(_A0)
+      in _F0
+
+'logInfoImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'logInfoImpl'/1(_A0)
+      in _F0
+end

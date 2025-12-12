@@ -1,0 +1,4682 @@
+module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withContext'/2, 'showExprShort'/1, 'listMapWithIndex'/2, 'mkInstResult'/2, 'instantiateGo'/4, 'instantiate'/2, 'generalize'/2, 'inferLit'/1, 'unifyEnv'/1, 'infer'/2, 'inferRecordUpdate'/3, 'inferUnaryOp'/3, 'inferDo'/2, 'inferManyGo'/4, 'inferMany'/2, 'inferElemsGo'/4, 'inferElems'/3, 'inferFieldsGo'/4, 'inferFields'/2, 'inferPat'/3, 'inferRecordPatGo'/5, 'inferRecordPat'/3, 'inferListPat'/3, 'inferConsPat'/4, 'inferConPatsGo'/5, 'inferConPats'/4, 'inferBinds'/2, 'exprToPattern'/1, 'inferGuardExpr'/2, 'inferGuard'/2, 'inferClausesGo'/5, 'inferClauses'/5, 'guardedExprsToIf'/1, 'guardsToCondition'/1, 'guardClauseToCondExpr'/1, 'wrapWithPatternGuards'/2, 'buildPatternGuardCases'/2, 'checkFunction'/2, 'checkDecl'/2, 'checkTypeClass'/2, 'checkDataType'/2, 'checkDataTypeWithAliases'/3, 'checkDataTypeWithAllAliases'/4, 'checkNewtypeWithAliases'/3, 'checkNewtypeWithAllAliases'/4, 'buildConstructorTypeGo'/3, 'buildConstructorType'/3, 'buildConstructorTypeWithAliasesGo'/4, 'buildConstructorTypeWithAliases'/4, 'buildConstructorTypeWithAllAliasesGo'/5, 'buildConstructorTypeWithAllAliases'/5, 'typeExprToTypeWithAliases'/3, 'typeExprToTypeWithAllAliases'/4, 'typeExprToTypeWithEnv'/5, 'collectTypeApp'/1, 'substituteTypeExpr'/4, 'typeExprToType'/2, 'checkTypeAlias'/2, 'isRecordType'/1, 'collectTypeNames'/1, 'collectTypeExprNames'/1, 'checkModuleSimple'/2, 'checkModule'/3, 'typeCheckModule'/3, 'processImports'/3, 'mergeExportsWithTypeAliases'/2, 'processImportDecl'/3, 'expandModuleAliases'/1, 'importItem'/3, 'collectResolvedImports'/2, 'collectFromImportDecl'/3, 'getExportedNames'/1, 'getImportItemName'/1, 'collectImportedAliases'/2, 'extractExports'/1, 'extractExportsWithRegistry'/2, 'addValuesToExports'/3, 'collectTypeAliases'/1, 'collectTypeAliasesWithBase'/3, 'collectParamTypeAliases'/1, 'processNonFunctions'/2, 'processNonFunctionsWithAliases'/3, 'processInfixDeclarations'/2, 'addFunctionPlaceholders'/2, 'addFunctionPlaceholdersWithAliases'/3, 'checkFunctionBodiesGo'/2, 'checkFunctionBodies'/2, 'mergeMultiClauseFunctions'/1, 'UnifyErr'/1, 'UnifyErrWithContext'/2, 'UnboundVariable'/1, 'UndefinedQualifiedImport'/2, 'NotImplemented'/1, 'addErrorContext'/0, 'addErrorContext'/1, 'withContext'/0, 'withContext'/1, 'showExprShort'/0, 'listMapWithIndex'/0, 'listMapWithIndex'/1, 'mkInstResult'/0, 'mkInstResult'/1, 'instantiateGo'/0, 'instantiateGo'/1, 'instantiateGo'/2, 'instantiateGo'/3, 'instantiate'/0, 'instantiate'/1, 'generalize'/0, 'generalize'/1, 'inferLit'/0, 'unifyEnv'/0, 'infer'/0, 'infer'/1, 'inferRecordUpdate'/0, 'inferRecordUpdate'/1, 'inferRecordUpdate'/2, 'inferUnaryOp'/0, 'inferUnaryOp'/1, 'inferUnaryOp'/2, 'inferDo'/0, 'inferDo'/1, 'inferManyGo'/0, 'inferManyGo'/1, 'inferManyGo'/2, 'inferManyGo'/3, 'inferMany'/0, 'inferMany'/1, 'inferElemsGo'/0, 'inferElemsGo'/1, 'inferElemsGo'/2, 'inferElemsGo'/3, 'inferElems'/0, 'inferElems'/1, 'inferElems'/2, 'inferFieldsGo'/0, 'inferFieldsGo'/1, 'inferFieldsGo'/2, 'inferFieldsGo'/3, 'inferFields'/0, 'inferFields'/1, 'inferPat'/0, 'inferPat'/1, 'inferPat'/2, 'inferRecordPatGo'/0, 'inferRecordPatGo'/1, 'inferRecordPatGo'/2, 'inferRecordPatGo'/3, 'inferRecordPatGo'/4, 'inferRecordPat'/0, 'inferRecordPat'/1, 'inferRecordPat'/2, 'inferListPat'/0, 'inferListPat'/1, 'inferListPat'/2, 'inferConsPat'/0, 'inferConsPat'/1, 'inferConsPat'/2, 'inferConsPat'/3, 'inferConPatsGo'/0, 'inferConPatsGo'/1, 'inferConPatsGo'/2, 'inferConPatsGo'/3, 'inferConPatsGo'/4, 'inferConPats'/0, 'inferConPats'/1, 'inferConPats'/2, 'inferConPats'/3, 'inferBinds'/0, 'inferBinds'/1, 'exprToPattern'/0, 'inferGuardExpr'/0, 'inferGuardExpr'/1, 'inferGuard'/0, 'inferGuard'/1, 'inferClausesGo'/0, 'inferClausesGo'/1, 'inferClausesGo'/2, 'inferClausesGo'/3, 'inferClausesGo'/4, 'inferClauses'/0, 'inferClauses'/1, 'inferClauses'/2, 'inferClauses'/3, 'inferClauses'/4, 'guardedExprsToIf'/0, 'guardsToCondition'/0, 'guardClauseToCondExpr'/0, 'wrapWithPatternGuards'/0, 'wrapWithPatternGuards'/1, 'buildPatternGuardCases'/0, 'buildPatternGuardCases'/1, 'checkFunction'/0, 'checkFunction'/1, 'checkDecl'/0, 'checkDecl'/1, 'checkTypeClass'/0, 'checkTypeClass'/1, 'checkDataType'/0, 'checkDataType'/1, 'checkDataTypeWithAliases'/0, 'checkDataTypeWithAliases'/1, 'checkDataTypeWithAliases'/2, 'checkDataTypeWithAllAliases'/0, 'checkDataTypeWithAllAliases'/1, 'checkDataTypeWithAllAliases'/2, 'checkDataTypeWithAllAliases'/3, 'checkNewtypeWithAliases'/0, 'checkNewtypeWithAliases'/1, 'checkNewtypeWithAliases'/2, 'checkNewtypeWithAllAliases'/0, 'checkNewtypeWithAllAliases'/1, 'checkNewtypeWithAllAliases'/2, 'checkNewtypeWithAllAliases'/3, 'buildConstructorTypeGo'/0, 'buildConstructorTypeGo'/1, 'buildConstructorTypeGo'/2, 'buildConstructorType'/0, 'buildConstructorType'/1, 'buildConstructorType'/2, 'buildConstructorTypeWithAliasesGo'/0, 'buildConstructorTypeWithAliasesGo'/1, 'buildConstructorTypeWithAliasesGo'/2, 'buildConstructorTypeWithAliasesGo'/3, 'buildConstructorTypeWithAliases'/0, 'buildConstructorTypeWithAliases'/1, 'buildConstructorTypeWithAliases'/2, 'buildConstructorTypeWithAliases'/3, 'buildConstructorTypeWithAllAliasesGo'/0, 'buildConstructorTypeWithAllAliasesGo'/1, 'buildConstructorTypeWithAllAliasesGo'/2, 'buildConstructorTypeWithAllAliasesGo'/3, 'buildConstructorTypeWithAllAliasesGo'/4, 'buildConstructorTypeWithAllAliases'/0, 'buildConstructorTypeWithAllAliases'/1, 'buildConstructorTypeWithAllAliases'/2, 'buildConstructorTypeWithAllAliases'/3, 'buildConstructorTypeWithAllAliases'/4, 'typeExprToTypeWithAliases'/0, 'typeExprToTypeWithAliases'/1, 'typeExprToTypeWithAliases'/2, 'typeExprToTypeWithAllAliases'/0, 'typeExprToTypeWithAllAliases'/1, 'typeExprToTypeWithAllAliases'/2, 'typeExprToTypeWithAllAliases'/3, 'typeExprToTypeWithEnv'/0, 'typeExprToTypeWithEnv'/1, 'typeExprToTypeWithEnv'/2, 'typeExprToTypeWithEnv'/3, 'typeExprToTypeWithEnv'/4, 'collectTypeApp'/0, 'substituteTypeExpr'/0, 'substituteTypeExpr'/1, 'substituteTypeExpr'/2, 'substituteTypeExpr'/3, 'typeExprToType'/0, 'typeExprToType'/1, 'checkTypeAlias'/0, 'checkTypeAlias'/1, 'isRecordType'/0, 'collectTypeNames'/0, 'collectTypeExprNames'/0, 'checkModuleSimple'/0, 'checkModuleSimple'/1, 'checkModule'/0, 'checkModule'/1, 'checkModule'/2, 'typeCheckModule'/0, 'typeCheckModule'/1, 'typeCheckModule'/2, 'processImports'/0, 'processImports'/1, 'processImports'/2, 'mergeExportsWithTypeAliases'/0, 'mergeExportsWithTypeAliases'/1, 'processImportDecl'/0, 'processImportDecl'/1, 'processImportDecl'/2, 'expandModuleAliases'/0, 'importItem'/0, 'importItem'/1, 'importItem'/2, 'collectResolvedImports'/0, 'collectResolvedImports'/1, 'collectFromImportDecl'/0, 'collectFromImportDecl'/1, 'collectFromImportDecl'/2, 'getExportedNames'/0, 'getImportItemName'/0, 'collectImportedAliases'/0, 'collectImportedAliases'/1, 'extractExports'/0, 'extractExportsWithRegistry'/0, 'extractExportsWithRegistry'/1, 'addValuesToExports'/0, 'addValuesToExports'/1, 'addValuesToExports'/2, 'collectTypeAliases'/0, 'collectTypeAliasesWithBase'/0, 'collectTypeAliasesWithBase'/1, 'collectTypeAliasesWithBase'/2, 'collectParamTypeAliases'/0, 'processNonFunctions'/0, 'processNonFunctions'/1, 'processNonFunctionsWithAliases'/0, 'processNonFunctionsWithAliases'/1, 'processNonFunctionsWithAliases'/2, 'processInfixDeclarations'/0, 'processInfixDeclarations'/1, 'addFunctionPlaceholders'/0, 'addFunctionPlaceholders'/1, 'addFunctionPlaceholdersWithAliases'/0, 'addFunctionPlaceholdersWithAliases'/1, 'addFunctionPlaceholdersWithAliases'/2, 'checkFunctionBodiesGo'/0, 'checkFunctionBodiesGo'/1, 'checkFunctionBodies'/0, 'checkFunctionBodies'/1, 'mergeMultiClauseFunctions'/0, 'UnifyErr'/0, 'UnifyErrWithContext'/0, 'UnifyErrWithContext'/1, 'UnboundVariable'/0, 'UndefinedQualifiedImport'/0, 'UndefinedQualifiedImport'/1, 'NotImplemented'/0]
+  attributes []
+% Data type: TCError
+% Constructors: UnifyErr, UnifyErrWithContext, UnboundVariable, UndefinedQualifiedImport, NotImplemented
+
+'UnifyErr'/1 =
+  fun (V0) ->
+    {'UnifyErr', V0}
+
+'UnifyErrWithContext'/2 =
+  fun (V0, V1) ->
+    {'UnifyErrWithContext', V0, V1}
+
+'UnboundVariable'/1 =
+  fun (V0) ->
+    {'UnboundVariable', V0}
+
+'UndefinedQualifiedImport'/2 =
+  fun (V0, V1) ->
+    {'UndefinedQualifiedImport', V0, V1}
+
+'NotImplemented'/1 =
+  fun (V0) ->
+    {'NotImplemented', V0}
+
+'intToString'/0 =
+  fun () ->
+    fun (_Pf0) -> call 'erlang':'integer_to_list'(_Pf0)
+
+'addErrorContext'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Ctx, {'UnifyErr', E}}> when 'true' ->
+        apply 'UnifyErrWithContext'/2(E, Ctx)
+      <{Ctx, {'UnifyErrWithContext', E, OldCtx}}> when 'true' ->
+        apply 'UnifyErrWithContext'/2(E, call 'erlang':'++'(call 'erlang':'++'(OldCtx, " -> "), Ctx))
+      <{_W0, Err}> when 'true' ->
+        Err
+    end
+
+'withContext'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Ctx, {'Left', Err}}> when 'true' ->
+        {'Left', apply 'addErrorContext'/2(Ctx, Err)}
+      <{_W0, {'Right', X}}> when 'true' ->
+        {'Right', X}
+    end
+
+'showExprShort'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ExprVar', N}}> when 'true' ->
+        N
+      <{{'ExprQualified', M, N}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(M, "."), N)
+      <{{'ExprLit', {'LitInt', N}}}> when 'true' ->
+        call 'erlang':'integer_to_list'(N)
+      <{{'ExprLit', {'LitString', S}}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("\"", call 'Data.String':'take'(20, S)), "\"")
+      <{{'ExprLit', {'LitBool', B}}}> when 'true' ->
+        case B of
+      <'true'> when 'true' -> "true"
+      <'false'> when 'true' -> "false"
+    end
+      <{{'ExprLit', _W0}}> when 'true' ->
+        "<lit>"
+      <{{'ExprApp', F, A}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showExprShort'/1(F)), " "), apply 'showExprShort'/1(A)), ")")
+      <{{'ExprLambda', _W0, _W1}}> when 'true' ->
+        "<lambda>"
+      <{{'ExprLet', _W0, _W1}}> when 'true' ->
+        "<let>"
+      <{{'ExprIf', _W0, _W1, _W2}}> when 'true' ->
+        "<if>"
+      <{{'ExprCase', _W0, _W1}}> when 'true' ->
+        "<case>"
+      <{{'ExprBinOp', Op, _W0, _W1}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("<binop ", Op), ">")
+      <{{'ExprRecord', _W0}}> when 'true' ->
+        "<record>"
+      <{{'ExprRecordAccess', E, F}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(apply 'showExprShort'/1(E), "."), F)
+      <{{'ExprRecordUpdate', _W0, _W1}}> when 'true' ->
+        "<record-update>"
+      <{{'ExprList', _W0}}> when 'true' ->
+        "<list>"
+      <{{'ExprDo', _W0}}> when 'true' ->
+        "<do>"
+      <{{'ExprParens', E}}> when 'true' ->
+        apply 'showExprShort'/1(E)
+      <{{'ExprTyped', E, _W0}}> when 'true' ->
+        apply 'showExprShort'/1(E)
+      <{{'ExprUnaryOp', Op, _W0}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("<unary ", Op), ">")
+      <{{'ExprTuple', _W0}}> when 'true' ->
+        "<tuple>"
+      <{{'ExprSection', S}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("(", S), ")")
+      <{{'ExprSectionLeft', E, Op}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showExprShort'/1(E)), " "), Op), ")")
+      <{{'ExprSectionRight', Op, E}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", Op), " "), apply 'showExprShort'/1(E)), ")")
+    end
+
+'listMapWithIndex'/2 =
+  fun (F, List) ->
+    letrec 'go'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{_W0, []}> when 'true' -> []
+        <{I, [X|Xs]}> when 'true' -> [apply F(I, X)|apply 'go'/2(call 'erlang':'+'(I, 1), Xs)]
+      end
+      in apply 'go'/2(0, List)
+
+'mkInstResult'/2 =
+  fun (T, E) ->
+    ~{'ty'=>T,'env'=>E}~
+
+'instantiateGo'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{SchemeTy, E, [], Sub}> when 'true' ->
+        apply 'mkInstResult'/2(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(SchemeTy), E)
+      <{SchemeTy, E, [V|Rest], Sub}> when 'true' ->
+        let <_Let0> = V
+      in case _Let0 of
+        <~{'id':=VId,'name':=VName}~> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
+      in apply _Oa0(VName)
+      in case _Let1 of
+        <{'Tuple', Fresh, E_}> when 'true' -> let <Sub_> = call 'Data.Map':'insert'(VId, {'TyVar', Fresh}, Sub)
+      in apply 'instantiateGo'/4(SchemeTy, E_, Rest, Sub_)
+      end
+      end
+    end
+
+'instantiate'/2 =
+  fun (Env, Scheme) ->
+    let <_Let0> = Scheme
+      in case _Let0 of
+        <~{'ty':=SchemeTy,'vars':=SchemeVars}~> when 'true' -> apply 'instantiateGo'/4(SchemeTy, Env, call 'Data.List':'fromFoldable'(SchemeVars), call 'Data.Map':'empty'())
+      end
+
+'generalize'/2 =
+  fun (Env, Ty) ->
+    let <EnvFree> = call 'Nova.Compiler.Types':'freeTypeVarsEnv'(Env)
+      in let <TyFree> = call 'Nova.Compiler.Types':'freeTypeVars'(Ty)
+      in let <FreeIds> = call 'Data.Set':'toUnfoldable'(call 'Data.Set':'difference'(TyFree, EnvFree))
+      in let <IdPairs> = call 'Data.Array':'mapWithIndex'(fun (Idx, OldId) ->
+      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 1))), FreeIds)
+      in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(NewId)
+      in apply _Oa0(call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(NewId))))})
+      end, IdPairs))
+      in let <Vars> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, NewId}}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(NewId)
+      in apply _Oa0(call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(NewId))))
+      end, IdPairs)
+      in let <RemappedTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(RemapSub)
+      in apply _Oa0(Ty)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Vars)
+      in apply _Oa0(RemappedTy)
+
+'inferLit'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'LitInt', _W0}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tInt'()
+      <{{'LitNumber', _W0}}> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Number")
+      in apply _Oa0([])}
+      <{{'LitString', _W0}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tString'()
+      <{{'LitChar', _W0}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tChar'()
+      <{{'LitBool', _W0}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tBool'()
+    end
+
+'unifyEnv'/1 =
+  fun (Env) ->
+    call 'Nova.Compiler.Unify':'unifyWithAliases'(call 'maps':'get'('typeAliases', Env))
+
+'infer'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Env, {'ExprLit', Lit}}> when 'true' ->
+        {'Right', ~{'ty'=>apply 'inferLit'/1(Lit),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
+      <{Env, {'ExprVar', Name}}> when 'true' ->
+        case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(Name) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UnboundVariable'/1(Name)}
+      <{'Just', Scheme}> when 'true' ->
+        let <R> = apply 'instantiate'/2(Env, Scheme)
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', R),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>call 'maps':'get'('env', R)}~}
+    end
+      <{Env, {'ExprQualified', M, Name}}> when 'true' ->
+        let <FullName> = call 'erlang':'++'(call 'erlang':'++'(M, "."), Name)
+      in case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(FullName) of
+      <{'Just', Scheme}> when 'true' ->
+        let <R> = apply 'instantiate'/2(Env, Scheme)
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', R),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>call 'maps':'get'('env', R)}~}
+      <'Nothing'> when 'true' ->
+        case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(Name) of
+      <{'Just', Scheme}> when 'true' ->
+        let <R> = apply 'instantiate'/2(Env, Scheme)
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', R),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>call 'maps':'get'('env', R)}~}
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UndefinedQualifiedImport'/2(M, Name)}
+    end
+    end
+      <{Env, {'ExprApp', F, Arg}}> when 'true' ->
+        letrec 'inferApp'/3 = fun (E, Func, A) ->
+      case apply 'infer'/2(E, Func) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', R1}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', R1), A) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', R2}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', R2))
+      in apply _Oa0("r")
+      in case _Let0 of
+        <{'Tuple', Tv, Env3}> when 'true' -> let <ResultTy> = {'TyVar', Tv}
+      in let <FuncTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', R2))
+      in apply _Oa0(call 'maps':'get'('ty', R1))
+      in let <ExpectedTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', R2))
+      in apply _Oa0(ResultTy)
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
+      in apply apply _Oa0(FuncTy)(ExpectedTy) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("app: ", apply 'showExprShort'/1(Func)), " applied to "), apply 'showExprShort'/1(A)))}
+      <{'Right', S3}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S3)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', R2))
+      in apply _Oa0(call 'maps':'get'('sub', R1)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S3)
+      in apply _Oa0(ResultTy),'sub'=>Sub,'env'=>Env3}~}
+    end
+      end
+    end
+    end
+      in case F of
+      <{'ExprVar', "-"}> when 'true' ->
+        case Arg of
+      <{'ExprLit', {'LitInt', _W0}}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
+      <{'ExprLit', {'LitNumber', _W0}}> when 'true' ->
+        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Number")
+      in apply _Oa0([])},'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
+      <{'ExprParens', {'ExprLit', {'LitInt', _W0}}}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
+      <_W0> when 'true' ->
+        apply 'inferApp'/3(Env, F, Arg)
+    end
+      <_W0> when 'true' ->
+        apply 'inferApp'/3(Env, F, Arg)
+    end
+      <{Env, {'ExprLambda', Pats, Body}}> when 'true' ->
+        case call 'Data.List':'uncons'(Pats) of
+      <'Nothing'> when 'true' ->
+        apply 'infer'/2(Env, Body)
+      <{'Just', ~{'head':=Pat,'tail':=RestPats}~}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0("a")
+      in case _Let0 of
+        <{'Tuple', ArgTv, Env1}> when 'true' -> let <ArgTy> = {'TyVar', ArgTv}
+      in case apply 'inferPat'/3(Env1, Pat, ArgTy) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', PatRes}> when 'true' ->
+        let <InnerExpr> = case call 'Data.List':'null'(RestPats) of
+      <'true'> when 'true' -> Body
+      <'false'> when 'true' -> {'ExprLambda', RestPats, Body}
+    end
+      in case apply 'infer'/2(call 'maps':'get'('env', PatRes), InnerExpr) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', BodyRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', BodyRes))
+      in apply _Oa0(call 'maps':'get'('sub', PatRes))
+      in let <ResultTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(ArgTy))
+      in apply _Oa0(call 'maps':'get'('ty', BodyRes))
+      in {'Right', ~{'ty'=>ResultTy,'sub'=>Sub,'env'=>call 'maps':'get'('env', BodyRes)}~}
+    end
+    end
+      end
+    end
+      <{Env, {'ExprLet', Binds, Body}}> when 'true' ->
+        case apply 'inferBinds'/2(Env, Binds) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', LetRes}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', LetRes), Body) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', BodyRes}> when 'true' ->
+        {'Right', ~{'ty'=>call 'maps':'get'('ty', BodyRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', BodyRes))
+      in apply _Oa0(call 'maps':'get'('sub', LetRes)),'env'=>call 'maps':'get'('env', BodyRes)}~}
+    end
+    end
+      <{Env, {'ExprIf', Cond, Then_, Else_}}> when 'true' ->
+        case apply 'infer'/2(Env, Cond) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', CondRes}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', CondRes))
+      in apply apply _Oa0(call 'maps':'get'('ty', CondRes))(call 'Nova.Compiler.Types':'tBool'()) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', _W0}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', CondRes), Then_) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ThenRes}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', ThenRes), Else_) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ElseRes}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', ElseRes))
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', ElseRes))
+      in apply _Oa0(call 'maps':'get'('ty', ThenRes)))(call 'maps':'get'('ty', ElseRes)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S)
+      in apply _Oa0(call 'maps':'get'('ty', ElseRes)),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', ElseRes)),'env'=>call 'maps':'get'('env', ElseRes)}~}
+    end
+    end
+    end
+    end
+    end
+      <{Env, {'ExprCase', Scrutinee, Clauses}}> when 'true' ->
+        case apply 'infer'/2(Env, Scrutinee) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ScrutRes}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ScrutRes))
+      in apply _Oa0("case")
+      in case _Let0 of
+        <{'Tuple', ResultTv, Env2}> when 'true' -> let <ResultTy> = {'TyVar', ResultTv}
+      in case apply 'inferClauses'/5(Env2, call 'maps':'get'('ty', ScrutRes), ResultTy, Clauses, call 'maps':'get'('sub', ScrutRes)) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ClauseRes}> when 'true' ->
+        {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', ClauseRes))
+      in apply _Oa0(ResultTy),'sub'=>call 'maps':'get'('sub', ClauseRes),'env'=>call 'maps':'get'('env', ClauseRes)}~}
+    end
+      end
+    end
+      <{Env, {'ExprBinOp', Op, L, R}}> when 'true' ->
+        case L of
+      <{'ExprSection', "_"}> when 'true' ->
+        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', "_x"}|[]], {'ExprBinOp', Op, {'ExprVar', "_x"}, R}})
+      <_W0> when 'true' ->
+        case R of
+      <{'ExprSection', "_"}> when 'true' ->
+        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', "_x"}|[]], {'ExprBinOp', Op, L, {'ExprVar', "_x"}}})
+      <_W0> when 'true' ->
+        let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Op) of
+      <{'Just', Idx}> when 'true' ->
+        apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, Op), call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Op))
+      <'Nothing'> when 'true' ->
+        apply 'UnboundVariable'/1(Op)
+    end
+      in case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(Op) of
+      <'Nothing'> when 'true' ->
+        {'Left', MkError}
+      <{'Just', Scheme}> when 'true' ->
+        let <OpInst> = apply 'instantiate'/2(Env, Scheme)
+      in case apply 'infer'/2(call 'maps':'get'('env', OpInst), L) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', LRes}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', LRes), R) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', RRes}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', RRes))
+      in apply _Oa0("binop")
+      in case _Let0 of
+        <{'Tuple', ResTv, Env4}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env4)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RRes))
+      in apply _Oa0(call 'maps':'get'('sub', LRes)))
+      in apply _Oa0(call 'maps':'get'('ty', OpInst)))(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', LRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', RRes))
+      in apply _Oa0({'TyVar', ResTv}))) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S4}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S4)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RRes))
+      in apply _Oa0(call 'maps':'get'('sub', LRes)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S4)
+      in apply _Oa0({'TyVar', ResTv}),'sub'=>Sub,'env'=>Env4}~}
+    end
+      end
+    end
+    end
+    end
+    end
+    end
+      <{Env, {'ExprList', Elems}}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0("elem")
+      in case _Let0 of
+        <{'Tuple', ElemTv, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemTv}
+      in case apply 'inferElems'/3(Env1, ElemTy, Elems) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', Res}> when 'true' ->
+        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Array")
+      in apply _Oa0([let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(ElemTy)])},'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      end
+      <{Env, {'ExprTuple', Elems}}> when 'true' ->
+        case apply 'inferMany'/2(Env, Elems) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', Res}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tTuple'(call 'maps':'get'('tys', Res)),'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      <{Env, {'ExprRecord', Fields}}> when 'true' ->
+        case apply 'inferFields'/2(Env, Fields) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', Res}> when 'true' ->
+        {'Right', ~{'ty'=>{'TyRecord', ~{'fields'=>call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', Res)),'row'=>'Nothing'}~},'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      <{Env, {'ExprRecordAccess', Rec, Field}}> when 'true' ->
+        case apply 'infer'/2(Env, Rec) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', RecRes}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', RecRes))
+      in apply _Oa0("field")
+      in case _Let0 of
+        <{'Tuple', ResultTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
+      in apply _Oa0("row")
+      in case _Let1 of
+        <{'Tuple', RowTv, Env3}> when 'true' -> let <ExpectedRec> = {'TyRecord', ~{'fields'=>call 'Data.Map':'singleton'(Field, {'TyVar', ResultTv}),'row'=>{'Just', RowTv}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
+      in apply apply _Oa0(call 'maps':'get'('ty', RecRes))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("field access: ", apply 'showExprShort'/1(Rec)), "."), Field))}
+      <{'Right', S2}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(call 'maps':'get'('sub', RecRes))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0({'TyVar', ResultTv}),'sub'=>Sub,'env'=>Env3}~}
+    end
+      end
+      end
+    end
+      <{Env, {'ExprParens', E}}> when 'true' ->
+        apply 'infer'/2(Env, E)
+      <{Env, {'ExprTyped', E, _W0}}> when 'true' ->
+        apply 'infer'/2(Env, E)
+      <{Env, {'ExprRecordUpdate', Rec, Updates}}> when 'true' ->
+        apply 'inferRecordUpdate'/3(Env, Rec, call 'Data.Array':'fromFoldable'(Updates))
+      <{Env, {'ExprUnaryOp', Op, E}}> when 'true' ->
+        apply 'inferUnaryOp'/3(Env, Op, E)
+      <{Env, {'ExprDo', Stmts}}> when 'true' ->
+        apply 'inferDo'/2(Env, call 'Data.Array':'fromFoldable'(Stmts))
+      <{Env, {'ExprSection', Name}}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), ".") of
+      <'true'> when 'true' -> let <Field> = call 'Data.String':'drop'(1, Name)
+      in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0("field")
+      in case _Let0 of
+        <{'Tuple', ResultTv, Env1}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env1)
+      in apply _Oa0("row")
+      in case _Let1 of
+        <{'Tuple', RowTv, Env2}> when 'true' -> let <ResultType> = {'TyVar', ResultTv}
+      in let <InputType> = {'TyRecord', ~{'fields'=>call 'Data.Map':'singleton'(Field, {'TyVar', ResultTv}),'row'=>{'Just', RowTv}}~}
+      in let <SectionType> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(InputType)
+      in apply _Oa0(ResultType)
+      in {'Right', ~{'ty'=>SectionType,'sub'=>call 'Data.Map':'empty'(),'env'=>Env2}~}
+      end
+      end
+      <'false'> when 'true' -> case call 'Data.Map':'lookup'(Name, call 'maps':'get'('bindings', Env)) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UnboundVariable'/1(Name)}
+      <{'Just', Scheme}> when 'true' ->
+        let <_Let0> = apply 'instantiate'/2(Env, Scheme)
+      in case _Let0 of
+        <~{'ty':=Ty,'env':=Env2}~> when 'true' -> {'Right', ~{'ty'=>Ty,'sub'=>call 'Data.Map':'empty'(),'env'=>Env2}~}
+      end
+    end
+    end
+      <{Env, {'ExprSectionLeft', Expr, Op}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Op, call 'maps':'get'('bindings', Env)) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UnboundVariable'/1(Op)}
+      <{'Just', OpScheme}> when 'true' ->
+        let <_Let0> = apply 'instantiate'/2(Env, OpScheme)
+      in case _Let0 of
+        <~{'ty':=OpTy,'env':=Env1}~> when 'true' -> case apply 'infer'/2(Env1, Expr) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ExprRes}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ExprRes))
+      in apply _Oa0("secres")
+      in case _Let0 of
+        <{'Tuple', ResTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
+      in apply _Oa0("secright")
+      in case _Let1 of
+        <{'Tuple', RightTv, Env3}> when 'true' -> let <ExpectedOpTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', ExprRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'({'TyVar', RightTv})
+      in apply _Oa0({'TyVar', ResTv}))
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
+      in apply apply _Oa0(OpTy)(ExpectedOpTy) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', ExprRes))
+      in let <ResultTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0({'TyVar', RightTv}))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0({'TyVar', ResTv}))
+      in {'Right', ~{'ty'=>ResultTy,'sub'=>Sub,'env'=>Env3}~}
+    end
+      end
+      end
+    end
+      end
+    end
+      <{Env, {'ExprSectionRight', Op, Expr}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Op, call 'maps':'get'('bindings', Env)) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UnboundVariable'/1(Op)}
+      <{'Just', OpScheme}> when 'true' ->
+        let <_Let0> = apply 'instantiate'/2(Env, OpScheme)
+      in case _Let0 of
+        <~{'ty':=OpTy,'env':=Env1}~> when 'true' -> case apply 'infer'/2(Env1, Expr) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', ExprRes}> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ExprRes))
+      in apply _Oa0("secres")
+      in case _Let0 of
+        <{'Tuple', ResTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
+      in apply _Oa0("secleft")
+      in case _Let1 of
+        <{'Tuple', LeftTv, Env3}> when 'true' -> let <ExpectedOpTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'({'TyVar', LeftTv})
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', ExprRes))
+      in apply _Oa0({'TyVar', ResTv}))
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
+      in apply apply _Oa0(OpTy)(ExpectedOpTy) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', ExprRes))
+      in let <ResultTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0({'TyVar', LeftTv}))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0({'TyVar', ResTv}))
+      in {'Right', ~{'ty'=>ResultTy,'sub'=>Sub,'env'=>Env3}~}
+    end
+      end
+      end
+    end
+      end
+    end
+      <{_W0, _W1}> when 'true' ->
+        {'Left', apply 'NotImplemented'/1("expression form")}
+    end
+
+'inferRecordUpdate'/3 =
+  fun (Env, Rec, Updates) ->
+    case apply 'infer'/2(Env, Rec) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RecRes}> when 'true' ->
+        case apply 'inferFields'/2(call 'maps':'get'('env', RecRes), call 'Data.List':'fromFoldable'(Updates)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', UpdateRes}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
+      in apply _Oa0("row")
+      in case _DLet0 of
+        <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
+      in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('sub', RecRes)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      <{'Right', UpdateRes}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
+      in apply _Oa0("row")
+      in case _DLet0 of
+        <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
+      in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('sub', RecRes)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      end
+      <{'Right', RecRes}> when 'true' ->
+        case apply 'inferFields'/2(call 'maps':'get'('env', RecRes), call 'Data.List':'fromFoldable'(Updates)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', UpdateRes}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
+      in apply _Oa0("row")
+      in case _DLet0 of
+        <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
+      in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('sub', RecRes)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      <{'Right', UpdateRes}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
+      in apply _Oa0("row")
+      in case _DLet0 of
+        <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
+      in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', UpdateRes))
+      in apply _Oa0(call 'maps':'get'('sub', RecRes)))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(call 'maps':'get'('ty', RecRes)),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      end
+      end
+
+'inferUnaryOp'/3 =
+  fun (Env, Op, E) ->
+    case Op of
+      <"-"> when 'true' ->
+        case apply 'infer'/2(Env, E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(call 'maps':'get'('ty', Res))(call 'Nova.Compiler.Types':'tInt'()) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res)),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      <{'Right', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(call 'maps':'get'('ty', Res))(call 'Nova.Compiler.Types':'tInt'()) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res)),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      end
+      <"!"> when 'true' ->
+        case apply 'infer'/2(Env, E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(call 'maps':'get'('ty', Res))(call 'Nova.Compiler.Types':'tBool'()) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tBool'(),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res)),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      <{'Right', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(call 'maps':'get'('ty', Res))(call 'Nova.Compiler.Types':'tBool'()) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tBool'(),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res)),'env'=>call 'maps':'get'('env', Res)}~}
+    end
+      end
+      <_W0> when 'true' ->
+        case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(Op) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'UnboundVariable'/1(Op)}
+      <{'Just', Scheme}> when 'true' ->
+        let <OpInst> = apply 'instantiate'/2(Env, Scheme)
+      in case apply 'infer'/2(call 'maps':'get'('env', OpInst), E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Res}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res))
+      in apply _Oa0("unary")
+      in case _DLet0 of
+        <{'Tuple', ResTv, Env2}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(call 'maps':'get'('ty', OpInst))(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', Res))
+      in apply _Oa0({'TyVar', ResTv})) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S)
+      in apply _Oa0({'TyVar', ResTv}),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      <{'Right', Res}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res))
+      in apply _Oa0("unary")
+      in case _DLet0 of
+        <{'Tuple', ResTv, Env2}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env2)
+      in apply apply _Oa0(call 'maps':'get'('ty', OpInst))(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', Res))
+      in apply _Oa0({'TyVar', ResTv})) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res))
+      in {'Right', ~{'ty'=>let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S)
+      in apply _Oa0({'TyVar', ResTv}),'sub'=>Sub,'env'=>Env2}~}
+    end
+      end
+      end
+    end
+    end
+
+'inferDo'/2 =
+  fun (Env, Stmts) ->
+    case call 'Data.Array':'uncons'(Stmts) of
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'NotImplemented'/1("empty do block")}
+      <{'Just', ~{'head':=Stmt,'tail':=Rest}~}> when 'true' ->
+        case Stmt of
+      <{'DoExpr', E}> when 'true' ->
+        case call 'Data.Array':'null'(Rest) of
+      <'true'> when 'true' -> apply 'infer'/2(Env, E)
+      <'false'> when 'true' -> case apply 'infer'/2(Env, E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Res1}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', Res1), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)),'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)),'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      <{'Right', Res1}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', Res1), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)),'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)),'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      end
+    end
+      <{'DoBind', Pat, E}> when 'true' ->
+        case apply 'infer'/2(Env, E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Res1}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res1))
+      in apply _Oa0("inner")
+      in case _DLet0 of
+        <{'Tuple', InnerTv, Env1}> when 'true' -> let <InnerTy> = {'TyVar', InnerTv}
+      in case apply 'inferPat'/3(Env1, Pat, InnerTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', PatRes}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', PatRes), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      <{'Right', PatRes}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', PatRes), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      end
+      end
+      <{'Right', Res1}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res1))
+      in apply _Oa0("inner")
+      in case _DLet0 of
+        <{'Tuple', InnerTv, Env1}> when 'true' -> let <InnerTy> = {'TyVar', InnerTv}
+      in case apply 'inferPat'/3(Env1, Pat, InnerTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', PatRes}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', PatRes), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      <{'Right', PatRes}> when 'true' ->
+        case apply 'inferDo'/2(call 'maps':'get'('env', PatRes), Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      <{'Right', RestRes}> when 'true' ->
+        let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RestRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', Res1)))
+      in {'Right', ~{'ty'=>call 'maps':'get'('ty', RestRes),'sub'=>Sub,'env'=>call 'maps':'get'('env', RestRes)}~}
+      end
+      end
+      end
+      end
+      <{'DoLet', Binds}> when 'true' ->
+        case apply 'inferBinds'/2(Env, Binds) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', LetRes}> when 'true' ->
+        apply 'inferDo'/2(call 'maps':'get'('env', LetRes), Rest)
+      <{'Right', LetRes}> when 'true' ->
+        apply 'inferDo'/2(call 'maps':'get'('env', LetRes), Rest)
+      end
+    end
+    end
+
+'inferManyGo'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{E, [], Acc, Sub}> when 'true' ->
+        {'Right', ~{'tys'=>call 'Data.Array':'fromFoldable'(call 'Data.List':'reverse'(Acc)),'sub'=>Sub,'env'=>E}~}
+      <{E, [Expr|Rest], Acc, Sub}> when 'true' ->
+        case apply 'infer'/2(E, Expr) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Res}> when 'true' ->
+        apply 'inferManyGo'/4(call 'maps':'get'('env', Res), Rest, [call 'maps':'get'('ty', Res)|Acc], let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(Sub))
+    end
+    end
+
+'inferMany'/2 =
+  fun (Env, Exprs) ->
+    apply 'inferManyGo'/4(Env, Exprs, [], call 'Nova.Compiler.Types':'emptySubst'())
+
+'inferElemsGo'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{E, _W0, [], Sub}> when 'true' ->
+        {'Right', ~{'sub'=>Sub,'env'=>E}~}
+      <{E, ETy, [Expr|Rest], Sub}> when 'true' ->
+        case apply 'infer'/2(E, Expr) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(ETy))(call 'maps':'get'('ty', Res)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S2}> when 'true' ->
+        apply 'inferElemsGo'/4(call 'maps':'get'('env', Res), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S2)
+      in apply _Oa0(ETy), Rest, let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(Sub)))
+    end
+    end
+    end
+
+'inferElems'/3 =
+  fun (Env, ElemTy, Elems) ->
+    apply 'inferElemsGo'/4(Env, ElemTy, Elems, call 'Nova.Compiler.Types':'emptySubst'())
+
+'inferFieldsGo'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{E, [], Acc, Sub}> when 'true' ->
+        {'Right', ~{'tys'=>call 'Data.List':'reverse'(Acc),'sub'=>Sub,'env'=>E}~}
+      <{E, [{'Tuple', Name, Expr}|Rest], Acc, Sub}> when 'true' ->
+        case apply 'infer'/2(E, Expr) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Res}> when 'true' ->
+        apply 'inferFieldsGo'/4(call 'maps':'get'('env', Res), Rest, [call 'Data.Tuple':'Tuple'(Name, call 'maps':'get'('ty', Res))|Acc], let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(Sub))
+    end
+    end
+
+'inferFields'/2 =
+  fun (Env, Fields) ->
+    apply 'inferFieldsGo'/4(Env, Fields, [], call 'Nova.Compiler.Types':'emptySubst'())
+
+'inferPat'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{Env, {'PatVar', Name}, Ty}> when 'true' ->
+        let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(Ty)
+      in let <Env_> = let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(Name)(Scheme)
+      in {'Right', ~{'env'=>Env_,'sub'=>call 'Nova.Compiler.Types':'emptySubst'()}~}
+      <{Env, 'PatWildcard', _W0}> when 'true' ->
+        {'Right', ~{'env'=>Env,'sub'=>call 'Nova.Compiler.Types':'emptySubst'()}~}
+      <{Env, {'PatLit', Lit}, Ty}> when 'true' ->
+        let <LitTy> = apply 'inferLit'/1(Lit)
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env)
+      in apply apply _Oa0(Ty)(LitTy) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'env'=>Env,'sub'=>S}~}
+    end
+      <{Env, {'PatCon', ConName, Pats}, Ty}> when 'true' ->
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), ConName) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), ConName)
+      <'Nothing'> when 'true' ->
+        ConName
+    end
+      in let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), ConName) of
+      <{'Just', Idx}> when 'true' ->
+        apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, ConName), UnqualifiedName)
+      <'Nothing'> when 'true' ->
+        apply 'UnboundVariable'/1(ConName)
+    end
+      in letrec 'tryLookup'/1 = fun (Name) ->
+      let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(Name)
+      in case apply 'tryLookup'/1(ConName) of
+      <{'Just', Scheme}> when 'true' ->
+        let <R> = apply 'instantiate'/2(Env, Scheme)
+      in apply 'inferConPats'/4(call 'maps':'get'('env', R), call 'maps':'get'('ty', R), Pats, Ty)
+      <'Nothing'> when 'true' ->
+        case apply 'tryLookup'/1(UnqualifiedName) of
+      <{'Just', Scheme}> when 'true' ->
+        let <R> = apply 'instantiate'/2(Env, Scheme)
+      in apply 'inferConPats'/4(call 'maps':'get'('env', R), call 'maps':'get'('ty', R), Pats, Ty)
+      <'Nothing'> when 'true' ->
+        {'Left', MkError}
+    end
+    end
+      <{Env, {'PatParens', P}, Ty}> when 'true' ->
+        apply 'inferPat'/3(Env, P, Ty)
+      <{Env, {'PatRecord', Fields}, Ty}> when 'true' ->
+        apply 'inferRecordPat'/3(Env, Fields, Ty)
+      <{Env, {'PatList', Pats}, Ty}> when 'true' ->
+        apply 'inferListPat'/3(Env, Pats, Ty)
+      <{Env, {'PatCons', Hd, Tl}, Ty}> when 'true' ->
+        apply 'inferConsPat'/4(Env, Hd, Tl, Ty)
+      <{Env, {'PatAs', Name, Pat}, Ty}> when 'true' ->
+        case apply 'inferPat'/3(Env, Pat, Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', PatRes}> when 'true' ->
+        let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Ty))
+      in let <Env_> = let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(call 'maps':'get'('env', PatRes))
+      in apply apply _Oa0(Name)(Scheme)
+      in {'Right', ~{'env'=>Env_,'sub'=>call 'maps':'get'('sub', PatRes)}~}
+      <{'Right', PatRes}> when 'true' ->
+        let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Ty))
+      in let <Env_> = let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(call 'maps':'get'('env', PatRes))
+      in apply apply _Oa0(Name)(Scheme)
+      in {'Right', ~{'env'=>Env_,'sub'=>call 'maps':'get'('sub', PatRes)}~}
+      end
+      <{_W0, _W1, _W2}> when 'true' ->
+        {'Left', apply 'NotImplemented'/1("pattern form")}
+    end
+
+'inferRecordPatGo'/5 =
+  fun (_P0, _P1, _P2, _P3, _P4) ->
+    case {_P0, _P1, _P2, _P3, _P4} of
+      <{Ty, E, [], FieldTypes, Sub}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
+      in apply _Oa0("row")
+      in case _DLet0 of
+        <{'Tuple', RowVar, E_}> when 'true' -> let <ExpectedRec> = {'TyRecord', ~{'fields'=>FieldTypes,'row'=>{'Just', RowVar}}~}
+      in case let <_Oa0> = apply 'unifyEnv'/1(E_)
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(Ty))(ExpectedRec) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'env'=>E_,'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}~}
+    end
+      end
+      <{Ty, E, [{'Tuple', Label, Pat}|Rest], FieldTypes, Sub}> when 'true' ->
+        let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
+      in apply _Oa0(call 'erlang':'++'("f_", Label))
+      in case _DLet0 of
+        <{'Tuple', FieldVar, E1}> when 'true' -> let <FieldTy> = {'TyVar', FieldVar}
+      in case apply 'inferPat'/3(E1, Pat, FieldTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', PatRes}> when 'true' ->
+        apply 'inferRecordPatGo'/5(Ty, call 'maps':'get'('env', PatRes), Rest, call 'Data.Map':'insert'(Label, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(FieldTy), FieldTypes), let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))
+      <{'Right', PatRes}> when 'true' ->
+        apply 'inferRecordPatGo'/5(Ty, call 'maps':'get'('env', PatRes), Rest, call 'Data.Map':'insert'(Label, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(FieldTy), FieldTypes), let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))
+      end
+      end
+    end
+
+'inferRecordPat'/3 =
+  fun (Env, Fields, Ty) ->
+    apply 'inferRecordPatGo'/5(Ty, Env, Fields, call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'emptySubst'())
+
+'inferListPat'/3 =
+  fun (Env, Pats, Ty) ->
+    letrec 'goElems'/4 = fun (_L0, _L1, _L2, _L3) ->
+      case {_L0, _L1, _L2, _L3} of
+        <{E, [], _W0, Sub}> when 'true' -> {'Right', ~{'env'=>E,'sub'=>Sub}~}
+        <{E, [P|Rest], ETy, Sub}> when 'true' -> case apply 'inferPat'/3(E, P, ETy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', PatRes}> when 'true' ->
+        apply 'goElems'/4(call 'maps':'get'('env', PatRes), Rest, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(ETy), let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))
+      <{'Right', PatRes}> when 'true' ->
+        apply 'goElems'/4(call 'maps':'get'('env', PatRes), Rest, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(ETy), let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))
+      end
+      end
+      in let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0("elem")
+      in case _DLet0 of
+        <{'Tuple', ElemVar, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemVar}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env1)
+      in apply apply _Oa0(Ty)(call 'Nova.Compiler.Types':'tArray'(ElemTy)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S1}> when 'true' ->
+        let <ElemTy_> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(ElemTy)
+      in apply 'goElems'/4(Env1, Pats, ElemTy_, S1)
+    end
+      end
+
+'inferConsPat'/4 =
+  fun (Env, HdPat, TlPat, Ty) ->
+    let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0("elem")
+      in case _DLet0 of
+        <{'Tuple', ElemVar, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemVar}
+      in case let <_Oa0> = apply 'unifyEnv'/1(Env1)
+      in apply apply _Oa0(Ty)(call 'Nova.Compiler.Types':'tArray'(ElemTy)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S1}> when 'true' ->
+        let <ElemTy_> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(ElemTy)
+      in let <ListTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(call 'Nova.Compiler.Types':'tArray'(ElemTy))
+      in case apply 'inferPat'/3(Env1, HdPat, ElemTy_) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HdRes}> when 'true' ->
+        case apply 'inferPat'/3(call 'maps':'get'('env', HdRes), TlPat, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(ListTy)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TlRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', TlRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', TlRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(S1))}~}
+      <{'Right', TlRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', TlRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', TlRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(S1))}~}
+      end
+      <{'Right', HdRes}> when 'true' ->
+        case apply 'inferPat'/3(call 'maps':'get'('env', HdRes), TlPat, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(ListTy)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TlRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', TlRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', TlRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(S1))}~}
+      <{'Right', TlRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', TlRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', TlRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', HdRes))
+      in apply _Oa0(S1))}~}
+      end
+      end
+    end
+      end
+
+'inferConPatsGo'/5 =
+  fun (_P0, _P1, _P2, _P3, _P4) ->
+    case {_P0, _P1, _P2, _P3, _P4} of
+      <{ResultTy, E, Ty, [], Sub}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(E)
+      in apply apply _Oa0(Ty)(ResultTy) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        {'Right', ~{'env'=>E,'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}~}
+    end
+      <{ResultTy, E, Ty, [P|Rest], Sub}> when 'true' ->
+        case Ty of
+      <{'TyCon', C}> when 'true' ->
+        case call 'erlang':'=:='(call 'maps':'get'('name', C), "Fun") of
+          <'true'> when 'true' -> case ~{'a'=>call 'Data.Array':'head'(call 'maps':'get'('args', C)),'b'=>call 'Data.Array':'last'(call 'maps':'get'('args', C))}~ of
+      <~{'a':={'Just', ArgTy},'b':={'Just', ResTy}}~> when 'true' ->
+        case apply 'inferPat'/3(E, P, ArgTy) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', PatRes}> when 'true' ->
+        apply 'inferConPatsGo'/5(ResultTy, call 'maps':'get'('env', PatRes), ResTy, Rest, let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))
+    end
+      <_W0> when 'true' ->
+        {'Left', apply 'NotImplemented'/1("malformed function type")}
+    end
+          <_> when 'true' -> {'Left', apply 'NotImplemented'/1("expected function type in constructor")}
+        end
+      <_W0> when 'true' ->
+        {'Left', apply 'NotImplemented'/1("expected function type in constructor")}
+    end
+    end
+
+'inferConPats'/4 =
+  fun (Env, ConTy, Pats, ResultTy) ->
+    apply 'inferConPatsGo'/5(ResultTy, Env, ConTy, Pats, call 'Nova.Compiler.Types':'emptySubst'())
+
+'inferBinds'/2 =
+  fun (Env, Binds) ->
+    letrec 'addBindPlaceholders'/2 = fun (E, Bs) ->
+      call 'Data.Foldable':'foldl'(fun (_Mf0, _Mf1) -> apply 'addOne'/2(_Mf0, _Mf1), E, Bs)
+       'addOne'/2 = fun (E, Bind) ->
+      case call 'maps':'get'('pattern', Bind) of
+      <{'PatVar', Name}> when 'true' ->
+        case call 'maps':'get'('typeAnn', Bind) of
+      <{'Just', TyExpr}> when 'true' ->
+        let <AnnotatedTy> = apply 'typeExprToType'/2(call 'Data.Map':'empty'(), TyExpr)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(AnnotatedTy)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(Name)(Scheme)
+      <'Nothing'> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
+      in apply _Oa0(call 'erlang':'++'("let_", Name))
+      in case _Let0 of
+        <{'Tuple', Tv, E_}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E_)
+      in apply apply _Oa0(Name)(let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0({'TyVar', Tv}))
+      end
+    end
+      <_W0> when 'true' ->
+        E
+    end
+       'inferBindsPass2'/3 = fun (_L0, _L1, _L2) ->
+      case {_L0, _L1, _L2} of
+        <{E, [], Sub}> when 'true' -> {'Right', ~{'env'=>E,'sub'=>Sub}~}
+        <{E, [Bind|Rest], Sub}> when 'true' -> case apply 'infer'/2(E, call 'maps':'get'('value', Bind)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', ValRes}> when 'true' ->
+        case apply 'inferPat'/3(call 'maps':'get'('env', ValRes), call 'maps':'get'('pattern', Bind), call 'maps':'get'('ty', ValRes)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', PatRes}> when 'true' ->
+        let <Scheme> = apply 'generalize'/2(E, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', ValRes)))
+      in apply _Oa0(call 'maps':'get'('ty', ValRes)))
+      in let <Env3> = case call 'maps':'get'('pattern', Bind) of
+      <{'PatVar', Name}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(call 'maps':'merge'(E, ~{'counter'=>call 'maps':'get'('counter', call 'maps':'get'('env', PatRes))}~))
+      in apply apply _Oa0(Name)(Scheme)
+      <_W0> when 'true' ->
+        let <PatEnv> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubstToEnv'(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', ValRes)))
+      in apply _Oa0(call 'maps':'get'('env', PatRes))
+      in call 'maps':'merge'(PatEnv, ~{'bindings'=>call 'Data.Map':'union'(call 'maps':'get'('bindings', PatEnv), call 'maps':'get'('bindings', E))}~)
+    end
+      in apply 'inferBindsPass2'/3(Env3, Rest, let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', ValRes))
+      in apply _Oa0(Sub)))
+    end
+    end
+      end
+      in let <EnvWithPlaceholders> = apply 'addBindPlaceholders'/2(Env, Binds)
+      in apply 'inferBindsPass2'/3(EnvWithPlaceholders, Binds, call 'Nova.Compiler.Types':'emptySubst'())
+
+'exprToPattern'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ExprVar', Name}}> when 'true' ->
+        {'PatVar', Name}
+      <{{'ExprApp', {'ExprVar', Con}, Arg}}> when 'true' ->
+        {'PatCon', Con, [apply 'exprToPattern'/1(Arg)|[]]}
+      <{{'ExprApp', {'ExprApp', {'ExprVar', Con}, Arg1}, Arg2}}> when 'true' ->
+        {'PatCon', Con, [apply 'exprToPattern'/1(Arg1)|[apply 'exprToPattern'/1(Arg2)|[]]]}
+      <{{'ExprLit', Lit}}> when 'true' ->
+        {'PatLit', Lit}
+      <{{'ExprParens', E}}> when 'true' ->
+        apply 'exprToPattern'/1(E)
+      <{_W0}> when 'true' ->
+        'PatWildcard'
+    end
+
+'inferGuardExpr'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{E, {'ExprBinOp', "&&", Left, Right}}> when 'true' ->
+        case apply 'inferGuardExpr'/2(E, Left) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', LeftRes}> when 'true' ->
+        case apply 'inferGuardExpr'/2(call 'maps':'get'('env', LeftRes), Right) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', RightRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', RightRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RightRes))
+      in apply _Oa0(call 'maps':'get'('sub', LeftRes))}~}
+    end
+    end
+      <{E, {'ExprBinOp', "<-", PatExpr, ValExpr}}> when 'true' ->
+        case apply 'infer'/2(E, ValExpr) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', ValRes}> when 'true' ->
+        let <Pat> = apply 'exprToPattern'/1(PatExpr)
+      in case apply 'inferPat'/3(call 'maps':'get'('env', ValRes), Pat, call 'maps':'get'('ty', ValRes)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', PatRes}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', PatRes),'sub'=>let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('sub', ValRes))}~}
+    end
+    end
+      <{E, {'ExprBinOp', ",", Left, Right}}> when 'true' ->
+        apply 'inferGuardExpr'/2(E, {'ExprBinOp', "&&", Left, Right})
+      <{E, Expr}> when 'true' ->
+        case apply 'infer'/2(E, Expr) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Res}> when 'true' ->
+        {'Right', ~{'env'=>call 'maps':'get'('env', Res),'sub'=>call 'maps':'get'('sub', Res)}~}
+    end
+    end
+
+'inferGuard'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{E, 'Nothing'}> when 'true' ->
+        {'Right', ~{'env'=>E,'sub'=>call 'Nova.Compiler.Types':'emptySubst'()}~}
+      <{E, {'Just', GuardExpr}}> when 'true' ->
+        apply 'inferGuardExpr'/2(E, GuardExpr)
+    end
+
+'inferClausesGo'/5 =
+  fun (_P0, _P1, _P2, _P3, _P4) ->
+    case {_P0, _P1, _P2, _P3, _P4} of
+      <{_W0, _W1, E, [], Sub}> when 'true' ->
+        {'Right', ~{'env'=>E,'sub'=>Sub}~}
+      <{STy, RTy, E, [Clause|Rest], Sub}> when 'true' ->
+        let <STy_> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(STy)
+      in let <RTy_> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(RTy)
+      in case apply 'inferPat'/3(E, call 'maps':'get'('pattern', Clause), STy_) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', PatRes}> when 'true' ->
+        let <PatEnv> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubstToEnv'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(call 'maps':'get'('env', PatRes))
+      in case apply 'inferGuard'/2(PatEnv, call 'maps':'get'('guard', Clause)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', GuardRes}> when 'true' ->
+        case apply 'infer'/2(call 'maps':'get'('env', GuardRes), call 'maps':'get'('body', Clause)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', BodyRes}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', BodyRes))
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', BodyRes))
+      in apply _Oa0(RTy_))(call 'maps':'get'('ty', BodyRes)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <NewSub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', BodyRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', GuardRes))
+      in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', PatRes))
+      in apply _Oa0(Sub))))
+      in let <E_> = call 'maps':'merge'(E, ~{'counter'=>call 'maps':'get'('counter', call 'maps':'get'('env', BodyRes))}~)
+      in apply 'inferClausesGo'/5(STy, RTy, E_, Rest, NewSub)
+    end
+    end
+    end
+    end
+    end
+
+'inferClauses'/5 =
+  fun (Env, ScrutTy, ResultTy, Clauses, InitSub) ->
+    apply 'inferClausesGo'/5(ScrutTy, ResultTy, Env, Clauses, InitSub)
+
+'guardedExprsToIf'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{[]}> when 'true' ->
+        {'ExprVar', "undefined"}
+      <{[Ge|[]]}> when 'true' ->
+        apply 'wrapWithPatternGuards'/2(call 'maps':'get'('guards', Ge), call 'maps':'get'('body', Ge))
+      <{[Ge|Rest]}> when 'true' ->
+        let <ElseExpr> = apply 'guardedExprsToIf'/1(Rest)
+      in let <ThenBody> = apply 'wrapWithPatternGuards'/2(call 'maps':'get'('guards', Ge), call 'maps':'get'('body', Ge))
+      in let <Cond> = apply 'guardsToCondition'/1(call 'maps':'get'('guards', Ge))
+      in {'ExprIf', Cond, ThenBody, ElseExpr}
+    end
+
+'guardsToCondition'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{[]}> when 'true' ->
+        {'ExprVar', "true"}
+      <{[Gc|[]]}> when 'true' ->
+        apply 'guardClauseToCondExpr'/1(Gc)
+      <{[Gc|Rest]}> when 'true' ->
+        {'ExprBinOp', "&&", apply 'guardClauseToCondExpr'/1(Gc), apply 'guardsToCondition'/1(Rest)}
+    end
+
+'guardClauseToCondExpr'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'GuardExpr', E}}> when 'true' ->
+        E
+      <{{'GuardPat', _W0, _W1}}> when 'true' ->
+        {'ExprVar', "true"}
+    end
+
+'wrapWithPatternGuards'/2 =
+  fun (Guards, Body) ->
+    letrec 'isPatternGuard'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'GuardPat', _W0, _W1}}> when 'true' -> 'true'
+        <{_W0}> when 'true' -> 'false'
+      end
+      in let <PatternGuards> = call 'Data.List':'filter'(fun (_Mf0) -> apply 'isPatternGuard'/1(_Mf0), Guards)
+      in apply 'buildPatternGuardCases'/2(PatternGuards, Body)
+
+'buildPatternGuardCases'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], Body}> when 'true' ->
+        Body
+      <{[{'GuardPat', Pat, Scrutinee}|Rest], Body}> when 'true' ->
+        {'ExprCase', Scrutinee, [~{'pattern'=>Pat,'body'=>apply 'buildPatternGuardCases'/2(Rest, Body),'guard'=>'Nothing'}~|[]]}
+      <{[_W0|Rest], Body}> when 'true' ->
+        apply 'buildPatternGuardCases'/2(Rest, Body)
+    end
+
+'checkFunction'/2 =
+  fun (Env, Func) ->
+    letrec 'isPlaceholder'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TyVar', Tv}}> when 'true' -> case call 'erlang':'>='(call 'maps':'get'('id', Tv), 0) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(3, call 'maps':'get'('name', Tv)), "fn_") <_> when 'true' -> 'false' end
+        <{_W0}> when 'true' -> 'false'
+      end
+      in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
+      in apply _Oa0(call 'erlang':'++'("fn_", call 'maps':'get'('name', Func)))
+      in case _Let0 of
+        <{'Tuple', FuncTv, Env1}> when 'true' -> let <FuncTy> = {'TyVar', FuncTv}
+      in let <Body> = case call 'maps':'get'('guards', Func) of
+      <[]> when 'true' ->
+        call 'maps':'get'('body', Func)
+      <_W0> when 'true' ->
+        apply 'guardedExprsToIf'/1(call 'maps':'get'('guards', Func))
+    end
+      in let <TempScheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(FuncTy)
+      in let <Expr> = case call 'maps':'get'('parameters', Func) of
+      <[]> when 'true' ->
+        Body
+      <_W0> when 'true' ->
+        {'ExprLambda', call 'maps':'get'('parameters', Func), Body}
+    end
+      in let <EnvWithFunc> = let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env1)
+      in apply apply _Oa0(call 'maps':'get'('name', Func))(TempScheme)
+      in case apply 'infer'/2(EnvWithFunc, Expr) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', Res}> when 'true' ->
+        case let <_Oa0> = apply 'unifyEnv'/1(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', Res))
+      in apply _Oa0(FuncTy))(call 'maps':'get'('ty', Res)) of
+      <{'Left', Ue}> when 'true' ->
+        {'Left', apply 'UnifyErr'/1(Ue)}
+      <{'Right', S}> when 'true' ->
+        let <FinalSub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(call 'maps':'get'('sub', Res))
+      in let <SigScheme> = let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(call 'maps':'get'('name', Func))
+      in let <FinalTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(FinalSub)
+      in apply _Oa0(call 'maps':'get'('ty', Res))
+      in let <Scheme> = case SigScheme of
+      <{'Just', Sig}> when 'true' ->
+        case call 'erlang':'not'(apply 'isPlaceholder'/1(call 'maps':'get'('ty', Sig))) of
+          <'true'> when 'true' -> Sig
+          <_> when 'true' -> apply 'generalize'/2(call 'maps':'get'('env', Res), FinalTy)
+        end
+      <_W0> when 'true' ->
+        apply 'generalize'/2(call 'maps':'get'('env', Res), FinalTy)
+    end
+      in {'Right', ~{'scheme'=>Scheme,'env'=>let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(call 'maps':'get'('env', Res))
+      in apply apply _Oa0(call 'maps':'get'('name', Func))(Scheme)}~}
+    end
+    end
+      end
+
+'checkDecl'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Env, {'DeclFunction', Func}}> when 'true' ->
+        case apply 'checkFunction'/2(Env, Func) of
+      <{'Left', E}> when 'true' ->
+        {'Left', E}
+      <{'Right', R}> when 'true' ->
+        {'Right', call 'maps':'get'('env', R)}
+    end
+      <{Env, {'DeclTypeSig', _W0}}> when 'true' ->
+        {'Right', Env}
+      <{Env, {'DeclDataType', Dt}}> when 'true' ->
+        {'Right', apply 'checkDataType'/2(Env, Dt)}
+      <{Env, {'DeclTypeAlias', Ta}}> when 'true' ->
+        {'Right', apply 'checkTypeAlias'/2(Env, Ta)}
+      <{Env, {'DeclTypeClass', Tc}}> when 'true' ->
+        {'Right', apply 'checkTypeClass'/2(Env, Tc)}
+      <{Env, {'DeclInfix', Inf}}> when 'true' ->
+        case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
+      in apply _Oa0(call 'maps':'get'('functionName', Inf)) of
+      <{'Just', Scheme}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(call 'maps':'get'('operator', Inf))(Scheme)}
+      <'Nothing'> when 'true' ->
+        {'Right', Env}
+    end
+      <{Env, _W0}> when 'true' ->
+        {'Right', Env}
+    end
+
+'checkTypeClass'/2 =
+  fun (Env, Tc) ->
+    letrec 'addMethod'/2 = fun (E, Sig) ->
+      let <VarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'+'(call 'maps':'get'('counter', E), I))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Tc)))
+      in let <VarMap> = call 'Data.Map':'fromFoldable'(VarPairs)
+      in let <MethodType> = apply 'typeExprToType'/2(VarMap, call 'maps':'get'('ty', Sig))
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), VarPairs))
+      in apply _Oa0(MethodType)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('name', Sig))(Scheme)
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addMethod'/2(_Mf0, _Mf1), Env, call 'Data.Array':'fromFoldable'(call 'maps':'get'('methods', Tc)))
+
+'checkDataType'/2 =
+  fun (Env, Dt) ->
+    apply 'checkDataTypeWithAllAliases'/4(call 'Data.Map':'empty'(), call 'Data.Map':'empty'(), Env, Dt)
+
+'checkDataTypeWithAliases'/3 =
+  fun (AliasMap, Env, Dt) ->
+    apply 'checkDataTypeWithAllAliases'/4(AliasMap, call 'Data.Map':'empty'(), Env, Dt)
+
+'checkDataTypeWithAllAliases'/4 =
+  fun (AliasMap, ParamAliasMap, Env, Dt) ->
+    let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Dt)))
+      in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
+      in let <TypeArgs> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, Tv}}> when 'true' -> {'TyVar', Tv}
+      end, TypeVarPairs)
+      in let <ResultType> = {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Dt))
+      in apply _Oa0(TypeArgs)}
+      in letrec 'addConstructor'/2 = fun (E, Con) ->
+      let <ConType> = apply 'buildConstructorTypeWithAllAliases'/5(AliasMap, ParamAliasMap, TypeVarMap, call 'maps':'get'('fields', Con), ResultType)
+      in let <ConScheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), TypeVarPairs))
+      in apply _Oa0(ConType)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('name', Con))(ConScheme)
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addConstructor'/2(_Mf0, _Mf1), Env, call 'Data.Array':'fromFoldable'(call 'maps':'get'('constructors', Dt)))
+
+'checkNewtypeWithAliases'/3 =
+  fun (AliasMap, Env, Nt) ->
+    apply 'checkNewtypeWithAllAliases'/4(AliasMap, call 'Data.Map':'empty'(), Env, Nt)
+
+'checkNewtypeWithAllAliases'/4 =
+  fun (AliasMap, ParamAliasMap, Env, Nt) ->
+    let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Nt)))
+      in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
+      in let <TypeArgs> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, Tv}}> when 'true' -> {'TyVar', Tv}
+      end, TypeVarPairs)
+      in let <ResultType> = {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Nt))
+      in apply _Oa0(TypeArgs)}
+      in let <WrappedTy> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, TypeVarMap, call 'maps':'get'('wrappedType', Nt))
+      in let <ConType> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(WrappedTy)
+      in apply _Oa0(ResultType)
+      in let <ConScheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), TypeVarPairs))
+      in apply _Oa0(ConType)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(call 'maps':'get'('constructor', Nt))(ConScheme)
+
+'buildConstructorTypeGo'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{_W0, ResultType, []}> when 'true' ->
+        ResultType
+      <{VarMap, ResultType, [Field|Rest]}> when 'true' ->
+        let <FieldTy> = apply 'typeExprToType'/2(VarMap, call 'maps':'get'('ty', Field))
+      in let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(FieldTy)
+      in apply _Oa0(apply 'buildConstructorTypeGo'/3(VarMap, ResultType, Rest))
+    end
+
+'buildConstructorType'/3 =
+  fun (VarMap, Fields, ResultType) ->
+    apply 'buildConstructorTypeGo'/3(VarMap, ResultType, Fields)
+
+'buildConstructorTypeWithAliasesGo'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{_W0, _W1, ResultType, []}> when 'true' ->
+        ResultType
+      <{AliasMap, VarMap, ResultType, [Field|Rest]}> when 'true' ->
+        let <FieldTy> = apply 'typeExprToTypeWithAliases'/3(AliasMap, VarMap, call 'maps':'get'('ty', Field))
+      in let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(FieldTy)
+      in apply _Oa0(apply 'buildConstructorTypeWithAliasesGo'/4(AliasMap, VarMap, ResultType, Rest))
+    end
+
+'buildConstructorTypeWithAliases'/4 =
+  fun (AliasMap, VarMap, Fields, ResultType) ->
+    apply 'buildConstructorTypeWithAliasesGo'/4(AliasMap, VarMap, ResultType, Fields)
+
+'buildConstructorTypeWithAllAliasesGo'/5 =
+  fun (_P0, _P1, _P2, _P3, _P4) ->
+    case {_P0, _P1, _P2, _P3, _P4} of
+      <{_W0, _W1, _W2, ResultType, []}> when 'true' ->
+        ResultType
+      <{AliasMap, ParamAliasMap, VarMap, ResultType, [Field|Rest]}> when 'true' ->
+        let <FieldTy> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, call 'maps':'get'('ty', Field))
+      in let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(FieldTy)
+      in apply _Oa0(apply 'buildConstructorTypeWithAllAliasesGo'/5(AliasMap, ParamAliasMap, VarMap, ResultType, Rest))
+    end
+
+'buildConstructorTypeWithAllAliases'/5 =
+  fun (AliasMap, ParamAliasMap, VarMap, Fields, ResultType) ->
+    apply 'buildConstructorTypeWithAllAliasesGo'/5(AliasMap, ParamAliasMap, VarMap, ResultType, Fields)
+
+'typeExprToTypeWithAliases'/3 =
+  fun (AliasMap, VarMap, Expr) ->
+    apply 'typeExprToTypeWithAllAliases'/4(AliasMap, call 'Data.Map':'empty'(), VarMap, Expr)
+
+'typeExprToTypeWithAllAliases'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprVar', Name}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'TyVar', Tv}
+      <'Nothing'> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
+      in apply _Oa0([])}
+    end
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+      in letrec 'lookupInAliasMap'/1 = fun (Nm) ->
+      call 'Data.Map':'lookup'(Nm, AliasMap)
+       'lookupInParamAliasMap'/1 = fun (Nm) ->
+      call 'Data.Map':'lookup'(Nm, ParamAliasMap)
+       'tryLookup'/1 = fun (Nm) ->
+      case apply 'lookupInAliasMap'/1(Nm) of
+      <{'Just', Ty}> when 'true' ->
+        {'Just', Ty}
+      <'Nothing'> when 'true' ->
+        case apply 'lookupInParamAliasMap'/1(Nm) of
+      <{'Just', Info}> when 'true' ->
+        let <Ps> = call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)
+      in let <BodyExpr> = call 'Nova.Compiler.Types':'getAliasInfoBody'(Info)
+      in case call 'Data.Array':'null'(Ps) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, BodyExpr)}
+      <'false'> when 'true' -> 'Nothing'
+    end
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+    end
+      in case apply 'tryLookup'/1(Name) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        case apply 'tryLookup'/1(UnqualifiedName) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        apply 'typeExprToType'/2(VarMap, {'TyExprCon', Name})
+    end
+    end
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprApp', F, Arg}}> when 'true' ->
+        letrec 'applyTypeArg'/5 = fun (AMap, PaMap, VMap, Func, ArgExpr) ->
+      let <ArgTy> = apply 'typeExprToTypeWithAllAliases'/4(AMap, PaMap, VMap, ArgExpr)
+      in case apply 'typeExprToTypeWithAllAliases'/4(AMap, PaMap, VMap, Func) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), ArgTy)}~}
+      <Other> when 'true' ->
+        call 'Nova.Compiler.Types':'mkTyApp'(Other, ArgTy)
+    end
+      in case apply 'collectTypeApp'/1({'TyExprApp', F, Arg}) of
+      <{'Tuple', ConName, Args}> when 'true' ->
+        case call 'Data.Map':'lookup'(ConName, ParamAliasMap) of
+      <{'Just', Info}> when 'true' ->
+        let <Ps> = call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)
+      in let <BodyExpr> = call 'Nova.Compiler.Types':'getAliasInfoBody'(Info)
+      in case call 'erlang':'=:='(call 'Data.Array':'length'(Ps), call 'Data.Array':'length'(Args)) of
+      <'true'> when 'true' -> let <ArgTypes> = call 'lists':'map'(fun (_Pc0) -> apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, _Pc0), Args)
+      in let <ParamSubst> = call 'Data.Map':'fromFoldable'(call 'Data.Array':'zip'(Ps, ArgTypes))
+      in apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, BodyExpr)
+      <'false'> when 'true' -> apply 'applyTypeArg'/5(AliasMap, ParamAliasMap, VarMap, F, Arg)
+    end
+      <_W0> when 'true' ->
+        apply 'applyTypeArg'/5(AliasMap, ParamAliasMap, VarMap, F, Arg)
+    end
+    end
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprArrow', A, B}}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, A))
+      in apply _Oa0(apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, B))
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprRecord', Fields, MaybeRow}}> when 'true' ->
+        let <FieldMap> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', L, T}}> when 'true' -> call 'Data.Tuple':'Tuple'(L, apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, T))
+      end, Fields))
+      in let <Row> = case MaybeRow of
+      <{'Just', R}> when 'true' ->
+        case call 'Data.Map':'lookup'(R, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'Just', Tv}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
+        let <VarList> = call 'Data.Array':'mapWithIndex'(fun (I, Name) ->
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(Name)), call 'Data.Array':'fromFoldable'(Vars))
+      in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
+      in apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, NewVarMap, T)
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprConstrained', _W0, T}}> when 'true' ->
+        apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, T)
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprParens', T}}> when 'true' ->
+        apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, T)
+      <{AliasMap, ParamAliasMap, VarMap, {'TyExprTuple', Ts}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tTuple'(call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, _Pc0), Ts)))
+    end
+
+'typeExprToTypeWithEnv'/5 =
+  fun (_P0, _P1, _P2, _P3, _P4) ->
+    case {_P0, _P1, _P2, _P3, _P4} of
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprVar', Name}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'TyVar', Tv}
+      <'Nothing'> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
+      in apply _Oa0([])}
+    end
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+      in letrec 'tryLookup'/1 = fun (Nm) ->
+      case call 'Data.Map':'lookup'(Nm, AliasMap) of
+      <{'Just', Ty}> when 'true' ->
+        {'Just', Ty}
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Nm, ParamAliasMap) of
+      <{'Just', Info}> when 'true' ->
+        let <Ps> = call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)
+      in let <BodyExpr> = call 'Nova.Compiler.Types':'getAliasInfoBody'(Info)
+      in case call 'Data.Array':'null'(Ps) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, BodyExpr)}
+      <'false'> when 'true' -> 'Nothing'
+    end
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+    end
+       'tryEnvLookup'/1 = fun (Nm) ->
+      let <_Oa0> = call 'Nova.Compiler.Types':'lookupTypeAlias'(Env)
+      in apply _Oa0(Nm)
+      in case apply 'tryLookup'/1(Name) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        case apply 'tryLookup'/1(UnqualifiedName) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        case apply 'tryEnvLookup'/1(Name) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        case apply 'tryEnvLookup'/1(UnqualifiedName) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        apply 'typeExprToType'/2(VarMap, {'TyExprCon', Name})
+    end
+    end
+    end
+    end
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprApp', F, Arg}}> when 'true' ->
+        case apply 'collectTypeApp'/1({'TyExprApp', F, Arg}) of
+      <{'Tuple', ConName, Args}> when 'true' ->
+        case call 'Data.Map':'lookup'(ConName, ParamAliasMap) of
+      <{'Just', Info}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.Array':'length'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)), call 'Data.Array':'length'(Args)) of
+          <'true'> when 'true' -> let <ArgTypes> = call 'lists':'map'(fun (_Pc0) -> apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, _Pc0), Args)
+      in let <ParamSubst> = call 'Data.Map':'fromFoldable'(call 'Data.Array':'zip'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info), ArgTypes))
+      in apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))
+          <_> when 'true' -> case apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, F) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, Arg))}~}
+      <Other> when 'true' ->
+        Other
+    end
+        end
+      <_W0> when 'true' ->
+        case apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, F) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, Arg))}~}
+      <Other> when 'true' ->
+        Other
+    end
+    end
+    end
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprArrow', A, B}}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, A))
+      in apply _Oa0(apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, B))
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprRecord', Fields, MaybeRow}}> when 'true' ->
+        let <FieldMap> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', L, T}}> when 'true' -> call 'Data.Tuple':'Tuple'(L, apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, T))
+      end, Fields))
+      in let <Row> = case MaybeRow of
+      <{'Just', R}> when 'true' ->
+        case call 'Data.Map':'lookup'(R, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'Just', Tv}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
+        let <VarList> = call 'Data.Array':'mapWithIndex'(fun (I, Name) ->
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(Name)), call 'Data.Array':'fromFoldable'(Vars))
+      in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
+      in apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, NewVarMap, T)
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprConstrained', _W0, T}}> when 'true' ->
+        apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, T)
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprParens', T}}> when 'true' ->
+        apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, T)
+      <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprTuple', Ts}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tTuple'(call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, _Pc0), Ts)))
+    end
+
+'collectTypeApp'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyExprCon', Name}}> when 'true' ->
+        call 'Data.Tuple':'Tuple'(Name, [])
+      <{{'TyExprApp', F, Arg}}> when 'true' ->
+        let <_Let0> = apply 'collectTypeApp'/1(F)
+      in case _Let0 of
+        <{'Tuple', Name, Args}> when 'true' -> call 'Data.Tuple':'Tuple'(Name, call 'Data.Array':'snoc'(Args, Arg))
+      end
+      <{_W0}> when 'true' ->
+        call 'Data.Tuple':'Tuple'("", [])
+    end
+
+'substituteTypeExpr'/4 =
+  fun (_P0, _P1, _P2, _P3) ->
+    case {_P0, _P1, _P2, _P3} of
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprVar', Name}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ParamSubst) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
+      in apply _Oa0([])}
+    end
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprCon', Name}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, AliasMap) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        apply 'typeExprToType'/2(call 'Data.Map':'empty'(), {'TyExprCon', Name})
+    end
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprApp', F, Arg}}> when 'true' ->
+        case apply 'collectTypeApp'/1({'TyExprApp', F, Arg}) of
+      <{'Tuple', ConName, Args}> when 'true' ->
+        case call 'Data.Map':'lookup'(ConName, ParamAliasMap) of
+      <{'Just', Info}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.Array':'length'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)), call 'Data.Array':'length'(Args)) of
+          <'true'> when 'true' -> let <ArgTypes> = call 'lists':'map'(fun (_Pc0) -> apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, _Pc0), Args)
+      in let <NestedSubst> = call 'Data.Map':'fromFoldable'(call 'Data.Array':'zip'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info), ArgTypes))
+      in apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, NestedSubst, call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))
+          <_> when 'true' -> case apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, F) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, Arg))}~}
+      <Other> when 'true' ->
+        Other
+    end
+        end
+      <_W0> when 'true' ->
+        case apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, F) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, Arg))}~}
+      <Other> when 'true' ->
+        Other
+    end
+    end
+    end
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprArrow', A, B}}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, A))
+      in apply _Oa0(apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, B))
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprRecord', Fields, MaybeRow}}> when 'true' ->
+        let <FieldMap> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', L, T}}> when 'true' -> call 'Data.Tuple':'Tuple'(L, apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, T))
+      end, Fields))
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>'Nothing'}~}
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprTuple', Ts}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tTuple'(call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, _Pc0), Ts)))
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprParens', T}}> when 'true' ->
+        apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, T)
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprForAll', _W0, T}}> when 'true' ->
+        apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, T)
+      <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprConstrained', _W0, T}}> when 'true' ->
+        apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, T)
+    end
+
+'typeExprToType'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{VarMap, {'TyExprVar', Name}}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'TyVar', Tv}
+      <'Nothing'> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
+      in apply _Oa0([])}
+    end
+      <{VarMap, {'TyExprCon', Name}}> when 'true' ->
+        case Name of
+      <"_"> when 'true' ->
+        {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(999))
+      in apply _Oa0("_")}
+      <"Boolean"> when 'true' ->
+        call 'Nova.Compiler.Types':'tBool'()
+      <_W0> when 'true' ->
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
+      in apply _Oa0([])}
+    end
+      <{VarMap, {'TyExprApp', F, Arg}}> when 'true' ->
+        let <ArgTy> = apply 'typeExprToType'/2(VarMap, Arg)
+      in case apply 'typeExprToType'/2(VarMap, F) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Data.Array':'snoc'(call 'maps':'get'('args', Tc), ArgTy)}~}
+      <Other> when 'true' ->
+        call 'Nova.Compiler.Types':'mkTyApp'(Other, ArgTy)
+    end
+      <{VarMap, {'TyExprArrow', A, B}}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'typeExprToType'/2(VarMap, A))
+      in apply _Oa0(apply 'typeExprToType'/2(VarMap, B))
+      <{VarMap, {'TyExprRecord', Fields, MaybeRow}}> when 'true' ->
+        let <FieldMap> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', L, T}}> when 'true' -> call 'Data.Tuple':'Tuple'(L, apply 'typeExprToType'/2(VarMap, T))
+      end, Fields))
+      in let <Row> = case MaybeRow of
+      <{'Just', R}> when 'true' ->
+        case call 'Data.Map':'lookup'(R, VarMap) of
+      <{'Just', Tv}> when 'true' ->
+        {'Just', Tv}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
+      <{VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
+        let <VarList> = apply 'listMapWithIndex'/2(fun (I, Name) ->
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(Name)), Vars)
+      in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
+      in apply 'typeExprToType'/2(NewVarMap, T)
+      <{VarMap, {'TyExprConstrained', _W0, T}}> when 'true' ->
+        apply 'typeExprToType'/2(VarMap, T)
+      <{VarMap, {'TyExprParens', T}}> when 'true' ->
+        apply 'typeExprToType'/2(VarMap, T)
+      <{VarMap, {'TyExprTuple', Ts}}> when 'true' ->
+        call 'Nova.Compiler.Types':'tTuple'(call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'typeExprToType'/2(VarMap, _Pc0), Ts)))
+    end
+
+'checkTypeAlias'/2 =
+  fun (Env, Ta) ->
+    let <Ty> = apply 'typeExprToTypeWithEnv'/5(Env, call 'Data.Map':'empty'(), call 'Data.Map':'empty'(), call 'Data.Map':'empty'(), call 'maps':'get'('ty', Ta))
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0(Ty)
+      in let <Env_> = let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(call 'maps':'get'('name', Ta))(Scheme)
+      in call 'Nova.Compiler.Types':'extendTypeAlias'(Env_, call 'maps':'get'('name', Ta), Ty)
+
+'isRecordType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyRecord', _W0}}> when 'true' ->
+        'true'
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'collectTypeNames'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyVar', _W0}}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{{'TyCon', Tc}}> when 'true' ->
+        let <ArgsNames> = call 'Data.Array':'foldl'(fun (S, T) ->
+      call 'Data.Set':'union'(S, apply 'collectTypeNames'/1(T)), call 'Data.Set':'empty'(), call 'maps':'get'('args', Tc))
+      in call 'Data.Set':'insert'(call 'maps':'get'('name', Tc), ArgsNames)
+      <{{'TyRecord', R}}> when 'true' ->
+        let <FieldNames> = call 'Data.Map':'values'(call 'maps':'get'('fields', R))
+      in let <FieldsSet> = call 'Data.Array':'foldl'(fun (S, T) ->
+      call 'Data.Set':'union'(S, apply 'collectTypeNames'/1(T)), call 'Data.Set':'empty'(), call 'Data.Array':'fromFoldable'(FieldNames))
+      in FieldsSet
+      <{{'TyApp', F, Arg}}> when 'true' ->
+        call 'Data.Set':'union'(apply 'collectTypeNames'/1(F), apply 'collectTypeNames'/1(Arg))
+    end
+
+'collectTypeExprNames'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyExprVar', _W0}}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{{'TyExprCon', Name}}> when 'true' ->
+        call 'Data.Set':'singleton'(Name)
+      <{{'TyExprApp', F, Arg}}> when 'true' ->
+        call 'Data.Set':'union'(apply 'collectTypeExprNames'/1(F), apply 'collectTypeExprNames'/1(Arg))
+      <{{'TyExprArrow', A, B}}> when 'true' ->
+        call 'Data.Set':'union'(apply 'collectTypeExprNames'/1(A), apply 'collectTypeExprNames'/1(B))
+      <{{'TyExprRecord', Fields, _W0}}> when 'true' ->
+        call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{S, {'Tuple', _W0, T}}> when 'true' -> call 'Data.Set':'union'(S, apply 'collectTypeExprNames'/1(T))
+      end, call 'Data.Set':'empty'(), call 'Data.Array':'fromFoldable'(Fields))
+      <{{'TyExprForAll', _W0, T}}> when 'true' ->
+        apply 'collectTypeExprNames'/1(T)
+      <{{'TyExprConstrained', _W0, T}}> when 'true' ->
+        apply 'collectTypeExprNames'/1(T)
+      <{{'TyExprParens', T}}> when 'true' ->
+        apply 'collectTypeExprNames'/1(T)
+      <{{'TyExprTuple', Ts}}> when 'true' ->
+        call 'Data.List':'foldl'(fun (S, T) ->
+      call 'Data.Set':'union'(S, apply 'collectTypeExprNames'/1(T)), call 'Data.Set':'empty'(), Ts)
+    end
+
+'checkModuleSimple'/2 =
+  fun (Env, Decls) ->
+    apply 'checkModule'/3(call 'Nova.Compiler.Types':'defaultRegistry'(), Env, Decls)
+
+'checkModule'/3 =
+  fun (Registry, Env, Decls) ->
+    let <ImportedAliases> = apply 'collectImportedAliases'/2(Registry, Decls)
+      in let <Env1> = call 'Nova.Compiler.ImportProcessor':'processImports'(Registry, Env, Decls)
+      in let <Env2> = apply 'processNonFunctionsWithAliases'/3(ImportedAliases, Env1, Decls)
+      in let <Env3> = apply 'addFunctionPlaceholdersWithAliases'/3(ImportedAliases, Env2, Decls)
+      in let <Env4> = apply 'processInfixDeclarations'/2(Env3, Decls)
+      in apply 'withContext'/2("checkFunctionBodies", apply 'checkFunctionBodies'/2(Env4, Decls))
+
+'typeCheckModule'/3 =
+  fun (Registry, Env, Mod) ->
+    let <Decls> = call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))
+      in case apply 'checkModule'/3(Registry, Env, Decls) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Env_}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'mkTypedModule'(Mod)
+      in apply _Oa0(Env_)}
+    end
+
+'processImports'/3 =
+  fun (Registry, Env, Decls) ->
+    letrec 'processImport'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'DeclImport', Imp}}> when 'true' -> apply 'processImportDecl'/3(Registry, E, Imp)
+        <{E, _W0}> when 'true' -> E
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processImport'/2(_Mf0, _Mf1), Env, Decls)
+
+'mergeExportsWithTypeAliases'/2 =
+  fun (Env, Exports) ->
+    let <Env1> = call 'Nova.Compiler.Types':'mergeExportsToEnv'(Env, Exports)
+      in let <ModuleAliases> = case call 'Data.Map':'isEmpty'(call 'maps':'get'('expandedTypeAliases', Exports)) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(call 'maps':'get'('typeAliases', Exports))
+      <'false'> when 'true' -> call 'maps':'get'('expandedTypeAliases', Exports)
+    end
+      in letrec 'addIfRecordAlias'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(E)
+      in apply apply _Oa0(Name)(Ty)
+      <'false'> when 'true' -> E
+    end
+      end
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), Env1, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      in Env2
+
+'processImportDecl'/3 =
+  fun (Registry, Env, Imp) ->
+    case let <_Oa0> = call 'Nova.Compiler.Types':'lookupModule'(Registry)
+      in apply _Oa0(call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        Env
+      <{'Just', Exports}> when 'true' ->
+        let <EnvWithQualified> = case call 'maps':'get'('alias', Imp) of
+      <{'Just', Alias}> when 'true' ->
+        call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, Alias)
+      <'Nothing'> when 'true' ->
+        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        call 'maps':'get'('moduleName', Imp)
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
+    end
+      in call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, LastPart)
+    end
+      in case call 'maps':'get'('hiding', Imp) of
+      <'true'> when 'true' -> apply 'mergeExportsWithTypeAliases'/2(EnvWithQualified, Exports)
+      <'false'> when 'true' -> case call 'Data.List':'null'(call 'maps':'get'('items', Imp)) of
+      <'true'> when 'true' -> case call 'maps':'get'('alias', Imp) of
+      <{'Just', _W0}> when 'true' ->
+        let <ModuleAliases> = case call 'Data.Map':'isEmpty'(call 'maps':'get'('expandedTypeAliases', Exports)) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(call 'maps':'get'('typeAliases', Exports))
+      <'false'> when 'true' -> call 'maps':'get'('expandedTypeAliases', Exports)
+    end
+      in letrec 'addIfRecordAlias'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(E)
+      in apply apply _Oa0(Name)(Ty)
+      <'false'> when 'true' -> E
+    end
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), EnvWithQualified, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      <'Nothing'> when 'true' ->
+        apply 'mergeExportsWithTypeAliases'/2(EnvWithQualified, Exports)
+    end
+      <'false'> when 'true' -> call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'importItem'/3(Exports, _Pc0, _Pc1), EnvWithQualified, call 'maps':'get'('items', Imp))
+    end
+    end
+    end
+
+'expandModuleAliases'/1 =
+  fun (AliasInfos) ->
+    let <Initial> = call 'Data.Map':'mapMaybe'(fun (Info) ->
+      case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in let <Pass2> = call 'Data.Map':'mapMaybe'(fun (Info) ->
+      case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Initial, AliasInfos, call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in let <Pass3> = call 'Data.Map':'mapMaybe'(fun (Info) ->
+      case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Pass2, AliasInfos, call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in Pass3
+
+'importItem'/3 =
+  fun (Exports, Env, Item) ->
+    let <ModuleAliases> = case call 'Data.Map':'isEmpty'(call 'maps':'get'('expandedTypeAliases', Exports)) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(call 'maps':'get'('typeAliases', Exports))
+      <'false'> when 'true' -> call 'maps':'get'('expandedTypeAliases', Exports)
+    end
+      in letrec 'addAllRecordAliases'/1 = fun (E) ->
+      letrec 'addIfRecord'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E2, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(E2)
+      in apply apply _Oa0(Name)(Ty)
+      <'false'> when 'true' -> E2
+    end
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecord'/2(_Mf0, _Mf1), E, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      in case Item of
+      <{'ImportValue', Name}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, call 'maps':'get'('values', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'addAllRecordAliases'/1(let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(Name)(Scheme))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'addAllRecordAliases'/1(let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(Env)
+      in apply apply _Oa0(Name)(Scheme))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        apply 'addAllRecordAliases'/1(let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(Env)
+      in apply apply _Oa0(Name)(Ty))
+      <'Nothing'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env)
+    end
+    end
+    end
+      <{'ImportType', TypeName, Spec}> when 'true' ->
+        let <Env_> = case call 'Data.Map':'lookup'(TypeName, call 'maps':'get'('typeAliases', Exports)) of
+      <{'Just', AliasInfo}> when 'true' ->
+        let <ExpandedTy> = case call 'Data.Map':'lookup'(TypeName, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(AliasInfo))
+    end
+      in let <ReferencedNames> = apply 'collectTypeExprNames'/1(call 'Nova.Compiler.Types':'getAliasInfoBody'(AliasInfo))
+      in let <E1> = let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(Env)
+      in apply apply _Oa0(TypeName)(ExpandedTy)
+      in letrec 'addIfRecordAlias'/2 = fun (E, Name) ->
+      case call 'Data.Map':'lookup'(Name, ModuleAliases) of
+      <{'Just', AliasTy}> when 'true' ->
+        case apply 'isRecordType'/1(AliasTy) of
+          <'true'> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(E)
+      in apply apply _Oa0(Name)(AliasTy)
+          <_> when 'true' -> E
+        end
+      <_W0> when 'true' ->
+        E
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), E1, call 'Data.Set':'toUnfoldable'(ReferencedNames))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(TypeName, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'extendTypeAlias'(Env)
+      in apply apply _Oa0(TypeName)(Ty)
+      <'Nothing'> when 'true' ->
+        Env
+    end
+    end
+      in case call 'Data.Map':'lookup'(TypeName, call 'maps':'get'('types', Exports)) of
+      <'Nothing'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env_)
+      <{'Just', TypeInfo}> when 'true' ->
+        case Spec of
+      <'ImportAll'> when 'true' ->
+        apply 'addAllRecordAliases'/1(let <_Oa0> = call 'Nova.Compiler.Types':'mergeTypeExport'(Env_)
+      in apply apply apply _Oa0(Exports)(TypeName)(call 'maps':'get'('constructors', TypeInfo)))
+      <{'ImportSome', CtorNames}> when 'true' ->
+        apply 'addAllRecordAliases'/1(let <_Oa0> = call 'Nova.Compiler.Types':'mergeTypeExport'(Env_)
+      in apply apply apply _Oa0(Exports)(TypeName)(call 'Data.Array':'fromFoldable'(CtorNames)))
+      <'ImportNone'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env_)
+    end
+    end
+    end
+
+'collectResolvedImports'/2 =
+  fun (Registry, Decls) ->
+    letrec 'collectFromDecl'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'DeclImport', Imp}}> when 'true' -> apply 'collectFromImportDecl'/3(Registry, Acc, Imp)
+        <{Acc, _W0}> when 'true' -> Acc
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collectFromDecl'/2(_Mf0, _Mf1), call 'Data.Map':'empty'(), Decls)
+
+'collectFromImportDecl'/3 =
+  fun (Registry, Acc, Imp) ->
+    case let <_Oa0> = call 'Nova.Compiler.Types':'lookupModule'(Registry)
+      in apply _Oa0(call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', Exports}> when 'true' ->
+        case call 'maps':'get'('alias', Imp) of
+      <{'Just', _W0}> when 'true' ->
+        case call 'Data.List':'null'(call 'maps':'get'('items', Imp)) of
+      <'true'> when 'true' -> Acc
+      <'false'> when 'true' -> call 'Data.Array':'foldl'(fun (M, Item) ->
+      call 'Data.Map':'insert'(apply 'getImportItemName'/1(Item), call 'maps':'get'('moduleName', Imp), M), Acc, call 'Data.Array':'fromFoldable'(call 'maps':'get'('items', Imp)))
+    end
+      <'Nothing'> when 'true' ->
+        case call 'maps':'get'('hiding', Imp) of
+      <'true'> when 'true' -> let <AllNames> = apply 'getExportedNames'/1(Exports)
+      in let <HiddenNames> = call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (_Mf0) -> apply 'getImportItemName'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('items', Imp))))
+      in call 'Data.Array':'foldl'(fun (M, Name) ->
+      case call 'Data.Set':'member'(Name, HiddenNames) of
+      <'true'> when 'true' -> M
+      <'false'> when 'true' -> call 'Data.Map':'insert'(Name, call 'maps':'get'('moduleName', Imp), M)
+    end, Acc, AllNames)
+      <'false'> when 'true' -> case call 'Data.List':'null'(call 'maps':'get'('items', Imp)) of
+      <'true'> when 'true' -> let <AllNames> = apply 'getExportedNames'/1(Exports)
+      in call 'Data.Array':'foldl'(fun (M, Name) ->
+      call 'Data.Map':'insert'(Name, call 'maps':'get'('moduleName', Imp), M), Acc, AllNames)
+      <'false'> when 'true' -> call 'Data.Array':'foldl'(fun (M, Item) ->
+      call 'Data.Map':'insert'(apply 'getImportItemName'/1(Item), call 'maps':'get'('moduleName', Imp), M), Acc, call 'Data.Array':'fromFoldable'(call 'maps':'get'('items', Imp)))
+    end
+    end
+    end
+    end
+
+'getExportedNames'/1 =
+  fun (Exports) ->
+    let <ValueNames> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', K, _W0}}> when 'true' -> K
+      end, call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports)))
+      in let <CtorNames> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', K, _W0}}> when 'true' -> K
+      end, call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports)))
+      in call 'erlang':'++'(ValueNames, CtorNames)
+
+'getImportItemName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ImportValue', Name}}> when 'true' ->
+        Name
+      <{{'ImportType', Name, _W0}}> when 'true' ->
+        Name
+    end
+
+'collectImportedAliases'/2 =
+  fun (Registry, Decls) ->
+    letrec 'collectFromImport'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'DeclImport', Imp}}> when 'true' -> case let <_Oa0> = call 'Nova.Compiler.Types':'lookupModule'(Registry)
+      in apply _Oa0(call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', Exports}> when 'true' ->
+        let <Aliases> = call 'maps':'get'('typeAliases', Exports)
+      in let <Prefix> = case call 'maps':'get'('alias', Imp) of
+      <{'Just', Alias}> when 'true' ->
+        Alias
+      <'Nothing'> when 'true' ->
+        case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        call 'maps':'get'('moduleName', Imp)
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
+    end
+    end
+      in let <Acc1> = call 'Data.Map':'union'(Acc, Aliases)
+      in letrec 'addWithPrefix'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{M, {'Tuple', Name, Info}}> when 'true' -> call 'Data.Map':'insert'(call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name), Info, M)
+      end
+      in let <Acc2> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addWithPrefix'/2(_Mf0, _Mf1), Acc1, call 'Data.Map':'toUnfoldable'(Aliases))
+      in Acc2
+    end
+        <{Acc, _W0}> when 'true' -> Acc
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collectFromImport'/2(_Mf0, _Mf1), call 'Data.Map':'empty'(), Decls)
+
+'extractExports'/1 =
+  fun (Decls) ->
+    apply 'extractExportsWithRegistry'/2(call 'Nova.Compiler.Types':'defaultRegistry'(), Decls)
+
+'extractExportsWithRegistry'/2 =
+  fun (Registry, Decls) ->
+    let <LocalAliasMap> = apply 'collectTypeAliases'/1(Decls)
+      in let <LocalParamAliasMap> = apply 'collectParamTypeAliases'/1(Decls)
+      in let <ImportedAliases> = apply 'collectImportedAliases'/2(Registry, Decls)
+      in let <AliasMap> = LocalAliasMap
+      in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
+      in letrec 'collectExport'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Exp, {'DeclDataType', Dt}}> when 'true' -> let <TypeInfo> = ~{'arity'=>call 'Data.List':'length'(call 'maps':'get'('typeVars', Dt)),'constructors'=>call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), call 'maps':'get'('constructors', Dt)))}~
+      in let <Exp1> = call 'maps':'merge'(Exp, ~{'types'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Dt), TypeInfo, call 'maps':'get'('types', Exp))}~)
+      in call 'Data.Array':'foldl'(fun (_Pc0, _Pc1) -> apply 'addConstructorPlaceholder'/3(Dt, _Pc0, _Pc1), Exp1, call 'Data.Array':'fromFoldable'(call 'maps':'get'('constructors', Dt)))
+        <{Exp, {'DeclTypeAlias', Ta}}> when 'true' -> call 'maps':'merge'(Exp, ~{'typeAliases'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Ta), ~{'params'=>call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Ta)),'body'=>call 'maps':'get'('ty', Ta)}~, call 'maps':'get'('typeAliases', Exp))}~)
+        <{Exp, {'DeclNewtype', Nt}}> when 'true' -> let <TypeInfo> = ~{'arity'=>call 'Data.List':'length'(call 'maps':'get'('typeVars', Nt)),'constructors'=>[call 'maps':'get'('constructor', Nt)]}~
+      in let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Nt)))
+      in let <Exp1> = call 'maps':'merge'(Exp, ~{'types'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Nt), TypeInfo, call 'maps':'get'('types', Exp))}~)
+      in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
+      in let <ResultType> = case call 'Data.List':'null'(call 'maps':'get'('typeVars', Nt)) of
+      <'true'> when 'true' -> {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Nt))
+      in apply _Oa0([])}
+      <'false'> when 'true' -> {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Nt))
+      in apply _Oa0(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, Tv}}> when 'true' -> {'TyVar', Tv}
+      end, TypeVarPairs))}
+    end
+      in let <WrappedTy> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, TypeVarMap, call 'maps':'get'('wrappedType', Nt))
+      in let <CtorType> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(WrappedTy)
+      in apply _Oa0(ResultType)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), TypeVarPairs))
+      in apply _Oa0(CtorType)
+      in call 'maps':'merge'(Exp1, ~{'constructors'=>call 'Data.Map':'insert'(call 'maps':'get'('constructor', Nt), Scheme, call 'maps':'get'('constructors', Exp1))}~)
+        <{Exp, {'DeclFunction', Func}}> when 'true' -> Exp
+        <{Exp, {'DeclForeignImport', Fi}}> when 'true' -> let <Ty> = apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('typeSignature', Fi))
+      in let <FreeVars> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
+      in let <IdPairs> = call 'Data.Array':'mapWithIndex'(fun (Idx, OldId) ->
+      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 1))), FreeVars)
+      in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', ~{'id'=>NewId,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(NewId)))}~})
+      end, IdPairs))
+      in let <Tvars> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, NewId}}> when 'true' -> ~{'id'=>NewId,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(NewId)))}~
+      end, IdPairs)
+      in let <RemappedTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(RemapSub)
+      in apply _Oa0(Ty)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
+      in apply _Oa0(RemappedTy)
+      in call 'maps':'merge'(Exp, ~{'values'=>call 'Data.Map':'insert'(call 'maps':'get'('functionName', Fi), Scheme, call 'maps':'get'('values', Exp))}~)
+        <{Exp, {'DeclTypeClass', Tc}}> when 'true' -> letrec 'addMethod'/2 = fun (E, Sig) ->
+      let <VarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Tc)))
+      in let <VarMap> = call 'Data.Map':'fromFoldable'(VarPairs)
+      in let <MethodType> = apply 'typeExprToType'/2(VarMap, call 'maps':'get'('ty', Sig))
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), VarPairs))
+      in apply _Oa0(MethodType)
+      in call 'maps':'merge'(E, ~{'values'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Sig), Scheme, call 'maps':'get'('values', E))}~)
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addMethod'/2(_Mf0, _Mf1), Exp, call 'Data.Array':'fromFoldable'(call 'maps':'get'('methods', Tc)))
+        <{Exp, _W0}> when 'true' -> Exp
+      end
+       'addConstructorPlaceholder'/3 = fun (Dt, Exp, Ctor) ->
+      let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
+      in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Dt)))
+      in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
+      in let <ResultType> = case call 'Data.List':'null'(call 'maps':'get'('typeVars', Dt)) of
+      <'true'> when 'true' -> {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Dt))
+      in apply _Oa0([])}
+      <'false'> when 'true' -> {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(call 'maps':'get'('name', Dt))
+      in apply _Oa0(call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, Tv}}> when 'true' -> {'TyVar', Tv}
+      end, TypeVarPairs))}
+    end
+      in let <CtorType> = apply 'buildConstructorTypeWithAllAliases'/5(AliasMap, ParamAliasMap, TypeVarMap, call 'maps':'get'('fields', Ctor), ResultType)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(call 'lists':'map'(call 'Data.Tuple':'snd'(), TypeVarPairs))
+      in apply _Oa0(CtorType)
+      in call 'maps':'merge'(Exp, ~{'constructors'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Ctor), Scheme, call 'maps':'get'('constructors', Exp))}~)
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collectExport'/2(_Mf0, _Mf1), call 'Nova.Compiler.Types':'emptyExports'(), Decls)
+
+'addValuesToExports'/3 =
+  fun (Exports, Env, Decls) ->
+    letrec 'addValue'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Exp, {'DeclFunction', Func}}> when 'true' -> case call 'Data.Map':'lookup'(call 'maps':'get'('name', Func), call 'maps':'get'('bindings', Env)) of
+      <{'Just', Scheme}> when 'true' ->
+        call 'maps':'merge'(Exp, ~{'values'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Func), Scheme, call 'maps':'get'('values', Exp))}~)
+      <'Nothing'> when 'true' ->
+        Exp
+    end
+        <{Exp, _W0}> when 'true' -> Exp
+      end
+      in let <WithValues> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addValue'/2(_Mf0, _Mf1), Exports, Decls)
+      in let <ExpandedAliases> = apply 'collectTypeAliases'/1(Decls)
+      in call 'maps':'merge'(WithValues, ~{'expandedTypeAliases'=>ExpandedAliases}~)
+
+'collectTypeAliases'/1 =
+  fun (Decls) ->
+    apply 'collectTypeAliasesWithBase'/3(call 'Data.Map':'empty'(), apply 'collectParamTypeAliases'/1(Decls), Decls)
+
+'collectTypeAliasesWithBase'/3 =
+  fun (BaseAliases, ParamAliases, Decls) ->
+    letrec 'collectInitial'/2 = fun (M, Decl) ->
+      case Decl of
+      <{'DeclTypeAlias', Ta}> when 'true' ->
+        case call 'Data.List':'null'(call 'maps':'get'('typeVars', Ta)) of
+      <'true'> when 'true' -> call 'Data.Map':'insert'(call 'maps':'get'('name', Ta), apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('ty', Ta)), M)
+      <'false'> when 'true' -> M
+    end
+      <_W0> when 'true' ->
+        M
+    end
+       'collectExpanded'/3 = fun (InitialMap, M, Decl) ->
+      case Decl of
+      <{'DeclTypeAlias', Ta}> when 'true' ->
+        case call 'Data.List':'null'(call 'maps':'get'('typeVars', Ta)) of
+      <'true'> when 'true' -> call 'Data.Map':'insert'(call 'maps':'get'('name', Ta), apply 'typeExprToTypeWithAllAliases'/4(InitialMap, ParamAliases, call 'Data.Map':'empty'(), call 'maps':'get'('ty', Ta)), M)
+      <'false'> when 'true' -> M
+    end
+      <_W0> when 'true' ->
+        M
+    end
+      in let <Initial> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collectInitial'/2(_Mf0, _Mf1), BaseAliases, Decls)
+      in let <Expanded> = call 'Data.Array':'foldl'(fun (_Pc0, _Pc1) -> apply 'collectExpanded'/3(Initial, _Pc0, _Pc1), BaseAliases, Decls)
+      in Expanded
+
+'collectParamTypeAliases'/1 =
+  fun (Decls) ->
+    letrec 'collect'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{M, {'DeclTypeAlias', Ta}}> when 'true' -> call 'Data.Map':'insert'(call 'maps':'get'('name', Ta), ~{'params'=>call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Ta)),'body'=>call 'maps':'get'('ty', Ta)}~, M)
+        <{M, _W0}> when 'true' -> M
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collect'/2(_Mf0, _Mf1), call 'Data.Map':'empty'(), Decls)
+
+'processNonFunctions'/2 =
+  fun (Env, Decls) ->
+    apply 'processNonFunctionsWithAliases'/3(call 'Data.Map':'empty'(), Env, Decls)
+
+'processNonFunctionsWithAliases'/3 =
+  fun (ImportedAliases, Env, Decls) ->
+    let <LocalParamAliasMap> = apply 'collectParamTypeAliases'/1(Decls)
+      in let <ImportedSimpleAliases> = call 'Data.Map':'mapMaybe'(fun (Info) ->
+      case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, ImportedAliases)
+      in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
+      in let <EnvWithImportedAliases> = call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'union'(ImportedSimpleAliases, call 'maps':'get'('typeAliases', Env))}~)
+      in let <LocalAliasMap> = apply 'collectTypeAliasesWithBase'/3(ImportedSimpleAliases, ParamAliasMap, Decls)
+      in let <AliasMap> = LocalAliasMap
+      in letrec 'processTypeAlias'/2 = fun (E, Decl) ->
+      case Decl of
+      <{'DeclTypeAlias', Ta}> when 'true' ->
+        apply 'checkTypeAlias'/2(E, Ta)
+      <_W0> when 'true' ->
+        E
+    end
+       'processDataType'/2 = fun (E, Decl) ->
+      case Decl of
+      <{'DeclDataType', Dt}> when 'true' ->
+        apply 'checkDataTypeWithAllAliases'/4(AliasMap, ParamAliasMap, E, Dt)
+      <{'DeclNewtype', Nt}> when 'true' ->
+        apply 'checkNewtypeWithAllAliases'/4(AliasMap, ParamAliasMap, E, Nt)
+      <_W0> when 'true' ->
+        E
+    end
+       'processTypeClass'/2 = fun (E, Decl) ->
+      case Decl of
+      <{'DeclTypeClass', Tc}> when 'true' ->
+        apply 'checkTypeClass'/2(E, Tc)
+      <_W0> when 'true' ->
+        E
+    end
+      in let <Env1> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processTypeAlias'/2(_Mf0, _Mf1), EnvWithImportedAliases, Decls)
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processDataType'/2(_Mf0, _Mf1), Env1, Decls)
+      in let <Env3> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processTypeClass'/2(_Mf0, _Mf1), Env2, Decls)
+      in Env3
+
+'processInfixDeclarations'/2 =
+  fun (Env, Decls) ->
+    letrec 'processInfix'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'DeclInfix', Inf}}> when 'true' -> case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(E)
+      in apply _Oa0(call 'maps':'get'('functionName', Inf)) of
+      <{'Just', Scheme}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('operator', Inf))(Scheme)
+      <'Nothing'> when 'true' ->
+        E
+    end
+        <{E, _W0}> when 'true' -> E
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processInfix'/2(_Mf0, _Mf1), Env, Decls)
+
+'addFunctionPlaceholders'/2 =
+  fun (Env, Decls) ->
+    apply 'addFunctionPlaceholdersWithAliases'/3(call 'Data.Map':'empty'(), Env, Decls)
+
+'addFunctionPlaceholdersWithAliases'/3 =
+  fun (ImportedAliases, Env, Decls) ->
+    let <LocalParamAliasMap> = apply 'collectParamTypeAliases'/1(Decls)
+      in let <ImportedSimpleAliases> = call 'Data.Map':'mapMaybe'(fun (Info) ->
+      case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, ImportedAliases)
+      in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
+      in let <LocalAliasMap> = apply 'collectTypeAliasesWithBase'/3(ImportedSimpleAliases, ParamAliasMap, Decls)
+      in let <AliasMap> = LocalAliasMap
+      in letrec 'collectSig'/2 = fun (M, Decl) ->
+      case Decl of
+      <{'DeclTypeSig', Sig}> when 'true' ->
+        call 'Data.Map':'insert'(call 'maps':'get'('name', Sig), call 'maps':'get'('ty', Sig), M)
+      <_W0> when 'true' ->
+        M
+    end
+       'addPlaceholder'/2 = fun (E, Decl) ->
+      case Decl of
+      <{'DeclFunction', Func}> when 'true' ->
+        case call 'maps':'get'('typeSignature', Func) of
+      <{'Just', Sig}> when 'true' ->
+        let <Ty> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, call 'Data.Map':'empty'(), call 'maps':'get'('ty', Sig))
+      in let <FreeVarIds> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
+      in let <ForallVars> = call 'Data.Array':'filter'(fun (Id) ->
+      call 'erlang':'<'(Id, 0), FreeVarIds)
+      in let <Tvars> = call 'lists':'map'(fun (Id) ->
+      ~{'id'=>Id,'name'=>call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(Id)))}~, ForallVars)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
+      in apply _Oa0(Ty)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('name', Func))(Scheme)
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(call 'maps':'get'('name', Func), apply 'sigMap'/0()) of
+      <{'Just', TyExpr}> when 'true' ->
+        let <Ty> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, call 'Data.Map':'empty'(), TyExpr)
+      in let <FreeVarIds> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
+      in let <ForallVars> = call 'Data.Array':'filter'(fun (Id) ->
+      call 'erlang':'<'(Id, 0), FreeVarIds)
+      in let <Tvars> = call 'lists':'map'(fun (Id) ->
+      ~{'id'=>Id,'name'=>call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(call 'erlang':'-'(Id)))}~, ForallVars)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
+      in apply _Oa0(Ty)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('name', Func))(Scheme)
+      <'Nothing'> when 'true' ->
+        let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
+      in apply _Oa0(call 'erlang':'++'("fn_", call 'maps':'get'('name', Func)))
+      in case _Let0 of
+        <{'Tuple', Tv, E_}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E_)
+      in apply apply _Oa0(call 'maps':'get'('name', Func))(let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
+      in apply _Oa0({'TyVar', Tv}))
+      end
+    end
+    end
+      <{'DeclForeignImport', Fi}> when 'true' ->
+        let <Ty> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, call 'Data.Map':'empty'(), call 'maps':'get'('typeSignature', Fi))
+      in let <FreeVars> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
+      in let <Tvars> = call 'lists':'map'(fun (Id) ->
+      ~{'id'=>Id,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(Id))}~, FreeVars)
+      in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
+      in apply _Oa0(Ty)
+      in let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E)
+      in apply apply _Oa0(call 'maps':'get'('functionName', Fi))(Scheme)
+      <_W0> when 'true' ->
+        E
+    end
+       'sigMap'/0 = fun () ->
+      call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'collectSig'/2(_Mf0, _Mf1), call 'Data.Map':'empty'(), Decls)
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addPlaceholder'/2(_Mf0, _Mf1), Env, Decls)
+
+'checkFunctionBodiesGo'/2 =
+  fun (E, Ds) ->
+    case call 'Data.Array':'uncons'(Ds) of
+      <'Nothing'> when 'true' ->
+        {'Right', E}
+      <{'Just', ~{'head':={'DeclFunction', Func},'tail':=Rest}~}> when 'true' ->
+        case apply 'checkFunction'/2(E, Func) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', apply 'addErrorContext'/2(call 'erlang':'++'(call 'erlang':'++'("function '", call 'maps':'get'('name', Func)), "'"), Err)}
+      <{'Right', R}> when 'true' ->
+        apply 'checkFunctionBodiesGo'/2(call 'maps':'get'('env', R), Rest)
+    end
+      <{'Just', ~{'head':=_W0,'tail':=Rest}~}> when 'true' ->
+        apply 'checkFunctionBodiesGo'/2(E, Rest)
+    end
+
+'checkFunctionBodies'/2 =
+  fun (Env, Decls) ->
+    let <MergedDecls> = apply 'mergeMultiClauseFunctions'/1(Decls)
+      in apply 'checkFunctionBodiesGo'/2(Env, MergedDecls)
+
+'mergeMultiClauseFunctions'/1 =
+  fun (Decls) ->
+    letrec 'goMerge'/2 = fun (Ds, Acc) ->
+      case call 'Data.Array':'uncons'(Ds) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Array':'reverse'(Acc)
+      <{'Just', ~{'head':=D,'tail':=Rest}~}> when 'true' ->
+        case D of
+      <{'DeclFunction', Func}> when 'true' ->
+        let <_Let0> = apply 'collectSameName'/3(call 'maps':'get'('name', Func), Rest, [])
+      in case _Let0 of
+        <~{'sameName':=SameName,'remaining':=Remaining}~> when 'true' -> let <AllClauses> = call 'Data.Array':'cons'(Func, SameName)
+      in case call 'erlang':'>'(call 'Data.Array':'length'(AllClauses), 1) of
+      <'true'> when 'true' -> apply 'goMerge'/2(Remaining, call 'Data.Array':'cons'({'DeclFunction', apply 'mergeClausesIntoOne'/1(AllClauses)}, Acc))
+      <'false'> when 'true' -> apply 'goMerge'/2(Rest, call 'Data.Array':'cons'(D, Acc))
+    end
+      end
+      <_W0> when 'true' ->
+        apply 'goMerge'/2(Rest, call 'Data.Array':'cons'(D, Acc))
+    end
+    end
+       'collectSameName'/3 = fun (Name, Ds, Acc) ->
+      case call 'Data.Array':'uncons'(Ds) of
+      <'Nothing'> when 'true' ->
+        ~{'sameName'=>Acc,'remaining'=>[]}~
+      <{'Just', ~{'head':={'DeclFunction', F},'tail':=Rest}~}> when 'true' ->
+        case call 'erlang':'=:='(call 'maps':'get'('name', F), Name) of
+      <'true'> when 'true' -> apply 'collectSameName'/3(Name, Rest, call 'Data.Array':'snoc'(Acc, F))
+      <'false'> when 'true' -> ~{'sameName'=>Acc,'remaining'=>Ds}~
+    end
+      <{'Just', _W0}> when 'true' ->
+        ~{'sameName'=>Acc,'remaining'=>Ds}~
+    end
+       'mergeClausesIntoOne'/1 = fun (Clauses) ->
+      case call 'Data.Array':'head'(Clauses) of
+      <'Nothing'> when 'true' ->
+        ~{'name'=>"",'parameters'=>[],'body'=>{'ExprVar', "error"},'guards'=>[],'typeSignature'=>'Nothing'}~
+      <{'Just', First}> when 'true' ->
+        let <Name> = call 'maps':'get'('name', First)
+      in let <NumParams> = call 'Data.List':'length'(call 'maps':'get'('parameters', First))
+      in let <ClausesList> = call 'Data.List':'fromFoldable'(Clauses)
+      in let <ParamNames> = call 'lists':'map'(fun (I) ->
+      call 'erlang':'++'("__arg", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 1)))
+      in let <ParamPats> = call 'lists':'map'('PatVar', ParamNames)
+      in let <ParamVars> = call 'lists':'map'('ExprVar', ParamNames)
+      in let <CaseClauses> = call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'clauseToCaseClause'/2(ParamVars, _Pc0), ClausesList)
+      in let <CaseExpr> = case NumParams of
+      <0> when 'true' ->
+        call 'maps':'get'('body', First)
+      <1> when 'true' ->
+        case call 'Data.List':'head'(ParamVars) of
+      <{'Just', V}> when 'true' ->
+        {'ExprCase', V, CaseClauses}
+      <'Nothing'> when 'true' ->
+        call 'maps':'get'('body', First)
+    end
+      <_W0> when 'true' ->
+        {'ExprCase', {'ExprTuple', ParamVars}, call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'clauseToTupleCase'/2(ParamVars, _Pc0), ClausesList)}
+    end
+      in ~{'name'=>Name,'parameters'=>ParamPats,'body'=>CaseExpr,'guards'=>[],'typeSignature'=>call 'maps':'get'('typeSignature', First)}~
+    end
+       'clauseToCaseClause'/2 = fun (_W0, Func) ->
+      case call 'Data.List':'head'(call 'maps':'get'('parameters', Func)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', Pat}> when 'true' ->
+        {'Just', ~{'pattern'=>Pat,'body'=>call 'maps':'get'('body', Func),'guard'=>'Nothing'}~}
+    end
+       'clauseToTupleCase'/2 = fun (_W0, Func) ->
+      let <N> = call 'Data.List':'length'(call 'maps':'get'('parameters', Func))
+      in let <TupName> = case call 'erlang':'=:='(N, 2) of
+      <'true'> when 'true' -> "Tuple"
+      <'false'> when 'true' -> call 'erlang':'++'("Tuple", let <_Fn0> = apply 'intToString'/0()
+      in apply _Fn0(N))
+    end
+      in case call 'erlang':'>'(N, 1) of
+      <'true'> when 'true' -> {'Just', ~{'pattern'=>{'PatCon', TupName, call 'maps':'get'('parameters', Func)},'body'=>call 'maps':'get'('body', Func),'guard'=>'Nothing'}~}
+      <'false'> when 'true' -> apply 'clauseToCaseClause'/2([], Func)
+    end
+      in apply 'goMerge'/2(Decls, [])
+
+'addErrorContext'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'addErrorContext'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'addErrorContext'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'addErrorContext'/2(_A0, _A1)
+      in _F0
+
+'withContext'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'withContext'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'withContext'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'withContext'/2(_A0, _A1)
+      in _F0
+
+'showExprShort'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showExprShort'/1(_A0)
+      in _F0
+
+'listMapWithIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'listMapWithIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'listMapWithIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'listMapWithIndex'/2(_A0, _A1)
+      in _F0
+
+'mkInstResult'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkInstResult'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkInstResult'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkInstResult'/2(_A0, _A1)
+      in _F0
+
+'instantiateGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'instantiateGo'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'instantiateGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'instantiateGo'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'instantiateGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'instantiateGo'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'instantiateGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'instantiateGo'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'instantiate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'instantiate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'instantiate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'instantiate'/2(_A0, _A1)
+      in _F0
+
+'generalize'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'generalize'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'generalize'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'generalize'/2(_A0, _A1)
+      in _F0
+
+'inferLit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'inferLit'/1(_A0)
+      in _F0
+
+'unifyEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unifyEnv'/1(_A0)
+      in _F0
+
+'infer'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'infer'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'infer'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'infer'/2(_A0, _A1)
+      in _F0
+
+'inferRecordUpdate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferRecordUpdate'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferRecordUpdate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferRecordUpdate'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferRecordUpdate'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferRecordUpdate'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferUnaryOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferUnaryOp'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferUnaryOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferUnaryOp'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferUnaryOp'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferUnaryOp'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferDo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferDo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferDo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferDo'/2(_A0, _A1)
+      in _F0
+
+'inferManyGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'inferManyGo'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferManyGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'inferManyGo'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'inferManyGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'inferManyGo'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'inferManyGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'inferManyGo'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'inferMany'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferMany'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferMany'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferMany'/2(_A0, _A1)
+      in _F0
+
+'inferElemsGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'inferElemsGo'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferElemsGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'inferElemsGo'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'inferElemsGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'inferElemsGo'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'inferElemsGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'inferElemsGo'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'inferElems'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferElems'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferElems'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferElems'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferElems'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferElems'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferFieldsGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'inferFieldsGo'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferFieldsGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'inferFieldsGo'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'inferFieldsGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'inferFieldsGo'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'inferFieldsGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'inferFieldsGo'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'inferFields'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferFields'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferFields'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferFields'/2(_A0, _A1)
+      in _F0
+
+'inferPat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferPat'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferPat'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferPat'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferPat'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferPat'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferRecordPatGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'inferRecordPatGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferRecordPatGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'inferRecordPatGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferRecordPatGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'inferRecordPatGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'inferRecordPatGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'inferRecordPatGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'inferRecordPatGo'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'inferRecordPatGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'inferRecordPat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferRecordPat'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferRecordPat'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferRecordPat'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferRecordPat'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferRecordPat'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferListPat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'inferListPat'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'inferListPat'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'inferListPat'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'inferListPat'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'inferListPat'/3(_A0, _A1, _A2)
+      in _F0
+
+'inferConsPat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'inferConsPat'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferConsPat'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'inferConsPat'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'inferConsPat'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'inferConsPat'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'inferConsPat'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'inferConsPat'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'inferConPatsGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'inferConPatsGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferConPatsGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'inferConPatsGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferConPatsGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'inferConPatsGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'inferConPatsGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'inferConPatsGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'inferConPatsGo'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'inferConPatsGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'inferConPats'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'inferConPats'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferConPats'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'inferConPats'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'inferConPats'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'inferConPats'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'inferConPats'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'inferConPats'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'inferBinds'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferBinds'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferBinds'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferBinds'/2(_A0, _A1)
+      in _F0
+
+'exprToPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'exprToPattern'/1(_A0)
+      in _F0
+
+'inferGuardExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferGuardExpr'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferGuardExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferGuardExpr'/2(_A0, _A1)
+      in _F0
+
+'inferGuard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'inferGuard'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'inferGuard'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'inferGuard'/2(_A0, _A1)
+      in _F0
+
+'inferClausesGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'inferClausesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferClausesGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'inferClausesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferClausesGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'inferClausesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'inferClausesGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'inferClausesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'inferClausesGo'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'inferClausesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'inferClauses'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'inferClauses'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferClauses'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'inferClauses'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'inferClauses'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'inferClauses'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'inferClauses'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'inferClauses'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'inferClauses'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'inferClauses'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'guardedExprsToIf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'guardedExprsToIf'/1(_A0)
+      in _F0
+
+'guardsToCondition'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'guardsToCondition'/1(_A0)
+      in _F0
+
+'guardClauseToCondExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'guardClauseToCondExpr'/1(_A0)
+      in _F0
+
+'wrapWithPatternGuards'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'wrapWithPatternGuards'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'wrapWithPatternGuards'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'wrapWithPatternGuards'/2(_A0, _A1)
+      in _F0
+
+'buildPatternGuardCases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'buildPatternGuardCases'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'buildPatternGuardCases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'buildPatternGuardCases'/2(_A0, _A1)
+      in _F0
+
+'checkFunction'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkFunction'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkFunction'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkFunction'/2(_A0, _A1)
+      in _F0
+
+'checkDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkDecl'/2(_A0, _A1)
+      in _F0
+
+'checkTypeClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkTypeClass'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkTypeClass'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkTypeClass'/2(_A0, _A1)
+      in _F0
+
+'checkDataType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkDataType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkDataType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkDataType'/2(_A0, _A1)
+      in _F0
+
+'checkDataTypeWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'checkDataTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'checkDataTypeWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'checkDataTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'checkDataTypeWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'checkDataTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'checkDataTypeWithAllAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'checkDataTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'checkDataTypeWithAllAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'checkDataTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'checkDataTypeWithAllAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'checkDataTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'checkDataTypeWithAllAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'checkDataTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'checkNewtypeWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'checkNewtypeWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'checkNewtypeWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'checkNewtypeWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'checkNewtypeWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'checkNewtypeWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'checkNewtypeWithAllAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'checkNewtypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'checkNewtypeWithAllAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'checkNewtypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'checkNewtypeWithAllAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'checkNewtypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'checkNewtypeWithAllAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'checkNewtypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'buildConstructorTypeGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'buildConstructorTypeGo'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'buildConstructorTypeGo'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'buildConstructorTypeGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'buildConstructorTypeGo'/3(_A0, _A1, _A2)
+      in _F0
+
+'buildConstructorType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'buildConstructorType'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'buildConstructorType'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'buildConstructorType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'buildConstructorType'/3(_A0, _A1, _A2)
+      in _F0
+
+'buildConstructorTypeWithAliasesGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliasesGo'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliasesGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliasesGo'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliasesGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliasesGo'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliasesGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliasesGo'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'buildConstructorTypeWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliases'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliases'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliases'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'buildConstructorTypeWithAliases'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'buildConstructorTypeWithAllAliasesGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliasesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliasesGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliasesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliasesGo'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliasesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliasesGo'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliasesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliasesGo'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliasesGo'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'buildConstructorTypeWithAllAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'buildConstructorTypeWithAllAliases'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'buildConstructorTypeWithAllAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'typeExprToTypeWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'typeExprToTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'typeExprToTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'typeExprToTypeWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'typeExprToTypeWithAllAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'typeExprToTypeWithEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'typeExprToTypeWithEnv'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'typeExprToTypeWithEnv'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithEnv'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'typeExprToTypeWithEnv'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithEnv'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'typeExprToTypeWithEnv'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'typeExprToTypeWithEnv'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'typeExprToTypeWithEnv'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'collectTypeApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeApp'/1(_A0)
+      in _F0
+
+'substituteTypeExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'substituteTypeExpr'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'substituteTypeExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'substituteTypeExpr'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'substituteTypeExpr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'substituteTypeExpr'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'substituteTypeExpr'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'substituteTypeExpr'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'typeExprToType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'typeExprToType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'typeExprToType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'typeExprToType'/2(_A0, _A1)
+      in _F0
+
+'checkTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkTypeAlias'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkTypeAlias'/2(_A0, _A1)
+      in _F0
+
+'isRecordType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isRecordType'/1(_A0)
+      in _F0
+
+'collectTypeNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeNames'/1(_A0)
+      in _F0
+
+'collectTypeExprNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeExprNames'/1(_A0)
+      in _F0
+
+'checkModuleSimple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkModuleSimple'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkModuleSimple'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkModuleSimple'/2(_A0, _A1)
+      in _F0
+
+'checkModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'checkModule'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'checkModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'checkModule'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'checkModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'checkModule'/3(_A0, _A1, _A2)
+      in _F0
+
+'typeCheckModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'typeCheckModule'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'typeCheckModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'typeCheckModule'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'typeCheckModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'typeCheckModule'/3(_A0, _A1, _A2)
+      in _F0
+
+'processImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'processImports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'processImports'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeExportsWithTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mergeExportsWithTypeAliases'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mergeExportsWithTypeAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mergeExportsWithTypeAliases'/2(_A0, _A1)
+      in _F0
+
+'processImportDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'processImportDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'processImportDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F0
+
+'expandModuleAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'expandModuleAliases'/1(_A0)
+      in _F0
+
+'importItem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'importItem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'importItem'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F0
+
+'collectResolvedImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'collectResolvedImports'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'collectResolvedImports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'collectResolvedImports'/2(_A0, _A1)
+      in _F0
+
+'collectFromImportDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'collectFromImportDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'collectFromImportDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'collectFromImportDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'collectFromImportDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'collectFromImportDecl'/3(_A0, _A1, _A2)
+      in _F0
+
+'getExportedNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportedNames'/1(_A0)
+      in _F0
+
+'getImportItemName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getImportItemName'/1(_A0)
+      in _F0
+
+'collectImportedAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'collectImportedAliases'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'collectImportedAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'collectImportedAliases'/2(_A0, _A1)
+      in _F0
+
+'extractExports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractExports'/1(_A0)
+      in _F0
+
+'extractExportsWithRegistry'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'extractExportsWithRegistry'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'extractExportsWithRegistry'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'extractExportsWithRegistry'/2(_A0, _A1)
+      in _F0
+
+'addValuesToExports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'addValuesToExports'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'addValuesToExports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'addValuesToExports'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'addValuesToExports'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'addValuesToExports'/3(_A0, _A1, _A2)
+      in _F0
+
+'collectTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeAliases'/1(_A0)
+      in _F0
+
+'collectTypeAliasesWithBase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'collectTypeAliasesWithBase'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'collectTypeAliasesWithBase'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'collectTypeAliasesWithBase'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'collectTypeAliasesWithBase'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'collectTypeAliasesWithBase'/3(_A0, _A1, _A2)
+      in _F0
+
+'collectParamTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectParamTypeAliases'/1(_A0)
+      in _F0
+
+'processNonFunctions'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'processNonFunctions'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'processNonFunctions'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'processNonFunctions'/2(_A0, _A1)
+      in _F0
+
+'processNonFunctionsWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'processNonFunctionsWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'processNonFunctionsWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'processNonFunctionsWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'processNonFunctionsWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'processNonFunctionsWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'processInfixDeclarations'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'processInfixDeclarations'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'processInfixDeclarations'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'processInfixDeclarations'/2(_A0, _A1)
+      in _F0
+
+'addFunctionPlaceholders'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'addFunctionPlaceholders'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'addFunctionPlaceholders'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'addFunctionPlaceholders'/2(_A0, _A1)
+      in _F0
+
+'addFunctionPlaceholdersWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'addFunctionPlaceholdersWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'addFunctionPlaceholdersWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'addFunctionPlaceholdersWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'addFunctionPlaceholdersWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'addFunctionPlaceholdersWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'checkFunctionBodiesGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkFunctionBodiesGo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkFunctionBodiesGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkFunctionBodiesGo'/2(_A0, _A1)
+      in _F0
+
+'checkFunctionBodies'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkFunctionBodies'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkFunctionBodies'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkFunctionBodies'/2(_A0, _A1)
+      in _F0
+
+'mergeMultiClauseFunctions'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'mergeMultiClauseFunctions'/1(_A0)
+      in _F0
+
+'UnifyErr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'UnifyErr'/1(_A0)
+      in _F0
+
+'UnifyErrWithContext'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'UnifyErrWithContext'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'UnifyErrWithContext'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'UnifyErrWithContext'/2(_A0, _A1)
+      in _F0
+
+'UnboundVariable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'UnboundVariable'/1(_A0)
+      in _F0
+
+'UndefinedQualifiedImport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'UndefinedQualifiedImport'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'UndefinedQualifiedImport'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'UndefinedQualifiedImport'/2(_A0, _A1)
+      in _F0
+
+'NotImplemented'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'NotImplemented'/1(_A0)
+      in _F0
+end

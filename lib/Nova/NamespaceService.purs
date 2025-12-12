@@ -222,3 +222,40 @@ shutdown st =
       _w3 = Ets.deleteTable st.nameIndex
       _w4 = Ets.deleteTable st.counter
   in unit
+
+-- | Save all tables to a directory
+save :: ServiceState -> String -> Either String Unit
+save st dir =
+  case Ets.tab2file st.namespaces (dir <> "/namespaces.ets") of
+    Left err -> Left ("Failed to save namespaces: " <> err)
+    Right _ ->
+      case Ets.tab2file st.declarations (dir <> "/declarations.ets") of
+        Left err -> Left ("Failed to save declarations: " <> err)
+        Right _ ->
+          case Ets.tab2file st.nameIndex (dir <> "/name_index.ets") of
+            Left err -> Left ("Failed to save name index: " <> err)
+            Right _ ->
+              case Ets.tab2file st.counter (dir <> "/counter.ets") of
+                Left err -> Left ("Failed to save counter: " <> err)
+                Right _ -> Right unit
+
+-- | Load all tables from a directory
+load :: String -> Either String ServiceState
+load dir =
+  case Ets.file2tab (dir <> "/namespaces.ets") of
+    Left err -> Left ("Failed to load namespaces: " <> err)
+    Right nsTab ->
+      case Ets.file2tab (dir <> "/declarations.ets") of
+        Left err -> Left ("Failed to load declarations: " <> err)
+        Right declTab ->
+          case Ets.file2tab (dir <> "/name_index.ets") of
+            Left err -> Left ("Failed to load name index: " <> err)
+            Right idxTab ->
+              case Ets.file2tab (dir <> "/counter.ets") of
+                Left err -> Left ("Failed to load counter: " <> err)
+                Right cntTab ->
+                  Right { namespaces: nsTab
+                        , declarations: declTab
+                        , nameIndex: idxTab
+                        , counter: cntTab
+                        }

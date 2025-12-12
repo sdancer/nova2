@@ -1,0 +1,240 @@
+module 'System.Process' ['self'/0, 'spawn'/1, 'send'/2, 'isProcessAlive'/1, 'sleep'/1, 'getEnv'/1, 'exit'/1, 'apply'/3, 'applyAtom'/3, 'selfImpl'/0, 'spawnImpl'/1, 'sendImpl'/2, 'isProcessAliveImpl'/1, 'sleepImpl'/1, 'getEnvImpl'/1, 'exitImpl'/1, 'applyImpl'/3, 'applyAtomImpl'/3, 'spawn'/0, 'send'/0, 'send'/1, 'isProcessAlive'/0, 'sleep'/0, 'getEnv'/0, 'exit'/0, 'apply'/0, 'apply'/1, 'apply'/2, 'applyAtom'/0, 'applyAtom'/1, 'applyAtom'/2, 'spawnImpl'/0, 'sendImpl'/0, 'sendImpl'/1, 'isProcessAliveImpl'/0, 'sleepImpl'/0, 'getEnvImpl'/0, 'exitImpl'/0, 'applyImpl'/0, 'applyImpl'/1, 'applyImpl'/2, 'applyAtomImpl'/0, 'applyAtomImpl'/1, 'applyAtomImpl'/2]
+  attributes []
+'self'/0 =
+  fun () ->
+    apply 'selfImpl'/0()
+
+'spawn'/1 =
+  fun (F) ->
+    apply 'spawnImpl'/1(F)
+
+'send'/2 =
+  fun (Pid, Msg) ->
+    apply 'sendImpl'/2(Pid, Msg)
+
+'isProcessAlive'/1 =
+  fun (Pid) ->
+    apply 'isProcessAliveImpl'/1(Pid)
+
+'sleep'/1 =
+  fun (Ms) ->
+    apply 'sleepImpl'/1(Ms)
+
+'getEnv'/1 =
+  fun (Name) ->
+    apply 'getEnvImpl'/1(Name)
+
+'exit'/1 =
+  fun (Code) ->
+    apply 'exitImpl'/1(Code)
+
+'apply'/3 =
+  fun (Mod, Func, Args) ->
+    apply 'applyImpl'/3(Mod, Func, Args)
+
+'applyAtom'/3 =
+  fun (Mod, Func, Args) ->
+    apply 'applyAtomImpl'/3(Mod, Func, Args)
+
+'selfImpl'/0 = fun () -> call 'erlang':'self'()
+
+'spawnImpl'/1 = fun (V0) -> call 'erlang':'spawn'(fun () -> apply V0 ('unit'))
+
+'sendImpl'/2 = fun (V0, V1) -> do call 'erlang':'!'(V0, V1) 'unit'
+
+'isProcessAliveImpl'/1 = fun (V0) -> call 'erlang':'is_process_alive'(V0)
+
+'sleepImpl'/1 = fun (V0) -> do call 'timer':'sleep'(V0) 'unit'
+
+'getEnvImpl'/1 = fun (V0) -> case call 'os':'getenv'(V0) of <'false'> when 'true' -> 'Nothing' <Val> when 'true' -> {'Just', Val} end
+
+'exitImpl'/1 = fun (V0) -> call 'erlang':'halt'(V0)
+
+'applyImpl'/3 = fun (V0, V1, V2) -> call 'erlang':'apply'(call 'erlang':'binary_to_atom'(V0, 'utf8'), call 'erlang':'binary_to_atom'(V1, 'utf8'), V2)
+
+'applyAtomImpl'/3 = fun (V0, V1, V2) -> call 'erlang':'apply'(V0, call 'erlang':'binary_to_atom'(V1, 'utf8'), V2)
+
+'spawn'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'spawn'/1(_A0)
+      in _F0
+
+'send'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'send'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'send'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'send'/2(_A0, _A1)
+      in _F0
+
+'isProcessAlive'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isProcessAlive'/1(_A0)
+      in _F0
+
+'sleep'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sleep'/1(_A0)
+      in _F0
+
+'getEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getEnv'/1(_A0)
+      in _F0
+
+'exit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'exit'/1(_A0)
+      in _F0
+
+'apply'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'apply'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'apply'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'apply'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'apply'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'apply'/3(_A0, _A1, _A2)
+      in _F0
+
+'applyAtom'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'applyAtom'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'applyAtom'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'applyAtom'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'applyAtom'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'applyAtom'/3(_A0, _A1, _A2)
+      in _F0
+
+'spawnImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'spawnImpl'/1(_A0)
+      in _F0
+
+'sendImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'sendImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'sendImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'sendImpl'/2(_A0, _A1)
+      in _F0
+
+'isProcessAliveImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isProcessAliveImpl'/1(_A0)
+      in _F0
+
+'sleepImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sleepImpl'/1(_A0)
+      in _F0
+
+'getEnvImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getEnvImpl'/1(_A0)
+      in _F0
+
+'exitImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'exitImpl'/1(_A0)
+      in _F0
+
+'applyImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'applyImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'applyImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'applyImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'applyImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'applyImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'applyAtomImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'applyAtomImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'applyAtomImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'applyAtomImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'applyAtomImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'applyAtomImpl'/3(_A0, _A1, _A2)
+      in _F0
+end

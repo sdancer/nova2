@@ -1,0 +1,95 @@
+module 'Data.Int' ['fromString'/1, 'toNumber'/1, 'round'/1, 'floor'/1, 'ceil'/1, 'fromStringImpl'/1, 'toNumberImpl'/1, 'roundImpl'/1, 'floorImpl'/1, 'ceilImpl'/1, 'fromString'/0, 'toNumber'/0, 'round'/0, 'floor'/0, 'ceil'/0, 'fromStringImpl'/0, 'toNumberImpl'/0, 'roundImpl'/0, 'floorImpl'/0, 'ceilImpl'/0]
+  attributes []
+'fromString'/1 =
+  fun (S) ->
+    apply 'fromStringImpl'/1(S)
+
+'toNumber'/1 =
+  fun (I) ->
+    apply 'toNumberImpl'/1(I)
+
+'round'/1 =
+  fun (N) ->
+    apply 'roundImpl'/1(N)
+
+'floor'/1 =
+  fun (N) ->
+    apply 'floorImpl'/1(N)
+
+'ceil'/1 =
+  fun (N) ->
+    apply 'ceilImpl'/1(N)
+
+'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_integer'(V0) of
+        <{I, []}> when 'true' -> {'Just', I}
+        <_> when 'true' -> 'Nothing'
+      end
+
+'toNumberImpl'/1 = fun (V0) -> call 'erlang':'float'(V0)
+
+'roundImpl'/1 = fun (V0) -> call 'erlang':'round'(V0)
+
+'floorImpl'/1 = fun (V0) -> call 'erlang':'floor'(V0)
+
+'ceilImpl'/1 = fun (V0) -> call 'erlang':'ceil'(V0)
+
+'fromString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromString'/1(_A0)
+      in _F0
+
+'toNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toNumber'/1(_A0)
+      in _F0
+
+'round'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'round'/1(_A0)
+      in _F0
+
+'floor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'floor'/1(_A0)
+      in _F0
+
+'ceil'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ceil'/1(_A0)
+      in _F0
+
+'fromStringImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromStringImpl'/1(_A0)
+      in _F0
+
+'toNumberImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toNumberImpl'/1(_A0)
+      in _F0
+
+'roundImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'roundImpl'/1(_A0)
+      in _F0
+
+'floorImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'floorImpl'/1(_A0)
+      in _F0
+
+'ceilImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ceilImpl'/1(_A0)
+      in _F0
+end

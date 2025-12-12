@@ -1,0 +1,470 @@
+module 'OTP.Ets' ['defaultOptions'/0, 'publicSetOptions'/0, 'publicOrderedSetOptions'/0, 'new'/2, 'tableTypeToAtom'/1, 'accessToAtom'/1, 'insert'/3, 'lookup'/2, 'member'/2, 'delete'/2, 'deleteTable'/1, 'allKeys'/1, 'allValues'/1, 'update'/3, 'tab2file'/2, 'file2tab'/1, 'newImpl'/5, 'insertImpl'/3, 'lookupImpl'/2, 'memberImpl'/2, 'deleteImpl'/2, 'deleteTableImpl'/1, 'allKeysImpl'/1, 'allValuesImpl'/1, 'updateImpl'/3, 'tab2fileImpl'/2, 'file2tabImpl'/1, 'Set'/0, 'OrderedSet'/0, 'Bag'/0, 'DuplicateBag'/0, 'Public'/0, 'Protected'/0, 'Private'/0, 'new'/0, 'new'/1, 'tableTypeToAtom'/0, 'accessToAtom'/0, 'insert'/0, 'insert'/1, 'insert'/2, 'lookup'/0, 'lookup'/1, 'member'/0, 'member'/1, 'delete'/0, 'delete'/1, 'deleteTable'/0, 'allKeys'/0, 'allValues'/0, 'update'/0, 'update'/1, 'update'/2, 'tab2file'/0, 'tab2file'/1, 'file2tab'/0, 'newImpl'/0, 'newImpl'/1, 'newImpl'/2, 'newImpl'/3, 'newImpl'/4, 'insertImpl'/0, 'insertImpl'/1, 'insertImpl'/2, 'lookupImpl'/0, 'lookupImpl'/1, 'memberImpl'/0, 'memberImpl'/1, 'deleteImpl'/0, 'deleteImpl'/1, 'deleteTableImpl'/0, 'allKeysImpl'/0, 'allValuesImpl'/0, 'updateImpl'/0, 'updateImpl'/1, 'updateImpl'/2, 'tab2fileImpl'/0, 'tab2fileImpl'/1, 'file2tabImpl'/0]
+  attributes []
+% Data type: TableType
+% Constructors: Set, OrderedSet, Bag, DuplicateBag
+
+'Set'/0 =
+  fun () ->
+    'Set'
+
+'OrderedSet'/0 =
+  fun () ->
+    'OrderedSet'
+
+'Bag'/0 =
+  fun () ->
+    'Bag'
+
+'DuplicateBag'/0 =
+  fun () ->
+    'DuplicateBag'
+
+% Data type: Access
+% Constructors: Public, Protected, Private
+
+'Public'/0 =
+  fun () ->
+    'Public'
+
+'Protected'/0 =
+  fun () ->
+    'Protected'
+
+'Private'/0 =
+  fun () ->
+    'Private'
+
+'defaultOptions'/0 =
+  fun () ->
+    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Protected'/0(),'named'=>'false','keyPos'=>1}~
+
+'publicSetOptions'/0 =
+  fun () ->
+    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>1}~
+
+'publicOrderedSetOptions'/0 =
+  fun () ->
+    ~{'tableType'=>apply 'OrderedSet'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>1}~
+
+'new'/2 =
+  fun (Name, Opts) ->
+    apply 'newImpl'/5(Name, apply 'tableTypeToAtom'/1(call 'maps':'get'('tableType', Opts)), apply 'accessToAtom'/1(call 'maps':'get'('access', Opts)), call 'maps':'get'('named', Opts), call 'maps':'get'('keyPos', Opts))
+
+'tableTypeToAtom'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'Set'}> when 'true' ->
+        "set"
+      <{'OrderedSet'}> when 'true' ->
+        "ordered_set"
+      <{'Bag'}> when 'true' ->
+        "bag"
+      <{'DuplicateBag'}> when 'true' ->
+        "duplicate_bag"
+    end
+
+'accessToAtom'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'Public'}> when 'true' ->
+        "public"
+      <{'Protected'}> when 'true' ->
+        "protected"
+      <{'Private'}> when 'true' ->
+        "private"
+    end
+
+'insert'/3 =
+  fun (Tab, Key, Val) ->
+    apply 'insertImpl'/3(Tab, Key, Val)
+
+'lookup'/2 =
+  fun (Tab, Key) ->
+    apply 'lookupImpl'/2(Tab, Key)
+
+'member'/2 =
+  fun (Tab, Key) ->
+    apply 'memberImpl'/2(Tab, Key)
+
+'delete'/2 =
+  fun (Tab, Key) ->
+    apply 'deleteImpl'/2(Tab, Key)
+
+'deleteTable'/1 =
+  fun (Tab) ->
+    apply 'deleteTableImpl'/1(Tab)
+
+'allKeys'/1 =
+  fun (Tab) ->
+    apply 'allKeysImpl'/1(Tab)
+
+'allValues'/1 =
+  fun (Tab) ->
+    apply 'allValuesImpl'/1(Tab)
+
+'update'/3 =
+  fun (Tab, Key, Val) ->
+    apply 'updateImpl'/3(Tab, Key, Val)
+
+'tab2file'/2 =
+  fun (Tab, Filename) ->
+    apply 'tab2fileImpl'/2(Tab, Filename)
+
+'file2tab'/1 =
+  fun (Filename) ->
+    apply 'file2tabImpl'/1(Filename)
+
+'newImpl'/5 = fun (V0, V1, V2, V3, V4) -> let <Name> = call 'erlang':'list_to_atom'(V0) in let <Type> = call 'erlang':'list_to_atom'(V1) in let <Access> = call 'erlang':'list_to_atom'(V2) in let <Opts0> = [Type, Access, {'keypos', V4}] in let <Opts> = case V3 of <'true'> when 'true' -> ['named_table' | Opts0] <'false'> when 'true' -> Opts0 end in case catch call 'ets':'new'(Name, Opts) of <{'EXIT', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Tab> when 'true' -> {'Right', Tab} end
+
+'insertImpl'/3 = fun (V0, V1, V2) -> let <_> = call 'ets':'insert'(V0, {V1, V2}) in 'unit'
+
+'lookupImpl'/2 = fun (V0, V1) -> case call 'ets':'lookup'(V0, V1) of <[{_K, V}]> when 'true' -> {'Just', V} <[]> when 'true' -> 'Nothing' <[T|_]> when 'true' -> {'Just', call 'erlang':'element'(2, T)} end
+
+'memberImpl'/2 = fun (V0, V1) -> call 'ets':'member'(V0, V1)
+
+'deleteImpl'/2 = fun (V0, V1) -> let <_> = call 'ets':'delete'(V0, V1) in 'unit'
+
+'deleteTableImpl'/1 = fun (V0) -> let <_> = call 'ets':'delete'(V0) in 'unit'
+
+'allKeysImpl'/1 = fun (V0) -> let <F> = fun (T, Acc) -> [call 'erlang':'element'(1, T) | Acc] in call 'ets':'foldl'(F, [], V0)
+
+'allValuesImpl'/1 = fun (V0) -> let <F> = fun (T, Acc) -> [call 'erlang':'element'(2, T) | Acc] in call 'ets':'foldl'(F, [], V0)
+
+'updateImpl'/3 = fun (V0, V1, V2) -> let <_> = call 'ets':'insert'(V0, {V1, V2}) in 'unit'
+
+'tab2fileImpl'/2 = fun (V0, V1) -> case call 'ets':'tab2file'(V0, V1) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_list'(Reason)} end
+
+'file2tabImpl'/1 = fun (V0) -> case call 'ets':'file2tab'(V0) of <{'ok', Tab}> when 'true' -> {'Right', Tab} <{'error', Reason}> when 'true' -> {'Left', call 'lists':'flatten'(call 'io_lib':'format'([126,112], [Reason]))} end
+
+'new'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'new'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'new'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'new'/2(_A0, _A1)
+      in _F0
+
+'tableTypeToAtom'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tableTypeToAtom'/1(_A0)
+      in _F0
+
+'accessToAtom'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'accessToAtom'/1(_A0)
+      in _F0
+
+'insert'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'insert'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'insert'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
+      in _F0
+
+'lookup'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookup'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookup'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookup'/2(_A0, _A1)
+      in _F0
+
+'member'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'member'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'member'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'member'/2(_A0, _A1)
+      in _F0
+
+'delete'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'delete'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'delete'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'delete'/2(_A0, _A1)
+      in _F0
+
+'deleteTable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'deleteTable'/1(_A0)
+      in _F0
+
+'allKeys'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'allKeys'/1(_A0)
+      in _F0
+
+'allValues'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'allValues'/1(_A0)
+      in _F0
+
+'update'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'update'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'update'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
+      in _F0
+
+'tab2file'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tab2file'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tab2file'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tab2file'/2(_A0, _A1)
+      in _F0
+
+'file2tab'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'file2tab'/1(_A0)
+      in _F0
+
+'newImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'newImpl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'newImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'newImpl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'newImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'newImpl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'newImpl'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'newImpl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'newImpl'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'newImpl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'insertImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'insertImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'insertImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'insertImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'insertImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'insertImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'lookupImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupImpl'/2(_A0, _A1)
+      in _F0
+
+'memberImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'memberImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'memberImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'memberImpl'/2(_A0, _A1)
+      in _F0
+
+'deleteImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'deleteImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'deleteImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'deleteImpl'/2(_A0, _A1)
+      in _F0
+
+'deleteTableImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'deleteTableImpl'/1(_A0)
+      in _F0
+
+'allKeysImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'allKeysImpl'/1(_A0)
+      in _F0
+
+'allValuesImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'allValuesImpl'/1(_A0)
+      in _F0
+
+'updateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'updateImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'updateImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'updateImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'updateImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'updateImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'tab2fileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tab2fileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tab2fileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tab2fileImpl'/2(_A0, _A1)
+      in _F0
+
+'file2tabImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'file2tabImpl'/1(_A0)
+      in _F0
+end

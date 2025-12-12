@@ -13,8 +13,9 @@ package.json
 
 # Erlang/BEAM build artifacts
 *.beam
-*.core
 erl_crash.dump
+# Core Erlang files (except the self-hosted compiler in nova_lang/priv/core/)
+/*.core
 nova_lang/_build/
 nova_lang/deps/
 nova_lang/*.beam

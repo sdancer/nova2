@@ -1,0 +1,552 @@
+module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies'/1, 'getConstructorDeps'/1, 'getTypeExprDeps'/1, 'getExprDeps'/1, 'getLetBindsDeps'/1, 'getCaseClauseDeps'/1, 'getDoStatementsDeps'/1, 'getGuardedExprDeps'/1, 'getGuardClauseDeps'/1, 'getBoundNames'/1, 'emptyGraph'/0, 'buildDependencyGraph'/2, 'buildReverseEdges'/1, 'addToGraph'/3, 'removeFromGraph'/2, 'getDependents'/2, 'getDependenciesOf'/2, 'getAffected'/2, 'topologicalSort'/2, 'getDependencies'/0, 'getModuleDependencies'/0, 'getConstructorDeps'/0, 'getTypeExprDeps'/0, 'getExprDeps'/0, 'getLetBindsDeps'/0, 'getCaseClauseDeps'/0, 'getDoStatementsDeps'/0, 'getGuardedExprDeps'/0, 'getGuardClauseDeps'/0, 'getBoundNames'/0, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildReverseEdges'/0, 'addToGraph'/0, 'addToGraph'/1, 'addToGraph'/2, 'removeFromGraph'/0, 'removeFromGraph'/1, 'getDependents'/0, 'getDependents'/1, 'getDependenciesOf'/0, 'getDependenciesOf'/1, 'getAffected'/0, 'getAffected'/1, 'topologicalSort'/0, 'topologicalSort'/1]
+  attributes []
+'getDependencies'/1 =
+  fun (Decl) ->
+    case Decl of
+      <{'DeclFunction', F}> when 'true' ->
+        let <BodyDeps> = apply 'getExprDeps'/1(call 'maps':'get'('body', F))
+      in let <GuardDeps> = call 'Data.Foldable':'foldl'(fun (Acc, G) ->
+      call 'Data.Set':'union'(Acc, apply 'getGuardedExprDeps'/1(G)), call 'Data.Set':'empty'(), call 'maps':'get'('guards', F))
+      in let <ParamNames> = call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(P)), call 'Data.Set':'empty'(), call 'maps':'get'('parameters', F))
+      in call 'Data.Set':'difference'(call 'Data.Set':'union'(BodyDeps, GuardDeps), ParamNames)
+      <{'DeclDataType', D}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, apply 'getConstructorDeps'/1(C)), call 'Data.Set':'empty'(), call 'maps':'get'('constructors', D))
+      <{'DeclTypeAlias', A}> when 'true' ->
+        apply 'getTypeExprDeps'/1(call 'maps':'get'('ty', A))
+      <{'DeclTypeClass', C}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, M) ->
+      call 'Data.Set':'union'(Acc, apply 'getTypeExprDeps'/1(call 'maps':'get'('ty', M))), call 'Data.Set':'empty'(), call 'maps':'get'('methods', C))
+      <{'DeclTypeClassInstance', I}> when 'true' ->
+        let <TyDeps> = apply 'getTypeExprDeps'/1(call 'maps':'get'('ty', I))
+      in let <MethodDeps> = call 'Data.Foldable':'foldl'(fun (Acc, M) ->
+      call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(call 'maps':'get'('body', M))), call 'Data.Set':'empty'(), call 'maps':'get'('methods', I))
+      in call 'Data.Set':'union'(TyDeps, MethodDeps)
+      <{'DeclForeignImport', F}> when 'true' ->
+        apply 'getTypeExprDeps'/1(call 'maps':'get'('typeSignature', F))
+      <{'DeclTypeSig', S}> when 'true' ->
+        apply 'getTypeExprDeps'/1(call 'maps':'get'('ty', S))
+      <{'DeclType', T}> when 'true' ->
+        apply 'getTypeExprDeps'/1(call 'maps':'get'('typeSignature', T))
+      <{'DeclModule', M}> when 'true' ->
+        apply 'getModuleDependencies'/1(call 'maps':'get'('declarations', M))
+      <{'DeclImport', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'DeclNewtype', N}> when 'true' ->
+        apply 'getTypeExprDeps'/1(call 'maps':'get'('wrappedType', N))
+      <{'DeclInfix', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+    end
+
+'getModuleDependencies'/1 =
+  fun (Decls) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, Decl_) ->
+      call 'Data.Set':'union'(Acc, apply 'getDependencies'/1(Decl_)), call 'Data.Set':'empty'(), Decls)
+
+'getConstructorDeps'/1 =
+  fun (C) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, F) ->
+      call 'Data.Set':'union'(Acc, apply 'getTypeExprDeps'/1(call 'maps':'get'('ty', F))), call 'Data.Set':'empty'(), call 'maps':'get'('fields', C))
+
+'getTypeExprDeps'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TyExprCon', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(Name)
+      <{'TyExprVar', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'TyExprApp', T1, T2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getTypeExprDeps'/1(T1), apply 'getTypeExprDeps'/1(T2))
+      <{'TyExprArrow', T1, T2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getTypeExprDeps'/1(T1), apply 'getTypeExprDeps'/1(T2))
+      <{'TyExprRecord', Fields, _W0}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, T}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'getTypeExprDeps'/1(T))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'TyExprForAll', _W0, T}> when 'true' ->
+        apply 'getTypeExprDeps'/1(T)
+      <{'TyExprConstrained', Cs, T}> when 'true' ->
+        let <ConstraintDeps> = call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, call 'Data.Set':'singleton'(call 'maps':'get'('className', C))), call 'Data.Set':'empty'(), Cs)
+      in let <TyDeps> = call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, call 'Data.Foldable':'foldl'(fun (Acc2, Ct) ->
+      call 'Data.Set':'union'(Acc2, apply 'getTypeExprDeps'/1(Ct)), call 'Data.Set':'empty'(), call 'maps':'get'('types', C))), call 'Data.Set':'empty'(), Cs)
+      in call 'Data.Set':'union'(ConstraintDeps, call 'Data.Set':'union'(TyDeps, apply 'getTypeExprDeps'/1(T)))
+      <{'TyExprParens', T}> when 'true' ->
+        apply 'getTypeExprDeps'/1(T)
+      <{'TyExprTuple', Ts}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, T) ->
+      call 'Data.Set':'union'(Acc, apply 'getTypeExprDeps'/1(T)), call 'Data.Set':'empty'(), Ts)
+    end
+
+'getExprDeps'/1 =
+  fun (Expr) ->
+    case Expr of
+      <{'ExprVar', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(Name)
+      <{'ExprQualified', Ns, Name}> when 'true' ->
+        call 'Data.Set':'singleton'(call 'erlang':'++'(call 'erlang':'++'(Ns, "."), Name))
+      <{'ExprLit', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprApp', E1, E2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getExprDeps'/1(E1), apply 'getExprDeps'/1(E2))
+      <{'ExprLambda', Pats, Body}> when 'true' ->
+        let <BoundNames> = call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(P)), call 'Data.Set':'empty'(), Pats)
+      in call 'Data.Set':'difference'(apply 'getExprDeps'/1(Body), BoundNames)
+      <{'ExprLet', Binds, Body}> when 'true' ->
+        let <BindDeps> = apply 'getLetBindsDeps'/1(Binds)
+      in let <BoundNames> = call 'Data.Foldable':'foldl'(fun (Acc, B) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(call 'maps':'get'('pattern', B))), call 'Data.Set':'empty'(), Binds)
+      in call 'Data.Set':'difference'(call 'Data.Set':'union'(BindDeps, apply 'getExprDeps'/1(Body)), BoundNames)
+      <{'ExprIf', C, T, E}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getExprDeps'/1(C), call 'Data.Set':'union'(apply 'getExprDeps'/1(T), apply 'getExprDeps'/1(E)))
+      <{'ExprCase', E, Clauses}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getExprDeps'/1(E), call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, apply 'getCaseClauseDeps'/1(C)), call 'Data.Set':'empty'(), Clauses))
+      <{'ExprDo', Stmts}> when 'true' ->
+        apply 'getDoStatementsDeps'/1(Stmts)
+      <{'ExprBinOp', Op, E1, E2}> when 'true' ->
+        call 'Data.Set':'union'(call 'Data.Set':'singleton'(Op), call 'Data.Set':'union'(apply 'getExprDeps'/1(E1), apply 'getExprDeps'/1(E2)))
+      <{'ExprUnaryOp', Op, E}> when 'true' ->
+        call 'Data.Set':'union'(call 'Data.Set':'singleton'(Op), apply 'getExprDeps'/1(E))
+      <{'ExprList', Es}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, E) ->
+      call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(E)), call 'Data.Set':'empty'(), Es)
+      <{'ExprTuple', Es}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, E) ->
+      call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(E)), call 'Data.Set':'empty'(), Es)
+      <{'ExprRecord', Fields}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, E}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(E))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'ExprRecordAccess', E, _W0}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+      <{'ExprRecordUpdate', E, Fields}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getExprDeps'/1(E), call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, V}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(V))
+      end, call 'Data.Set':'empty'(), Fields))
+      <{'ExprTyped', E, _W0}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+      <{'ExprParens', E}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+      <{'ExprSection', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprSectionLeft', E, _W0}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+      <{'ExprSectionRight', _W0, E}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+    end
+
+'getLetBindsDeps'/1 =
+  fun (Binds) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, B) ->
+      call 'Data.Set':'union'(Acc, apply 'getExprDeps'/1(call 'maps':'get'('value', B))), call 'Data.Set':'empty'(), Binds)
+
+'getCaseClauseDeps'/1 =
+  fun (Clause) ->
+    let <BoundNames> = apply 'getBoundNames'/1(call 'maps':'get'('pattern', Clause))
+      in let <BodyDeps> = apply 'getExprDeps'/1(call 'maps':'get'('body', Clause))
+      in let <GuardDeps> = case call 'maps':'get'('guard', Clause) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', G}> when 'true' ->
+        apply 'getExprDeps'/1(G)
+    end
+      in call 'Data.Set':'difference'(call 'Data.Set':'union'(BodyDeps, GuardDeps), BoundNames)
+
+'getDoStatementsDeps'/1 =
+  fun (Stmts) ->
+    letrec 'go'/2 = fun (Remaining, Bound) ->
+      case Remaining of
+      <[]> when 'true' ->
+        call 'Data.Set':'empty'()
+      <[Stmt | Rest]> when 'true' ->
+        case Stmt of
+      <{'DoLet', Binds}> when 'true' ->
+        let <Deps> = apply 'getLetBindsDeps'/1(Binds)
+      in let <NewBound> = call 'Data.Foldable':'foldl'(fun (Acc, B) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(call 'maps':'get'('pattern', B))), Bound, Binds)
+      in call 'Data.Set':'union'(call 'Data.Set':'difference'(Deps, Bound), apply 'go'/2(Rest, NewBound))
+      <{'DoBind', Pat, E}> when 'true' ->
+        let <Deps> = apply 'getExprDeps'/1(E)
+      in let <NewBound> = call 'Data.Set':'union'(Bound, apply 'getBoundNames'/1(Pat))
+      in call 'Data.Set':'union'(call 'Data.Set':'difference'(Deps, Bound), apply 'go'/2(Rest, NewBound))
+      <{'DoExpr', E}> when 'true' ->
+        call 'Data.Set':'union'(call 'Data.Set':'difference'(apply 'getExprDeps'/1(E), Bound), apply 'go'/2(Rest, Bound))
+    end
+    end
+      in apply 'go'/2(Stmts, call 'Data.Set':'empty'())
+
+'getGuardedExprDeps'/1 =
+  fun (G) ->
+    let <GuardDeps> = call 'Data.Foldable':'foldl'(fun (Acc, Gc) ->
+      call 'Data.Set':'union'(Acc, apply 'getGuardClauseDeps'/1(Gc)), call 'Data.Set':'empty'(), call 'maps':'get'('guards', G))
+      in let <BodyDeps> = apply 'getExprDeps'/1(call 'maps':'get'('body', G))
+      in call 'Data.Set':'union'(GuardDeps, BodyDeps)
+
+'getGuardClauseDeps'/1 =
+  fun (Gc) ->
+    case Gc of
+      <{'GuardExpr', E}> when 'true' ->
+        apply 'getExprDeps'/1(E)
+      <{'GuardPat', Pat, E}> when 'true' ->
+        let <BoundNames> = apply 'getBoundNames'/1(Pat)
+      in call 'Data.Set':'difference'(apply 'getExprDeps'/1(E), BoundNames)
+    end
+
+'getBoundNames'/1 =
+  fun (Pat) ->
+    case Pat of
+      <{'PatVar', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(Name)
+      <'PatWildcard'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'PatLit', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'PatCon', _W0, Pats}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(P)), call 'Data.Set':'empty'(), Pats)
+      <{'PatRecord', Fields}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, P}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(P))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'PatList', Pats}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'getBoundNames'/1(P)), call 'Data.Set':'empty'(), Pats)
+      <{'PatCons', P1, P2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'getBoundNames'/1(P1), apply 'getBoundNames'/1(P2))
+      <{'PatAs', Name, P}> when 'true' ->
+        call 'Data.Set':'insert'(Name, apply 'getBoundNames'/1(P))
+      <{'PatParens', P}> when 'true' ->
+        apply 'getBoundNames'/1(P)
+    end
+
+'emptyGraph'/0 =
+  fun () ->
+    ~{'forward'=>call 'Data.Map':'empty'(),'reverse'=>call 'Data.Map':'empty'()}~
+
+'buildDependencyGraph'/2 =
+  fun (Decls, ResolveName) ->
+    let <Ids> = call 'Data.Map':'keys'(Decls)
+      in let <Forward> = call 'Data.Foldable':'foldl'(fun (Acc, Id) ->
+      case call 'Data.Map':'lookup'(Id, Decls) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', Md}> when 'true' ->
+        let <Deps> = apply 'getDependencies'/1(call 'maps':'get'('decl', Md))
+      in let <ResolvedDeps> = call 'Data.Set':'mapMaybe'(fun (Name) ->
+      apply ResolveName(call 'maps':'get'('namespace', call 'maps':'get'('meta', Md)), Name), Deps)
+      in call 'Data.Map':'insert'(Id, ResolvedDeps, Acc)
+    end, call 'Data.Map':'empty'(), Ids)
+      in let <Reverse> = apply 'buildReverseEdges'/1(Forward)
+      in ~{'forward'=>Forward,'reverse'=>Reverse}~
+
+'buildReverseEdges'/1 =
+  fun (Forward) ->
+    let <Entries> = call 'Data.Map':'toUnfoldable'(Forward)
+      in call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', FromId, Deps}}> when 'true' -> let <DepsArray> = call 'Data.Set':'toUnfoldable'(Deps)
+      in call 'Data.Foldable':'foldl'(fun (Acc2, ToId) ->
+      let <Existing> = case call 'Data.Map':'lookup'(ToId, Acc2) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', S}> when 'true' ->
+        S
+    end
+      in call 'Data.Map':'insert'(ToId, call 'Data.Set':'insert'(FromId, Existing), Acc2), Acc, DepsArray)
+      end, call 'Data.Map':'empty'(), Entries)
+
+'addToGraph'/3 =
+  fun (DeclId, Deps, Graph) ->
+    let <Forward> = call 'Data.Map':'insert'(DeclId, Deps, call 'maps':'get'('forward', Graph))
+      in let <DepsArray> = call 'Data.Set':'toUnfoldable'(Deps)
+      in let <Reverse> = call 'Data.Foldable':'foldl'(fun (Acc, DepId) ->
+      let <Existing> = case call 'Data.Map':'lookup'(DepId, Acc) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', S}> when 'true' ->
+        S
+    end
+      in call 'Data.Map':'insert'(DepId, call 'Data.Set':'insert'(DeclId, Existing), Acc), call 'maps':'get'('reverse', Graph), DepsArray)
+      in ~{'forward'=>Forward,'reverse'=>Reverse}~
+
+'removeFromGraph'/2 =
+  fun (DeclId, Graph) ->
+    let <Deps> = case call 'Data.Map':'lookup'(DeclId, call 'maps':'get'('forward', Graph)) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', S}> when 'true' ->
+        S
+    end
+      in let <Forward> = call 'Data.Map':'delete'(DeclId, call 'maps':'get'('forward', Graph))
+      in let <DepsArray> = call 'Data.Set':'toUnfoldable'(Deps)
+      in let <Reverse> = call 'Data.Foldable':'foldl'(fun (Acc, DepId) ->
+      case call 'Data.Map':'lookup'(DepId, Acc) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', Dependents}> when 'true' ->
+        call 'Data.Map':'insert'(DepId, call 'Data.Set':'delete'(DeclId, Dependents), Acc)
+    end, call 'maps':'get'('reverse', Graph), DepsArray)
+      in let <Reverse_> = call 'Data.Map':'delete'(DeclId, Reverse)
+      in ~{'forward'=>Forward,'reverse'=>Reverse_}~
+
+'getDependents'/2 =
+  fun (Graph, DeclId) ->
+    case call 'Data.Map':'lookup'(DeclId, call 'maps':'get'('reverse', Graph)) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', S}> when 'true' ->
+        S
+    end
+
+'getDependenciesOf'/2 =
+  fun (Graph, DeclId) ->
+    case call 'Data.Map':'lookup'(DeclId, call 'maps':'get'('forward', Graph)) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', S}> when 'true' ->
+        S
+    end
+
+'getAffected'/2 =
+  fun (Graph, DeclId) ->
+    letrec 'go'/2 = fun (ToProcess, Visited) ->
+      case call 'Data.Set':'findMin'(ToProcess) of
+      <'Nothing'> when 'true' ->
+        Visited
+      <{'Just', Id}> when 'true' ->
+        case call 'Data.Set':'member'(Id, Visited) of
+      <'true'> when 'true' -> apply 'go'/2(call 'Data.Set':'delete'(Id, ToProcess), Visited)
+      <'false'> when 'true' -> let <Dependents> = apply 'getDependents'/2(Graph, Id)
+      in let <NewToProcess> = call 'Data.Set':'union'(call 'Data.Set':'delete'(Id, ToProcess), call 'Data.Set':'difference'(Dependents, Visited))
+      in apply 'go'/2(NewToProcess, call 'Data.Set':'insert'(Id, Visited))
+    end
+    end
+      in apply 'go'/2(call 'Data.Set':'singleton'(DeclId), call 'Data.Set':'empty'())
+
+'topologicalSort'/2 =
+  fun (Graph, Ids) ->
+    let <InitialInDegree> = call 'Data.Foldable':'foldl'(fun (Acc, Id) ->
+      let <Deps> = apply 'getDependenciesOf'/2(Graph, Id)
+      in let <RelevantDeps> = call 'Data.Set':'size'(call 'Data.Set':'intersection'(Deps, call 'Data.Set':'fromFoldable'(Ids)))
+      in call 'Data.Map':'insert'(Id, RelevantDeps, Acc), call 'Data.Map':'empty'(), Ids)
+      in let <InitialQueue> = call 'Data.Array':'filter'(fun (Id) ->
+      case call 'Data.Map':'lookup'(Id, InitialInDegree) of
+      <'Nothing'> when 'true' ->
+        'false'
+      <{'Just', N}> when 'true' ->
+        call 'erlang':'=:='(N, 0)
+    end, Ids)
+      in letrec 'go'/3 = fun (InDegree, Result, Queue) ->
+      case call 'Data.Array':'uncons'(Queue) of
+      <'Nothing'> when 'true' ->
+        Result
+      <{'Just', ~{'head':=Id,'tail':=RestQueue}~}> when 'true' ->
+        let <AllDependents> = call 'Data.Set':'toUnfoldable'(apply 'getDependents'/2(Graph, Id))
+      in let <Dependents> = call 'Data.Array':'filter'(fun (D) ->
+      call 'Data.Array':'elem'(D, Ids), AllDependents)
+      in let <NewInDegree> = call 'Data.Foldable':'foldl'(fun (Acc, Dep) ->
+      case call 'Data.Map':'lookup'(Dep, Acc) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', N}> when 'true' ->
+        call 'Data.Map':'insert'(Dep, call 'erlang':'-'(N, 1), Acc)
+    end, InDegree, Dependents)
+      in let <NewQueue> = call 'erlang':'++'(RestQueue, call 'Data.Array':'filter'(fun (D) ->
+      case call 'Data.Map':'lookup'(D, NewInDegree) of
+      <'Nothing'> when 'true' ->
+        'false'
+      <{'Just', N}> when 'true' ->
+        case case call 'erlang':'=:='(N, 0) of <'true'> when 'true' -> call 'erlang':'not'(call 'Data.Array':'elem'(D, Result)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> call 'erlang':'not'(call 'Data.Array':'elem'(D, Queue)) <_> when 'true' -> 'false' end
+    end, Dependents))
+      in apply 'go'/3(NewInDegree, call 'Data.Array':'snoc'(Result, Id), NewQueue)
+    end
+      in apply 'go'/3(InitialInDegree, [], InitialQueue)
+
+'getDependencies'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDependencies'/1(_A0)
+      in _F0
+
+'getModuleDependencies'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getModuleDependencies'/1(_A0)
+      in _F0
+
+'getConstructorDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getConstructorDeps'/1(_A0)
+      in _F0
+
+'getTypeExprDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getTypeExprDeps'/1(_A0)
+      in _F0
+
+'getExprDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExprDeps'/1(_A0)
+      in _F0
+
+'getLetBindsDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getLetBindsDeps'/1(_A0)
+      in _F0
+
+'getCaseClauseDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getCaseClauseDeps'/1(_A0)
+      in _F0
+
+'getDoStatementsDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDoStatementsDeps'/1(_A0)
+      in _F0
+
+'getGuardedExprDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getGuardedExprDeps'/1(_A0)
+      in _F0
+
+'getGuardClauseDeps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getGuardClauseDeps'/1(_A0)
+      in _F0
+
+'getBoundNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getBoundNames'/1(_A0)
+      in _F0
+
+'buildDependencyGraph'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'buildDependencyGraph'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'buildDependencyGraph'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'buildDependencyGraph'/2(_A0, _A1)
+      in _F0
+
+'buildReverseEdges'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'buildReverseEdges'/1(_A0)
+      in _F0
+
+'addToGraph'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'addToGraph'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'addToGraph'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'addToGraph'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'addToGraph'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'addToGraph'/3(_A0, _A1, _A2)
+      in _F0
+
+'removeFromGraph'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'removeFromGraph'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'removeFromGraph'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'removeFromGraph'/2(_A0, _A1)
+      in _F0
+
+'getDependents'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getDependents'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDependents'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDependents'/2(_A0, _A1)
+      in _F0
+
+'getDependenciesOf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getDependenciesOf'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDependenciesOf'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDependenciesOf'/2(_A0, _A1)
+      in _F0
+
+'getAffected'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getAffected'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getAffected'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getAffected'/2(_A0, _A1)
+      in _F0
+
+'topologicalSort'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'topologicalSort'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'topologicalSort'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'topologicalSort'/2(_A0, _A1)
+      in _F0
+end

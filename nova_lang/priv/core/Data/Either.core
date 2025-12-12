@@ -1,0 +1,190 @@
+module 'Data.Either' ['either'/3, 'isLeft'/1, 'isRight'/1, 'fromLeft'/2, 'fromRight'/2, 'map'/2, 'pure'/1, 'bind'/2, 'Left'/1, 'Right'/1, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'fromLeft'/0, 'fromLeft'/1, 'fromRight'/0, 'fromRight'/1, 'map'/0, 'map'/1, 'pure'/0, 'bind'/0, 'bind'/1, 'Left'/0, 'Right'/0]
+  attributes []
+% Data type: Either
+% Constructors: Left, Right
+
+'Left'/1 =
+  fun (V0) ->
+    {'Left', V0}
+
+'Right'/1 =
+  fun (V0) ->
+    {'Right', V0}
+
+'either'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{F, _W0, {'Left', A}}> when 'true' ->
+        apply F(A)
+      <{_W0, G, {'Right', B}}> when 'true' ->
+        apply G(B)
+    end
+
+'isLeft'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Left', _W0}}> when 'true' ->
+        'true'
+      <{{'Right', _W0}}> when 'true' ->
+        'false'
+    end
+
+'isRight'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Right', _W0}}> when 'true' ->
+        'true'
+      <{{'Left', _W0}}> when 'true' ->
+        'false'
+    end
+
+'fromLeft'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{_W0, {'Left', A}}> when 'true' ->
+        A
+      <{Def, {'Right', _W0}}> when 'true' ->
+        Def
+    end
+
+'fromRight'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{_W0, {'Right', B}}> when 'true' ->
+        B
+      <{Def, {'Left', _W0}}> when 'true' ->
+        Def
+    end
+
+'map'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{_W0, {'Left', A}}> when 'true' ->
+        apply 'Left'/1(A)
+      <{F, {'Right', B}}> when 'true' ->
+        apply 'Right'/1(apply F(B))
+    end
+
+'pure'/1 =
+  fun (X) ->
+    apply 'Right'/1(X)
+
+'bind'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Left', A}, _W0}> when 'true' ->
+        apply 'Left'/1(A)
+      <{{'Right', B}, F}> when 'true' ->
+        apply F(B)
+    end
+
+'either'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'either'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'either'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F0
+
+'isLeft'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLeft'/1(_A0)
+      in _F0
+
+'isRight'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isRight'/1(_A0)
+      in _F0
+
+'fromLeft'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'fromLeft'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'fromLeft'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'fromLeft'/2(_A0, _A1)
+      in _F0
+
+'fromRight'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'fromRight'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'fromRight'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'fromRight'/2(_A0, _A1)
+      in _F0
+
+'map'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'map'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F0
+
+'pure'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'pure'/1(_A0)
+      in _F0
+
+'bind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'bind'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'bind'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'bind'/2(_A0, _A1)
+      in _F0
+
+'Left'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Left'/1(_A0)
+      in _F0
+
+'Right'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Right'/1(_A0)
+      in _F0
+end

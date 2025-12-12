@@ -1,0 +1,157 @@
+module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/1, 'styles'/0, 'htmlPage'/2, 'indexPage'/0, 'evalPage'/0, 'notFoundPage'/0, 'startServerImpl'/1, 'extractJsonField'/2, 'escapeJson'/1, 'startServer'/0, 'handle'/0, 'handle'/1, 'handle'/2, 'handleGet'/0, 'handlePost'/0, 'htmlPage'/0, 'htmlPage'/1, 'startServerImpl'/0, 'extractJsonField'/0, 'extractJsonField'/1, 'escapeJson'/0]
+  attributes []
+'startServer'/1 =
+  fun (Port) ->
+    apply 'startServerImpl'/1(Port)
+
+'handle'/3 =
+  fun (Method, Path, Body) ->
+    case call 'erlang':'=:='(Method, "GET") of
+      <'true'> when 'true' -> apply 'handleGet'/1(Path)
+      <'false'> when 'true' -> case case call 'erlang':'=:='(Method, "POST") of <'true'> when 'true' -> call 'erlang':'=:='(Path, "/api/eval") <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> apply 'handlePost'/1(Body)
+      <'false'> when 'true' -> ~{'status'=>404,'contentType'=>"text/plain",'body'=>"Not Found"}~
+    end
+    end
+
+'handleGet'/1 =
+  fun (Path) ->
+    case case call 'erlang':'=:='(Path, "/") of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(Path, "/index.html") end of
+      <'true'> when 'true' -> ~{'status'=>200,'contentType'=>"text/html",'body'=>apply 'indexPage'/0()}~
+      <'false'> when 'true' -> case call 'erlang':'=:='(Path, "/eval") of
+      <'true'> when 'true' -> ~{'status'=>200,'contentType'=>"text/html",'body'=>apply 'evalPage'/0()}~
+      <'false'> when 'true' -> ~{'status'=>404,'contentType'=>"text/html",'body'=>apply 'notFoundPage'/0()}~
+    end
+    end
+
+'handlePost'/1 =
+  fun (Body) ->
+    let <Action> = apply 'extractJsonField'/2(Body, "action")
+      in let <Code> = apply 'extractJsonField'/2(Body, "code")
+      in let <Result> = case call 'erlang':'=:='(Action, "eval_expr") of
+      <'true'> when 'true' -> case call 'Nova.Eval':'eval'(Code) of
+      <{'Right', R}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{\"result\":\"", apply 'escapeJson'/1(R)), "\"}")
+      <{'Left', E}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{\"error\":\"", apply 'escapeJson'/1(E)), "\"}")
+    end
+      <'false'> when 'true' -> case call 'erlang':'=:='(Action, "compile_to_core") of
+      <'true'> when 'true' -> case call 'Nova.Eval':'compileToCore'(Code) of
+      <{'Right', R}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{\"result\":\"", apply 'escapeJson'/1(R)), "\"}")
+      <{'Left', E}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("{\"error\":\"", apply 'escapeJson'/1(E)), "\"}")
+    end
+      <'false'> when 'true' -> "{\"error\":\"Unknown action\"}"
+    end
+    end
+      in ~{'status'=>200,'contentType'=>"application/json",'body'=>Result}~
+
+'styles'/0 =
+  fun () ->
+    "<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;padding:2rem}.hero{text-align:center;padding:3rem 0}.hero h1{font-size:3rem;color:#00d4ff;margin-bottom:.5rem}.hero p{font-size:1.2rem;color:#888}.nav-cards{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}.card{background:#252540;padding:1.5rem 2rem;border-radius:8px;text-decoration:none;color:#eee;transition:transform .2s,background .2s}.card:hover{transform:translateY(-2px);background:#303050}.card h2{color:#00d4ff;margin-bottom:.5rem}.card p{color:#888;font-size:.9rem}h1{color:#00d4ff;margin-bottom:1rem}.repl-container{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}.input-section,.output-section{background:#252540;padding:1rem;border-radius:8px}label{display:block;margin-bottom:.5rem;color:#888}textarea{width:100%;background:#1a1a2e;color:#eee;border:1px solid #444;border-radius:4px;padding:.75rem;font-family:Monaco,Menlo,monospace;font-size:14px;resize:vertical}textarea:focus{outline:none;border-color:#00d4ff}.buttons{margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap}button{background:#00d4ff;color:#1a1a2e;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer;font-weight:600;transition:background .2s}button:hover{background:#00b8e6}pre{background:#1a1a2e;padding:1rem;border-radius:4px;overflow-x:auto;font-family:Monaco,Menlo,monospace;font-size:14px;white-space:pre-wrap;min-height:200px}</style>"
+
+'htmlPage'/2 =
+  fun (Title, Content) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>", Title), "</title>"), apply 'styles'/0()), "</head><body>"), Content), "</body></html>")
+
+'indexPage'/0 =
+  fun () ->
+    apply 'htmlPage'/2("Nova Lang", "<div class=\"hero\"><h1>Nova Lang</h1><p>A PureScript dialect that compiles to Core Erlang</p></div><div class=\"nav-cards\"><a href=\"/eval\" class=\"card\"><h2>REPL</h2><p>Evaluate Nova expressions interactively</p></a></div>")
+
+'evalPage'/0 =
+  fun () ->
+    apply 'htmlPage'/2("Nova REPL", "<h1>Nova REPL</h1><div class=\"repl-container\"><div class=\"input-section\"><label>Enter Nova code:</label><textarea id=\"code\" rows=\"10\" placeholder=\"1 + 2 * 3\"></textarea><div class=\"buttons\"><button onclick=\"evalCode()\">Evaluate</button><button onclick=\"showCore()\">Show Core Erlang</button></div></div><div class=\"output-section\"><label>Result:</label><pre id=\"result\">-- Output will appear here</pre></div></div><script>async function evalCode(){const c=document.getElementById('code').value;const r=await fetch('/api/eval',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'eval_expr',code:c})});const d=await r.json();document.getElementById('result').textContent=d.result||d.error}async function showCore(){const c=document.getElementById('code').value;const r=await fetch('/api/eval',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'compile_to_core',code:c})});const d=await r.json();document.getElementById('result').textContent=d.result||d.error}</script>")
+
+'notFoundPage'/0 =
+  fun () ->
+    apply 'htmlPage'/2("Not Found", "<h1>404 - Not Found</h1><p><a href=\"/\">Go home</a></p>")
+
+'startServerImpl'/1 = fun (V0) -> call 'Elixir.Nova.HTTPServer':'start'(V0, 'Nova.Web')
+
+'extractJsonField'/2 = fun (V0, V1) -> let <Bin> = call 'erlang':'list_to_binary'(V0) in case catch call 'json':'decode'(Bin) of <{'EXIT', _}> when 'true' -> [] <Map> when call 'erlang':'is_map'(Map) -> let <Key> = call 'erlang':'list_to_binary'(V1) in case call 'maps':'find'(Key, Map) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> call 'erlang':'binary_to_list'(V) <_> when 'true' -> [] end <_> when 'true' -> [] end
+
+'escapeJson'/1 = fun (V0) -> call 'lists':'flatten'(call 'lists':'map'(fun (C) -> case C of <34> when 'true' -> [92,34] <92> when 'true' -> [92,92] <10> when 'true' -> [92,110] <13> when 'true' -> [92,114] <9> when 'true' -> [92,116] <_> when 'true' -> [C] end, V0))
+
+'startServer'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'startServer'/1(_A0)
+      in _F0
+
+'handle'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'handle'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'handle'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'handle'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'handle'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'handle'/3(_A0, _A1, _A2)
+      in _F0
+
+'handleGet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'handleGet'/1(_A0)
+      in _F0
+
+'handlePost'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'handlePost'/1(_A0)
+      in _F0
+
+'htmlPage'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'htmlPage'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'htmlPage'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'htmlPage'/2(_A0, _A1)
+      in _F0
+
+'startServerImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'startServerImpl'/1(_A0)
+      in _F0
+
+'extractJsonField'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'extractJsonField'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'extractJsonField'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'extractJsonField'/2(_A0, _A1)
+      in _F0
+
+'escapeJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'escapeJson'/1(_A0)
+      in _F0
+end

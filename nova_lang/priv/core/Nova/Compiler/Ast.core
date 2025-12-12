@@ -1,0 +1,1096 @@
+module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, 'getDeclName'/1, 'typeExprToString'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'KindFunction'/0, 'KindDataType'/0, 'KindTypeAlias'/0, 'KindTypeClass'/0, 'KindInstance'/0, 'KindForeignImport'/0, 'DeclModule'/1, 'DeclFunction'/1, 'DeclType'/1, 'DeclTypeAlias'/1, 'DeclDataType'/1, 'DeclNewtype'/1, 'DeclTypeClass'/1, 'DeclTypeClassInstance'/1, 'DeclImport'/1, 'DeclForeignImport'/1, 'DeclTypeSig'/1, 'DeclInfix'/1, 'GuardExpr'/1, 'GuardPat'/2, 'ImportValue'/1, 'ImportType'/2, 'ImportAll'/0, 'ImportSome'/1, 'ImportNone'/0, 'AssocLeft'/0, 'AssocRight'/0, 'AssocNone'/0, 'TyExprCon'/1, 'TyExprVar'/1, 'TyExprApp'/2, 'TyExprArrow'/2, 'TyExprRecord'/2, 'TyExprForAll'/2, 'TyExprConstrained'/2, 'TyExprParens'/1, 'TyExprTuple'/1, 'PatVar'/1, 'PatWildcard'/0, 'PatLit'/1, 'PatCon'/2, 'PatRecord'/1, 'PatList'/1, 'PatCons'/2, 'PatAs'/2, 'PatParens'/1, 'ExprVar'/1, 'ExprQualified'/2, 'ExprLit'/1, 'ExprApp'/2, 'ExprLambda'/2, 'ExprLet'/2, 'ExprIf'/3, 'ExprCase'/2, 'ExprDo'/1, 'ExprBinOp'/3, 'ExprUnaryOp'/2, 'ExprList'/1, 'ExprTuple'/1, 'ExprRecord'/1, 'ExprRecordAccess'/2, 'ExprRecordUpdate'/2, 'ExprTyped'/2, 'ExprParens'/1, 'ExprSection'/1, 'ExprSectionLeft'/2, 'ExprSectionRight'/2, 'LitInt'/1, 'LitNumber'/1, 'LitString'/1, 'LitChar'/1, 'LitBool'/1, 'DoLet'/1, 'DoBind'/2, 'DoExpr'/1, 'makeDeclId'/0, 'makeDeclId'/1, 'makeDeclId'/2, 'makeDeclId'/3, 'kindToString'/0, 'getDeclKind'/0, 'getDeclName'/0, 'typeExprToString'/0, 'DeclModule'/0, 'DeclFunction'/0, 'DeclType'/0, 'DeclTypeAlias'/0, 'DeclDataType'/0, 'DeclNewtype'/0, 'DeclTypeClass'/0, 'DeclTypeClassInstance'/0, 'DeclImport'/0, 'DeclForeignImport'/0, 'DeclTypeSig'/0, 'DeclInfix'/0, 'GuardExpr'/0, 'GuardPat'/0, 'GuardPat'/1, 'ImportValue'/0, 'ImportType'/0, 'ImportType'/1, 'ImportSome'/0, 'TyExprCon'/0, 'TyExprVar'/0, 'TyExprApp'/0, 'TyExprApp'/1, 'TyExprArrow'/0, 'TyExprArrow'/1, 'TyExprRecord'/0, 'TyExprRecord'/1, 'TyExprForAll'/0, 'TyExprForAll'/1, 'TyExprConstrained'/0, 'TyExprConstrained'/1, 'TyExprParens'/0, 'TyExprTuple'/0, 'PatVar'/0, 'PatLit'/0, 'PatCon'/0, 'PatCon'/1, 'PatRecord'/0, 'PatList'/0, 'PatCons'/0, 'PatCons'/1, 'PatAs'/0, 'PatAs'/1, 'PatParens'/0, 'ExprVar'/0, 'ExprQualified'/0, 'ExprQualified'/1, 'ExprLit'/0, 'ExprApp'/0, 'ExprApp'/1, 'ExprLambda'/0, 'ExprLambda'/1, 'ExprLet'/0, 'ExprLet'/1, 'ExprIf'/0, 'ExprIf'/1, 'ExprIf'/2, 'ExprCase'/0, 'ExprCase'/1, 'ExprDo'/0, 'ExprBinOp'/0, 'ExprBinOp'/1, 'ExprBinOp'/2, 'ExprUnaryOp'/0, 'ExprUnaryOp'/1, 'ExprList'/0, 'ExprTuple'/0, 'ExprRecord'/0, 'ExprRecordAccess'/0, 'ExprRecordAccess'/1, 'ExprRecordUpdate'/0, 'ExprRecordUpdate'/1, 'ExprTyped'/0, 'ExprTyped'/1, 'ExprParens'/0, 'ExprSection'/0, 'ExprSectionLeft'/0, 'ExprSectionLeft'/1, 'ExprSectionRight'/0, 'ExprSectionRight'/1, 'LitInt'/0, 'LitNumber'/0, 'LitString'/0, 'LitChar'/0, 'LitBool'/0, 'DoLet'/0, 'DoBind'/0, 'DoBind'/1, 'DoExpr'/0]
+  attributes []
+% Data type: DeclStatus
+% Constructors: Fresh, Valid, Invalid, Stale
+
+'Fresh'/0 =
+  fun () ->
+    'Fresh'
+
+'Valid'/0 =
+  fun () ->
+    'Valid'
+
+'Invalid'/0 =
+  fun () ->
+    'Invalid'
+
+'Stale'/0 =
+  fun () ->
+    'Stale'
+
+% Data type: DeclKind
+% Constructors: KindFunction, KindDataType, KindTypeAlias, KindTypeClass, KindInstance, KindForeignImport
+
+'KindFunction'/0 =
+  fun () ->
+    'KindFunction'
+
+'KindDataType'/0 =
+  fun () ->
+    'KindDataType'
+
+'KindTypeAlias'/0 =
+  fun () ->
+    'KindTypeAlias'
+
+'KindTypeClass'/0 =
+  fun () ->
+    'KindTypeClass'
+
+'KindInstance'/0 =
+  fun () ->
+    'KindInstance'
+
+'KindForeignImport'/0 =
+  fun () ->
+    'KindForeignImport'
+
+% Data type: Declaration
+% Constructors: DeclModule, DeclFunction, DeclType, DeclTypeAlias, DeclDataType, DeclNewtype, DeclTypeClass, DeclTypeClassInstance, DeclImport, DeclForeignImport, DeclTypeSig, DeclInfix
+
+'DeclModule'/1 =
+  fun (V0) ->
+    {'DeclModule', V0}
+
+'DeclFunction'/1 =
+  fun (V0) ->
+    {'DeclFunction', V0}
+
+'DeclType'/1 =
+  fun (V0) ->
+    {'DeclType', V0}
+
+'DeclTypeAlias'/1 =
+  fun (V0) ->
+    {'DeclTypeAlias', V0}
+
+'DeclDataType'/1 =
+  fun (V0) ->
+    {'DeclDataType', V0}
+
+'DeclNewtype'/1 =
+  fun (V0) ->
+    {'DeclNewtype', V0}
+
+'DeclTypeClass'/1 =
+  fun (V0) ->
+    {'DeclTypeClass', V0}
+
+'DeclTypeClassInstance'/1 =
+  fun (V0) ->
+    {'DeclTypeClassInstance', V0}
+
+'DeclImport'/1 =
+  fun (V0) ->
+    {'DeclImport', V0}
+
+'DeclForeignImport'/1 =
+  fun (V0) ->
+    {'DeclForeignImport', V0}
+
+'DeclTypeSig'/1 =
+  fun (V0) ->
+    {'DeclTypeSig', V0}
+
+'DeclInfix'/1 =
+  fun (V0) ->
+    {'DeclInfix', V0}
+
+% Data type: GuardClause
+% Constructors: GuardExpr, GuardPat
+
+'GuardExpr'/1 =
+  fun (V0) ->
+    {'GuardExpr', V0}
+
+'GuardPat'/2 =
+  fun (V0, V1) ->
+    {'GuardPat', V0, V1}
+
+% Data type: ImportItem
+% Constructors: ImportValue, ImportType
+
+'ImportValue'/1 =
+  fun (V0) ->
+    {'ImportValue', V0}
+
+'ImportType'/2 =
+  fun (V0, V1) ->
+    {'ImportType', V0, V1}
+
+% Data type: ImportSpec
+% Constructors: ImportAll, ImportSome, ImportNone
+
+'ImportAll'/0 =
+  fun () ->
+    'ImportAll'
+
+'ImportSome'/1 =
+  fun (V0) ->
+    {'ImportSome', V0}
+
+'ImportNone'/0 =
+  fun () ->
+    'ImportNone'
+
+% Data type: Associativity
+% Constructors: AssocLeft, AssocRight, AssocNone
+
+'AssocLeft'/0 =
+  fun () ->
+    'AssocLeft'
+
+'AssocRight'/0 =
+  fun () ->
+    'AssocRight'
+
+'AssocNone'/0 =
+  fun () ->
+    'AssocNone'
+
+% Data type: TypeExpr
+% Constructors: TyExprCon, TyExprVar, TyExprApp, TyExprArrow, TyExprRecord, TyExprForAll, TyExprConstrained, TyExprParens, TyExprTuple
+
+'TyExprCon'/1 =
+  fun (V0) ->
+    {'TyExprCon', V0}
+
+'TyExprVar'/1 =
+  fun (V0) ->
+    {'TyExprVar', V0}
+
+'TyExprApp'/2 =
+  fun (V0, V1) ->
+    {'TyExprApp', V0, V1}
+
+'TyExprArrow'/2 =
+  fun (V0, V1) ->
+    {'TyExprArrow', V0, V1}
+
+'TyExprRecord'/2 =
+  fun (V0, V1) ->
+    {'TyExprRecord', V0, V1}
+
+'TyExprForAll'/2 =
+  fun (V0, V1) ->
+    {'TyExprForAll', V0, V1}
+
+'TyExprConstrained'/2 =
+  fun (V0, V1) ->
+    {'TyExprConstrained', V0, V1}
+
+'TyExprParens'/1 =
+  fun (V0) ->
+    {'TyExprParens', V0}
+
+'TyExprTuple'/1 =
+  fun (V0) ->
+    {'TyExprTuple', V0}
+
+% Data type: Pattern
+% Constructors: PatVar, PatWildcard, PatLit, PatCon, PatRecord, PatList, PatCons, PatAs, PatParens
+
+'PatVar'/1 =
+  fun (V0) ->
+    {'PatVar', V0}
+
+'PatWildcard'/0 =
+  fun () ->
+    'PatWildcard'
+
+'PatLit'/1 =
+  fun (V0) ->
+    {'PatLit', V0}
+
+'PatCon'/2 =
+  fun (V0, V1) ->
+    {'PatCon', V0, V1}
+
+'PatRecord'/1 =
+  fun (V0) ->
+    {'PatRecord', V0}
+
+'PatList'/1 =
+  fun (V0) ->
+    {'PatList', V0}
+
+'PatCons'/2 =
+  fun (V0, V1) ->
+    {'PatCons', V0, V1}
+
+'PatAs'/2 =
+  fun (V0, V1) ->
+    {'PatAs', V0, V1}
+
+'PatParens'/1 =
+  fun (V0) ->
+    {'PatParens', V0}
+
+% Data type: Expr
+% Constructors: ExprVar, ExprQualified, ExprLit, ExprApp, ExprLambda, ExprLet, ExprIf, ExprCase, ExprDo, ExprBinOp, ExprUnaryOp, ExprList, ExprTuple, ExprRecord, ExprRecordAccess, ExprRecordUpdate, ExprTyped, ExprParens, ExprSection, ExprSectionLeft, ExprSectionRight
+
+'ExprVar'/1 =
+  fun (V0) ->
+    {'ExprVar', V0}
+
+'ExprQualified'/2 =
+  fun (V0, V1) ->
+    {'ExprQualified', V0, V1}
+
+'ExprLit'/1 =
+  fun (V0) ->
+    {'ExprLit', V0}
+
+'ExprApp'/2 =
+  fun (V0, V1) ->
+    {'ExprApp', V0, V1}
+
+'ExprLambda'/2 =
+  fun (V0, V1) ->
+    {'ExprLambda', V0, V1}
+
+'ExprLet'/2 =
+  fun (V0, V1) ->
+    {'ExprLet', V0, V1}
+
+'ExprIf'/3 =
+  fun (V0, V1, V2) ->
+    {'ExprIf', V0, V1, V2}
+
+'ExprCase'/2 =
+  fun (V0, V1) ->
+    {'ExprCase', V0, V1}
+
+'ExprDo'/1 =
+  fun (V0) ->
+    {'ExprDo', V0}
+
+'ExprBinOp'/3 =
+  fun (V0, V1, V2) ->
+    {'ExprBinOp', V0, V1, V2}
+
+'ExprUnaryOp'/2 =
+  fun (V0, V1) ->
+    {'ExprUnaryOp', V0, V1}
+
+'ExprList'/1 =
+  fun (V0) ->
+    {'ExprList', V0}
+
+'ExprTuple'/1 =
+  fun (V0) ->
+    {'ExprTuple', V0}
+
+'ExprRecord'/1 =
+  fun (V0) ->
+    {'ExprRecord', V0}
+
+'ExprRecordAccess'/2 =
+  fun (V0, V1) ->
+    {'ExprRecordAccess', V0, V1}
+
+'ExprRecordUpdate'/2 =
+  fun (V0, V1) ->
+    {'ExprRecordUpdate', V0, V1}
+
+'ExprTyped'/2 =
+  fun (V0, V1) ->
+    {'ExprTyped', V0, V1}
+
+'ExprParens'/1 =
+  fun (V0) ->
+    {'ExprParens', V0}
+
+'ExprSection'/1 =
+  fun (V0) ->
+    {'ExprSection', V0}
+
+'ExprSectionLeft'/2 =
+  fun (V0, V1) ->
+    {'ExprSectionLeft', V0, V1}
+
+'ExprSectionRight'/2 =
+  fun (V0, V1) ->
+    {'ExprSectionRight', V0, V1}
+
+% Data type: Literal
+% Constructors: LitInt, LitNumber, LitString, LitChar, LitBool
+
+'LitInt'/1 =
+  fun (V0) ->
+    {'LitInt', V0}
+
+'LitNumber'/1 =
+  fun (V0) ->
+    {'LitNumber', V0}
+
+'LitString'/1 =
+  fun (V0) ->
+    {'LitString', V0}
+
+'LitChar'/1 =
+  fun (V0) ->
+    {'LitChar', V0}
+
+'LitBool'/1 =
+  fun (V0) ->
+    {'LitBool', V0}
+
+% Data type: DoStatement
+% Constructors: DoLet, DoBind, DoExpr
+
+'DoLet'/1 =
+  fun (V0) ->
+    {'DoLet', V0}
+
+'DoBind'/2 =
+  fun (V0, V1) ->
+    {'DoBind', V0, V1}
+
+'DoExpr'/1 =
+  fun (V0) ->
+    {'DoExpr', V0}
+
+'makeDeclId'/4 =
+  fun (Namespace, Kind, Name, _W0) ->
+    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(Namespace, ":"), apply 'kindToString'/1(Kind)), ":"), Name), ":0")
+
+'kindToString'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'KindFunction'}> when 'true' ->
+        "function"
+      <{'KindDataType'}> when 'true' ->
+        "datatype"
+      <{'KindTypeAlias'}> when 'true' ->
+        "typealias"
+      <{'KindTypeClass'}> when 'true' ->
+        "typeclass"
+      <{'KindInstance'}> when 'true' ->
+        "instance"
+      <{'KindForeignImport'}> when 'true' ->
+        "foreign"
+    end
+
+'getDeclKind'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'DeclFunction', _W0}}> when 'true' ->
+        apply 'KindFunction'/0()
+      <{{'DeclDataType', _W0}}> when 'true' ->
+        apply 'KindDataType'/0()
+      <{{'DeclNewtype', _W0}}> when 'true' ->
+        apply 'KindDataType'/0()
+      <{{'DeclTypeAlias', _W0}}> when 'true' ->
+        apply 'KindTypeAlias'/0()
+      <{{'DeclTypeClass', _W0}}> when 'true' ->
+        apply 'KindTypeClass'/0()
+      <{{'DeclTypeClassInstance', _W0}}> when 'true' ->
+        apply 'KindInstance'/0()
+      <{{'DeclForeignImport', _W0}}> when 'true' ->
+        apply 'KindForeignImport'/0()
+      <{{'DeclTypeSig', _W0}}> when 'true' ->
+        apply 'KindFunction'/0()
+      <{{'DeclType', _W0}}> when 'true' ->
+        apply 'KindTypeAlias'/0()
+      <{{'DeclModule', _W0}}> when 'true' ->
+        apply 'KindFunction'/0()
+      <{{'DeclImport', _W0}}> when 'true' ->
+        apply 'KindFunction'/0()
+      <{{'DeclInfix', _W0}}> when 'true' ->
+        apply 'KindFunction'/0()
+    end
+
+'getDeclName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'DeclFunction', F}}> when 'true' ->
+        call 'maps':'get'('name', F)
+      <{{'DeclDataType', D}}> when 'true' ->
+        call 'maps':'get'('name', D)
+      <{{'DeclNewtype', N}}> when 'true' ->
+        call 'maps':'get'('name', N)
+      <{{'DeclTypeAlias', A}}> when 'true' ->
+        call 'maps':'get'('name', A)
+      <{{'DeclTypeClass', C}}> when 'true' ->
+        call 'maps':'get'('name', C)
+      <{{'DeclTypeClassInstance', I}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('className', I), "_"), apply 'typeExprToString'/1(call 'maps':'get'('ty', I)))
+      <{{'DeclForeignImport', F}}> when 'true' ->
+        call 'maps':'get'('functionName', F)
+      <{{'DeclTypeSig', S}}> when 'true' ->
+        call 'maps':'get'('name', S)
+      <{{'DeclType', T}}> when 'true' ->
+        call 'maps':'get'('name', T)
+      <{{'DeclModule', M}}> when 'true' ->
+        call 'maps':'get'('name', M)
+      <{{'DeclImport', I}}> when 'true' ->
+        call 'maps':'get'('moduleName', I)
+      <{{'DeclInfix', Inf}}> when 'true' ->
+        call 'maps':'get'('operator', Inf)
+    end
+
+'typeExprToString'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyExprCon', S}}> when 'true' ->
+        S
+      <{{'TyExprVar', S}}> when 'true' ->
+        S
+      <{{'TyExprApp', T1, T2}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(apply 'typeExprToString'/1(T1), "_"), apply 'typeExprToString'/1(T2))
+      <{_W0}> when 'true' ->
+        "complex"
+    end
+
+'makeDeclId'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'makeDeclId'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'makeDeclId'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'makeDeclId'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'makeDeclId'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'makeDeclId'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'makeDeclId'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'makeDeclId'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'kindToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'kindToString'/1(_A0)
+      in _F0
+
+'getDeclKind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDeclKind'/1(_A0)
+      in _F0
+
+'getDeclName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDeclName'/1(_A0)
+      in _F0
+
+'typeExprToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typeExprToString'/1(_A0)
+      in _F0
+
+'DeclModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclModule'/1(_A0)
+      in _F0
+
+'DeclFunction'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclFunction'/1(_A0)
+      in _F0
+
+'DeclType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclType'/1(_A0)
+      in _F0
+
+'DeclTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclTypeAlias'/1(_A0)
+      in _F0
+
+'DeclDataType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclDataType'/1(_A0)
+      in _F0
+
+'DeclNewtype'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclNewtype'/1(_A0)
+      in _F0
+
+'DeclTypeClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclTypeClass'/1(_A0)
+      in _F0
+
+'DeclTypeClassInstance'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclTypeClassInstance'/1(_A0)
+      in _F0
+
+'DeclImport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclImport'/1(_A0)
+      in _F0
+
+'DeclForeignImport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclForeignImport'/1(_A0)
+      in _F0
+
+'DeclTypeSig'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclTypeSig'/1(_A0)
+      in _F0
+
+'DeclInfix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclInfix'/1(_A0)
+      in _F0
+
+'GuardExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'GuardExpr'/1(_A0)
+      in _F0
+
+'GuardPat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'GuardPat'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'GuardPat'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'GuardPat'/2(_A0, _A1)
+      in _F0
+
+'ImportValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ImportValue'/1(_A0)
+      in _F0
+
+'ImportType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ImportType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ImportType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ImportType'/2(_A0, _A1)
+      in _F0
+
+'ImportSome'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ImportSome'/1(_A0)
+      in _F0
+
+'TyExprCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyExprCon'/1(_A0)
+      in _F0
+
+'TyExprVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyExprVar'/1(_A0)
+      in _F0
+
+'TyExprApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyExprApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyExprApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyExprApp'/2(_A0, _A1)
+      in _F0
+
+'TyExprArrow'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyExprArrow'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyExprArrow'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyExprArrow'/2(_A0, _A1)
+      in _F0
+
+'TyExprRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyExprRecord'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyExprRecord'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyExprRecord'/2(_A0, _A1)
+      in _F0
+
+'TyExprForAll'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyExprForAll'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyExprForAll'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyExprForAll'/2(_A0, _A1)
+      in _F0
+
+'TyExprConstrained'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TyExprConstrained'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TyExprConstrained'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TyExprConstrained'/2(_A0, _A1)
+      in _F0
+
+'TyExprParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyExprParens'/1(_A0)
+      in _F0
+
+'TyExprTuple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TyExprTuple'/1(_A0)
+      in _F0
+
+'PatVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'PatVar'/1(_A0)
+      in _F0
+
+'PatLit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'PatLit'/1(_A0)
+      in _F0
+
+'PatCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'PatCon'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'PatCon'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'PatCon'/2(_A0, _A1)
+      in _F0
+
+'PatRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'PatRecord'/1(_A0)
+      in _F0
+
+'PatList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'PatList'/1(_A0)
+      in _F0
+
+'PatCons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'PatCons'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'PatCons'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'PatCons'/2(_A0, _A1)
+      in _F0
+
+'PatAs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'PatAs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'PatAs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'PatAs'/2(_A0, _A1)
+      in _F0
+
+'PatParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'PatParens'/1(_A0)
+      in _F0
+
+'ExprVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprVar'/1(_A0)
+      in _F0
+
+'ExprQualified'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprQualified'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprQualified'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprQualified'/2(_A0, _A1)
+      in _F0
+
+'ExprLit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprLit'/1(_A0)
+      in _F0
+
+'ExprApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprApp'/2(_A0, _A1)
+      in _F0
+
+'ExprLambda'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprLambda'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprLambda'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprLambda'/2(_A0, _A1)
+      in _F0
+
+'ExprLet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprLet'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprLet'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprLet'/2(_A0, _A1)
+      in _F0
+
+'ExprIf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'ExprIf'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'ExprIf'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'ExprIf'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'ExprIf'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'ExprIf'/3(_A0, _A1, _A2)
+      in _F0
+
+'ExprCase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprCase'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprCase'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprCase'/2(_A0, _A1)
+      in _F0
+
+'ExprDo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprDo'/1(_A0)
+      in _F0
+
+'ExprBinOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'ExprBinOp'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'ExprBinOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'ExprBinOp'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'ExprBinOp'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'ExprBinOp'/3(_A0, _A1, _A2)
+      in _F0
+
+'ExprUnaryOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprUnaryOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprUnaryOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprUnaryOp'/2(_A0, _A1)
+      in _F0
+
+'ExprList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprList'/1(_A0)
+      in _F0
+
+'ExprTuple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprTuple'/1(_A0)
+      in _F0
+
+'ExprRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprRecord'/1(_A0)
+      in _F0
+
+'ExprRecordAccess'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprRecordAccess'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprRecordAccess'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprRecordAccess'/2(_A0, _A1)
+      in _F0
+
+'ExprRecordUpdate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprRecordUpdate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprRecordUpdate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprRecordUpdate'/2(_A0, _A1)
+      in _F0
+
+'ExprTyped'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprTyped'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprTyped'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprTyped'/2(_A0, _A1)
+      in _F0
+
+'ExprParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprParens'/1(_A0)
+      in _F0
+
+'ExprSection'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprSection'/1(_A0)
+      in _F0
+
+'ExprSectionLeft'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprSectionLeft'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprSectionLeft'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprSectionLeft'/2(_A0, _A1)
+      in _F0
+
+'ExprSectionRight'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprSectionRight'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprSectionRight'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprSectionRight'/2(_A0, _A1)
+      in _F0
+
+'LitInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LitInt'/1(_A0)
+      in _F0
+
+'LitNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LitNumber'/1(_A0)
+      in _F0
+
+'LitString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LitString'/1(_A0)
+      in _F0
+
+'LitChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LitChar'/1(_A0)
+      in _F0
+
+'LitBool'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LitBool'/1(_A0)
+      in _F0
+
+'DoLet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DoLet'/1(_A0)
+      in _F0
+
+'DoBind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'DoBind'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'DoBind'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'DoBind'/2(_A0, _A1)
+      in _F0
+
+'DoExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DoExpr'/1(_A0)
+      in _F0
+end

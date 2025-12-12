@@ -1,0 +1,344 @@
+module 'Nova.Compiler.RefEq' ['refEqExpr'/2, 'refEqLit'/2, 'refEqPattern'/2, 'refEqPatternList'/2, 'refEqExprList'/2, 'refEqLetBindList'/2, 'refEqCaseClauseList'/2, 'refEqMaybeExpr'/2, 'refEqDoStmtList'/2, 'refEqDoStmt'/2, 'refEqRecordFields'/2, 'refEqExpr'/0, 'refEqExpr'/1, 'refEqLit'/0, 'refEqLit'/1, 'refEqPattern'/0, 'refEqPattern'/1, 'refEqPatternList'/0, 'refEqPatternList'/1, 'refEqExprList'/0, 'refEqExprList'/1, 'refEqLetBindList'/0, 'refEqLetBindList'/1, 'refEqCaseClauseList'/0, 'refEqCaseClauseList'/1, 'refEqMaybeExpr'/0, 'refEqMaybeExpr'/1, 'refEqDoStmtList'/0, 'refEqDoStmtList'/1, 'refEqDoStmt'/0, 'refEqDoStmt'/1, 'refEqRecordFields'/0, 'refEqRecordFields'/1]
+  attributes []
+'refEqExpr'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'ExprVar', A}, {'ExprVar', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{{'ExprQualified', Ns1, N1}, {'ExprQualified', Ns2, N2}}> when 'true' ->
+        case call 'erlang':'=:='(Ns1, Ns2) of <'true'> when 'true' -> call 'erlang':'=:='(N1, N2) <_> when 'true' -> 'false' end
+      <{{'ExprLit', A}, {'ExprLit', B}}> when 'true' ->
+        apply 'refEqLit'/2(A, B)
+      <{{'ExprApp', F1, A1}, {'ExprApp', F2, A2}}> when 'true' ->
+        case apply 'refEqExpr'/2(F1, F2) of <'true'> when 'true' -> apply 'refEqExpr'/2(A1, A2) <_> when 'true' -> 'false' end
+      <{{'ExprLambda', P1, B1}, {'ExprLambda', P2, B2}}> when 'true' ->
+        case case call 'erlang':'=:='(call 'erlang':'length'(P1), call 'erlang':'length'(P2)) of <'true'> when 'true' -> apply 'refEqPatternList'/2(P1, P2) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(B1, B2) <_> when 'true' -> 'false' end
+      <{{'ExprLet', Binds1, Body1}, {'ExprLet', Binds2, Body2}}> when 'true' ->
+        case case call 'erlang':'=:='(call 'erlang':'length'(Binds1), call 'erlang':'length'(Binds2)) of <'true'> when 'true' -> apply 'refEqLetBindList'/2(Binds1, Binds2) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(Body1, Body2) <_> when 'true' -> 'false' end
+      <{{'ExprIf', C1, T1, E1}, {'ExprIf', C2, T2, E2}}> when 'true' ->
+        case case apply 'refEqExpr'/2(C1, C2) of <'true'> when 'true' -> apply 'refEqExpr'/2(T1, T2) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
+      <{{'ExprCase', Scrut1, Clauses1}, {'ExprCase', Scrut2, Clauses2}}> when 'true' ->
+        case case apply 'refEqExpr'/2(Scrut1, Scrut2) of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Clauses1), call 'erlang':'length'(Clauses2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqCaseClauseList'/2(Clauses1, Clauses2) <_> when 'true' -> 'false' end
+      <{{'ExprDo', Stmts1}, {'ExprDo', Stmts2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Stmts1), call 'erlang':'length'(Stmts2)) of <'true'> when 'true' -> apply 'refEqDoStmtList'/2(Stmts1, Stmts2) <_> when 'true' -> 'false' end
+      <{{'ExprBinOp', Op1, L1, R1}, {'ExprBinOp', Op2, L2, R2}}> when 'true' ->
+        case case call 'erlang':'=:='(Op1, Op2) of <'true'> when 'true' -> apply 'refEqExpr'/2(L1, L2) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(R1, R2) <_> when 'true' -> 'false' end
+      <{{'ExprUnaryOp', Op1, E1}, {'ExprUnaryOp', Op2, E2}}> when 'true' ->
+        case call 'erlang':'=:='(Op1, Op2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
+      <{{'ExprList', Es1}, {'ExprList', Es2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Es1), call 'erlang':'length'(Es2)) of <'true'> when 'true' -> apply 'refEqExprList'/2(Es1, Es2) <_> when 'true' -> 'false' end
+      <{{'ExprTuple', Es1}, {'ExprTuple', Es2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Es1), call 'erlang':'length'(Es2)) of <'true'> when 'true' -> apply 'refEqExprList'/2(Es1, Es2) <_> when 'true' -> 'false' end
+      <{{'ExprRecord', Fields1}, {'ExprRecord', Fields2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Fields1), call 'erlang':'length'(Fields2)) of <'true'> when 'true' -> apply 'refEqRecordFields'/2(Fields1, Fields2) <_> when 'true' -> 'false' end
+      <{{'ExprRecordAccess', E1, F1}, {'ExprRecordAccess', E2, F2}}> when 'true' ->
+        case call 'erlang':'=:='(F1, F2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
+      <{{'ExprRecordUpdate', E1, Upd1}, {'ExprRecordUpdate', E2, Upd2}}> when 'true' ->
+        case case apply 'refEqExpr'/2(E1, E2) of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Upd1), call 'erlang':'length'(Upd2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqRecordFields'/2(Upd1, Upd2) <_> when 'true' -> 'false' end
+      <{{'ExprTyped', E1, _W0}, {'ExprTyped', E2, _W1}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{{'ExprParens', E1}, {'ExprParens', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{{'ExprParens', E1}, E2}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{E1, {'ExprParens', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{{'ExprSection', S1}, {'ExprSection', S2}}> when 'true' ->
+        call 'erlang':'=:='(S1, S2)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqLit'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'LitInt', A}, {'LitInt', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{{'LitNumber', A}, {'LitNumber', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{{'LitString', A}, {'LitString', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{{'LitChar', A}, {'LitChar', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{{'LitBool', A}, {'LitBool', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqPattern'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'PatVar', A}, {'PatVar', B}}> when 'true' ->
+        call 'erlang':'=:='(A, B)
+      <{'PatWildcard', 'PatWildcard'}> when 'true' ->
+        'true'
+      <{{'PatLit', A}, {'PatLit', B}}> when 'true' ->
+        apply 'refEqLit'/2(A, B)
+      <{{'PatCon', N1, Ps1}, {'PatCon', N2, Ps2}}> when 'true' ->
+        case case call 'erlang':'=:='(N1, N2) of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Ps1), call 'erlang':'length'(Ps2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqPatternList'/2(Ps1, Ps2) <_> when 'true' -> 'false' end
+      <{{'PatList', Ps1}, {'PatList', Ps2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Ps1), call 'erlang':'length'(Ps2)) of <'true'> when 'true' -> apply 'refEqPatternList'/2(Ps1, Ps2) <_> when 'true' -> 'false' end
+      <{{'PatCons', H1, T1}, {'PatCons', H2, T2}}> when 'true' ->
+        case apply 'refEqPattern'/2(H1, H2) of <'true'> when 'true' -> apply 'refEqPattern'/2(T1, T2) <_> when 'true' -> 'false' end
+      <{{'PatRecord', Fs1}, {'PatRecord', Fs2}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(Fs1), call 'erlang':'length'(Fs2)) of <'true'> when 'true' -> call 'Data.Foldable':'all'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', {'Tuple', N1, P1}, {'Tuple', N2, P2}}}> when 'true' -> case call 'erlang':'=:='(N1, N2) of <'true'> when 'true' -> apply 'refEqPattern'/2(P1, P2) <_> when 'true' -> 'false' end
+      end, call 'Data.List':'zip'(Fs1, Fs2)) <_> when 'true' -> 'false' end
+      <{{'PatParens', P1}, {'PatParens', P2}}> when 'true' ->
+        apply 'refEqPattern'/2(P1, P2)
+      <{{'PatParens', P1}, P2}> when 'true' ->
+        apply 'refEqPattern'/2(P1, P2)
+      <{P1, {'PatParens', P2}}> when 'true' ->
+        apply 'refEqPattern'/2(P1, P2)
+      <{{'PatAs', N1, P1}, {'PatAs', N2, P2}}> when 'true' ->
+        case call 'erlang':'=:='(N1, N2) of <'true'> when 'true' -> apply 'refEqPattern'/2(P1, P2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqPatternList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[P1|Ps1], [P2|Ps2]}> when 'true' ->
+        case apply 'refEqPattern'/2(P1, P2) of <'true'> when 'true' -> apply 'refEqPatternList'/2(Ps1, Ps2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqExprList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[E1|Es1], [E2|Es2]}> when 'true' ->
+        case apply 'refEqExpr'/2(E1, E2) of <'true'> when 'true' -> apply 'refEqExprList'/2(Es1, Es2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqLetBindList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[B1|Bs1], [B2|Bs2]}> when 'true' ->
+        case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', B1), call 'maps':'get'('pattern', B2)) of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('value', B1), call 'maps':'get'('value', B2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqLetBindList'/2(Bs1, Bs2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqCaseClauseList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[C1|Cs1], [C2|Cs2]}> when 'true' ->
+        case case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', C1), call 'maps':'get'('pattern', C2)) of <'true'> when 'true' -> apply 'refEqMaybeExpr'/2(call 'maps':'get'('guard', C1), call 'maps':'get'('guard', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('body', C1), call 'maps':'get'('body', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqCaseClauseList'/2(Cs1, Cs2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqMaybeExpr'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'Nothing', 'Nothing'}> when 'true' ->
+        'true'
+      <{{'Just', E1}, {'Just', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqDoStmtList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[S1|Ss1], [S2|Ss2]}> when 'true' ->
+        case apply 'refEqDoStmt'/2(S1, S2) of <'true'> when 'true' -> apply 'refEqDoStmtList'/2(Ss1, Ss2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqDoStmt'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'DoLet', Binds1}, {'DoLet', Binds2}}> when 'true' ->
+        apply 'refEqLetBindList'/2(Binds1, Binds2)
+      <{{'DoBind', P1, E1}, {'DoBind', P2, E2}}> when 'true' ->
+        case apply 'refEqPattern'/2(P1, P2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
+      <{{'DoExpr', E1}, {'DoExpr', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqRecordFields'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[{'Tuple', N1, E1}|Fs1], [{'Tuple', N2, E2}|Fs2]}> when 'true' ->
+        case case call 'erlang':'=:='(N1, N2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqRecordFields'/2(Fs1, Fs2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqExpr'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqExpr'/2(_A0, _A1)
+      in _F0
+
+'refEqLit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqLit'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqLit'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqLit'/2(_A0, _A1)
+      in _F0
+
+'refEqPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqPattern'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqPattern'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqPattern'/2(_A0, _A1)
+      in _F0
+
+'refEqPatternList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqPatternList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqPatternList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqPatternList'/2(_A0, _A1)
+      in _F0
+
+'refEqExprList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqExprList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqExprList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqExprList'/2(_A0, _A1)
+      in _F0
+
+'refEqLetBindList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqLetBindList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqLetBindList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqLetBindList'/2(_A0, _A1)
+      in _F0
+
+'refEqCaseClauseList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqCaseClauseList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqCaseClauseList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqCaseClauseList'/2(_A0, _A1)
+      in _F0
+
+'refEqMaybeExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqMaybeExpr'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqMaybeExpr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqMaybeExpr'/2(_A0, _A1)
+      in _F0
+
+'refEqDoStmtList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqDoStmtList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqDoStmtList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqDoStmtList'/2(_A0, _A1)
+      in _F0
+
+'refEqDoStmt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqDoStmt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqDoStmt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqDoStmt'/2(_A0, _A1)
+      in _F0
+
+'refEqRecordFields'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqRecordFields'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqRecordFields'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqRecordFields'/2(_A0, _A1)
+      in _F0
+end

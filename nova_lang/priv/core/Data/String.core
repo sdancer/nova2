@@ -1,0 +1,842 @@
+module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 'split'/2, 'joinWith'/2, 'replaceAll'/3, 'trim'/1, 'toLower'/1, 'toUpper'/1, 'stripPrefix'/2, 'lastIndexOf'/2, 'toInt'/1, 'toCodePointArray'/1, 'singleton'/1, 'fromCharArray'/1, 'codeUnitIndex'/2, 'codeUnitTake'/2, 'codeUnitDrop'/2, 'codeUnitLength'/1, 'indexOf'/2, 'uncons'/1, 'slice'/3, 'null'/1, 'codePointAt'/2, 'fromCodePointArray'/1, 'lengthImpl'/1, 'takeImpl'/2, 'dropImpl'/2, 'charAtImpl'/2, 'containsImpl'/2, 'splitImpl'/2, 'joinWithImpl'/2, 'replaceAllImpl'/3, 'trimImpl'/1, 'toLowerImpl'/1, 'toUpperImpl'/1, 'stripPrefixImpl'/2, 'lastIndexOfImpl'/2, 'toIntImpl'/1, 'toCodePointArrayImpl'/1, 'singletonImpl'/1, 'fromCharArrayImpl'/1, 'codeUnitIndexImpl'/2, 'codeUnitTakeImpl'/2, 'codeUnitDropImpl'/2, 'codeUnitLengthImpl'/1, 'indexOfImpl'/2, 'unconsImpl'/1, 'sliceImpl'/3, 'nullImpl'/1, 'codePointAtImpl'/2, 'fromCodePointArrayImpl'/1, 'Pattern'/1, 'Replacement'/1, 'length'/0, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'charAt'/0, 'charAt'/1, 'contains'/0, 'contains'/1, 'split'/0, 'split'/1, 'joinWith'/0, 'joinWith'/1, 'replaceAll'/0, 'replaceAll'/1, 'replaceAll'/2, 'trim'/0, 'toLower'/0, 'toUpper'/0, 'stripPrefix'/0, 'stripPrefix'/1, 'lastIndexOf'/0, 'lastIndexOf'/1, 'toInt'/0, 'toCodePointArray'/0, 'singleton'/0, 'fromCharArray'/0, 'codeUnitIndex'/0, 'codeUnitIndex'/1, 'codeUnitTake'/0, 'codeUnitTake'/1, 'codeUnitDrop'/0, 'codeUnitDrop'/1, 'codeUnitLength'/0, 'indexOf'/0, 'indexOf'/1, 'uncons'/0, 'slice'/0, 'slice'/1, 'slice'/2, 'null'/0, 'codePointAt'/0, 'codePointAt'/1, 'fromCodePointArray'/0, 'lengthImpl'/0, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'charAtImpl'/0, 'charAtImpl'/1, 'containsImpl'/0, 'containsImpl'/1, 'splitImpl'/0, 'splitImpl'/1, 'joinWithImpl'/0, 'joinWithImpl'/1, 'replaceAllImpl'/0, 'replaceAllImpl'/1, 'replaceAllImpl'/2, 'trimImpl'/0, 'toLowerImpl'/0, 'toUpperImpl'/0, 'stripPrefixImpl'/0, 'stripPrefixImpl'/1, 'lastIndexOfImpl'/0, 'lastIndexOfImpl'/1, 'toIntImpl'/0, 'toCodePointArrayImpl'/0, 'singletonImpl'/0, 'fromCharArrayImpl'/0, 'codeUnitIndexImpl'/0, 'codeUnitIndexImpl'/1, 'codeUnitTakeImpl'/0, 'codeUnitTakeImpl'/1, 'codeUnitDropImpl'/0, 'codeUnitDropImpl'/1, 'codeUnitLengthImpl'/0, 'indexOfImpl'/0, 'indexOfImpl'/1, 'unconsImpl'/0, 'sliceImpl'/0, 'sliceImpl'/1, 'sliceImpl'/2, 'nullImpl'/0, 'codePointAtImpl'/0, 'codePointAtImpl'/1, 'fromCodePointArrayImpl'/0, 'Pattern'/0, 'Replacement'/0]
+  attributes []
+% Newtype: Pattern
+% Constructor: Pattern
+
+'Pattern'/1 =
+  fun (V0) ->
+    {'Pattern', V0}
+
+% Newtype: Replacement
+% Constructor: Replacement
+
+'Replacement'/1 =
+  fun (V0) ->
+    {'Replacement', V0}
+
+'length'/1 =
+  fun (S) ->
+    apply 'lengthImpl'/1(S)
+
+'take'/2 =
+  fun (N, S) ->
+    apply 'takeImpl'/2(N, S)
+
+'drop'/2 =
+  fun (N, S) ->
+    apply 'dropImpl'/2(N, S)
+
+'charAt'/2 =
+  fun (N, S) ->
+    apply 'charAtImpl'/2(N, S)
+
+'contains'/2 =
+  fun (Pattern, S) ->
+    apply 'containsImpl'/2(Pattern, S)
+
+'split'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Pattern', Sep}, S}> when 'true' ->
+        apply 'splitImpl'/2(Sep, S)
+    end
+
+'joinWith'/2 =
+  fun (Sep, Xs) ->
+    apply 'joinWithImpl'/2(Sep, Xs)
+
+'replaceAll'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{{'Pattern', Pat}, {'Replacement', Rep}, S}> when 'true' ->
+        apply 'replaceAllImpl'/3(Pat, Rep, S)
+    end
+
+'trim'/1 =
+  fun (S) ->
+    apply 'trimImpl'/1(S)
+
+'toLower'/1 =
+  fun (S) ->
+    apply 'toLowerImpl'/1(S)
+
+'toUpper'/1 =
+  fun (S) ->
+    apply 'toUpperImpl'/1(S)
+
+'stripPrefix'/2 =
+  fun (Prefix, S) ->
+    apply 'stripPrefixImpl'/2(Prefix, S)
+
+'lastIndexOf'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Pattern', Pat}, S}> when 'true' ->
+        apply 'lastIndexOfImpl'/2(Pat, S)
+    end
+
+'toInt'/1 =
+  fun (S) ->
+    apply 'toIntImpl'/1(S)
+
+'toCodePointArray'/1 =
+  fun (S) ->
+    apply 'toCodePointArrayImpl'/1(S)
+
+'singleton'/1 =
+  fun (Cp) ->
+    apply 'singletonImpl'/1(Cp)
+
+'fromCharArray'/1 =
+  fun (Cs) ->
+    apply 'fromCharArrayImpl'/1(Cs)
+
+'codeUnitIndex'/2 =
+  fun (I, S) ->
+    apply 'codeUnitIndexImpl'/2(I, S)
+
+'codeUnitTake'/2 =
+  fun (N, S) ->
+    apply 'codeUnitTakeImpl'/2(N, S)
+
+'codeUnitDrop'/2 =
+  fun (N, S) ->
+    apply 'codeUnitDropImpl'/2(N, S)
+
+'codeUnitLength'/1 =
+  fun (S) ->
+    apply 'codeUnitLengthImpl'/1(S)
+
+'indexOf'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Pattern', Pat}, S}> when 'true' ->
+        apply 'indexOfImpl'/2(Pat, S)
+    end
+
+'uncons'/1 =
+  fun (S) ->
+    apply 'unconsImpl'/1(S)
+
+'slice'/3 =
+  fun (Start, End, S) ->
+    apply 'sliceImpl'/3(Start, End, S)
+
+'null'/1 =
+  fun (S) ->
+    apply 'nullImpl'/1(S)
+
+'codePointAt'/2 =
+  fun (I, S) ->
+    apply 'codePointAtImpl'/2(I, S)
+
+'fromCodePointArray'/1 =
+  fun (Cps) ->
+    apply 'fromCodePointArrayImpl'/1(Cps)
+
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+
+'takeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+
+'dropImpl'/2 = fun (V0, V1) -> case V0 of
+        <0> when 'true' -> V1
+        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
+      end
+
+'charAtImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
+        <'false'> when 'true' -> 'Nothing'
+        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
+      end
+
+'containsImpl'/2 = fun (V0, V1) -> case call 'string':'find'(V1, V0) of
+        <'nomatch'> when 'true' -> 'false'
+        <_> when 'true' -> 'true'
+      end
+
+'splitImpl'/2 = fun (V0, V1) -> call 'string':'split'(V1, V0, 'all')
+
+'joinWithImpl'/2 = fun (V0, V1) -> call 'lists':'join'(V0, V1)
+
+'replaceAllImpl'/3 = fun (V0, V1, V2) -> call 'string':'replace'(V2, V0, V1, 'all')
+
+'trimImpl'/1 = fun (V0) -> call 'string':'trim'(V0)
+
+'toLowerImpl'/1 = fun (V0) -> call 'string':'lowercase'(V0)
+
+'toUpperImpl'/1 = fun (V0) -> call 'string':'uppercase'(V0)
+
+'stripPrefixImpl'/2 = fun (V0, V1) -> case call 'lists':'prefix'(V0, V1) of
+        <'true'> when 'true' -> {'Just', call 'lists':'nthtail'(call 'erlang':'length'(V0), V1)}
+        <'false'> when 'true' -> 'Nothing'
+      end
+
+'lastIndexOfImpl'/2 = fun (V0, V1) -> case call 'string':'rstr'(V1, V0) of
+        <0> when 'true' -> 'Nothing'
+        <N> when 'true' -> {'Just', call 'erlang':'-'(N, 1)}
+      end
+
+'toIntImpl'/1 = fun (V0) -> case call 'string':'to_integer'(V0) of
+        <{I, []}> when 'true' -> {'Just', I}
+        <_> when 'true' -> 'Nothing'
+      end
+
+'toCodePointArrayImpl'/1 = fun (V0) -> V0
+
+'singletonImpl'/1 = fun (V0) -> [V0]
+
+'fromCharArrayImpl'/1 = fun (V0) -> V0
+
+'codeUnitIndexImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
+        <'false'> when 'true' -> 'Nothing'
+        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
+      end
+
+'codeUnitTakeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+
+'codeUnitDropImpl'/2 = fun (V0, V1) -> case V0 of
+        <0> when 'true' -> V1
+        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
+      end
+
+'codeUnitLengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+
+'indexOfImpl'/2 = fun (V0, V1) -> case call 'string':'str'(V1, V0) of
+        <0> when 'true' -> 'Nothing'
+        <N> when 'true' -> {'Just', call 'erlang':'-'(N, 1)}
+      end
+
+'unconsImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}
+      end
+
+'sliceImpl'/3 = fun (V0, V1, V2) -> call 'lists':'sublist'(call 'lists':'nthtail'(V0, V2), call 'erlang':'-'(V1, V0))
+
+'nullImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'true'
+        <_> when 'true' -> 'false'
+      end
+
+'codePointAtImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
+        <'false'> when 'true' -> 'Nothing'
+        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
+      end
+
+'fromCodePointArrayImpl'/1 = fun (V0) -> V0
+
+'length'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'length'/1(_A0)
+      in _F0
+
+'take'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'take'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F0
+
+'drop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'drop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F0
+
+'charAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'charAt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'charAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'charAt'/2(_A0, _A1)
+      in _F0
+
+'contains'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'contains'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'contains'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'contains'/2(_A0, _A1)
+      in _F0
+
+'split'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'split'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'split'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'split'/2(_A0, _A1)
+      in _F0
+
+'joinWith'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'joinWith'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'joinWith'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'joinWith'/2(_A0, _A1)
+      in _F0
+
+'replaceAll'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'replaceAll'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'replaceAll'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'replaceAll'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'replaceAll'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'replaceAll'/3(_A0, _A1, _A2)
+      in _F0
+
+'trim'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'trim'/1(_A0)
+      in _F0
+
+'toLower'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toLower'/1(_A0)
+      in _F0
+
+'toUpper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUpper'/1(_A0)
+      in _F0
+
+'stripPrefix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'stripPrefix'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'stripPrefix'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'stripPrefix'/2(_A0, _A1)
+      in _F0
+
+'lastIndexOf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lastIndexOf'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lastIndexOf'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lastIndexOf'/2(_A0, _A1)
+      in _F0
+
+'toInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toInt'/1(_A0)
+      in _F0
+
+'toCodePointArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toCodePointArray'/1(_A0)
+      in _F0
+
+'singleton'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'singleton'/1(_A0)
+      in _F0
+
+'fromCharArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCharArray'/1(_A0)
+      in _F0
+
+'codeUnitIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitIndex'/2(_A0, _A1)
+      in _F0
+
+'codeUnitTake'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitTake'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitTake'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitTake'/2(_A0, _A1)
+      in _F0
+
+'codeUnitDrop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitDrop'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitDrop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitDrop'/2(_A0, _A1)
+      in _F0
+
+'codeUnitLength'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'codeUnitLength'/1(_A0)
+      in _F0
+
+'indexOf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'indexOf'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'indexOf'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'indexOf'/2(_A0, _A1)
+      in _F0
+
+'uncons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'uncons'/1(_A0)
+      in _F0
+
+'slice'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'slice'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'slice'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F0
+
+'null'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'null'/1(_A0)
+      in _F0
+
+'codePointAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codePointAt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codePointAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codePointAt'/2(_A0, _A1)
+      in _F0
+
+'fromCodePointArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCodePointArray'/1(_A0)
+      in _F0
+
+'lengthImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lengthImpl'/1(_A0)
+      in _F0
+
+'takeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'takeImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'takeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'takeImpl'/2(_A0, _A1)
+      in _F0
+
+'dropImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropImpl'/2(_A0, _A1)
+      in _F0
+
+'charAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'charAtImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'charAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'charAtImpl'/2(_A0, _A1)
+      in _F0
+
+'containsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'containsImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'containsImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'containsImpl'/2(_A0, _A1)
+      in _F0
+
+'splitImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'splitImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'splitImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'splitImpl'/2(_A0, _A1)
+      in _F0
+
+'joinWithImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'joinWithImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'joinWithImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'joinWithImpl'/2(_A0, _A1)
+      in _F0
+
+'replaceAllImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'replaceAllImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'replaceAllImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'replaceAllImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'replaceAllImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'replaceAllImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'trimImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'trimImpl'/1(_A0)
+      in _F0
+
+'toLowerImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toLowerImpl'/1(_A0)
+      in _F0
+
+'toUpperImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUpperImpl'/1(_A0)
+      in _F0
+
+'stripPrefixImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'stripPrefixImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'stripPrefixImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'stripPrefixImpl'/2(_A0, _A1)
+      in _F0
+
+'lastIndexOfImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lastIndexOfImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lastIndexOfImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lastIndexOfImpl'/2(_A0, _A1)
+      in _F0
+
+'toIntImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toIntImpl'/1(_A0)
+      in _F0
+
+'toCodePointArrayImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toCodePointArrayImpl'/1(_A0)
+      in _F0
+
+'singletonImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'singletonImpl'/1(_A0)
+      in _F0
+
+'fromCharArrayImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCharArrayImpl'/1(_A0)
+      in _F0
+
+'codeUnitIndexImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitIndexImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitIndexImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitIndexImpl'/2(_A0, _A1)
+      in _F0
+
+'codeUnitTakeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitTakeImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitTakeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitTakeImpl'/2(_A0, _A1)
+      in _F0
+
+'codeUnitDropImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codeUnitDropImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codeUnitDropImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codeUnitDropImpl'/2(_A0, _A1)
+      in _F0
+
+'codeUnitLengthImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'codeUnitLengthImpl'/1(_A0)
+      in _F0
+
+'indexOfImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'indexOfImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'indexOfImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'indexOfImpl'/2(_A0, _A1)
+      in _F0
+
+'unconsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unconsImpl'/1(_A0)
+      in _F0
+
+'sliceImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'sliceImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'sliceImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'nullImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'nullImpl'/1(_A0)
+      in _F0
+
+'codePointAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'codePointAtImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'codePointAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'codePointAtImpl'/2(_A0, _A1)
+      in _F0
+
+'fromCodePointArrayImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCodePointArrayImpl'/1(_A0)
+      in _F0
+
+'Pattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Pattern'/1(_A0)
+      in _F0
+
+'Replacement'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Replacement'/1(_A0)
+      in _F0
+end

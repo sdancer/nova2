@@ -1,0 +1,831 @@
+module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'/2, 'isRecordType'/1, 'getExportsExpandedTypeAliases'/1, 'getExportsTypeAliases'/1, 'getExportsValues'/1, 'getExportsConstructors'/1, 'getExportsTypes'/1, 'processImports'/3, 'processImportDecl'/3, 'mergeExportsWithTypeAliases'/2, 'expandModuleAliases'/1, 'importItem'/3, 'resolveImports'/2, 'resolveImportDecl'/3, 'getItemName'/1, 'getAllExportedNames'/1, 'extendEnv'/3, 'extendTypeAlias'/3, 'mergeTypeExport'/4, 'typeExprToType'/2, 'typeExprToTypeWithAllAliases'/4, 'collectTypeApp'/1, 'collectTypeExprNames'/1, 'arrayMap'/0, 'arrayMap'/1, 'listMap'/0, 'listMap'/1, 'mapMapMaybe'/0, 'mapMapMaybe'/1, 'isRecordType'/0, 'getExportsExpandedTypeAliases'/0, 'getExportsTypeAliases'/0, 'getExportsValues'/0, 'getExportsConstructors'/0, 'getExportsTypes'/0, 'processImports'/0, 'processImports'/1, 'processImports'/2, 'processImportDecl'/0, 'processImportDecl'/1, 'processImportDecl'/2, 'mergeExportsWithTypeAliases'/0, 'mergeExportsWithTypeAliases'/1, 'expandModuleAliases'/0, 'importItem'/0, 'importItem'/1, 'importItem'/2, 'resolveImports'/0, 'resolveImports'/1, 'resolveImportDecl'/0, 'resolveImportDecl'/1, 'resolveImportDecl'/2, 'getItemName'/0, 'getAllExportedNames'/0, 'extendEnv'/0, 'extendEnv'/1, 'extendEnv'/2, 'extendTypeAlias'/0, 'extendTypeAlias'/1, 'extendTypeAlias'/2, 'mergeTypeExport'/0, 'mergeTypeExport'/1, 'mergeTypeExport'/2, 'mergeTypeExport'/3, 'typeExprToType'/0, 'typeExprToType'/1, 'typeExprToTypeWithAllAliases'/0, 'typeExprToTypeWithAllAliases'/1, 'typeExprToTypeWithAllAliases'/2, 'typeExprToTypeWithAllAliases'/3, 'collectTypeApp'/0, 'collectTypeExprNames'/0]
+  attributes []
+'arrayMap'/2 =
+  fun (F, Arr) ->
+    call 'lists':'map'(F, Arr)
+
+'listMap'/2 =
+  fun (F, Xs) ->
+    call 'lists':'map'(F, Xs)
+
+'mapMapMaybe'/2 =
+  fun (F, M) ->
+    let <Pairs> = call 'Data.Map':'toUnfoldable'(M)
+      in let <Filtered> = call 'Data.Array':'mapMaybe'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', K, V}}> when 'true' -> case apply F(V) of
+      <{'Just', W}> when 'true' ->
+        {'Just', call 'Data.Tuple':'Tuple'(K, W)}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      end, Pairs)
+      in call 'Data.Map':'fromFoldable'(Filtered)
+
+'isRecordType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyRecord', _W0}}> when 'true' ->
+        'true'
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'getExportsExpandedTypeAliases'/1 =
+  fun (Exports) ->
+    call 'maps':'get'('expandedTypeAliases', Exports)
+
+'getExportsTypeAliases'/1 =
+  fun (Exports) ->
+    call 'maps':'get'('typeAliases', Exports)
+
+'getExportsValues'/1 =
+  fun (Exports) ->
+    call 'maps':'get'('values', Exports)
+
+'getExportsConstructors'/1 =
+  fun (Exports) ->
+    call 'maps':'get'('constructors', Exports)
+
+'getExportsTypes'/1 =
+  fun (Exports) ->
+    call 'maps':'get'('types', Exports)
+
+'processImports'/3 =
+  fun (Registry, Env, Decls) ->
+    letrec 'processDecl'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'DeclImport', Imp}}> when 'true' -> apply 'processImportDecl'/3(Registry, E, Imp)
+        <{E, _W0}> when 'true' -> E
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processDecl'/2(_Mf0, _Mf1), Env, Decls)
+
+'processImportDecl'/3 =
+  fun (Registry, Env, Imp) ->
+    case call 'Nova.Compiler.Types':'lookupModule'(Registry, call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        Env
+      <{'Just', Exports}> when 'true' ->
+        let <ExportsExpandedTypeAliases> = apply 'getExportsExpandedTypeAliases'/1(Exports)
+      in let <ExportsTypeAliases> = apply 'getExportsTypeAliases'/1(Exports)
+      in let <EnvWithQualified> = case call 'maps':'get'('alias', Imp) of
+      <{'Just', Alias}> when 'true' ->
+        call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, Alias)
+      <'Nothing'> when 'true' ->
+        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        call 'maps':'get'('moduleName', Imp)
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
+    end
+      in call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, LastPart)
+    end
+      in case call 'maps':'get'('hiding', Imp) of
+      <'true'> when 'true' -> apply 'mergeExportsWithTypeAliases'/2(EnvWithQualified, Exports)
+      <'false'> when 'true' -> case call 'Data.List':'null'(call 'maps':'get'('items', Imp)) of
+      <'true'> when 'true' -> case call 'maps':'get'('alias', Imp) of
+      <{'Just', _W0}> when 'true' ->
+        let <ModuleAliases> = case call 'Data.Map':'isEmpty'(ExportsExpandedTypeAliases) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(ExportsTypeAliases)
+      <'false'> when 'true' -> ExportsExpandedTypeAliases
+    end
+      in letrec 'addIfRecordAlias'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> apply 'extendTypeAlias'/3(E, Name, Ty)
+      <'false'> when 'true' -> E
+    end
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), EnvWithQualified, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      <'Nothing'> when 'true' ->
+        apply 'mergeExportsWithTypeAliases'/2(EnvWithQualified, Exports)
+    end
+      <'false'> when 'true' -> call 'Data.List':'foldl'(fun (_Pc0, _Pc1) -> apply 'importItem'/3(Exports, _Pc0, _Pc1), EnvWithQualified, call 'maps':'get'('items', Imp))
+    end
+    end
+    end
+
+'mergeExportsWithTypeAliases'/2 =
+  fun (Env, Exports) ->
+    let <ExportsExpandedTypeAliases> = apply 'getExportsExpandedTypeAliases'/1(Exports)
+      in let <ExportsTypeAliases> = apply 'getExportsTypeAliases'/1(Exports)
+      in let <Env1> = call 'Nova.Compiler.Types':'mergeExportsToEnv'(Env, Exports)
+      in let <ModuleAliases> = case call 'Data.Map':'isEmpty'(ExportsExpandedTypeAliases) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(ExportsTypeAliases)
+      <'false'> when 'true' -> ExportsExpandedTypeAliases
+    end
+      in letrec 'addIfRecordAlias'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> apply 'extendTypeAlias'/3(E, Name, Ty)
+      <'false'> when 'true' -> E
+    end
+      end
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), Env1, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      in Env2
+
+'expandModuleAliases'/1 =
+  fun (AliasInfos) ->
+    let <Initial> = apply 'mapMapMaybe'/2(fun (Info) ->
+      case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in let <Pass2> = apply 'mapMapMaybe'/2(fun (Info) ->
+      case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Initial, AliasInfos, call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in let <Pass3> = apply 'mapMapMaybe'/2(fun (Info) ->
+      case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
+      <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Pass2, AliasInfos, call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
+      <'false'> when 'true' -> 'Nothing'
+    end, AliasInfos)
+      in Pass3
+
+'importItem'/3 =
+  fun (Exports, Env, Item) ->
+    let <ExportsExpandedTypeAliases> = apply 'getExportsExpandedTypeAliases'/1(Exports)
+      in let <ExportsTypeAliases> = apply 'getExportsTypeAliases'/1(Exports)
+      in let <ExportsValues> = apply 'getExportsValues'/1(Exports)
+      in let <ExportsConstructors> = apply 'getExportsConstructors'/1(Exports)
+      in let <ExportsTypes> = apply 'getExportsTypes'/1(Exports)
+      in let <ModuleAliases> = case call 'Data.Map':'isEmpty'(ExportsExpandedTypeAliases) of
+      <'true'> when 'true' -> apply 'expandModuleAliases'/1(ExportsTypeAliases)
+      <'false'> when 'true' -> ExportsExpandedTypeAliases
+    end
+      in letrec 'addAllRecordAliases'/1 = fun (E) ->
+      letrec 'addIfRecord'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E2, {'Tuple', Name, Ty}}> when 'true' -> case apply 'isRecordType'/1(Ty) of
+      <'true'> when 'true' -> apply 'extendTypeAlias'/3(E2, Name, Ty)
+      <'false'> when 'true' -> E2
+    end
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecord'/2(_Mf0, _Mf1), E, call 'Data.Map':'toUnfoldable'(ModuleAliases))
+      in case Item of
+      <{'ImportValue', Name}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ExportsValues) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'addAllRecordAliases'/1(apply 'extendEnv'/3(Env, Name, Scheme))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ExportsConstructors) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'addAllRecordAliases'/1(apply 'extendEnv'/3(Env, Name, Scheme))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        apply 'addAllRecordAliases'/1(apply 'extendTypeAlias'/3(Env, Name, Ty))
+      <'Nothing'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env)
+    end
+    end
+    end
+      <{'ImportType', TypeName, Spec}> when 'true' ->
+        let <Env_> = case call 'Data.Map':'lookup'(TypeName, ExportsTypeAliases) of
+      <{'Just', AliasInfo}> when 'true' ->
+        let <ExpandedTy> = case call 'Data.Map':'lookup'(TypeName, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('body', AliasInfo))
+    end
+      in let <ReferencedNames> = apply 'collectTypeExprNames'/1(call 'maps':'get'('body', AliasInfo))
+      in let <E1> = apply 'extendTypeAlias'/3(Env, TypeName, ExpandedTy)
+      in letrec 'addIfRecordAlias'/2 = fun (E, Name) ->
+      case call 'Data.Map':'lookup'(Name, ModuleAliases) of
+      <{'Just', AliasTy}> when 'true' ->
+        case apply 'isRecordType'/1(AliasTy) of
+          <'true'> when 'true' -> apply 'extendTypeAlias'/3(E, Name, AliasTy)
+          <_> when 'true' -> E
+        end
+      <_W0> when 'true' ->
+        E
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addIfRecordAlias'/2(_Mf0, _Mf1), E1, call 'Data.Set':'toUnfoldable'(ReferencedNames))
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(TypeName, ModuleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        apply 'extendTypeAlias'/3(Env, TypeName, Ty)
+      <'Nothing'> when 'true' ->
+        Env
+    end
+    end
+      in case call 'Data.Map':'lookup'(TypeName, ExportsTypes) of
+      <'Nothing'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env_)
+      <{'Just', TypeInfo}> when 'true' ->
+        case Spec of
+      <'ImportAll'> when 'true' ->
+        apply 'addAllRecordAliases'/1(apply 'mergeTypeExport'/4(Env_, Exports, TypeName, call 'maps':'get'('constructors', TypeInfo)))
+      <{'ImportSome', CtorNames}> when 'true' ->
+        apply 'addAllRecordAliases'/1(apply 'mergeTypeExport'/4(Env_, Exports, TypeName, call 'Data.List':'toUnfoldable'(CtorNames)))
+      <'ImportNone'> when 'true' ->
+        apply 'addAllRecordAliases'/1(Env_)
+    end
+    end
+    end
+
+'resolveImports'/2 =
+  fun (Registry, Decls) ->
+    letrec 'processDecl'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Resolved, {'DeclImport', Imp}}> when 'true' -> apply 'resolveImportDecl'/3(Registry, Resolved, Imp)
+        <{Resolved, _W0}> when 'true' -> Resolved
+      end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'processDecl'/2(_Mf0, _Mf1), call 'Data.Map':'empty'(), Decls)
+
+'resolveImportDecl'/3 =
+  fun (Registry, Resolved, Imp) ->
+    case call 'Nova.Compiler.Types':'lookupModule'(Registry, call 'maps':'get'('moduleName', Imp)) of
+      <'Nothing'> when 'true' ->
+        Resolved
+      <{'Just', Exports}> when 'true' ->
+        case call 'maps':'get'('hiding', Imp) of
+      <'true'> when 'true' -> let <AllNames> = apply 'getAllExportedNames'/1(Exports)
+      in let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(call 'maps':'get'('items', Imp))
+      in let <HiddenNames> = call 'Data.Set':'fromFoldable'(apply 'arrayMap'/2(fun (_Mf0) -> apply 'getItemName'/1(_Mf0), ItemsAsArray))
+      in let <ImportedNames> = call 'Data.Set':'difference'(AllNames, HiddenNames)
+      in let <ImportedArray> = call 'Data.Set':'toUnfoldable'(ImportedNames)
+      in call 'Data.Array':'foldl'(fun (M, Name) ->
+      call 'Data.Map':'insert'(Name, call 'maps':'get'('moduleName', Imp), M), Resolved, ImportedArray)
+      <'false'> when 'true' -> case call 'Data.List':'null'(call 'maps':'get'('items', Imp)) of
+      <'true'> when 'true' -> let <AllNames> = apply 'getAllExportedNames'/1(Exports)
+      in let <AllNamesArray> = call 'Data.Set':'toUnfoldable'(AllNames)
+      in call 'Data.Array':'foldl'(fun (M, Name) ->
+      call 'Data.Map':'insert'(Name, call 'maps':'get'('moduleName', Imp), M), Resolved, AllNamesArray)
+      <'false'> when 'true' -> let <ItemsArray> = call 'Data.List':'toUnfoldable'(call 'maps':'get'('items', Imp))
+      in call 'Data.Array':'foldl'(fun (M, Item) ->
+      call 'Data.Map':'insert'(apply 'getItemName'/1(Item), call 'maps':'get'('moduleName', Imp), M), Resolved, ItemsArray)
+    end
+    end
+    end
+
+'getItemName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ImportValue', Name}}> when 'true' ->
+        Name
+      <{{'ImportType', Name, _W0}}> when 'true' ->
+        Name
+    end
+
+'getAllExportedNames'/1 =
+  fun (Exports) ->
+    let <ValueNames> = call 'Data.Set':'fromFoldable'(call 'Data.Map':'keys'(call 'maps':'get'('values', Exports)))
+      in let <CtorNames> = call 'Data.Set':'fromFoldable'(call 'Data.Map':'keys'(call 'maps':'get'('constructors', Exports)))
+      in let <TypeNames> = call 'Data.Set':'fromFoldable'(call 'Data.Map':'keys'(call 'maps':'get'('types', Exports)))
+      in let <AliasNames> = call 'Data.Set':'fromFoldable'(call 'Data.Map':'keys'(call 'maps':'get'('typeAliases', Exports)))
+      in call 'Data.Set':'unions'([ValueNames, CtorNames, TypeNames, AliasNames])
+
+'extendEnv'/3 =
+  fun (Env, Name, Scheme) ->
+    call 'maps':'merge'(Env, ~{'bindings'=>call 'Data.Map':'insert'(Name, Scheme, call 'maps':'get'('bindings', Env))}~)
+
+'extendTypeAlias'/3 =
+  fun (Env, Name, Ty) ->
+    call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', Env))}~)
+
+'mergeTypeExport'/4 =
+  fun (Env, Exports, _W0, CtorNames) ->
+    letrec 'addCtor'/2 = fun (E, CtorName) ->
+      case call 'Data.Map':'lookup'(CtorName, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E, CtorName, Scheme)
+      <'Nothing'> when 'true' ->
+        E
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addCtor'/2(_Mf0, _Mf1), Env, CtorNames)
+
+'typeExprToType'/2 =
+  fun (Aliases, Expr) ->
+    case Expr of
+      <{'TyExprVar', Name}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, Aliases) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        {'TyVar', ~{'id'=>0,'name'=>Name}~}
+    end
+      <{'TyExprCon', Name}> when 'true' ->
+        {'TyCon', ~{'name'=>Name,'args'=>[]}~}
+      <{'TyExprArrow', From, To}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'typeExprToType'/2(Aliases, From))
+      in apply _Oa0(apply 'typeExprToType'/2(Aliases, To))
+      <{'TyExprRecord', Fields, MaybeRow}> when 'true' ->
+        let <FieldsAsArray> = call 'Data.List':'toUnfoldable'(Fields)
+      in let <RowVar> = case MaybeRow of
+      <{'Just', RowName}> when 'true' ->
+        {'Just', ~{'id'=>0,'name'=>RowName}~}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in let <FieldMap> = call 'Data.Map':'fromFoldable'(apply 'arrayMap'/2(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Label, Ty}}> when 'true' -> call 'Data.Tuple':'Tuple'(Label, apply 'typeExprToType'/2(Aliases, Ty))
+      end, FieldsAsArray))
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>RowVar}~}
+      <{'TyExprForAll', _W0, Inner}> when 'true' ->
+        apply 'typeExprToType'/2(Aliases, Inner)
+      <{'TyExprParens', Inner}> when 'true' ->
+        apply 'typeExprToType'/2(Aliases, Inner)
+      <{'TyExprApp', Base, Arg}> when 'true' ->
+        case apply 'typeExprToType'/2(Aliases, Base) of
+      <{'TyCon', Tc}> when 'true' ->
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'erlang':'++'(call 'maps':'get'('args', Tc), [apply 'typeExprToType'/2(Aliases, Arg)])}~}
+      <Other> when 'true' ->
+        Other
+    end
+      <{'TyExprConstrained', _W0, Inner}> when 'true' ->
+        apply 'typeExprToType'/2(Aliases, Inner)
+      <{'TyExprTuple', Items}> when 'true' ->
+        let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(Items)
+      in let <ArgTypes> = apply 'arrayMap'/2(fun (_Pc0) -> apply 'typeExprToType'/2(Aliases, _Pc0), ItemsAsArray)
+      in {'TyCon', ~{'name'=>"Tuple",'args'=>ArgTypes}~}
+    end
+
+'typeExprToTypeWithAllAliases'/4 =
+  fun (SimpleAliases, FullAliases, ParamAliases, Expr) ->
+    case Expr of
+      <{'TyExprVar', Name}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, ParamAliases) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, SimpleAliases) of
+      <{'Just', Ty}> when 'true' ->
+        Ty
+      <'Nothing'> when 'true' ->
+        {'TyVar', ~{'id'=>0,'name'=>Name}~}
+    end
+    end
+      <{'TyExprCon', Name}> when 'true' ->
+        case call 'Data.Map':'lookup'(Name, FullAliases) of
+      <{'Just', AliasInfo}> when 'true' ->
+        case call 'Data.Array':'null'(call 'maps':'get'('params', AliasInfo)) of
+          <'true'> when 'true' -> apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, call 'maps':'get'('body', AliasInfo))
+          <_> when 'true' -> {'TyCon', ~{'name'=>Name,'args'=>[]}~}
+        end
+      <_W0> when 'true' ->
+        {'TyCon', ~{'name'=>Name,'args'=>[]}~}
+    end
+      <{'TyExprArrow', From, To}> when 'true' ->
+        let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, From))
+      in apply _Oa0(apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, To))
+      <{'TyExprRecord', Fields, MaybeRow}> when 'true' ->
+        let <FieldsAsArray> = call 'Data.List':'toUnfoldable'(Fields)
+      in let <RowVar> = case MaybeRow of
+      <{'Just', RowName}> when 'true' ->
+        case call 'Data.Map':'lookup'(RowName, ParamAliases) of
+      <{'Just', {'TyVar', V}}> when 'true' ->
+        {'Just', V}
+      <{'Just', _W0}> when 'true' ->
+        'Nothing'
+      <'Nothing'> when 'true' ->
+        {'Just', ~{'id'=>0,'name'=>RowName}~}
+    end
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in let <FieldMap> = call 'Data.Map':'fromFoldable'(apply 'arrayMap'/2(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Label, Ty}}> when 'true' -> call 'Data.Tuple':'Tuple'(Label, apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, Ty))
+      end, FieldsAsArray))
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>RowVar}~}
+      <{'TyExprForAll', _W0, Inner}> when 'true' ->
+        apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, Inner)
+      <{'TyExprParens', Inner}> when 'true' ->
+        apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, Inner)
+      <{'TyExprApp', _W0, _W1}> when 'true' ->
+        let <_Let0> = apply 'collectTypeApp'/1(Expr)
+      in case _Let0 of
+        <{'Tuple', ConName, Args}> when 'true' -> let <ArgTypes> = apply 'arrayMap'/2(fun (_Pc0) -> apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, _Pc0), Args)
+      in case call 'Data.Map':'lookup'(ConName, FullAliases) of
+      <{'Just', AliasInfo}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.Array':'length'(ArgTypes), call 'Data.Array':'length'(call 'maps':'get'('params', AliasInfo))) of
+          <'true'> when 'true' -> let <ParamMap> = call 'Data.Map':'fromFoldable'(call 'Data.Array':'zip'(call 'maps':'get'('params', AliasInfo), ArgTypes))
+      in apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamMap, call 'maps':'get'('body', AliasInfo))
+          <_> when 'true' -> {'TyCon', ~{'name'=>ConName,'args'=>ArgTypes}~}
+        end
+      <_W0> when 'true' ->
+        {'TyCon', ~{'name'=>ConName,'args'=>ArgTypes}~}
+    end
+      end
+      <{'TyExprConstrained', _W0, Inner}> when 'true' ->
+        apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, Inner)
+      <{'TyExprTuple', Items}> when 'true' ->
+        let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(Items)
+      in let <ArgTypes> = apply 'arrayMap'/2(fun (_Pc0) -> apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, _Pc0), ItemsAsArray)
+      in {'TyCon', ~{'name'=>"Tuple",'args'=>ArgTypes}~}
+    end
+
+'collectTypeApp'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyExprCon', Name}}> when 'true' ->
+        call 'Data.Tuple':'Tuple'(Name, [])
+      <{{'TyExprApp', Base, Arg}}> when 'true' ->
+        let <_Let0> = apply 'collectTypeApp'/1(Base)
+      in case _Let0 of
+        <{'Tuple', Name, Args}> when 'true' -> call 'Data.Tuple':'Tuple'(Name, call 'erlang':'++'(Args, [Arg]))
+      end
+      <{_W0}> when 'true' ->
+        call 'Data.Tuple':'Tuple'("Unknown", [])
+    end
+
+'collectTypeExprNames'/1 =
+  fun (Expr) ->
+    case Expr of
+      <{'TyExprVar', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'TyExprCon', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(Name)
+      <{'TyExprArrow', From, To}> when 'true' ->
+        call 'Data.Set':'union'(apply 'collectTypeExprNames'/1(From), apply 'collectTypeExprNames'/1(To))
+      <{'TyExprRecord', Fields, _W0}> when 'true' ->
+        let <FieldsAsArray> = call 'Data.List':'toUnfoldable'(Fields)
+      in let <FieldsSets> = apply 'arrayMap'/2(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, Ty}}> when 'true' -> apply 'collectTypeExprNames'/1(Ty)
+      end, FieldsAsArray)
+      in call 'Data.Set':'unions'(FieldsSets)
+      <{'TyExprForAll', _W0, Inner}> when 'true' ->
+        apply 'collectTypeExprNames'/1(Inner)
+      <{'TyExprParens', Inner}> when 'true' ->
+        apply 'collectTypeExprNames'/1(Inner)
+      <{'TyExprApp', Base, Arg}> when 'true' ->
+        call 'Data.Set':'union'(apply 'collectTypeExprNames'/1(Base), apply 'collectTypeExprNames'/1(Arg))
+      <{'TyExprConstrained', _W0, Inner}> when 'true' ->
+        apply 'collectTypeExprNames'/1(Inner)
+      <{'TyExprTuple', Items}> when 'true' ->
+        let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(Items)
+      in let <ItemsSets> = apply 'arrayMap'/2(fun (_Mf0) -> apply 'collectTypeExprNames'/1(_Mf0), ItemsAsArray)
+      in call 'Data.Set':'unions'(ItemsSets)
+    end
+
+'arrayMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'arrayMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'arrayMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'arrayMap'/2(_A0, _A1)
+      in _F0
+
+'listMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'listMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'listMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'listMap'/2(_A0, _A1)
+      in _F0
+
+'mapMapMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapMapMaybe'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapMapMaybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapMapMaybe'/2(_A0, _A1)
+      in _F0
+
+'isRecordType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isRecordType'/1(_A0)
+      in _F0
+
+'getExportsExpandedTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportsExpandedTypeAliases'/1(_A0)
+      in _F0
+
+'getExportsTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportsTypeAliases'/1(_A0)
+      in _F0
+
+'getExportsValues'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportsValues'/1(_A0)
+      in _F0
+
+'getExportsConstructors'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportsConstructors'/1(_A0)
+      in _F0
+
+'getExportsTypes'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getExportsTypes'/1(_A0)
+      in _F0
+
+'processImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'processImports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'processImports'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'processImports'/3(_A0, _A1, _A2)
+      in _F0
+
+'processImportDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'processImportDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'processImportDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'processImportDecl'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeExportsWithTypeAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mergeExportsWithTypeAliases'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mergeExportsWithTypeAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mergeExportsWithTypeAliases'/2(_A0, _A1)
+      in _F0
+
+'expandModuleAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'expandModuleAliases'/1(_A0)
+      in _F0
+
+'importItem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'importItem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'importItem'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'importItem'/3(_A0, _A1, _A2)
+      in _F0
+
+'resolveImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'resolveImports'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'resolveImports'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'resolveImports'/2(_A0, _A1)
+      in _F0
+
+'resolveImportDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'resolveImportDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'resolveImportDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'resolveImportDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'resolveImportDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'resolveImportDecl'/3(_A0, _A1, _A2)
+      in _F0
+
+'getItemName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getItemName'/1(_A0)
+      in _F0
+
+'getAllExportedNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getAllExportedNames'/1(_A0)
+      in _F0
+
+'extendEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'extendEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'extendEnv'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'extendEnv'/3(_A0, _A1, _A2)
+      in _F0
+
+'extendTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'extendTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'extendTypeAlias'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'extendTypeAlias'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeTypeExport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'mergeTypeExport'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'mergeTypeExport'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'mergeTypeExport'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'typeExprToType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'typeExprToType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'typeExprToType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'typeExprToType'/2(_A0, _A1)
+      in _F0
+
+'typeExprToTypeWithAllAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'typeExprToTypeWithAllAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'typeExprToTypeWithAllAliases'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'collectTypeApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeApp'/1(_A0)
+      in _F0
+
+'collectTypeExprNames'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'collectTypeExprNames'/1(_A0)
+      in _F0
+end

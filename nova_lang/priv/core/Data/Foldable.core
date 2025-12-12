@@ -1,0 +1,562 @@
+module 'Data.Foldable' ['foldl'/3, 'foldr'/3, 'foldM'/3, 'traverse_'/2, 'for_'/2, 'any'/2, 'all'/2, 'elem'/2, 'notElem'/2, 'find'/2, 'length'/1, 'null'/1, 'sum'/1, 'product'/1, 'maximum'/1, 'minimum'/1, 'intercalate'/2, 'toArray'/1, 'foldlImpl'/3, 'foldrImpl'/3, 'foldMImpl'/3, 'traverse_Impl'/2, 'for_Impl'/2, 'anyImpl'/2, 'allImpl'/2, 'elemImpl'/2, 'notElemImpl'/2, 'findImpl'/2, 'lengthImpl'/1, 'nullImpl'/1, 'sumImpl'/1, 'productImpl'/1, 'maximumImpl'/1, 'minimumImpl'/1, 'intercalateImpl'/2, 'toArrayImpl'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'foldM'/0, 'foldM'/1, 'foldM'/2, 'traverse_'/0, 'traverse_'/1, 'for_'/0, 'for_'/1, 'any'/0, 'any'/1, 'all'/0, 'all'/1, 'elem'/0, 'elem'/1, 'notElem'/0, 'notElem'/1, 'find'/0, 'find'/1, 'length'/0, 'null'/0, 'sum'/0, 'product'/0, 'maximum'/0, 'minimum'/0, 'intercalate'/0, 'intercalate'/1, 'toArray'/0, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'foldMImpl'/0, 'foldMImpl'/1, 'foldMImpl'/2, 'traverse_Impl'/0, 'traverse_Impl'/1, 'for_Impl'/0, 'for_Impl'/1, 'anyImpl'/0, 'anyImpl'/1, 'allImpl'/0, 'allImpl'/1, 'elemImpl'/0, 'elemImpl'/1, 'notElemImpl'/0, 'notElemImpl'/1, 'findImpl'/0, 'findImpl'/1, 'lengthImpl'/0, 'nullImpl'/0, 'sumImpl'/0, 'productImpl'/0, 'maximumImpl'/0, 'minimumImpl'/0, 'intercalateImpl'/0, 'intercalateImpl'/1, 'toArrayImpl'/0]
+  attributes []
+'foldl'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldlImpl'/3(F, Acc, Xs)
+
+'foldr'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldrImpl'/3(F, Acc, Xs)
+
+'foldM'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldMImpl'/3(F, Acc, Xs)
+
+'traverse_'/2 =
+  fun (F, Xs) ->
+    apply 'traverse_Impl'/2(F, Xs)
+
+'for_'/2 =
+  fun (Xs, F) ->
+    apply 'for_Impl'/2(Xs, F)
+
+'any'/2 =
+  fun (F, Xs) ->
+    apply 'anyImpl'/2(F, Xs)
+
+'all'/2 =
+  fun (F, Xs) ->
+    apply 'allImpl'/2(F, Xs)
+
+'elem'/2 =
+  fun (X, Xs) ->
+    apply 'elemImpl'/2(X, Xs)
+
+'notElem'/2 =
+  fun (X, Xs) ->
+    apply 'notElemImpl'/2(X, Xs)
+
+'find'/2 =
+  fun (F, Xs) ->
+    apply 'findImpl'/2(F, Xs)
+
+'length'/1 =
+  fun (Xs) ->
+    apply 'lengthImpl'/1(Xs)
+
+'null'/1 =
+  fun (Xs) ->
+    apply 'nullImpl'/1(Xs)
+
+'sum'/1 =
+  fun (Xs) ->
+    apply 'sumImpl'/1(Xs)
+
+'product'/1 =
+  fun (Xs) ->
+    apply 'productImpl'/1(Xs)
+
+'maximum'/1 =
+  fun (Xs) ->
+    apply 'maximumImpl'/1(Xs)
+
+'minimum'/1 =
+  fun (Xs) ->
+    apply 'minimumImpl'/1(Xs)
+
+'intercalate'/2 =
+  fun (Sep, Xs) ->
+    apply 'intercalateImpl'/2(Sep, Xs)
+
+'toArray'/1 =
+  fun (Xs) ->
+    apply 'toArrayImpl'/1(Xs)
+
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldl'(fun (E, A) -> apply V0 (A, E), V1, V2)
+
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
+
+'foldMImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+
+'traverse_Impl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'for_Impl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'anyImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'allImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'elemImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'notElemImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'findImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'lengthImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'nullImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'sumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'productImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'maximumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'minimumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'intercalateImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'toArrayImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'foldl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldM'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldM'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldM'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldM'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldM'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldM'/3(_A0, _A1, _A2)
+      in _F0
+
+'traverse_'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'traverse_'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'traverse_'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'traverse_'/2(_A0, _A1)
+      in _F0
+
+'for_'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'for_'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'for_'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'for_'/2(_A0, _A1)
+      in _F0
+
+'any'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'any'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
+      in _F0
+
+'all'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'all'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'all'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'all'/2(_A0, _A1)
+      in _F0
+
+'elem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
+      in _F0
+
+'notElem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'notElem'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'notElem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'notElem'/2(_A0, _A1)
+      in _F0
+
+'find'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'find'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'find'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'find'/2(_A0, _A1)
+      in _F0
+
+'length'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'length'/1(_A0)
+      in _F0
+
+'null'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'null'/1(_A0)
+      in _F0
+
+'sum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sum'/1(_A0)
+      in _F0
+
+'product'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'product'/1(_A0)
+      in _F0
+
+'maximum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'maximum'/1(_A0)
+      in _F0
+
+'minimum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'minimum'/1(_A0)
+      in _F0
+
+'intercalate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'intercalate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'intercalate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'intercalate'/2(_A0, _A1)
+      in _F0
+
+'toArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toArray'/1(_A0)
+      in _F0
+
+'foldlImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldlImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldlImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldrImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldrImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldrImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldMImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldMImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldMImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldMImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldMImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldMImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'traverse_Impl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'traverse_Impl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'traverse_Impl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'traverse_Impl'/2(_A0, _A1)
+      in _F0
+
+'for_Impl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'for_Impl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'for_Impl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'for_Impl'/2(_A0, _A1)
+      in _F0
+
+'anyImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'anyImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'anyImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'anyImpl'/2(_A0, _A1)
+      in _F0
+
+'allImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'allImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'allImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'allImpl'/2(_A0, _A1)
+      in _F0
+
+'elemImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elemImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elemImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elemImpl'/2(_A0, _A1)
+      in _F0
+
+'notElemImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'notElemImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'notElemImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'notElemImpl'/2(_A0, _A1)
+      in _F0
+
+'findImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findImpl'/2(_A0, _A1)
+      in _F0
+
+'lengthImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lengthImpl'/1(_A0)
+      in _F0
+
+'nullImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'nullImpl'/1(_A0)
+      in _F0
+
+'sumImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sumImpl'/1(_A0)
+      in _F0
+
+'productImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'productImpl'/1(_A0)
+      in _F0
+
+'maximumImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'maximumImpl'/1(_A0)
+      in _F0
+
+'minimumImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'minimumImpl'/1(_A0)
+      in _F0
+
+'intercalateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'intercalateImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'intercalateImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'intercalateImpl'/2(_A0, _A1)
+      in _F0
+
+'toArrayImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toArrayImpl'/1(_A0)
+      in _F0
+end

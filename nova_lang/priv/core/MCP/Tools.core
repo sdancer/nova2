@@ -1,0 +1,232 @@
+module 'MCP.Tools' ['listToolsJson'/1, 'toolToJson'/1, 'allTools'/0, 'objectSchema'/2, 'propToKv'/1, 'prop'/3, 'callTool'/3, 'formatResult'/1, 'doCallTool'/3, 'getStringArg'/2, 'listToolsJson'/0, 'toolToJson'/0, 'objectSchema'/0, 'objectSchema'/1, 'propToKv'/0, 'prop'/0, 'prop'/1, 'prop'/2, 'callTool'/0, 'callTool'/1, 'callTool'/2, 'formatResult'/0, 'doCallTool'/0, 'doCallTool'/1, 'doCallTool'/2, 'getStringArg'/0, 'getStringArg'/1]
+  attributes []
+'listToolsJson'/1 =
+  fun (_W0) ->
+    call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("tools")
+      in apply _Oa0(call 'MCP.Json':'toJsonArray'(call 'lists':'map'(fun (_Mf0) -> apply 'toolToJson'/1(_Mf0), apply 'allTools'/0())))])
+
+'toolToJson'/1 =
+  fun (Tool) ->
+    call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("name")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(call 'maps':'get'('name', Tool))), let <_Oa0> = call 'MCP.Json':'kv'("description")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(call 'maps':'get'('description', Tool))), let <_Oa0> = call 'MCP.Json':'kv'("inputSchema")
+      in apply _Oa0(call 'maps':'get'('inputSchema', Tool))])
+
+'allTools'/0 =
+  fun () ->
+    [~{'name'=>"nova_create_namespace",'description'=>"Create a new namespace for organizing Nova declarations",'inputSchema'=>apply 'objectSchema'/2([apply 'prop'/3("name", "string", "The namespace name")], ["name"])}~, ~{'name'=>"nova_delete_namespace",'description'=>"Delete a namespace and all its declarations",'inputSchema'=>apply 'objectSchema'/2([apply 'prop'/3("name", "string", "The namespace name to delete")], ["name"])}~, ~{'name'=>"nova_list_namespaces",'description'=>"List all existing namespaces",'inputSchema'=>apply 'objectSchema'/2([], [])}~, ~{'name'=>"nova_echo",'description'=>"Echo back the provided message (for testing)",'inputSchema'=>apply 'objectSchema'/2([apply 'prop'/3("message", "string", "Message to echo")], ["message"])}~]
+
+'objectSchema'/2 =
+  fun (Props, Required) ->
+    let <PropsObj> = call 'MCP.Json':'object'(call 'lists':'map'(fun (_Mf0) -> apply 'propToKv'/1(_Mf0), Props))
+      in let <RequiredArr> = call 'MCP.Json':'toJsonArray'(call 'lists':'map'(call 'MCP.Json':'toJsonString'(), Required))
+      in call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("type")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'("object")), let <_Oa0> = call 'MCP.Json':'kv'("properties")
+      in apply _Oa0(PropsObj), let <_Oa0> = call 'MCP.Json':'kv'("required")
+      in apply _Oa0(RequiredArr)])
+
+'propToKv'/1 =
+  fun (P) ->
+    let <_Oa0> = call 'MCP.Json':'kv'(call 'maps':'get'('name', P))
+      in apply _Oa0(call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("type")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(call 'maps':'get'('ty', P))), let <_Oa0> = call 'MCP.Json':'kv'("description")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(call 'maps':'get'('desc', P)))]))
+
+'prop'/3 =
+  fun (Name, Ty, Desc) ->
+    ~{'name'=>Name,'ty'=>Ty,'desc'=>Desc}~
+
+'callTool'/3 =
+  fun (Name, Args, State) ->
+    let <Result> = apply 'doCallTool'/3(Name, Args, State)
+      in ~{'result'=>apply 'formatResult'/1(call 'maps':'get'('result', Result)),'state'=>call 'maps':'get'('state', Result)}~
+
+'formatResult'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Right', Text}}> when 'true' ->
+        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("content")
+      in apply _Oa0(call 'MCP.Json':'toJsonArray'([call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("type")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'("text")), let <_Oa0> = call 'MCP.Json':'kv'("text")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(Text))])])), let <_Oa0> = call 'MCP.Json':'kv'("isError")
+      in apply _Oa0(call 'MCP.Json':'toJsonBool'('false'))])
+      <{{'Left', Err}}> when 'true' ->
+        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("content")
+      in apply _Oa0(call 'MCP.Json':'toJsonArray'([call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("type")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'("text")), let <_Oa0> = call 'MCP.Json':'kv'("text")
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(Err))])])), let <_Oa0> = call 'MCP.Json':'kv'("isError")
+      in apply _Oa0(call 'MCP.Json':'toJsonBool'('true'))])
+    end
+
+'doCallTool'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{"nova_create_namespace", Args, State}> when 'true' ->
+        let <Name> = apply 'getStringArg'/2("name", Args)
+      in let <Ns> = ~{'name'=>Name,'declarations'=>call 'Data.Map':'empty'(),'imports'=>[]}~
+      in case call 'Data.Map':'lookup'(Name, call 'maps':'get'('namespaces', State)) of
+      <{'Just', _W0}> when 'true' ->
+        ~{'result'=>{'Left', call 'erlang':'++'(call 'erlang':'++'("Namespace '", Name), "' already exists")},'state'=>State}~
+      <'Nothing'> when 'true' ->
+        let <NewState> = call 'maps':'merge'(State, ~{'namespaces'=>call 'Data.Map':'insert'(Name, Ns, call 'maps':'get'('namespaces', State))}~)
+      in ~{'result'=>{'Right', call 'erlang':'++'("Created namespace: ", Name)},'state'=>NewState}~
+    end
+      <{"nova_delete_namespace", Args, State}> when 'true' ->
+        let <Name> = apply 'getStringArg'/2("name", Args)
+      in case call 'Data.Map':'lookup'(Name, call 'maps':'get'('namespaces', State)) of
+      <'Nothing'> when 'true' ->
+        ~{'result'=>{'Left', call 'erlang':'++'(call 'erlang':'++'("Namespace '", Name), "' not found")},'state'=>State}~
+      <{'Just', _W0}> when 'true' ->
+        let <NewState> = call 'maps':'merge'(State, ~{'namespaces'=>call 'Data.Map':'delete'(Name, call 'maps':'get'('namespaces', State))}~)
+      in ~{'result'=>{'Right', call 'erlang':'++'("Deleted namespace: ", Name)},'state'=>NewState}~
+    end
+      <{"nova_list_namespaces", _W0, State}> when 'true' ->
+        let <Names> = call 'Data.Array':'fromFoldable'(call 'Data.Map':'keys'(call 'maps':'get'('namespaces', State)))
+      in case call 'erlang':'=:='(call 'Data.Array':'length'(Names), 0) of
+      <'true'> when 'true' -> ~{'result'=>{'Right', "No namespaces exist yet."},'state'=>State}~
+      <'false'> when 'true' -> ~{'result'=>{'Right', call 'erlang':'++'("Namespaces:\n", call 'Data.String':'joinWith'("\n", Names))},'state'=>State}~
+    end
+      <{"nova_echo", Args, State}> when 'true' ->
+        let <Msg> = apply 'getStringArg'/2("message", Args)
+      in ~{'result'=>{'Right', call 'erlang':'++'("Echo: ", Msg)},'state'=>State}~
+      <{Name, _W0, State}> when 'true' ->
+        ~{'result'=>{'Left', call 'erlang':'++'("Unknown tool: ", Name)},'state'=>State}~
+    end
+
+'getStringArg'/2 =
+  fun (Key, Obj) ->
+    case let <_Oa0> = call 'MCP.Json':'getField'(Key)
+      in apply _Oa0(Obj) of
+      <'Nothing'> when 'true' ->
+        ""
+      <{'Just', V}> when 'true' ->
+        case call 'MCP.Json':'isString'(V) of
+      <'true'> when 'true' -> call 'MCP.Json':'jsonStringToString'(V)
+      <'false'> when 'true' -> ""
+    end
+    end
+
+'listToolsJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listToolsJson'/1(_A0)
+      in _F0
+
+'toolToJson'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toolToJson'/1(_A0)
+      in _F0
+
+'objectSchema'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'objectSchema'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'objectSchema'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'objectSchema'/2(_A0, _A1)
+      in _F0
+
+'propToKv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'propToKv'/1(_A0)
+      in _F0
+
+'prop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'prop'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'prop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'prop'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'prop'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'prop'/3(_A0, _A1, _A2)
+      in _F0
+
+'callTool'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'callTool'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'callTool'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'callTool'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'callTool'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'callTool'/3(_A0, _A1, _A2)
+      in _F0
+
+'formatResult'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'formatResult'/1(_A0)
+      in _F0
+
+'doCallTool'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'doCallTool'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'doCallTool'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'doCallTool'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'doCallTool'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'doCallTool'/3(_A0, _A1, _A2)
+      in _F0
+
+'getStringArg'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getStringArg'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getStringArg'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getStringArg'/2(_A0, _A1)
+      in _F0
+end

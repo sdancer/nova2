@@ -1,0 +1,512 @@
+module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'moduleToPath'/3, 'discoverDependencies'/4, 'buildDependencyGraph'/4, 'topologicalSort'/1, 'parseAndCheckModule'/2, 'compileModule'/2, 'getModuleName'/2, 'getFileBaseName'/1, 'getShortName'/0, 'compileLibraryModules'/3, 'compileSourceModules'/4, 'regenerate'/2, 'showLogEntry'/1, 'showLogs'/0, 'LogInfo'/1, 'LogWarning'/1, 'LogError'/1, 'extractImports'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'moduleToPath'/2, 'discoverDependencies'/0, 'discoverDependencies'/1, 'discoverDependencies'/2, 'discoverDependencies'/3, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildDependencyGraph'/2, 'buildDependencyGraph'/3, 'topologicalSort'/0, 'parseAndCheckModule'/0, 'parseAndCheckModule'/1, 'compileModule'/0, 'compileModule'/1, 'getModuleName'/0, 'getModuleName'/1, 'getFileBaseName'/0, 'compileLibraryModules'/0, 'compileLibraryModules'/1, 'compileLibraryModules'/2, 'compileSourceModules'/0, 'compileSourceModules'/1, 'compileSourceModules'/2, 'compileSourceModules'/3, 'regenerate'/0, 'regenerate'/1, 'showLogEntry'/0, 'LogInfo'/0, 'LogWarning'/0, 'LogError'/0]
+  attributes []
+% Data type: LogEntry
+% Constructors: LogInfo, LogWarning, LogError
+
+'LogInfo'/1 =
+  fun (V0) ->
+    {'LogInfo', V0}
+
+'LogWarning'/1 =
+  fun (V0) ->
+    {'LogWarning', V0}
+
+'LogError'/1 =
+  fun (V0) ->
+    {'LogError', V0}
+
+'defaultConfig'/0 =
+  fun () ->
+    ~{'srcBase'=>"./src/",'libBase'=>"./lib/",'outputDir'=>"./output/",'targetDir'=>"./nova_lang/priv/core/"}~
+
+'extractImports'/1 =
+  fun (Source) ->
+    let <Lines> = call 'Data.String':'split'(call 'Data.String':'Pattern'("\n"), Source)
+      in letrec 'extractImport'/1 = fun (Line) ->
+      case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("import "), Line) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', Idx}> when 'true' ->
+        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
+      in let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(" "), Rest)
+      in case call 'Data.Array':'head'(Parts) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', ModName}> when 'true' ->
+        let <CleanName> = case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("("), ModName) of
+      <'Nothing'> when 'true' ->
+        ModName
+      <{'Just', ParenIdx}> when 'true' ->
+        call 'Data.String':'take'(ParenIdx, ModName)
+    end
+      in case call 'Data.String':'null'(CleanName) of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', CleanName}
+    end
+    end
+    end
+      in call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'extractImport'/1(_Mf0), Lines)
+
+'moduleToPath'/3 =
+  fun (Fs, Cfg, ModName) ->
+    let <RelPath> = call 'erlang':'++'(call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), ModName), ".purs")
+      in let <LibPath> = call 'erlang':'++'(call 'maps':'get'('libBase', Cfg), RelPath)
+      in let <SrcPath> = call 'erlang':'++'(call 'maps':'get'('srcBase', Cfg), RelPath)
+      in case apply call 'maps':'get'('fileExists', Fs)(LibPath) of
+      <'true'> when 'true' -> {'Just', LibPath}
+      <'false'> when 'true' -> case apply call 'maps':'get'('fileExists', Fs)(SrcPath) of
+      <'true'> when 'true' -> {'Just', SrcPath}
+      <'false'> when 'true' -> 'Nothing'
+    end
+    end
+
+'discoverDependencies'/4 =
+  fun (Fs, Cfg, Path, _W0) ->
+    case apply call 'maps':'get'('readFile', Fs)(Path) of
+      <'Nothing'> when 'true' ->
+        []
+      <{'Just', Source}> when 'true' ->
+        let <Imports> = apply 'extractImports'/1(Source)
+      in letrec 'toDep'/1 = fun (ModName) ->
+      apply 'moduleToPath'/3(Fs, Cfg, ModName)
+      in call 'Data.Array':'filter'(fun (P) ->
+      call 'erlang':'=/='(P, Path), call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'toDep'/1(_Mf0), Imports))
+    end
+
+'buildDependencyGraph'/4 =
+  fun (Fs, Cfg, Paths, IsLibModules) ->
+    call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (Path) ->
+      call 'Data.Tuple':'Tuple'(Path, apply 'discoverDependencies'/4(Fs, Cfg, Path, IsLibModules)), Paths))
+
+'topologicalSort'/1 =
+  fun (Graph) ->
+    letrec 'go'/4 = fun (Remaining, Visited, Visiting, Acc) ->
+      case call 'Data.Array':'uncons'(Remaining) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', ~{'head':=Path,'tail':=Rest}~}> when 'true' ->
+        case call 'Data.Set':'member'(Path, Visited) of
+      <'true'> when 'true' -> apply 'go'/4(Rest, Visited, Visiting, Acc)
+      <'false'> when 'true' -> let <Result> = apply 'visit'/4(Path, Visited, Visiting, Acc)
+      in apply 'go'/4(Rest, call 'maps':'get'('visited', Result), call 'maps':'get'('visiting', Result), call 'maps':'get'('acc', Result))
+    end
+    end
+       'visit'/4 = fun (Path, Visited, Visiting, Acc) ->
+      case call 'Data.Set':'member'(Path, Visited) of
+      <'true'> when 'true' -> ~{'visited'=>Visited,'visiting'=>Visiting,'acc'=>Acc}~
+      <'false'> when 'true' -> case call 'Data.Set':'member'(Path, Visiting) of
+      <'true'> when 'true' -> ~{'visited'=>Visited,'visiting'=>Visiting,'acc'=>Acc}~
+      <'false'> when 'true' -> let <Visiting_> = call 'Data.Set':'insert'(Path, Visiting)
+      in let <Deps> = case call 'Data.Map':'lookup'(Path, Graph) of
+      <{'Just', D}> when 'true' ->
+        D
+      <'Nothing'> when 'true' ->
+        []
+    end
+      in let <ValidDeps> = call 'Data.Array':'filter'(fun (D) ->
+      call 'Data.Map':'member'(D, Graph), Deps)
+      in let <Result> = call 'Data.Foldable':'foldl'(fun (R, D) ->
+      apply 'visit'/4(D, call 'maps':'get'('visited', R), call 'maps':'get'('visiting', R), call 'maps':'get'('acc', R)), ~{'visited'=>Visited,'visiting'=>Visiting_,'acc'=>Acc}~, ValidDeps)
+      in let <Visited_> = call 'Data.Set':'insert'(Path, call 'maps':'get'('visited', Result))
+      in let <Visiting__> = call 'Data.Set':'delete'(Path, call 'maps':'get'('visiting', Result))
+      in ~{'visited'=>Visited_,'visiting'=>Visiting__,'acc'=>call 'Data.Array':'snoc'(call 'maps':'get'('acc', Result), Path)}~
+    end
+    end
+      in apply 'go'/4(call 'Data.Array':'fromFoldable'(call 'Data.Map':'keys'(Graph)), call 'Data.Set':'empty'(), call 'Data.Set':'empty'(), [])
+
+'parseAndCheckModule'/2 =
+  fun (Registry, Source) ->
+    case call 'Nova.Compiler.CstPipeline':'parseModuleCst'(Source) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Parse error: ", Err)}
+      <{'Right', Mod}> when 'true' ->
+        case call 'Nova.Compiler.TypeChecker':'checkModule'(Registry, call 'Nova.Compiler.Types':'emptyEnv'(), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Type error: ", call 'erlang':'integer_to_list'(Err))}
+      <{'Right', Env}> when 'true' ->
+        let <ModDeclsArray> = call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))
+      in let <Exports> = call 'Nova.Compiler.TypeChecker':'extractExports'(ModDeclsArray)
+      in let <ExportsWithValues> = call 'Nova.Compiler.TypeChecker':'addValuesToExports'(Exports, Env, ModDeclsArray)
+      in {'Right', ~{'mod'=>Mod,'env'=>Env,'exports'=>ExportsWithValues}~}
+    end
+    end
+
+'compileModule'/2 =
+  fun (Registry, Source) ->
+    case apply 'parseAndCheckModule'/2(Registry, Source) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Result}> when 'true' ->
+        let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
+      in {'Right', Code}
+    end
+
+'getModuleName'/2 =
+  fun (Cfg, Path) ->
+    case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('libBase', Cfg)), Path), {'Just', 0}) of
+      <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('libBase', Cfg)), Path)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("/"), call 'Data.String':'Replacement'("."), WithoutExt)
+      <'false'> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('srcBase', Cfg)), Path), {'Just', 0}) of
+      <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('srcBase', Cfg)), Path)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("/"), call 'Data.String':'Replacement'("."), WithoutExt)
+      <'false'> when 'true' -> let <Match> = apply 'getFileBaseName'/1(Path)
+      in Match
+    end
+    end
+
+'getFileBaseName'/1 =
+  fun (Path) ->
+    let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'("/"), Path)
+      in case call 'Data.Array':'last'(Parts) of
+      <'Nothing'> when 'true' ->
+        Path
+      <{'Just', Filename}> when 'true' ->
+        call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Filename), 5), Filename)
+    end
+
+'getShortName'/0 =
+  fun () ->
+    fun (_Mf0) -> apply 'getFileBaseName'/1(_Mf0)
+
+'compileLibraryModules'/3 =
+  fun (Fs, Cfg, SortedPaths) ->
+    letrec 'compileLibModule'/4 = fun (_L0, _L1, _L2, _L3) ->
+      case {_L0, _L1, _L2, _L3} of
+        <{Fs_, Cfg_, {'Tuple', Registry, Logs}, Path}> when 'true' -> case apply call 'maps':'get'('readFile', Fs_)(Path) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'erlang':'++'("Cannot read: ", Path))))
+      <{'Just', Source}> when 'true' ->
+        let <ModName> = apply 'getModuleName'/2(Cfg_, Path)
+      in case apply 'parseAndCheckModule'/2(Registry, Source) of
+      <{'Left', Err}> when 'true' ->
+        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'erlang':'++'(call 'erlang':'++'(ModName, ": "), Err))))
+      <{'Right', Result}> when 'true' ->
+        let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(Registry, ModName, call 'maps':'get'('exports', Result))
+      in let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
+      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), ModName)
+      in let <OutputFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('outputDir', Cfg_), ModPath), ".core")
+      in let <TargetFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('targetDir', Cfg_), ModPath), ".core")
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
+      in call 'Data.Tuple':'Tuple'(Registry_, call 'Data.Array':'snoc'(Logs, apply 'LogInfo'/1(call 'erlang':'++'("Compiled library: ", ModName))))
+    end
+    end
+      end
+      in let <Initial> = call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), "Prelude", call 'Nova.Compiler.Types':'preludeExports'()), [])
+      in call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileLibModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
+
+'compileSourceModules'/4 =
+  fun (Fs, Cfg, LibRegistry, SortedPaths) ->
+    letrec 'compileSrcModule'/4 = fun (Fs_, Cfg_, Acc, Path) ->
+      case apply call 'maps':'get'('readFile', Fs_)(Path) of
+      <'Nothing'> when 'true' ->
+        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'erlang':'++'("Cannot read: ", Path)))}~)
+      <{'Just', Source}> when 'true' ->
+        let <FullModName> = apply 'getModuleName'/2(Cfg_, Path)
+      in case apply 'parseAndCheckModule'/2(call 'maps':'get'('registry', Acc), Source) of
+      <{'Left', Err}> when 'true' ->
+        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'erlang':'++'(call 'erlang':'++'(FullModName, ": "), Err)))}~)
+      <{'Right', Result}> when 'true' ->
+        let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
+      in let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Acc), FullModName, call 'maps':'get'('exports', Result))
+      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), FullModName)
+      in let <OutputFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('outputDir', Cfg_), ModPath), ".core")
+      in let <TargetFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('targetDir', Cfg_), ModPath), ".core")
+      in let <LineCount> = call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'("\n"), Code))
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
+      in let <LogMsg> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("Compiled ", FullModName), " ("), call 'erlang':'integer_to_list'(LineCount)), " lines)")
+      in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 1),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
+    end
+    end
+      in let <Initial> = ~{'registry'=>LibRegistry,'count'=>0,'logs'=>[]}~
+      in let <Result> = call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileSrcModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
+      in call 'Data.Tuple':'Tuple'(call 'maps':'get'('count', Result), call 'maps':'get'('logs', Result))
+
+'regenerate'/2 =
+  fun (Fs, Cfg) ->
+    let <LibFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('libBase', Cfg), ".purs")
+      in let <SrcFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('srcBase', Cfg), ".purs")
+      in let <LibDeps> = apply 'buildDependencyGraph'/4(Fs, Cfg, LibFiles, 'true')
+      in let <SrcDeps> = apply 'buildDependencyGraph'/4(Fs, Cfg, SrcFiles, 'false')
+      in let <SortedLibModules> = apply 'topologicalSort'/1(LibDeps)
+      in let <SortedSrcModules> = apply 'topologicalSort'/1(SrcDeps)
+      in let <_Let0> = apply 'compileLibraryModules'/3(Fs, Cfg, SortedLibModules)
+      in case _Let0 of
+        <{'Tuple', LibRegistry, LibLogs}> when 'true' -> let <_Let1> = apply 'compileSourceModules'/4(Fs, Cfg, LibRegistry, SortedSrcModules)
+      in case _Let1 of
+        <{'Tuple', SrcCount, SrcLogs}> when 'true' -> ~{'success'=>'true','modulesCompiled'=>call 'erlang':'+'(SrcCount, call 'Data.Array':'length'(SortedLibModules)),'logs'=>call 'erlang':'++'(LibLogs, SrcLogs)}~
+      end
+      end
+
+'showLogEntry'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'LogInfo', Msg}}> when 'true' ->
+        call 'erlang':'++'("[INFO] ", Msg)
+      <{{'LogWarning', Msg}}> when 'true' ->
+        call 'erlang':'++'("[WARN] ", Msg)
+      <{{'LogError', Msg}}> when 'true' ->
+        call 'erlang':'++'("[ERROR] ", Msg)
+    end
+
+'showLogs'/0 =
+  fun () ->
+    let <_cor0> = call 'Data.String':'joinWith'("\n") in let <_cor1> = call 'lists':'map'(fun (_Mf0) -> apply 'showLogEntry'/1(_Mf0)) in fun (_cor2) -> apply _cor0 (apply _cor1 (_cor2))
+
+'extractImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractImports'/1(_A0)
+      in _F0
+
+'moduleToPath'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'moduleToPath'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'moduleToPath'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'moduleToPath'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'moduleToPath'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'moduleToPath'/3(_A0, _A1, _A2)
+      in _F0
+
+'discoverDependencies'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'discoverDependencies'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'discoverDependencies'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'discoverDependencies'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'buildDependencyGraph'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'buildDependencyGraph'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'buildDependencyGraph'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'buildDependencyGraph'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'topologicalSort'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'topologicalSort'/1(_A0)
+      in _F0
+
+'parseAndCheckModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'parseAndCheckModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'parseAndCheckModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'parseAndCheckModule'/2(_A0, _A1)
+      in _F0
+
+'compileModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'compileModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'compileModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'compileModule'/2(_A0, _A1)
+      in _F0
+
+'getModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getModuleName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getModuleName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getModuleName'/2(_A0, _A1)
+      in _F0
+
+'getFileBaseName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getFileBaseName'/1(_A0)
+      in _F0
+
+'compileLibraryModules'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'compileLibraryModules'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'compileLibraryModules'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
+      in _F0
+
+'compileSourceModules'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'compileSourceModules'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'compileSourceModules'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'compileSourceModules'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'regenerate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'regenerate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'regenerate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'regenerate'/2(_A0, _A1)
+      in _F0
+
+'showLogEntry'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showLogEntry'/1(_A0)
+      in _F0
+
+'LogInfo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LogInfo'/1(_A0)
+      in _F0
+
+'LogWarning'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LogWarning'/1(_A0)
+      in _F0
+
+'LogError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LogError'/1(_A0)
+      in _F0
+end

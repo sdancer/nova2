@@ -1,0 +1,1719 @@
+module 'Data.Array' ['head'/1, 'last'/1, 'tail'/1, 'init'/1, 'uncons'/1, 'length'/1, 'null'/1, 'elem'/2, 'cons'/2, 'snoc'/2, 'take'/2, 'drop'/2, 'reverse'/1, 'filter'/2, 'find'/2, 'index'/2, 'elemIndex'/2, 'map'/2, 'mapWithIndex'/2, 'foldl'/3, 'foldr'/3, 'zip'/2, 'zipWith'/3, 'concat'/1, 'concatMap'/2, 'range'/2, 'replicate'/2, 'sortBy'/2, 'all'/2, 'any'/2, 'dropWhile'/2, 'span'/2, 'partition'/2, 'singleton'/1, 'updateAt'/3, 'deleteAt'/2, 'insertAt'/3, 'slice'/3, 'nub'/1, 'nubBy'/2, 'group'/1, 'groupBy'/2, 'takeWhile'/2, 'findIndex'/2, 'sort'/1, 'intercalate'/2, 'splitAt'/2, 'mapMaybe'/2, 'catMaybes'/1, 'nubByEq'/2, 'fromFoldable'/1, 'toUnfoldable'/1, 'headImpl'/1, 'lastImpl'/1, 'tailImpl'/1, 'initImpl'/1, 'unconsImpl'/1, 'lengthImpl'/1, 'nullImpl'/1, 'elemImpl'/2, 'consImpl'/2, 'snocImpl'/2, 'takeImpl'/2, 'dropImpl'/2, 'reverseImpl'/1, 'filterImpl'/2, 'findImpl'/2, 'indexImpl'/2, 'elemIndexImpl'/2, 'mapImpl'/2, 'mapWithIndexImpl'/2, 'foldlImpl'/3, 'foldrImpl'/3, 'zipImpl'/2, 'zipWithImpl'/3, 'concatImpl'/1, 'concatMapImpl'/2, 'rangeImpl'/2, 'replicateImpl'/2, 'sortByImpl'/2, 'allImpl'/2, 'anyImpl'/2, 'dropWhileImpl'/2, 'spanImpl'/2, 'partitionImpl'/2, 'singletonImpl'/1, 'updateAtImpl'/3, 'deleteAtImpl'/2, 'insertAtImpl'/3, 'sliceImpl'/3, 'nubImpl'/1, 'nubByImpl'/2, 'groupImpl'/1, 'groupByImpl'/2, 'takeWhileImpl'/2, 'findIndexImpl'/2, 'sortImpl'/1, 'intercalateImpl'/2, 'splitAtImpl'/2, 'mapMaybeImpl'/2, 'nubByEqImpl'/2, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'head'/0, 'last'/0, 'tail'/0, 'init'/0, 'uncons'/0, 'length'/0, 'null'/0, 'elem'/0, 'elem'/1, 'cons'/0, 'cons'/1, 'snoc'/0, 'snoc'/1, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'reverse'/0, 'filter'/0, 'filter'/1, 'find'/0, 'find'/1, 'index'/0, 'index'/1, 'elemIndex'/0, 'elemIndex'/1, 'map'/0, 'map'/1, 'mapWithIndex'/0, 'mapWithIndex'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'zip'/0, 'zip'/1, 'zipWith'/0, 'zipWith'/1, 'zipWith'/2, 'concat'/0, 'concatMap'/0, 'concatMap'/1, 'range'/0, 'range'/1, 'replicate'/0, 'replicate'/1, 'sortBy'/0, 'sortBy'/1, 'all'/0, 'all'/1, 'any'/0, 'any'/1, 'dropWhile'/0, 'dropWhile'/1, 'span'/0, 'span'/1, 'partition'/0, 'partition'/1, 'singleton'/0, 'updateAt'/0, 'updateAt'/1, 'updateAt'/2, 'deleteAt'/0, 'deleteAt'/1, 'insertAt'/0, 'insertAt'/1, 'insertAt'/2, 'slice'/0, 'slice'/1, 'slice'/2, 'nub'/0, 'nubBy'/0, 'nubBy'/1, 'group'/0, 'groupBy'/0, 'groupBy'/1, 'takeWhile'/0, 'takeWhile'/1, 'findIndex'/0, 'findIndex'/1, 'sort'/0, 'intercalate'/0, 'intercalate'/1, 'splitAt'/0, 'splitAt'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'catMaybes'/0, 'nubByEq'/0, 'nubByEq'/1, 'fromFoldable'/0, 'toUnfoldable'/0, 'headImpl'/0, 'lastImpl'/0, 'tailImpl'/0, 'initImpl'/0, 'unconsImpl'/0, 'lengthImpl'/0, 'nullImpl'/0, 'elemImpl'/0, 'elemImpl'/1, 'consImpl'/0, 'consImpl'/1, 'snocImpl'/0, 'snocImpl'/1, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'reverseImpl'/0, 'filterImpl'/0, 'filterImpl'/1, 'findImpl'/0, 'findImpl'/1, 'indexImpl'/0, 'indexImpl'/1, 'elemIndexImpl'/0, 'elemIndexImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'mapWithIndexImpl'/0, 'mapWithIndexImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'zipImpl'/0, 'zipImpl'/1, 'zipWithImpl'/0, 'zipWithImpl'/1, 'zipWithImpl'/2, 'concatImpl'/0, 'concatMapImpl'/0, 'concatMapImpl'/1, 'rangeImpl'/0, 'rangeImpl'/1, 'replicateImpl'/0, 'replicateImpl'/1, 'sortByImpl'/0, 'sortByImpl'/1, 'allImpl'/0, 'allImpl'/1, 'anyImpl'/0, 'anyImpl'/1, 'dropWhileImpl'/0, 'dropWhileImpl'/1, 'spanImpl'/0, 'spanImpl'/1, 'partitionImpl'/0, 'partitionImpl'/1, 'singletonImpl'/0, 'updateAtImpl'/0, 'updateAtImpl'/1, 'updateAtImpl'/2, 'deleteAtImpl'/0, 'deleteAtImpl'/1, 'insertAtImpl'/0, 'insertAtImpl'/1, 'insertAtImpl'/2, 'sliceImpl'/0, 'sliceImpl'/1, 'sliceImpl'/2, 'nubImpl'/0, 'nubByImpl'/0, 'nubByImpl'/1, 'groupImpl'/0, 'groupByImpl'/0, 'groupByImpl'/1, 'takeWhileImpl'/0, 'takeWhileImpl'/1, 'findIndexImpl'/0, 'findIndexImpl'/1, 'sortImpl'/0, 'intercalateImpl'/0, 'intercalateImpl'/1, 'splitAtImpl'/0, 'splitAtImpl'/1, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'nubByEqImpl'/0, 'nubByEqImpl'/1, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0]
+  attributes []
+'head'/1 =
+  fun (Xs) ->
+    apply 'headImpl'/1(Xs)
+
+'last'/1 =
+  fun (Xs) ->
+    apply 'lastImpl'/1(Xs)
+
+'tail'/1 =
+  fun (Xs) ->
+    apply 'tailImpl'/1(Xs)
+
+'init'/1 =
+  fun (Xs) ->
+    apply 'initImpl'/1(Xs)
+
+'uncons'/1 =
+  fun (Xs) ->
+    apply 'unconsImpl'/1(Xs)
+
+'length'/1 =
+  fun (Xs) ->
+    apply 'lengthImpl'/1(Xs)
+
+'null'/1 =
+  fun (Xs) ->
+    apply 'nullImpl'/1(Xs)
+
+'elem'/2 =
+  fun (X, Xs) ->
+    apply 'elemImpl'/2(X, Xs)
+
+'cons'/2 =
+  fun (X, Xs) ->
+    apply 'consImpl'/2(X, Xs)
+
+'snoc'/2 =
+  fun (Xs, X) ->
+    apply 'snocImpl'/2(Xs, X)
+
+'take'/2 =
+  fun (N, Xs) ->
+    apply 'takeImpl'/2(N, Xs)
+
+'drop'/2 =
+  fun (N, Xs) ->
+    apply 'dropImpl'/2(N, Xs)
+
+'reverse'/1 =
+  fun (Xs) ->
+    apply 'reverseImpl'/1(Xs)
+
+'filter'/2 =
+  fun (F, Xs) ->
+    apply 'filterImpl'/2(F, Xs)
+
+'find'/2 =
+  fun (F, Xs) ->
+    apply 'findImpl'/2(F, Xs)
+
+'index'/2 =
+  fun (Xs, I) ->
+    apply 'indexImpl'/2(Xs, I)
+
+'elemIndex'/2 =
+  fun (X, Xs) ->
+    apply 'elemIndexImpl'/2(X, Xs)
+
+'map'/2 =
+  fun (F, Xs) ->
+    apply 'mapImpl'/2(F, Xs)
+
+'mapWithIndex'/2 =
+  fun (F, Xs) ->
+    apply 'mapWithIndexImpl'/2(F, Xs)
+
+'foldl'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldlImpl'/3(F, Acc, Xs)
+
+'foldr'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldrImpl'/3(F, Acc, Xs)
+
+'zip'/2 =
+  fun (Xs, Ys) ->
+    apply 'zipImpl'/2(Xs, Ys)
+
+'zipWith'/3 =
+  fun (F, Xs, Ys) ->
+    apply 'zipWithImpl'/3(F, Xs, Ys)
+
+'concat'/1 =
+  fun (Xs) ->
+    apply 'concatImpl'/1(Xs)
+
+'concatMap'/2 =
+  fun (F, Xs) ->
+    apply 'concatMapImpl'/2(F, Xs)
+
+'range'/2 =
+  fun (A, B) ->
+    apply 'rangeImpl'/2(A, B)
+
+'replicate'/2 =
+  fun (N, X) ->
+    apply 'replicateImpl'/2(N, X)
+
+'sortBy'/2 =
+  fun (F, Xs) ->
+    apply 'sortByImpl'/2(F, Xs)
+
+'all'/2 =
+  fun (F, Xs) ->
+    apply 'allImpl'/2(F, Xs)
+
+'any'/2 =
+  fun (F, Xs) ->
+    apply 'anyImpl'/2(F, Xs)
+
+'dropWhile'/2 =
+  fun (F, Xs) ->
+    apply 'dropWhileImpl'/2(F, Xs)
+
+'span'/2 =
+  fun (F, Xs) ->
+    apply 'spanImpl'/2(F, Xs)
+
+'partition'/2 =
+  fun (F, Xs) ->
+    apply 'partitionImpl'/2(F, Xs)
+
+'singleton'/1 =
+  fun (X) ->
+    apply 'singletonImpl'/1(X)
+
+'updateAt'/3 =
+  fun (I, X, Xs) ->
+    apply 'updateAtImpl'/3(I, X, Xs)
+
+'deleteAt'/2 =
+  fun (I, Xs) ->
+    apply 'deleteAtImpl'/2(I, Xs)
+
+'insertAt'/3 =
+  fun (I, X, Xs) ->
+    apply 'insertAtImpl'/3(I, X, Xs)
+
+'slice'/3 =
+  fun (Start, End, Xs) ->
+    apply 'sliceImpl'/3(Start, End, Xs)
+
+'nub'/1 =
+  fun (Xs) ->
+    apply 'nubImpl'/1(Xs)
+
+'nubBy'/2 =
+  fun (F, Xs) ->
+    apply 'nubByImpl'/2(F, Xs)
+
+'group'/1 =
+  fun (Xs) ->
+    apply 'groupImpl'/1(Xs)
+
+'groupBy'/2 =
+  fun (F, Xs) ->
+    apply 'groupByImpl'/2(F, Xs)
+
+'takeWhile'/2 =
+  fun (F, Xs) ->
+    apply 'takeWhileImpl'/2(F, Xs)
+
+'findIndex'/2 =
+  fun (F, Xs) ->
+    apply 'findIndexImpl'/2(F, Xs)
+
+'sort'/1 =
+  fun (Xs) ->
+    apply 'sortImpl'/1(Xs)
+
+'intercalate'/2 =
+  fun (Sep, Xs) ->
+    apply 'intercalateImpl'/2(Sep, Xs)
+
+'splitAt'/2 =
+  fun (I, Xs) ->
+    apply 'splitAtImpl'/2(I, Xs)
+
+'mapMaybe'/2 =
+  fun (F, Xs) ->
+    apply 'mapMaybeImpl'/2(F, Xs)
+
+'catMaybes'/1 =
+  fun (Xs) ->
+    apply 'mapMaybe'/2(fun (X) ->
+      X, Xs)
+
+'nubByEq'/2 =
+  fun (F, Xs) ->
+    apply 'nubByEqImpl'/2(F, Xs)
+
+'fromFoldable'/1 =
+  fun (Xs) ->
+    apply 'fromFoldableImpl'/1(Xs)
+
+'toUnfoldable'/1 =
+  fun (Xs) ->
+    apply 'toUnfoldableImpl'/1(Xs)
+
+'headImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <[H|_]> when 'true' -> {'Just', H}
+      end
+
+'lastImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <_> when 'true' -> {'Just', call 'lists':'last'(V0)}
+      end
+
+'tailImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <[_|T]> when 'true' -> {'Just', T}
+      end
+
+'initImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <_> when 'true' -> {'Just', call 'lists':'droplast'(V0)}
+      end
+
+'unconsImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'Nothing'
+        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}
+      end
+
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+
+'nullImpl'/1 = fun (V0) -> case V0 of
+        <[]> when 'true' -> 'true'
+        <_> when 'true' -> 'false'
+      end
+
+'elemImpl'/2 = fun (V0, V1) -> call 'lists':'member'(V0, V1)
+
+'consImpl'/2 = fun (V0, V1) -> [V0|V1]
+
+'snocImpl'/2 = fun (V0, V1) -> call 'lists':'append'(V0, [V1])
+
+'takeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+
+'dropImpl'/2 = fun (V0, V1) -> case V0 of
+        <0> when 'true' -> V1
+        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
+      end
+
+'reverseImpl'/1 = fun (V0) -> call 'lists':'reverse'(V0)
+
+'filterImpl'/2 = fun (V0, V1) -> call 'lists':'filter'(V0, V1)
+
+'findImpl'/2 = fun (V0, V1) -> letrec 'doFind'/2 = fun (P, Lst) -> case Lst of
+        <[]> when 'true' -> 'Nothing'
+        <[H|T]> when 'true' -> case apply P (H) of
+          <'true'> when 'true' -> {'Just', H}
+          <'false'> when 'true' -> apply 'doFind'/2 (P, T)
+        end
+      end in apply 'doFind'/2 (V0, V1)
+
+'indexImpl'/2 = fun (V0, V1) -> let <Arr> = V0 in
+        let <Idx> = V1 in
+          case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, call 'erlang':'length'(Arr))) of
+            <'true'> when 'true' -> 'Nothing'
+            <'false'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(Idx, 1), Arr)}
+          end
+
+'elemIndexImpl'/2 = fun (V0, V1) -> letrec 'findIdx'/3 = fun (Elem, N, Lst) -> case Lst of
+        <[]> when 'true' -> 'Nothing'
+        <[H|T]> when 'true' -> case call 'erlang':'=='(H, Elem) of
+          <'true'> when 'true' -> {'Just', N}
+          <'false'> when 'true' -> apply 'findIdx'/3 (Elem, call 'erlang':'+'(N, 1), T)
+        end
+      end in apply 'findIdx'/3 (V0, 0, V1)
+
+'mapImpl'/2 = fun (V0, V1) -> call 'lists':'map'(V0, V1)
+
+'mapWithIndexImpl'/2 = fun (V0, V1) -> letrec 'doMapIdx'/3 = fun (F, N, Lst) -> case Lst of
+        <[]> when 'true' -> []
+        <[H|T]> when 'true' -> [apply F (N, H)|apply 'doMapIdx'/3 (F, call 'erlang':'+'(N, 1), T)]
+      end in apply 'doMapIdx'/3 (V0, 0, V1)
+
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldl'(fun (E, A) -> apply V0 (A, E), V1, V2)
+
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
+
+'zipImpl'/2 = fun (V0, V1) -> call 'lists':'zipwith'(fun (A, B) -> {'Tuple', A, B}, V0, V1)
+
+'zipWithImpl'/3 = fun (V0, V1, V2) -> call 'lists':'zipwith'(fun (A, B) -> apply V0 (A, B), V1, V2)
+
+'concatImpl'/1 = fun (V0) -> call 'lists':'append'(V0)
+
+'concatMapImpl'/2 = fun (V0, V1) -> call 'lists':'append'(call 'lists':'map'(V0, V1))
+
+'rangeImpl'/2 = fun (V0, V1) -> call 'lists':'seq'(V0, V1)
+
+'replicateImpl'/2 = fun (V0, V1) -> call 'lists':'duplicate'(V0, V1)
+
+'sortByImpl'/2 = fun (V0, V1) -> call 'lists':'sort'(fun (A, B) -> call 'erlang':'=<'(apply V0 (A), apply V0 (B)), V1)
+
+'allImpl'/2 = fun (V0, V1) -> call 'lists':'all'(V0, V1)
+
+'anyImpl'/2 = fun (V0, V1) -> call 'lists':'any'(V0, V1)
+
+'dropWhileImpl'/2 = fun (V0, V1) -> call 'lists':'dropwhile'(V0, V1)
+
+'spanImpl'/2 = fun (V0, V1) -> case call 'lists':'splitwith'(V0, V1) of
+        <{Taken, Rest}> when 'true' -> ~{'init'=>Taken, 'rest'=>Rest}~
+      end
+
+'partitionImpl'/2 = fun (V0, V1) -> case call 'lists':'partition'(V0, V1) of
+        <{Trues, Falses}> when 'true' -> ~{'yes'=>Trues, 'no'=>Falses}~
+      end
+
+'singletonImpl'/1 = fun (V0) -> [V0]
+
+'updateAtImpl'/3 = fun (V0, V1, V2) -> let <Idx> = V0 in let <Len> = call 'erlang':'length'(V2) in
+        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of
+          <'true'> when 'true' -> 'Nothing'
+          <'false'> when 'true' -> case call 'lists':'split'(Idx, V2) of <{Before, After}> when 'true' ->
+            {'Just', call 'lists':'append'(Before, [V1|call 'erlang':'tl'(After)])} end
+        end
+
+'deleteAtImpl'/2 = fun (V0, V1) -> let <Idx> = V0 in let <Len> = call 'erlang':'length'(V1) in
+        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>='(Idx, Len)) of
+          <'true'> when 'true' -> 'Nothing'
+          <'false'> when 'true' -> case call 'lists':'split'(Idx, V1) of <{Before, After}> when 'true' ->
+            {'Just', call 'lists':'append'(Before, call 'erlang':'tl'(After))} end
+        end
+
+'insertAtImpl'/3 = fun (V0, V1, V2) -> let <Idx> = V0 in let <Len> = call 'erlang':'length'(V2) in
+        case call 'erlang':'or'(call 'erlang':'<'(Idx, 0), call 'erlang':'>'(Idx, Len)) of
+          <'true'> when 'true' -> 'Nothing'
+          <'false'> when 'true' -> case call 'lists':'split'(Idx, V2) of <{Before, After}> when 'true' ->
+            {'Just', call 'lists':'append'(Before, [V1|After])} end
+        end
+
+'sliceImpl'/3 = fun (V0, V1, V2) -> call 'lists':'sublist'(V2, call 'erlang':'+'(V0, 1), call 'erlang':'-'(V1, V0))
+
+'nubImpl'/1 = fun (V0) -> call 'lists':'usort'(V0)
+
+'nubByImpl'/2 = fun (V0, V1) -> call 'lists':'usort'(V1)
+
+'groupImpl'/1 = fun (V0) -> letrec 'doGroup'/2 = fun (Lst, Acc) -> case Lst of
+        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end
+        <[H|T]> when 'true' -> case Acc of
+          <[]> when 'true' -> apply 'doGroup'/2 (T, [H])
+          <[Prev|_]> when 'true' -> case call 'erlang':'=='(H, Prev) of
+            <'true'> when 'true' -> apply 'doGroup'/2 (T, [H|Acc])
+            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/2 (T, [H])]
+          end
+        end
+      end in apply 'doGroup'/2 (V0, [])
+
+'groupByImpl'/2 = fun (V0, V1) -> letrec 'doGroup'/3 = fun (Eq, Lst, Acc) -> case Lst of
+        <[]> when 'true' -> case Acc of <[]> when 'true' -> [] <_> when 'true' -> [call 'lists':'reverse'(Acc)] end
+        <[H|T]> when 'true' -> case Acc of
+          <[]> when 'true' -> apply 'doGroup'/3 (Eq, T, [H])
+          <[Prev|_]> when 'true' -> case apply Eq (Prev, H) of
+            <'true'> when 'true' -> apply 'doGroup'/3 (Eq, T, [H|Acc])
+            <'false'> when 'true' -> [call 'lists':'reverse'(Acc)|apply 'doGroup'/3 (Eq, T, [H])]
+          end
+        end
+      end in apply 'doGroup'/3 (V0, V1, [])
+
+'takeWhileImpl'/2 = fun (V0, V1) -> call 'lists':'takewhile'(V0, V1)
+
+'findIndexImpl'/2 = fun (V0, V1) -> letrec 'findIdx'/3 = fun (P, N, Lst) -> case Lst of
+        <[]> when 'true' -> 'Nothing'
+        <[H|T]> when 'true' -> case apply P (H) of
+          <'true'> when 'true' -> {'Just', N}
+          <'false'> when 'true' -> apply 'findIdx'/3 (P, call 'erlang':'+'(N, 1), T)
+        end
+      end in apply 'findIdx'/3 (V0, 0, V1)
+
+'sortImpl'/1 = fun (V0) -> call 'lists':'sort'(V0)
+
+'intercalateImpl'/2 = fun (V0, V1) -> call 'lists':'join'(V0, V1)
+
+'splitAtImpl'/2 = fun (V0, V1) -> case call 'lists':'split'(V0, V1) of
+        <{Before, After}> when 'true' -> ~{'before'=>Before, 'after'=>After}~
+      end
+
+'mapMaybeImpl'/2 = fun (V0, V1) -> letrec 'doMapMaybe'/2 = fun (F, Lst) -> case Lst of
+        <[]> when 'true' -> []
+        <[H|T]> when 'true' -> case apply F (H) of
+          <'Nothing'> when 'true' -> apply 'doMapMaybe'/2 (F, T)
+          <{'Just', V}> when 'true' -> [V|apply 'doMapMaybe'/2 (F, T)]
+        end
+      end in apply 'doMapMaybe'/2 (V0, V1)
+
+'nubByEqImpl'/2 = fun (V0, V1) -> call 'lists':'usort'(V1)
+
+'fromFoldableImpl'/1 = fun (V0) -> V0
+
+'toUnfoldableImpl'/1 = fun (V0) -> V0
+
+'head'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'head'/1(_A0)
+      in _F0
+
+'last'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'last'/1(_A0)
+      in _F0
+
+'tail'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tail'/1(_A0)
+      in _F0
+
+'init'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'init'/1(_A0)
+      in _F0
+
+'uncons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'uncons'/1(_A0)
+      in _F0
+
+'length'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'length'/1(_A0)
+      in _F0
+
+'null'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'null'/1(_A0)
+      in _F0
+
+'elem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
+      in _F0
+
+'cons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'cons'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'cons'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'cons'/2(_A0, _A1)
+      in _F0
+
+'snoc'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'snoc'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'snoc'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'snoc'/2(_A0, _A1)
+      in _F0
+
+'take'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'take'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F0
+
+'drop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'drop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F0
+
+'reverse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'reverse'/1(_A0)
+      in _F0
+
+'filter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'filter'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'filter'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'filter'/2(_A0, _A1)
+      in _F0
+
+'find'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'find'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'find'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'find'/2(_A0, _A1)
+      in _F0
+
+'index'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'index'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'index'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'index'/2(_A0, _A1)
+      in _F0
+
+'elemIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elemIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elemIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elemIndex'/2(_A0, _A1)
+      in _F0
+
+'map'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'map'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F0
+
+'mapWithIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapWithIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapWithIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapWithIndex'/2(_A0, _A1)
+      in _F0
+
+'foldl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F0
+
+'zip'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'zip'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'zip'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'zip'/2(_A0, _A1)
+      in _F0
+
+'zipWith'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'zipWith'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'zipWith'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
+      in _F0
+
+'concat'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'concat'/1(_A0)
+      in _F0
+
+'concatMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'concatMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'concatMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'concatMap'/2(_A0, _A1)
+      in _F0
+
+'range'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'range'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'range'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'range'/2(_A0, _A1)
+      in _F0
+
+'replicate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'replicate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'replicate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'replicate'/2(_A0, _A1)
+      in _F0
+
+'sortBy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'sortBy'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'sortBy'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'sortBy'/2(_A0, _A1)
+      in _F0
+
+'all'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'all'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'all'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'all'/2(_A0, _A1)
+      in _F0
+
+'any'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'any'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
+      in _F0
+
+'dropWhile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropWhile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropWhile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropWhile'/2(_A0, _A1)
+      in _F0
+
+'span'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'span'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'span'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'span'/2(_A0, _A1)
+      in _F0
+
+'partition'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'partition'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'partition'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'partition'/2(_A0, _A1)
+      in _F0
+
+'singleton'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'singleton'/1(_A0)
+      in _F0
+
+'updateAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'updateAt'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'updateAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'updateAt'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'updateAt'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'updateAt'/3(_A0, _A1, _A2)
+      in _F0
+
+'deleteAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'deleteAt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'deleteAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'deleteAt'/2(_A0, _A1)
+      in _F0
+
+'insertAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'insertAt'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'insertAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'insertAt'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'insertAt'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'insertAt'/3(_A0, _A1, _A2)
+      in _F0
+
+'slice'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'slice'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'slice'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'slice'/3(_A0, _A1, _A2)
+      in _F0
+
+'nub'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'nub'/1(_A0)
+      in _F0
+
+'nubBy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'nubBy'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'nubBy'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'nubBy'/2(_A0, _A1)
+      in _F0
+
+'group'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'group'/1(_A0)
+      in _F0
+
+'groupBy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'groupBy'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'groupBy'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'groupBy'/2(_A0, _A1)
+      in _F0
+
+'takeWhile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'takeWhile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'takeWhile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'takeWhile'/2(_A0, _A1)
+      in _F0
+
+'findIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findIndex'/2(_A0, _A1)
+      in _F0
+
+'sort'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sort'/1(_A0)
+      in _F0
+
+'intercalate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'intercalate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'intercalate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'intercalate'/2(_A0, _A1)
+      in _F0
+
+'splitAt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'splitAt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'splitAt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'splitAt'/2(_A0, _A1)
+      in _F0
+
+'mapMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapMaybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
+      in _F0
+
+'catMaybes'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'catMaybes'/1(_A0)
+      in _F0
+
+'nubByEq'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'nubByEq'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'nubByEq'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'nubByEq'/2(_A0, _A1)
+      in _F0
+
+'fromFoldable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromFoldable'/1(_A0)
+      in _F0
+
+'toUnfoldable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUnfoldable'/1(_A0)
+      in _F0
+
+'headImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'headImpl'/1(_A0)
+      in _F0
+
+'lastImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lastImpl'/1(_A0)
+      in _F0
+
+'tailImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tailImpl'/1(_A0)
+      in _F0
+
+'initImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'initImpl'/1(_A0)
+      in _F0
+
+'unconsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unconsImpl'/1(_A0)
+      in _F0
+
+'lengthImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lengthImpl'/1(_A0)
+      in _F0
+
+'nullImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'nullImpl'/1(_A0)
+      in _F0
+
+'elemImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elemImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elemImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elemImpl'/2(_A0, _A1)
+      in _F0
+
+'consImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consImpl'/2(_A0, _A1)
+      in _F0
+
+'snocImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'snocImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'snocImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'snocImpl'/2(_A0, _A1)
+      in _F0
+
+'takeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'takeImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'takeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'takeImpl'/2(_A0, _A1)
+      in _F0
+
+'dropImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropImpl'/2(_A0, _A1)
+      in _F0
+
+'reverseImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'reverseImpl'/1(_A0)
+      in _F0
+
+'filterImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'filterImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'filterImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'filterImpl'/2(_A0, _A1)
+      in _F0
+
+'findImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findImpl'/2(_A0, _A1)
+      in _F0
+
+'indexImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'indexImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'indexImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'indexImpl'/2(_A0, _A1)
+      in _F0
+
+'elemIndexImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elemIndexImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elemIndexImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elemIndexImpl'/2(_A0, _A1)
+      in _F0
+
+'mapImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapImpl'/2(_A0, _A1)
+      in _F0
+
+'mapWithIndexImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapWithIndexImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapWithIndexImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapWithIndexImpl'/2(_A0, _A1)
+      in _F0
+
+'foldlImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldlImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldlImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldrImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldrImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldrImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'zipImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'zipImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'zipImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'zipImpl'/2(_A0, _A1)
+      in _F0
+
+'zipWithImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'zipWithImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'zipWithImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'concatImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'concatImpl'/1(_A0)
+      in _F0
+
+'concatMapImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'concatMapImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'concatMapImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'concatMapImpl'/2(_A0, _A1)
+      in _F0
+
+'rangeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'rangeImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'rangeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'rangeImpl'/2(_A0, _A1)
+      in _F0
+
+'replicateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'replicateImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'replicateImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'replicateImpl'/2(_A0, _A1)
+      in _F0
+
+'sortByImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'sortByImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'sortByImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'sortByImpl'/2(_A0, _A1)
+      in _F0
+
+'allImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'allImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'allImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'allImpl'/2(_A0, _A1)
+      in _F0
+
+'anyImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'anyImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'anyImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'anyImpl'/2(_A0, _A1)
+      in _F0
+
+'dropWhileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropWhileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropWhileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropWhileImpl'/2(_A0, _A1)
+      in _F0
+
+'spanImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'spanImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'spanImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'spanImpl'/2(_A0, _A1)
+      in _F0
+
+'partitionImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'partitionImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'partitionImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'partitionImpl'/2(_A0, _A1)
+      in _F0
+
+'singletonImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'singletonImpl'/1(_A0)
+      in _F0
+
+'updateAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'updateAtImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'updateAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'updateAtImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'updateAtImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'updateAtImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'deleteAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'deleteAtImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'deleteAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'deleteAtImpl'/2(_A0, _A1)
+      in _F0
+
+'insertAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'insertAtImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'insertAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'insertAtImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'insertAtImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'insertAtImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'sliceImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'sliceImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'sliceImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'sliceImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'nubImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'nubImpl'/1(_A0)
+      in _F0
+
+'nubByImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'nubByImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'nubByImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'nubByImpl'/2(_A0, _A1)
+      in _F0
+
+'groupImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'groupImpl'/1(_A0)
+      in _F0
+
+'groupByImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'groupByImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'groupByImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'groupByImpl'/2(_A0, _A1)
+      in _F0
+
+'takeWhileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'takeWhileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'takeWhileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'takeWhileImpl'/2(_A0, _A1)
+      in _F0
+
+'findIndexImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findIndexImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findIndexImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findIndexImpl'/2(_A0, _A1)
+      in _F0
+
+'sortImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sortImpl'/1(_A0)
+      in _F0
+
+'intercalateImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'intercalateImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'intercalateImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'intercalateImpl'/2(_A0, _A1)
+      in _F0
+
+'splitAtImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'splitAtImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'splitAtImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'splitAtImpl'/2(_A0, _A1)
+      in _F0
+
+'mapMaybeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapMaybeImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapMaybeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapMaybeImpl'/2(_A0, _A1)
+      in _F0
+
+'nubByEqImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'nubByEqImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'nubByEqImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'nubByEqImpl'/2(_A0, _A1)
+      in _F0
+
+'fromFoldableImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromFoldableImpl'/1(_A0)
+      in _F0
+
+'toUnfoldableImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUnfoldableImpl'/1(_A0)
+      in _F0
+end

@@ -1,0 +1,2255 @@
+module 'Nova.Compiler.Cst' ['ASCII'/0, 'Unicode'/0, 'SmallInt'/1, 'BigInt'/1, 'TokLeftParen'/0, 'TokRightParen'/0, 'TokLeftBrace'/0, 'TokRightBrace'/0, 'TokLeftSquare'/0, 'TokRightSquare'/0, 'TokLeftArrow'/0, 'TokRightArrow'/0, 'TokRightFatArrow'/0, 'TokDoubleColon'/0, 'TokForall'/0, 'TokEquals'/0, 'TokPipe'/0, 'TokTick'/0, 'TokDot'/0, 'TokComma'/0, 'TokUnderscore'/0, 'TokBackslash'/0, 'TokAt'/0, 'TokLowerName'/2, 'TokUpperName'/2, 'TokOperator'/2, 'TokSymbolName'/2, 'TokHole'/1, 'TokChar'/2, 'TokString'/2, 'TokRawString'/1, 'TokInt'/2, 'TokNumber'/2, 'TokLayoutStart'/1, 'TokLayoutSep'/1, 'TokLayoutEnd'/1, 'TokEof'/0, 'TypeVar'/1, 'TypeConstructor'/1, 'TypeWildcard'/1, 'TypeHole'/1, 'TypeString'/2, 'TypeInt'/2, 'TypeRow'/1, 'TypeRecord'/1, 'TypeForall'/4, 'TypeKinded'/3, 'TypeApp'/2, 'TypeOp'/2, 'TypeArrow'/3, 'TypeConstrained'/3, 'TypeParens'/1, 'TypeError'/1, 'TypeVarKinded'/1, 'TypeVarName'/1, 'ExportValue'/1, 'ExportOp'/1, 'ExportType'/2, 'ExportTypeOp'/2, 'ExportClass'/2, 'ExportModule'/2, 'ExportError'/1, 'DataAll'/1, 'DataEnumerated'/1, 'DeclData'/2, 'DeclType'/3, 'DeclNewtype'/4, 'DeclClass'/2, 'DeclInstanceChain'/1, 'DeclDerive'/3, 'DeclSignature'/1, 'DeclValue'/1, 'DeclFixity'/1, 'DeclForeign'/3, 'DeclError'/1, 'FundepDetermined'/2, 'FundepDetermines'/3, 'InstanceBindingSignature'/1, 'InstanceBindingName'/1, 'ImportValue'/1, 'ImportOp'/1, 'ImportType'/2, 'ImportTypeOp'/2, 'ImportClass'/2, 'ImportError'/1, 'Infix'/0, 'Infixl'/0, 'Infixr'/0, 'FixityValue'/3, 'FixityType'/4, 'ForeignValue'/1, 'ForeignValueInline'/3, 'ForeignData'/2, 'ExprHole'/1, 'ExprSection'/1, 'ExprIdent'/1, 'ExprConstructor'/1, 'ExprBoolean'/2, 'ExprChar'/2, 'ExprString'/2, 'ExprInt'/2, 'ExprNumber'/2, 'ExprArray'/1, 'ExprRecord'/1, 'ExprParens'/1, 'ExprTyped'/3, 'ExprInfix'/2, 'ExprOp'/2, 'ExprOpName'/1, 'ExprNegate'/2, 'ExprRecordAccessor'/1, 'ExprRecordUpdate'/2, 'ExprApp'/2, 'ExprLambda'/1, 'ExprIf'/1, 'ExprCase'/1, 'ExprLet'/1, 'ExprDo'/1, 'ExprAdo'/1, 'ExprError'/1, 'RecordPun'/1, 'RecordField'/3, 'RecordUpdateLeaf'/3, 'RecordUpdateBranch'/2, 'LetBindingSignature'/1, 'LetBindingName'/1, 'LetBindingPattern'/3, 'LetBindingError'/1, 'DoLet'/2, 'DoDiscard'/1, 'DoBind'/3, 'DoError'/1, 'Unconditional'/2, 'Guarded'/1, 'BinderWildcard'/1, 'BinderVar'/1, 'BinderNamed'/3, 'BinderConstructor'/2, 'BinderBoolean'/2, 'BinderChar'/2, 'BinderString'/2, 'BinderInt'/3, 'BinderNumber'/3, 'BinderArray'/1, 'BinderRecord'/1, 'BinderParens'/1, 'BinderTyped'/3, 'BinderOp'/2, 'BinderError'/1, 'ParseSucceeded'/1, 'ParseSucceededWithErrors'/2, 'ParseFailed'/1, 'Ident'/1, 'Proper'/1, 'Label'/1, 'Operator'/1, 'ModuleName'/1, 'SmallInt'/0, 'BigInt'/0, 'TokLowerName'/0, 'TokLowerName'/1, 'TokUpperName'/0, 'TokUpperName'/1, 'TokOperator'/0, 'TokOperator'/1, 'TokSymbolName'/0, 'TokSymbolName'/1, 'TokHole'/0, 'TokChar'/0, 'TokChar'/1, 'TokString'/0, 'TokString'/1, 'TokRawString'/0, 'TokInt'/0, 'TokInt'/1, 'TokNumber'/0, 'TokNumber'/1, 'TokLayoutStart'/0, 'TokLayoutSep'/0, 'TokLayoutEnd'/0, 'TypeVar'/0, 'TypeConstructor'/0, 'TypeWildcard'/0, 'TypeHole'/0, 'TypeString'/0, 'TypeString'/1, 'TypeInt'/0, 'TypeInt'/1, 'TypeRow'/0, 'TypeRecord'/0, 'TypeForall'/0, 'TypeForall'/1, 'TypeForall'/2, 'TypeForall'/3, 'TypeKinded'/0, 'TypeKinded'/1, 'TypeKinded'/2, 'TypeApp'/0, 'TypeApp'/1, 'TypeOp'/0, 'TypeOp'/1, 'TypeArrow'/0, 'TypeArrow'/1, 'TypeArrow'/2, 'TypeConstrained'/0, 'TypeConstrained'/1, 'TypeConstrained'/2, 'TypeParens'/0, 'TypeError'/0, 'TypeVarKinded'/0, 'TypeVarName'/0, 'ExportValue'/0, 'ExportOp'/0, 'ExportType'/0, 'ExportType'/1, 'ExportTypeOp'/0, 'ExportTypeOp'/1, 'ExportClass'/0, 'ExportClass'/1, 'ExportModule'/0, 'ExportModule'/1, 'ExportError'/0, 'DataAll'/0, 'DataEnumerated'/0, 'DeclData'/0, 'DeclData'/1, 'DeclType'/0, 'DeclType'/1, 'DeclType'/2, 'DeclNewtype'/0, 'DeclNewtype'/1, 'DeclNewtype'/2, 'DeclNewtype'/3, 'DeclClass'/0, 'DeclClass'/1, 'DeclInstanceChain'/0, 'DeclDerive'/0, 'DeclDerive'/1, 'DeclDerive'/2, 'DeclSignature'/0, 'DeclValue'/0, 'DeclFixity'/0, 'DeclForeign'/0, 'DeclForeign'/1, 'DeclForeign'/2, 'DeclError'/0, 'FundepDetermined'/0, 'FundepDetermined'/1, 'FundepDetermines'/0, 'FundepDetermines'/1, 'FundepDetermines'/2, 'InstanceBindingSignature'/0, 'InstanceBindingName'/0, 'ImportValue'/0, 'ImportOp'/0, 'ImportType'/0, 'ImportType'/1, 'ImportTypeOp'/0, 'ImportTypeOp'/1, 'ImportClass'/0, 'ImportClass'/1, 'ImportError'/0, 'FixityValue'/0, 'FixityValue'/1, 'FixityValue'/2, 'FixityType'/0, 'FixityType'/1, 'FixityType'/2, 'FixityType'/3, 'ForeignValue'/0, 'ForeignValueInline'/0, 'ForeignValueInline'/1, 'ForeignValueInline'/2, 'ForeignData'/0, 'ForeignData'/1, 'ExprHole'/0, 'ExprSection'/0, 'ExprIdent'/0, 'ExprConstructor'/0, 'ExprBoolean'/0, 'ExprBoolean'/1, 'ExprChar'/0, 'ExprChar'/1, 'ExprString'/0, 'ExprString'/1, 'ExprInt'/0, 'ExprInt'/1, 'ExprNumber'/0, 'ExprNumber'/1, 'ExprArray'/0, 'ExprRecord'/0, 'ExprParens'/0, 'ExprTyped'/0, 'ExprTyped'/1, 'ExprTyped'/2, 'ExprInfix'/0, 'ExprInfix'/1, 'ExprOp'/0, 'ExprOp'/1, 'ExprOpName'/0, 'ExprNegate'/0, 'ExprNegate'/1, 'ExprRecordAccessor'/0, 'ExprRecordUpdate'/0, 'ExprRecordUpdate'/1, 'ExprApp'/0, 'ExprApp'/1, 'ExprLambda'/0, 'ExprIf'/0, 'ExprCase'/0, 'ExprLet'/0, 'ExprDo'/0, 'ExprAdo'/0, 'ExprError'/0, 'RecordPun'/0, 'RecordField'/0, 'RecordField'/1, 'RecordField'/2, 'RecordUpdateLeaf'/0, 'RecordUpdateLeaf'/1, 'RecordUpdateLeaf'/2, 'RecordUpdateBranch'/0, 'RecordUpdateBranch'/1, 'LetBindingSignature'/0, 'LetBindingName'/0, 'LetBindingPattern'/0, 'LetBindingPattern'/1, 'LetBindingPattern'/2, 'LetBindingError'/0, 'DoLet'/0, 'DoLet'/1, 'DoDiscard'/0, 'DoBind'/0, 'DoBind'/1, 'DoBind'/2, 'DoError'/0, 'Unconditional'/0, 'Unconditional'/1, 'Guarded'/0, 'BinderWildcard'/0, 'BinderVar'/0, 'BinderNamed'/0, 'BinderNamed'/1, 'BinderNamed'/2, 'BinderConstructor'/0, 'BinderConstructor'/1, 'BinderBoolean'/0, 'BinderBoolean'/1, 'BinderChar'/0, 'BinderChar'/1, 'BinderString'/0, 'BinderString'/1, 'BinderInt'/0, 'BinderInt'/1, 'BinderInt'/2, 'BinderNumber'/0, 'BinderNumber'/1, 'BinderNumber'/2, 'BinderArray'/0, 'BinderRecord'/0, 'BinderParens'/0, 'BinderTyped'/0, 'BinderTyped'/1, 'BinderTyped'/2, 'BinderOp'/0, 'BinderOp'/1, 'BinderError'/0, 'ParseSucceeded'/0, 'ParseSucceededWithErrors'/0, 'ParseSucceededWithErrors'/1, 'ParseFailed'/0, 'Ident'/0, 'Proper'/0, 'Label'/0, 'Operator'/0, 'ModuleName'/0]
+  attributes []
+% Data type: SourceStyle
+% Constructors: ASCII, Unicode
+
+'ASCII'/0 =
+  fun () ->
+    'ASCII'
+
+'Unicode'/0 =
+  fun () ->
+    'Unicode'
+
+% Data type: IntValue
+% Constructors: SmallInt, BigInt
+
+'SmallInt'/1 =
+  fun (V0) ->
+    {'SmallInt', V0}
+
+'BigInt'/1 =
+  fun (V0) ->
+    {'BigInt', V0}
+
+% Data type: Token
+% Constructors: TokLeftParen, TokRightParen, TokLeftBrace, TokRightBrace, TokLeftSquare, TokRightSquare, TokLeftArrow, TokRightArrow, TokRightFatArrow, TokDoubleColon, TokForall, TokEquals, TokPipe, TokTick, TokDot, TokComma, TokUnderscore, TokBackslash, TokAt, TokLowerName, TokUpperName, TokOperator, TokSymbolName, TokHole, TokChar, TokString, TokRawString, TokInt, TokNumber, TokLayoutStart, TokLayoutSep, TokLayoutEnd, TokEof
+
+'TokLeftParen'/0 =
+  fun () ->
+    'TokLeftParen'
+
+'TokRightParen'/0 =
+  fun () ->
+    'TokRightParen'
+
+'TokLeftBrace'/0 =
+  fun () ->
+    'TokLeftBrace'
+
+'TokRightBrace'/0 =
+  fun () ->
+    'TokRightBrace'
+
+'TokLeftSquare'/0 =
+  fun () ->
+    'TokLeftSquare'
+
+'TokRightSquare'/0 =
+  fun () ->
+    'TokRightSquare'
+
+'TokLeftArrow'/0 =
+  fun () ->
+    'TokLeftArrow'
+
+'TokRightArrow'/0 =
+  fun () ->
+    'TokRightArrow'
+
+'TokRightFatArrow'/0 =
+  fun () ->
+    'TokRightFatArrow'
+
+'TokDoubleColon'/0 =
+  fun () ->
+    'TokDoubleColon'
+
+'TokForall'/0 =
+  fun () ->
+    'TokForall'
+
+'TokEquals'/0 =
+  fun () ->
+    'TokEquals'
+
+'TokPipe'/0 =
+  fun () ->
+    'TokPipe'
+
+'TokTick'/0 =
+  fun () ->
+    'TokTick'
+
+'TokDot'/0 =
+  fun () ->
+    'TokDot'
+
+'TokComma'/0 =
+  fun () ->
+    'TokComma'
+
+'TokUnderscore'/0 =
+  fun () ->
+    'TokUnderscore'
+
+'TokBackslash'/0 =
+  fun () ->
+    'TokBackslash'
+
+'TokAt'/0 =
+  fun () ->
+    'TokAt'
+
+'TokLowerName'/2 =
+  fun (V0, V1) ->
+    {'TokLowerName', V0, V1}
+
+'TokUpperName'/2 =
+  fun (V0, V1) ->
+    {'TokUpperName', V0, V1}
+
+'TokOperator'/2 =
+  fun (V0, V1) ->
+    {'TokOperator', V0, V1}
+
+'TokSymbolName'/2 =
+  fun (V0, V1) ->
+    {'TokSymbolName', V0, V1}
+
+'TokHole'/1 =
+  fun (V0) ->
+    {'TokHole', V0}
+
+'TokChar'/2 =
+  fun (V0, V1) ->
+    {'TokChar', V0, V1}
+
+'TokString'/2 =
+  fun (V0, V1) ->
+    {'TokString', V0, V1}
+
+'TokRawString'/1 =
+  fun (V0) ->
+    {'TokRawString', V0}
+
+'TokInt'/2 =
+  fun (V0, V1) ->
+    {'TokInt', V0, V1}
+
+'TokNumber'/2 =
+  fun (V0, V1) ->
+    {'TokNumber', V0, V1}
+
+'TokLayoutStart'/1 =
+  fun (V0) ->
+    {'TokLayoutStart', V0}
+
+'TokLayoutSep'/1 =
+  fun (V0) ->
+    {'TokLayoutSep', V0}
+
+'TokLayoutEnd'/1 =
+  fun (V0) ->
+    {'TokLayoutEnd', V0}
+
+'TokEof'/0 =
+  fun () ->
+    'TokEof'
+
+% Newtype: Ident
+% Constructor: Ident
+
+'Ident'/1 =
+  fun (V0) ->
+    {'Ident', V0}
+
+% Newtype: Proper
+% Constructor: Proper
+
+'Proper'/1 =
+  fun (V0) ->
+    {'Proper', V0}
+
+% Newtype: Label
+% Constructor: Label
+
+'Label'/1 =
+  fun (V0) ->
+    {'Label', V0}
+
+% Newtype: Operator
+% Constructor: Operator
+
+'Operator'/1 =
+  fun (V0) ->
+    {'Operator', V0}
+
+% Newtype: ModuleName
+% Constructor: ModuleName
+
+'ModuleName'/1 =
+  fun (V0) ->
+    {'ModuleName', V0}
+
+% Data type: Type
+% Constructors: TypeVar, TypeConstructor, TypeWildcard, TypeHole, TypeString, TypeInt, TypeRow, TypeRecord, TypeForall, TypeKinded, TypeApp, TypeOp, TypeArrow, TypeConstrained, TypeParens, TypeError
+
+'TypeVar'/1 =
+  fun (V0) ->
+    {'TypeVar', V0}
+
+'TypeConstructor'/1 =
+  fun (V0) ->
+    {'TypeConstructor', V0}
+
+'TypeWildcard'/1 =
+  fun (V0) ->
+    {'TypeWildcard', V0}
+
+'TypeHole'/1 =
+  fun (V0) ->
+    {'TypeHole', V0}
+
+'TypeString'/2 =
+  fun (V0, V1) ->
+    {'TypeString', V0, V1}
+
+'TypeInt'/2 =
+  fun (V0, V1) ->
+    {'TypeInt', V0, V1}
+
+'TypeRow'/1 =
+  fun (V0) ->
+    {'TypeRow', V0}
+
+'TypeRecord'/1 =
+  fun (V0) ->
+    {'TypeRecord', V0}
+
+'TypeForall'/4 =
+  fun (V0, V1, V2, V3) ->
+    {'TypeForall', V0, V1, V2, V3}
+
+'TypeKinded'/3 =
+  fun (V0, V1, V2) ->
+    {'TypeKinded', V0, V1, V2}
+
+'TypeApp'/2 =
+  fun (V0, V1) ->
+    {'TypeApp', V0, V1}
+
+'TypeOp'/2 =
+  fun (V0, V1) ->
+    {'TypeOp', V0, V1}
+
+'TypeArrow'/3 =
+  fun (V0, V1, V2) ->
+    {'TypeArrow', V0, V1, V2}
+
+'TypeConstrained'/3 =
+  fun (V0, V1, V2) ->
+    {'TypeConstrained', V0, V1, V2}
+
+'TypeParens'/1 =
+  fun (V0) ->
+    {'TypeParens', V0}
+
+'TypeError'/1 =
+  fun (V0) ->
+    {'TypeError', V0}
+
+% Data type: TypeVarBinding
+% Constructors: TypeVarKinded, TypeVarName
+
+'TypeVarKinded'/1 =
+  fun (V0) ->
+    {'TypeVarKinded', V0}
+
+'TypeVarName'/1 =
+  fun (V0) ->
+    {'TypeVarName', V0}
+
+% Data type: Export
+% Constructors: ExportValue, ExportOp, ExportType, ExportTypeOp, ExportClass, ExportModule, ExportError
+
+'ExportValue'/1 =
+  fun (V0) ->
+    {'ExportValue', V0}
+
+'ExportOp'/1 =
+  fun (V0) ->
+    {'ExportOp', V0}
+
+'ExportType'/2 =
+  fun (V0, V1) ->
+    {'ExportType', V0, V1}
+
+'ExportTypeOp'/2 =
+  fun (V0, V1) ->
+    {'ExportTypeOp', V0, V1}
+
+'ExportClass'/2 =
+  fun (V0, V1) ->
+    {'ExportClass', V0, V1}
+
+'ExportModule'/2 =
+  fun (V0, V1) ->
+    {'ExportModule', V0, V1}
+
+'ExportError'/1 =
+  fun (V0) ->
+    {'ExportError', V0}
+
+% Data type: DataMembers
+% Constructors: DataAll, DataEnumerated
+
+'DataAll'/1 =
+  fun (V0) ->
+    {'DataAll', V0}
+
+'DataEnumerated'/1 =
+  fun (V0) ->
+    {'DataEnumerated', V0}
+
+% Data type: Declaration
+% Constructors: DeclData, DeclType, DeclNewtype, DeclClass, DeclInstanceChain, DeclDerive, DeclSignature, DeclValue, DeclFixity, DeclForeign, DeclError
+
+'DeclData'/2 =
+  fun (V0, V1) ->
+    {'DeclData', V0, V1}
+
+'DeclType'/3 =
+  fun (V0, V1, V2) ->
+    {'DeclType', V0, V1, V2}
+
+'DeclNewtype'/4 =
+  fun (V0, V1, V2, V3) ->
+    {'DeclNewtype', V0, V1, V2, V3}
+
+'DeclClass'/2 =
+  fun (V0, V1) ->
+    {'DeclClass', V0, V1}
+
+'DeclInstanceChain'/1 =
+  fun (V0) ->
+    {'DeclInstanceChain', V0}
+
+'DeclDerive'/3 =
+  fun (V0, V1, V2) ->
+    {'DeclDerive', V0, V1, V2}
+
+'DeclSignature'/1 =
+  fun (V0) ->
+    {'DeclSignature', V0}
+
+'DeclValue'/1 =
+  fun (V0) ->
+    {'DeclValue', V0}
+
+'DeclFixity'/1 =
+  fun (V0) ->
+    {'DeclFixity', V0}
+
+'DeclForeign'/3 =
+  fun (V0, V1, V2) ->
+    {'DeclForeign', V0, V1, V2}
+
+'DeclError'/1 =
+  fun (V0) ->
+    {'DeclError', V0}
+
+% Data type: ClassFundep
+% Constructors: FundepDetermined, FundepDetermines
+
+'FundepDetermined'/2 =
+  fun (V0, V1) ->
+    {'FundepDetermined', V0, V1}
+
+'FundepDetermines'/3 =
+  fun (V0, V1, V2) ->
+    {'FundepDetermines', V0, V1, V2}
+
+% Data type: InstanceBinding
+% Constructors: InstanceBindingSignature, InstanceBindingName
+
+'InstanceBindingSignature'/1 =
+  fun (V0) ->
+    {'InstanceBindingSignature', V0}
+
+'InstanceBindingName'/1 =
+  fun (V0) ->
+    {'InstanceBindingName', V0}
+
+% Data type: Import
+% Constructors: ImportValue, ImportOp, ImportType, ImportTypeOp, ImportClass, ImportError
+
+'ImportValue'/1 =
+  fun (V0) ->
+    {'ImportValue', V0}
+
+'ImportOp'/1 =
+  fun (V0) ->
+    {'ImportOp', V0}
+
+'ImportType'/2 =
+  fun (V0, V1) ->
+    {'ImportType', V0, V1}
+
+'ImportTypeOp'/2 =
+  fun (V0, V1) ->
+    {'ImportTypeOp', V0, V1}
+
+'ImportClass'/2 =
+  fun (V0, V1) ->
+    {'ImportClass', V0, V1}
+
+'ImportError'/1 =
+  fun (V0) ->
+    {'ImportError', V0}
+
+% Data type: Fixity
+% Constructors: Infix, Infixl, Infixr
+
+'Infix'/0 =
+  fun () ->
+    'Infix'
+
+'Infixl'/0 =
+  fun () ->
+    'Infixl'
+
+'Infixr'/0 =
+  fun () ->
+    'Infixr'
+
+% Data type: FixityOp
+% Constructors: FixityValue, FixityType
+
+'FixityValue'/3 =
+  fun (V0, V1, V2) ->
+    {'FixityValue', V0, V1, V2}
+
+'FixityType'/4 =
+  fun (V0, V1, V2, V3) ->
+    {'FixityType', V0, V1, V2, V3}
+
+% Data type: Foreign
+% Constructors: ForeignValue, ForeignValueInline, ForeignData
+
+'ForeignValue'/1 =
+  fun (V0) ->
+    {'ForeignValue', V0}
+
+'ForeignValueInline'/3 =
+  fun (V0, V1, V2) ->
+    {'ForeignValueInline', V0, V1, V2}
+
+'ForeignData'/2 =
+  fun (V0, V1) ->
+    {'ForeignData', V0, V1}
+
+% Data type: Expr
+% Constructors: ExprHole, ExprSection, ExprIdent, ExprConstructor, ExprBoolean, ExprChar, ExprString, ExprInt, ExprNumber, ExprArray, ExprRecord, ExprParens, ExprTyped, ExprInfix, ExprOp, ExprOpName, ExprNegate, ExprRecordAccessor, ExprRecordUpdate, ExprApp, ExprLambda, ExprIf, ExprCase, ExprLet, ExprDo, ExprAdo, ExprError
+
+'ExprHole'/1 =
+  fun (V0) ->
+    {'ExprHole', V0}
+
+'ExprSection'/1 =
+  fun (V0) ->
+    {'ExprSection', V0}
+
+'ExprIdent'/1 =
+  fun (V0) ->
+    {'ExprIdent', V0}
+
+'ExprConstructor'/1 =
+  fun (V0) ->
+    {'ExprConstructor', V0}
+
+'ExprBoolean'/2 =
+  fun (V0, V1) ->
+    {'ExprBoolean', V0, V1}
+
+'ExprChar'/2 =
+  fun (V0, V1) ->
+    {'ExprChar', V0, V1}
+
+'ExprString'/2 =
+  fun (V0, V1) ->
+    {'ExprString', V0, V1}
+
+'ExprInt'/2 =
+  fun (V0, V1) ->
+    {'ExprInt', V0, V1}
+
+'ExprNumber'/2 =
+  fun (V0, V1) ->
+    {'ExprNumber', V0, V1}
+
+'ExprArray'/1 =
+  fun (V0) ->
+    {'ExprArray', V0}
+
+'ExprRecord'/1 =
+  fun (V0) ->
+    {'ExprRecord', V0}
+
+'ExprParens'/1 =
+  fun (V0) ->
+    {'ExprParens', V0}
+
+'ExprTyped'/3 =
+  fun (V0, V1, V2) ->
+    {'ExprTyped', V0, V1, V2}
+
+'ExprInfix'/2 =
+  fun (V0, V1) ->
+    {'ExprInfix', V0, V1}
+
+'ExprOp'/2 =
+  fun (V0, V1) ->
+    {'ExprOp', V0, V1}
+
+'ExprOpName'/1 =
+  fun (V0) ->
+    {'ExprOpName', V0}
+
+'ExprNegate'/2 =
+  fun (V0, V1) ->
+    {'ExprNegate', V0, V1}
+
+'ExprRecordAccessor'/1 =
+  fun (V0) ->
+    {'ExprRecordAccessor', V0}
+
+'ExprRecordUpdate'/2 =
+  fun (V0, V1) ->
+    {'ExprRecordUpdate', V0, V1}
+
+'ExprApp'/2 =
+  fun (V0, V1) ->
+    {'ExprApp', V0, V1}
+
+'ExprLambda'/1 =
+  fun (V0) ->
+    {'ExprLambda', V0}
+
+'ExprIf'/1 =
+  fun (V0) ->
+    {'ExprIf', V0}
+
+'ExprCase'/1 =
+  fun (V0) ->
+    {'ExprCase', V0}
+
+'ExprLet'/1 =
+  fun (V0) ->
+    {'ExprLet', V0}
+
+'ExprDo'/1 =
+  fun (V0) ->
+    {'ExprDo', V0}
+
+'ExprAdo'/1 =
+  fun (V0) ->
+    {'ExprAdo', V0}
+
+'ExprError'/1 =
+  fun (V0) ->
+    {'ExprError', V0}
+
+% Data type: RecordLabeled
+% Constructors: RecordPun, RecordField
+
+'RecordPun'/1 =
+  fun (V0) ->
+    {'RecordPun', V0}
+
+'RecordField'/3 =
+  fun (V0, V1, V2) ->
+    {'RecordField', V0, V1, V2}
+
+% Data type: RecordUpdate
+% Constructors: RecordUpdateLeaf, RecordUpdateBranch
+
+'RecordUpdateLeaf'/3 =
+  fun (V0, V1, V2) ->
+    {'RecordUpdateLeaf', V0, V1, V2}
+
+'RecordUpdateBranch'/2 =
+  fun (V0, V1) ->
+    {'RecordUpdateBranch', V0, V1}
+
+% Data type: LetBinding
+% Constructors: LetBindingSignature, LetBindingName, LetBindingPattern, LetBindingError
+
+'LetBindingSignature'/1 =
+  fun (V0) ->
+    {'LetBindingSignature', V0}
+
+'LetBindingName'/1 =
+  fun (V0) ->
+    {'LetBindingName', V0}
+
+'LetBindingPattern'/3 =
+  fun (V0, V1, V2) ->
+    {'LetBindingPattern', V0, V1, V2}
+
+'LetBindingError'/1 =
+  fun (V0) ->
+    {'LetBindingError', V0}
+
+% Data type: DoStatement
+% Constructors: DoLet, DoDiscard, DoBind, DoError
+
+'DoLet'/2 =
+  fun (V0, V1) ->
+    {'DoLet', V0, V1}
+
+'DoDiscard'/1 =
+  fun (V0) ->
+    {'DoDiscard', V0}
+
+'DoBind'/3 =
+  fun (V0, V1, V2) ->
+    {'DoBind', V0, V1, V2}
+
+'DoError'/1 =
+  fun (V0) ->
+    {'DoError', V0}
+
+% Data type: Guarded
+% Constructors: Unconditional, Guarded
+
+'Unconditional'/2 =
+  fun (V0, V1) ->
+    {'Unconditional', V0, V1}
+
+'Guarded'/1 =
+  fun (V0) ->
+    {'Guarded', V0}
+
+% Data type: Binder
+% Constructors: BinderWildcard, BinderVar, BinderNamed, BinderConstructor, BinderBoolean, BinderChar, BinderString, BinderInt, BinderNumber, BinderArray, BinderRecord, BinderParens, BinderTyped, BinderOp, BinderError
+
+'BinderWildcard'/1 =
+  fun (V0) ->
+    {'BinderWildcard', V0}
+
+'BinderVar'/1 =
+  fun (V0) ->
+    {'BinderVar', V0}
+
+'BinderNamed'/3 =
+  fun (V0, V1, V2) ->
+    {'BinderNamed', V0, V1, V2}
+
+'BinderConstructor'/2 =
+  fun (V0, V1) ->
+    {'BinderConstructor', V0, V1}
+
+'BinderBoolean'/2 =
+  fun (V0, V1) ->
+    {'BinderBoolean', V0, V1}
+
+'BinderChar'/2 =
+  fun (V0, V1) ->
+    {'BinderChar', V0, V1}
+
+'BinderString'/2 =
+  fun (V0, V1) ->
+    {'BinderString', V0, V1}
+
+'BinderInt'/3 =
+  fun (V0, V1, V2) ->
+    {'BinderInt', V0, V1, V2}
+
+'BinderNumber'/3 =
+  fun (V0, V1, V2) ->
+    {'BinderNumber', V0, V1, V2}
+
+'BinderArray'/1 =
+  fun (V0) ->
+    {'BinderArray', V0}
+
+'BinderRecord'/1 =
+  fun (V0) ->
+    {'BinderRecord', V0}
+
+'BinderParens'/1 =
+  fun (V0) ->
+    {'BinderParens', V0}
+
+'BinderTyped'/3 =
+  fun (V0, V1, V2) ->
+    {'BinderTyped', V0, V1, V2}
+
+'BinderOp'/2 =
+  fun (V0, V1) ->
+    {'BinderOp', V0, V1}
+
+'BinderError'/1 =
+  fun (V0) ->
+    {'BinderError', V0}
+
+% Data type: ParseResult
+% Constructors: ParseSucceeded, ParseSucceededWithErrors, ParseFailed
+
+'ParseSucceeded'/1 =
+  fun (V0) ->
+    {'ParseSucceeded', V0}
+
+'ParseSucceededWithErrors'/2 =
+  fun (V0, V1) ->
+    {'ParseSucceededWithErrors', V0, V1}
+
+'ParseFailed'/1 =
+  fun (V0) ->
+    {'ParseFailed', V0}
+
+
+
+'SmallInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'SmallInt'/1(_A0)
+      in _F0
+
+'BigInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BigInt'/1(_A0)
+      in _F0
+
+'TokLowerName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokLowerName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokLowerName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokLowerName'/2(_A0, _A1)
+      in _F0
+
+'TokUpperName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokUpperName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokUpperName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokUpperName'/2(_A0, _A1)
+      in _F0
+
+'TokOperator'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokOperator'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokOperator'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokOperator'/2(_A0, _A1)
+      in _F0
+
+'TokSymbolName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokSymbolName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokSymbolName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokSymbolName'/2(_A0, _A1)
+      in _F0
+
+'TokHole'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TokHole'/1(_A0)
+      in _F0
+
+'TokChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokChar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokChar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokChar'/2(_A0, _A1)
+      in _F0
+
+'TokString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokString'/2(_A0, _A1)
+      in _F0
+
+'TokRawString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TokRawString'/1(_A0)
+      in _F0
+
+'TokInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokInt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokInt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokInt'/2(_A0, _A1)
+      in _F0
+
+'TokNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TokNumber'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TokNumber'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TokNumber'/2(_A0, _A1)
+      in _F0
+
+'TokLayoutStart'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TokLayoutStart'/1(_A0)
+      in _F0
+
+'TokLayoutSep'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TokLayoutSep'/1(_A0)
+      in _F0
+
+'TokLayoutEnd'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TokLayoutEnd'/1(_A0)
+      in _F0
+
+'TypeVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeVar'/1(_A0)
+      in _F0
+
+'TypeConstructor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeConstructor'/1(_A0)
+      in _F0
+
+'TypeWildcard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeWildcard'/1(_A0)
+      in _F0
+
+'TypeHole'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeHole'/1(_A0)
+      in _F0
+
+'TypeString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TypeString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TypeString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TypeString'/2(_A0, _A1)
+      in _F0
+
+'TypeInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TypeInt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TypeInt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TypeInt'/2(_A0, _A1)
+      in _F0
+
+'TypeRow'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeRow'/1(_A0)
+      in _F0
+
+'TypeRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeRecord'/1(_A0)
+      in _F0
+
+'TypeForall'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'TypeForall'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'TypeForall'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'TypeForall'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'TypeForall'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'TypeForall'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'TypeForall'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'TypeForall'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'TypeKinded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'TypeKinded'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'TypeKinded'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'TypeKinded'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'TypeKinded'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'TypeKinded'/3(_A0, _A1, _A2)
+      in _F0
+
+'TypeApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TypeApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TypeApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TypeApp'/2(_A0, _A1)
+      in _F0
+
+'TypeOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TypeOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TypeOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TypeOp'/2(_A0, _A1)
+      in _F0
+
+'TypeArrow'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'TypeArrow'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'TypeArrow'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'TypeArrow'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'TypeArrow'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'TypeArrow'/3(_A0, _A1, _A2)
+      in _F0
+
+'TypeConstrained'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'TypeConstrained'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'TypeConstrained'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'TypeConstrained'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'TypeConstrained'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'TypeConstrained'/3(_A0, _A1, _A2)
+      in _F0
+
+'TypeParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeParens'/1(_A0)
+      in _F0
+
+'TypeError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeError'/1(_A0)
+      in _F0
+
+'TypeVarKinded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeVarKinded'/1(_A0)
+      in _F0
+
+'TypeVarName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TypeVarName'/1(_A0)
+      in _F0
+
+'ExportValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExportValue'/1(_A0)
+      in _F0
+
+'ExportOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExportOp'/1(_A0)
+      in _F0
+
+'ExportType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExportType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExportType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExportType'/2(_A0, _A1)
+      in _F0
+
+'ExportTypeOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExportTypeOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExportTypeOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExportTypeOp'/2(_A0, _A1)
+      in _F0
+
+'ExportClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExportClass'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExportClass'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExportClass'/2(_A0, _A1)
+      in _F0
+
+'ExportModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExportModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExportModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExportModule'/2(_A0, _A1)
+      in _F0
+
+'ExportError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExportError'/1(_A0)
+      in _F0
+
+'DataAll'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DataAll'/1(_A0)
+      in _F0
+
+'DataEnumerated'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DataEnumerated'/1(_A0)
+      in _F0
+
+'DeclData'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'DeclData'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'DeclData'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'DeclData'/2(_A0, _A1)
+      in _F0
+
+'DeclType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'DeclType'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'DeclType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'DeclType'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'DeclType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'DeclType'/3(_A0, _A1, _A2)
+      in _F0
+
+'DeclNewtype'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'DeclNewtype'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'DeclNewtype'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'DeclNewtype'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'DeclNewtype'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'DeclNewtype'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'DeclNewtype'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'DeclNewtype'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'DeclClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'DeclClass'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'DeclClass'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'DeclClass'/2(_A0, _A1)
+      in _F0
+
+'DeclInstanceChain'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclInstanceChain'/1(_A0)
+      in _F0
+
+'DeclDerive'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'DeclDerive'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'DeclDerive'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'DeclDerive'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'DeclDerive'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'DeclDerive'/3(_A0, _A1, _A2)
+      in _F0
+
+'DeclSignature'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclSignature'/1(_A0)
+      in _F0
+
+'DeclValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclValue'/1(_A0)
+      in _F0
+
+'DeclFixity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclFixity'/1(_A0)
+      in _F0
+
+'DeclForeign'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'DeclForeign'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'DeclForeign'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'DeclForeign'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'DeclForeign'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'DeclForeign'/3(_A0, _A1, _A2)
+      in _F0
+
+'DeclError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DeclError'/1(_A0)
+      in _F0
+
+'FundepDetermined'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'FundepDetermined'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'FundepDetermined'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'FundepDetermined'/2(_A0, _A1)
+      in _F0
+
+'FundepDetermines'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'FundepDetermines'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'FundepDetermines'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'FundepDetermines'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'FundepDetermines'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'FundepDetermines'/3(_A0, _A1, _A2)
+      in _F0
+
+'InstanceBindingSignature'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'InstanceBindingSignature'/1(_A0)
+      in _F0
+
+'InstanceBindingName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'InstanceBindingName'/1(_A0)
+      in _F0
+
+'ImportValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ImportValue'/1(_A0)
+      in _F0
+
+'ImportOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ImportOp'/1(_A0)
+      in _F0
+
+'ImportType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ImportType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ImportType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ImportType'/2(_A0, _A1)
+      in _F0
+
+'ImportTypeOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ImportTypeOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ImportTypeOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ImportTypeOp'/2(_A0, _A1)
+      in _F0
+
+'ImportClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ImportClass'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ImportClass'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ImportClass'/2(_A0, _A1)
+      in _F0
+
+'ImportError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ImportError'/1(_A0)
+      in _F0
+
+'FixityValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'FixityValue'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'FixityValue'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'FixityValue'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'FixityValue'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'FixityValue'/3(_A0, _A1, _A2)
+      in _F0
+
+'FixityType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'FixityType'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'FixityType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'FixityType'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'FixityType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'FixityType'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'FixityType'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'FixityType'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'ForeignValue'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ForeignValue'/1(_A0)
+      in _F0
+
+'ForeignValueInline'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'ForeignValueInline'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'ForeignValueInline'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'ForeignValueInline'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'ForeignValueInline'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'ForeignValueInline'/3(_A0, _A1, _A2)
+      in _F0
+
+'ForeignData'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ForeignData'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ForeignData'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ForeignData'/2(_A0, _A1)
+      in _F0
+
+'ExprHole'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprHole'/1(_A0)
+      in _F0
+
+'ExprSection'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprSection'/1(_A0)
+      in _F0
+
+'ExprIdent'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprIdent'/1(_A0)
+      in _F0
+
+'ExprConstructor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprConstructor'/1(_A0)
+      in _F0
+
+'ExprBoolean'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprBoolean'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprBoolean'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprBoolean'/2(_A0, _A1)
+      in _F0
+
+'ExprChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprChar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprChar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprChar'/2(_A0, _A1)
+      in _F0
+
+'ExprString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprString'/2(_A0, _A1)
+      in _F0
+
+'ExprInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprInt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprInt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprInt'/2(_A0, _A1)
+      in _F0
+
+'ExprNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprNumber'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprNumber'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprNumber'/2(_A0, _A1)
+      in _F0
+
+'ExprArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprArray'/1(_A0)
+      in _F0
+
+'ExprRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprRecord'/1(_A0)
+      in _F0
+
+'ExprParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprParens'/1(_A0)
+      in _F0
+
+'ExprTyped'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'ExprTyped'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'ExprTyped'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'ExprTyped'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'ExprTyped'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'ExprTyped'/3(_A0, _A1, _A2)
+      in _F0
+
+'ExprInfix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprInfix'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprInfix'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprInfix'/2(_A0, _A1)
+      in _F0
+
+'ExprOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprOp'/2(_A0, _A1)
+      in _F0
+
+'ExprOpName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprOpName'/1(_A0)
+      in _F0
+
+'ExprNegate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprNegate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprNegate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprNegate'/2(_A0, _A1)
+      in _F0
+
+'ExprRecordAccessor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprRecordAccessor'/1(_A0)
+      in _F0
+
+'ExprRecordUpdate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprRecordUpdate'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprRecordUpdate'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprRecordUpdate'/2(_A0, _A1)
+      in _F0
+
+'ExprApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ExprApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ExprApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ExprApp'/2(_A0, _A1)
+      in _F0
+
+'ExprLambda'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprLambda'/1(_A0)
+      in _F0
+
+'ExprIf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprIf'/1(_A0)
+      in _F0
+
+'ExprCase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprCase'/1(_A0)
+      in _F0
+
+'ExprLet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprLet'/1(_A0)
+      in _F0
+
+'ExprDo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprDo'/1(_A0)
+      in _F0
+
+'ExprAdo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprAdo'/1(_A0)
+      in _F0
+
+'ExprError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ExprError'/1(_A0)
+      in _F0
+
+'RecordPun'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'RecordPun'/1(_A0)
+      in _F0
+
+'RecordField'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'RecordField'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'RecordField'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'RecordField'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'RecordField'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'RecordField'/3(_A0, _A1, _A2)
+      in _F0
+
+'RecordUpdateLeaf'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'RecordUpdateLeaf'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'RecordUpdateLeaf'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'RecordUpdateLeaf'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'RecordUpdateLeaf'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'RecordUpdateLeaf'/3(_A0, _A1, _A2)
+      in _F0
+
+'RecordUpdateBranch'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'RecordUpdateBranch'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'RecordUpdateBranch'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'RecordUpdateBranch'/2(_A0, _A1)
+      in _F0
+
+'LetBindingSignature'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LetBindingSignature'/1(_A0)
+      in _F0
+
+'LetBindingName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LetBindingName'/1(_A0)
+      in _F0
+
+'LetBindingPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'LetBindingPattern'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'LetBindingPattern'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'LetBindingPattern'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'LetBindingPattern'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'LetBindingPattern'/3(_A0, _A1, _A2)
+      in _F0
+
+'LetBindingError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'LetBindingError'/1(_A0)
+      in _F0
+
+'DoLet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'DoLet'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'DoLet'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'DoLet'/2(_A0, _A1)
+      in _F0
+
+'DoDiscard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DoDiscard'/1(_A0)
+      in _F0
+
+'DoBind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'DoBind'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'DoBind'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'DoBind'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'DoBind'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'DoBind'/3(_A0, _A1, _A2)
+      in _F0
+
+'DoError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'DoError'/1(_A0)
+      in _F0
+
+'Unconditional'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'Unconditional'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'Unconditional'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'Unconditional'/2(_A0, _A1)
+      in _F0
+
+'Guarded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Guarded'/1(_A0)
+      in _F0
+
+'BinderWildcard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderWildcard'/1(_A0)
+      in _F0
+
+'BinderVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderVar'/1(_A0)
+      in _F0
+
+'BinderNamed'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'BinderNamed'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'BinderNamed'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'BinderNamed'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'BinderNamed'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'BinderNamed'/3(_A0, _A1, _A2)
+      in _F0
+
+'BinderConstructor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'BinderConstructor'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'BinderConstructor'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'BinderConstructor'/2(_A0, _A1)
+      in _F0
+
+'BinderBoolean'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'BinderBoolean'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'BinderBoolean'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'BinderBoolean'/2(_A0, _A1)
+      in _F0
+
+'BinderChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'BinderChar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'BinderChar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'BinderChar'/2(_A0, _A1)
+      in _F0
+
+'BinderString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'BinderString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'BinderString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'BinderString'/2(_A0, _A1)
+      in _F0
+
+'BinderInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'BinderInt'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'BinderInt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'BinderInt'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'BinderInt'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'BinderInt'/3(_A0, _A1, _A2)
+      in _F0
+
+'BinderNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'BinderNumber'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'BinderNumber'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'BinderNumber'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'BinderNumber'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'BinderNumber'/3(_A0, _A1, _A2)
+      in _F0
+
+'BinderArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderArray'/1(_A0)
+      in _F0
+
+'BinderRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderRecord'/1(_A0)
+      in _F0
+
+'BinderParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderParens'/1(_A0)
+      in _F0
+
+'BinderTyped'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'BinderTyped'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'BinderTyped'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'BinderTyped'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'BinderTyped'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'BinderTyped'/3(_A0, _A1, _A2)
+      in _F0
+
+'BinderOp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'BinderOp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'BinderOp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'BinderOp'/2(_A0, _A1)
+      in _F0
+
+'BinderError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'BinderError'/1(_A0)
+      in _F0
+
+'ParseSucceeded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ParseSucceeded'/1(_A0)
+      in _F0
+
+'ParseSucceededWithErrors'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'ParseSucceededWithErrors'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'ParseSucceededWithErrors'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'ParseSucceededWithErrors'/2(_A0, _A1)
+      in _F0
+
+'ParseFailed'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ParseFailed'/1(_A0)
+      in _F0
+
+'Ident'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Ident'/1(_A0)
+      in _F0
+
+'Proper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Proper'/1(_A0)
+      in _F0
+
+'Label'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Label'/1(_A0)
+      in _F0
+
+'Operator'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Operator'/1(_A0)
+      in _F0
+
+'ModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ModuleName'/1(_A0)
+      in _F0
+end

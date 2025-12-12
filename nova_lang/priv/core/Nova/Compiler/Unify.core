@@ -1,0 +1,726 @@
+module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bindVar'/2, 'stripModulePrefix'/1, 'areEquivalentTypes'/2, 'isRecordTypeAliasInMap'/2, 'lookupRecordAlias'/2, 'unifyWithAliases'/3, 'unify'/0, 'unifyStepWithAliases'/3, 'unifyManyWithAliases'/3, 'unifyFieldWithAliases'/5, 'unifyRecordsWithAliases'/3, 'unifyStep'/0, 'unifyMany'/0, 'unifyField'/0, 'unifyRecords'/0, 'OccursCheck'/2, 'TypeMismatch'/2, 'ArityMismatch'/3, 'RecordFieldMismatch'/1, 'showType'/0, 'showTypeParens'/0, 'occurs'/0, 'occurs'/1, 'bindVar'/0, 'bindVar'/1, 'stripModulePrefix'/0, 'areEquivalentTypes'/0, 'areEquivalentTypes'/1, 'isRecordTypeAliasInMap'/0, 'isRecordTypeAliasInMap'/1, 'lookupRecordAlias'/0, 'lookupRecordAlias'/1, 'unifyWithAliases'/0, 'unifyWithAliases'/1, 'unifyWithAliases'/2, 'unifyStepWithAliases'/0, 'unifyStepWithAliases'/1, 'unifyStepWithAliases'/2, 'unifyManyWithAliases'/0, 'unifyManyWithAliases'/1, 'unifyManyWithAliases'/2, 'unifyFieldWithAliases'/0, 'unifyFieldWithAliases'/1, 'unifyFieldWithAliases'/2, 'unifyFieldWithAliases'/3, 'unifyFieldWithAliases'/4, 'unifyRecordsWithAliases'/0, 'unifyRecordsWithAliases'/1, 'unifyRecordsWithAliases'/2, 'OccursCheck'/0, 'OccursCheck'/1, 'TypeMismatch'/0, 'TypeMismatch'/1, 'ArityMismatch'/0, 'ArityMismatch'/1, 'ArityMismatch'/2, 'RecordFieldMismatch'/0]
+  attributes []
+% Data type: UnifyError
+% Constructors: OccursCheck, TypeMismatch, ArityMismatch, RecordFieldMismatch
+
+'OccursCheck'/2 =
+  fun (V0, V1) ->
+    {'OccursCheck', V0, V1}
+
+'TypeMismatch'/2 =
+  fun (V0, V1) ->
+    {'TypeMismatch', V0, V1}
+
+'ArityMismatch'/3 =
+  fun (V0, V1, V2) ->
+    {'ArityMismatch', V0, V1, V2}
+
+'RecordFieldMismatch'/1 =
+  fun (V0) ->
+    {'RecordFieldMismatch', V0}
+
+'showType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyVar', V}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', V), "["), call 'erlang':'integer_to_list'(call 'maps':'get'('id', V))), "]")
+      <{{'TyCon', Tc}}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', Tc)), 0) of
+      <'true'> when 'true' -> call 'maps':'get'('name', Tc)
+      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', Tc), " "), call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Mf0) -> apply 'showTypeParens'/1(_Mf0), call 'maps':'get'('args', Tc))))
+    end
+      <{{'TyRecord', R}}> when 'true' ->
+        let <FieldEntries> = call 'Data.Array':'fromFoldable'(call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R)))
+      in let <Suffix> = case call 'erlang':'>'(call 'Data.Array':'length'(FieldEntries), 8) of
+      <'true'> when 'true' -> ", ..."
+      <'false'> when 'true' -> ""
+    end
+      in letrec 'showField'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Name, Ty}}> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(Name, " :: "), apply 'showType'/1(Ty))
+      end
+      in let <FieldStrs> = call 'lists':'map'(fun (_Mf0) -> apply 'showField'/1(_Mf0), call 'Data.Array':'take'(8, FieldEntries))
+      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{ ", call 'Data.String':'joinWith'(", ", FieldStrs)), Suffix), " }")
+      <{{'TyApp', F, Arg}}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(F)), " "), apply 'showType'/1(Arg)), ")")
+    end
+
+'showTypeParens'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{T = {'TyVar', _W0}}> when 'true' ->
+        apply 'showType'/1(T)
+      <{T = {'TyCon', Tc}}> when 'true' ->
+        case call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', Tc)), 0) of
+        <'true'> when 'true' -> apply 'showType'/1(T)
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      <{T = {'TyRecord', _W0}}> when 'true' ->
+        apply 'showType'/1(T)
+      <{T}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(T)), ")")
+    end
+
+'occurs'/2 =
+  fun (V, T) ->
+    call 'Data.Set':'member'(call 'maps':'get'('id', V), call 'Nova.Compiler.Types':'freeTypeVars'(T))
+
+'bindVar'/2 =
+  fun (V, T) ->
+    letrec 'isSameVar'/2 = fun (Tv, Ty) ->
+      case Ty of
+      <{'TyVar', Tv2}> when 'true' ->
+        call 'erlang':'=:='(call 'maps':'get'('id', Tv), call 'maps':'get'('id', Tv2))
+      <_W0> when 'true' ->
+        'false'
+    end
+      in case apply 'isSameVar'/2(V, T) of
+      <'true'> when 'true' -> {'Right', call 'Nova.Compiler.Types':'emptySubst'()}
+      <'false'> when 'true' -> case apply 'occurs'/2(V, T) of
+      <'true'> when 'true' -> {'Left', apply 'OccursCheck'/2(V, T)}
+      <'false'> when 'true' -> {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'singleSubst'(V)
+      in apply _Oa0(T)}
+    end
+    end
+
+'stripModulePrefix'/1 =
+  fun (Name) ->
+    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+
+'areEquivalentTypes'/2 =
+  fun (N1, N2) ->
+    case call 'erlang':'=:='(N1, N2) of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case call 'erlang':'=:='(apply 'stripModulePrefix'/1(N1), apply 'stripModulePrefix'/1(N2)) of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, "List") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Array") <_> when 'true' -> 'false' end of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Array") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "List") <_> when 'true' -> 'false' end of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Number") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Int") <_> when 'true' -> 'false' end of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Int") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Number") <_> when 'true' -> 'false' end of
+        <'true'> when 'true' -> 'true'
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> 'false'
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      end
+      end
+      end
+      end
+      end
+
+'isRecordTypeAliasInMap'/2 =
+  fun (AliasMap, Name) ->
+    letrec 'indexOf'/2 = fun (P, S) ->
+      call 'Data.String':'lastIndexOf'(P, S)
+      in case call 'Data.Map':'lookup'(Name, AliasMap) of
+      <{'Just', {'TyRecord', _W0}}> when 'true' ->
+        'true'
+      <{'Just', _W0}> when 'true' ->
+        'false'
+      <'Nothing'> when 'true' ->
+        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+      in case call 'erlang':'not'(call 'erlang':'=:='(UnqualifiedName, Name)) of
+      <'true'> when 'true' -> case call 'Data.Map':'lookup'(UnqualifiedName, AliasMap) of
+      <{'Just', {'TyRecord', _W0}}> when 'true' ->
+        'true'
+      <_W0> when 'true' ->
+        'false'
+    end
+      <'false'> when 'true' -> 'false'
+    end
+    end
+
+'lookupRecordAlias'/2 =
+  fun (AliasMap, Name) ->
+    letrec 'indexOf'/2 = fun (P, S) ->
+      call 'Data.String':'lastIndexOf'(P, S)
+      in case call 'Data.Map':'lookup'(Name, AliasMap) of
+      <{'Just', {'TyRecord', R}}> when 'true' ->
+        {'Just', R}
+      <{'Just', _W0}> when 'true' ->
+        'Nothing'
+      <'Nothing'> when 'true' ->
+        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'("."), Name) of
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+      <'Nothing'> when 'true' ->
+        Name
+    end
+      in case call 'erlang':'not'(call 'erlang':'=:='(UnqualifiedName, Name)) of
+      <'true'> when 'true' -> case call 'Data.Map':'lookup'(UnqualifiedName, AliasMap) of
+      <{'Just', {'TyRecord', R}}> when 'true' ->
+        {'Just', R}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      <'false'> when 'true' -> 'Nothing'
+    end
+    end
+
+'unifyWithAliases'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{Aliases, {'TyVar', V}, T}> when 'true' ->
+        apply 'bindVar'/2(V, T)
+      <{Aliases, T, {'TyVar', V}}> when 'true' ->
+        apply 'bindVar'/2(V, T)
+      <{Aliases, {'TyCon', C1}, {'TyCon', C2}}> when 'true' ->
+        case call 'erlang':'not'(apply 'areEquivalentTypes'/2(call 'maps':'get'('name', C1), call 'maps':'get'('name', C2))) of
+        <'true'> when 'true' -> {'Left', apply 'TypeMismatch'/2({'TyCon', C1}, {'TyCon', C2})}
+        <_> when 'true' -> case call 'erlang':'not'(call 'erlang':'=:='(call 'erlang':'length'(call 'maps':'get'('args', C1)), call 'erlang':'length'(call 'maps':'get'('args', C2)))) of
+        <'true'> when 'true' -> {'Left', apply 'ArityMismatch'/3(call 'maps':'get'('name', C1), call 'erlang':'length'(call 'maps':'get'('args', C1)), call 'erlang':'length'(call 'maps':'get'('args', C2)))}
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> apply 'unifyManyWithAliases'/3(Aliases, call 'maps':'get'('args', C1), call 'maps':'get'('args', C2))
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      end
+      <{Aliases, {'TyCon', C}, {'TyRecord', R}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
+        <'true'> when 'true' -> case apply 'lookupRecordAlias'/2(Aliases, call 'maps':'get'('name', C)) of
+      <{'Just', AliasRecord}> when 'true' ->
+        apply 'unifyRecordsWithAliases'/3(Aliases, AliasRecord, R)
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'TypeMismatch'/2({'TyCon', C}, {'TyRecord', R})}
+    end
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> {'Left', apply 'TypeMismatch'/2({'TyCon', C}, {'TyRecord', R})}
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      <{Aliases, {'TyRecord', R}, {'TyCon', C}}> when 'true' ->
+        case call 'erlang':'=:='(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
+        <'true'> when 'true' -> case apply 'lookupRecordAlias'/2(Aliases, call 'maps':'get'('name', C)) of
+      <{'Just', AliasRecord}> when 'true' ->
+        apply 'unifyRecordsWithAliases'/3(Aliases, AliasRecord, R)
+      <'Nothing'> when 'true' ->
+        {'Left', apply 'TypeMismatch'/2({'TyRecord', R}, {'TyCon', C})}
+    end
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> {'Left', apply 'TypeMismatch'/2({'TyRecord', R}, {'TyCon', C})}
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      <{Aliases, {'TyRecord', R1}, {'TyRecord', R2}}> when 'true' ->
+        apply 'unifyRecordsWithAliases'/3(Aliases, R1, R2)
+      <{Aliases, {'TyApp', F1, A1}, {'TyApp', F2, A2}}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, F1, F2) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A2)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      <{'Right', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A2)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      end
+      <{Aliases, {'TyApp', F, A}, {'TyCon', C}}> when 'true' ->
+        case call 'erlang':'>'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
+        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 1), call 'maps':'get'('args', C))}~}
+      in let <LastArg> = case call 'Data.Array':'last'(call 'maps':'get'('args', C)) of
+      <{'Just', Arg}> when 'true' ->
+        Arg
+      <'Nothing'> when 'true' ->
+        {'TyCon', ~{'name'=>"Unit",'args'=>[]}~}
+    end
+      in case apply 'unifyWithAliases'/3(Aliases, F, HeadTyCon) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(LastArg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      <{'Right', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(LastArg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      end
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> {'Left', apply 'TypeMismatch'/2(let <_Oa0> = call 'Nova.Compiler.Types':'mkTyApp'(F)
+      in apply _Oa0(A), {'TyCon', C})}
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      <{Aliases, {'TyCon', C}, {'TyApp', F, A}}> when 'true' ->
+        case call 'erlang':'>'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
+        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 1), call 'maps':'get'('args', C))}~}
+      in let <LastArg> = case call 'Data.Array':'last'(call 'maps':'get'('args', C)) of
+      <{'Just', Arg}> when 'true' ->
+        Arg
+      <'Nothing'> when 'true' ->
+        {'TyCon', ~{'name'=>"Unit",'args'=>[]}~}
+    end
+      in case apply 'unifyWithAliases'/3(Aliases, F, HeadTyCon) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(LastArg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      <{'Right', S1}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(A), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(S1)
+      in apply _Oa0(LastArg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      <{'Right', S2}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
+      in apply _Oa0(S1)}
+      end
+      end
+        <_> when 'true' -> case 'true' of
+        <'true'> when 'true' -> {'Left', apply 'TypeMismatch'/2({'TyCon', C}, let <_Oa0> = call 'Nova.Compiler.Types':'mkTyApp'(F)
+      in apply _Oa0(A))}
+        <_> when 'true' -> 'error_no_matching_guard'
+      end
+      end
+      <{Aliases, {'TyApp', F, A}, {'TyVar', V}}> when 'true' ->
+        apply 'bindVar'/2(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTyApp'(F)
+      in apply _Oa0(A))
+      <{Aliases, {'TyVar', V}, {'TyApp', F, A}}> when 'true' ->
+        apply 'bindVar'/2(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTyApp'(F)
+      in apply _Oa0(A))
+      <{Aliases, T1, T2}> when 'true' ->
+        {'Left', apply 'TypeMismatch'/2(T1, T2)}
+    end
+
+'unify'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyStepWithAliases'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{Aliases, Sub, {'Tuple', T1, T2}}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T2)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}
+      <{'Right', S}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}
+      end
+    end
+
+'unifyManyWithAliases'/3 =
+  fun (Aliases, Ts1, Ts2) ->
+    call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(Aliases, _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), call 'Data.Array':'zip'(Ts1, Ts2))
+
+'unifyFieldWithAliases'/5 =
+  fun (Aliases, Fields1, Fields2, Sub, K) ->
+    case call 'Data.Tuple':'Tuple'(call 'Data.Map':'lookup'(K, Fields1), call 'Data.Map':'lookup'(K, Fields2)) of
+      <{'Tuple', {'Just', T1}, {'Just', T2}}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T2)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', S}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}
+    end
+      <_W0> when 'true' ->
+        {'Right', Sub}
+    end
+
+'unifyRecordsWithAliases'/3 =
+  fun (Aliases, R1, R2) ->
+    let <Keys1> = call 'Data.Map':'keys'(call 'maps':'get'('fields', R1))
+      in call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyFieldWithAliases'/5(Aliases, call 'maps':'get'('fields', R1), call 'maps':'get'('fields', R2), _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), Keys1)
+
+'unifyStep'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyMany'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyManyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyField'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1, _Pc2, _Pc3) -> apply 'unifyFieldWithAliases'/5(call 'Data.Map':'empty'(), _Pc0, _Pc1, _Pc2, _Pc3)
+
+'unifyRecords'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyRecordsWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'showType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showType'/1(_A0)
+      in _F0
+
+'showTypeParens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showTypeParens'/1(_A0)
+      in _F0
+
+'occurs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'occurs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'occurs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'occurs'/2(_A0, _A1)
+      in _F0
+
+'bindVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'bindVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'bindVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'bindVar'/2(_A0, _A1)
+      in _F0
+
+'stripModulePrefix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stripModulePrefix'/1(_A0)
+      in _F0
+
+'areEquivalentTypes'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'areEquivalentTypes'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'areEquivalentTypes'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'areEquivalentTypes'/2(_A0, _A1)
+      in _F0
+
+'isRecordTypeAliasInMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'isRecordTypeAliasInMap'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'isRecordTypeAliasInMap'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'isRecordTypeAliasInMap'/2(_A0, _A1)
+      in _F0
+
+'lookupRecordAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupRecordAlias'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupRecordAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupRecordAlias'/2(_A0, _A1)
+      in _F0
+
+'unifyWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unifyWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'unifyStepWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'unifyStepWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyStepWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'unifyStepWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unifyStepWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unifyStepWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'unifyManyWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyManyWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unifyManyWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'unifyFieldWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'unifyFieldWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'unifyFieldWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyFieldWithAliases'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F1
+      in _F0
+
+'unifyFieldWithAliases'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'unifyRecordsWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyRecordsWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unifyRecordsWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+      in _F0
+
+'OccursCheck'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'OccursCheck'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'OccursCheck'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'OccursCheck'/2(_A0, _A1)
+      in _F0
+
+'TypeMismatch'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'TypeMismatch'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'TypeMismatch'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'TypeMismatch'/2(_A0, _A1)
+      in _F0
+
+'ArityMismatch'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'ArityMismatch'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'ArityMismatch'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'ArityMismatch'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'ArityMismatch'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'ArityMismatch'/3(_A0, _A1, _A2)
+      in _F0
+
+'RecordFieldMismatch'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'RecordFieldMismatch'/1(_A0)
+      in _F0
+end

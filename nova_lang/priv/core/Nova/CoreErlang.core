@@ -1,0 +1,277 @@
+module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'compileAndLoad'/1, 'call'/3, 'callSafe'/3, 'isLoaded'/1, 'moduleToString'/1, 'stringToModule'/1, 'scanImpl'/1, 'parseImpl'/1, 'compileImpl'/1, 'loadBinaryImpl'/2, 'callImpl'/3, 'callSafeImpl'/3, 'isLoadedImpl'/1, 'moduleToStringImpl'/1, 'stringToModuleImpl'/1, 'scan'/0, 'parse'/0, 'compile'/0, 'loadBinary'/0, 'loadBinary'/1, 'compileAndLoad'/0, 'call'/0, 'call'/1, 'call'/2, 'callSafe'/0, 'callSafe'/1, 'callSafe'/2, 'isLoaded'/0, 'moduleToString'/0, 'stringToModule'/0, 'scanImpl'/0, 'parseImpl'/0, 'compileImpl'/0, 'loadBinaryImpl'/0, 'loadBinaryImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callImpl'/2, 'callSafeImpl'/0, 'callSafeImpl'/1, 'callSafeImpl'/2, 'isLoadedImpl'/0, 'moduleToStringImpl'/0, 'stringToModuleImpl'/0]
+  attributes []
+'scan'/1 =
+  fun (Source) ->
+    apply 'scanImpl'/1(Source)
+
+'parse'/1 =
+  fun (Tokens) ->
+    apply 'parseImpl'/1(Tokens)
+
+'compile'/1 =
+  fun (Ast) ->
+    apply 'compileImpl'/1(Ast)
+
+'loadBinary'/2 =
+  fun (ModName, Binary) ->
+    apply 'loadBinaryImpl'/2(ModName, Binary)
+
+'compileAndLoad'/1 =
+  fun (Source) ->
+    case apply 'scan'/1(Source) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Tokens}> when 'true' ->
+        case apply 'parse'/1(Tokens) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Ast}> when 'true' ->
+        case apply 'compile'/1(Ast) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', Result}> when 'true' ->
+        apply 'loadBinary'/2(call 'maps':'get'('moduleName', Result), call 'maps':'get'('binary', Result))
+    end
+    end
+    end
+
+'call'/3 =
+  fun (ModName, FuncName, Args) ->
+    apply 'callImpl'/3(ModName, FuncName, Args)
+
+'callSafe'/3 =
+  fun (ModName, FuncName, Args) ->
+    apply 'callSafeImpl'/3(ModName, FuncName, Args)
+
+'isLoaded'/1 =
+  fun (ModName) ->
+    apply 'isLoadedImpl'/1(ModName)
+
+'moduleToString'/1 =
+  fun (ModName) ->
+    apply 'moduleToStringImpl'/1(ModName)
+
+'stringToModule'/1 =
+  fun (Name) ->
+    apply 'stringToModuleImpl'/1(Name)
+
+'scanImpl'/1 = fun (V0) -> case call 'core_scan':'string'(call 'erlang':'binary_to_list'(V0)) of <{'ok', Tokens, _}> when 'true' -> {'Right', Tokens} <{'error', Reason, _}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
+
+'parseImpl'/1 = fun (V0) -> case call 'core_parse':'parse'(V0) of <{'ok', Ast}> when 'true' -> {'Right', Ast} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
+
+'compileImpl'/1 = fun (V0) -> case call 'compile':'forms'(V0, ['from_core', 'binary', 'return_errors']) of <{'ok', ModName, Binary}> when 'true' -> {'Right', ~{'moduleName'=>ModName, 'binary'=>Binary}~} <{'ok', ModName, Binary, _Warnings}> when 'true' -> {'Right', ~{'moduleName'=>ModName, 'binary'=>Binary}~} <{'error', Errors, _Warnings}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Errors]))} <Other> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("Unexpected compile result: ~p", [Other]))} end
+
+'loadBinaryImpl'/2 = fun (V0, V1) -> case call 'code':'load_binary'(V0, "dynamic", V1) of <{'module', M}> when 'true' -> {'Right', M} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
+
+'callImpl'/3 = fun (V0, V1, V2) -> call 'erlang':'apply'(V0, call 'erlang':'binary_to_atom'(V1, 'utf8'), V2)
+
+'callSafeImpl'/3 = fun (V0, V1, V2) -> case catch call 'erlang':'apply'(V0, call 'erlang':'binary_to_atom'(V1, 'utf8'), V2) of <{'EXIT', Reason}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} <Result> when 'true' -> {'Right', Result} end
+
+'isLoadedImpl'/1 = fun (V0) -> case call 'code':'is_loaded'(V0) of <{'file', _}> when 'true' -> 'true' <_> when 'true' -> 'false' end
+
+'moduleToStringImpl'/1 = fun (V0) -> call 'erlang':'atom_to_binary'(V0, 'utf8')
+
+'stringToModuleImpl'/1 = fun (V0) -> call 'erlang':'binary_to_atom'(V0, 'utf8')
+
+'scan'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'scan'/1(_A0)
+      in _F0
+
+'parse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parse'/1(_A0)
+      in _F0
+
+'compile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'compile'/1(_A0)
+      in _F0
+
+'loadBinary'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'loadBinary'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'loadBinary'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'loadBinary'/2(_A0, _A1)
+      in _F0
+
+'compileAndLoad'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'compileAndLoad'/1(_A0)
+      in _F0
+
+'call'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'call'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'call'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'call'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'call'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'call'/3(_A0, _A1, _A2)
+      in _F0
+
+'callSafe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'callSafe'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'callSafe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'callSafe'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'callSafe'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'callSafe'/3(_A0, _A1, _A2)
+      in _F0
+
+'isLoaded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLoaded'/1(_A0)
+      in _F0
+
+'moduleToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'moduleToString'/1(_A0)
+      in _F0
+
+'stringToModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stringToModule'/1(_A0)
+      in _F0
+
+'scanImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'scanImpl'/1(_A0)
+      in _F0
+
+'parseImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseImpl'/1(_A0)
+      in _F0
+
+'compileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'compileImpl'/1(_A0)
+      in _F0
+
+'loadBinaryImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'loadBinaryImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'loadBinaryImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'loadBinaryImpl'/2(_A0, _A1)
+      in _F0
+
+'callImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'callImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'callImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'callImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'callImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'callImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'callSafeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'callSafeImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'callSafeImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'callSafeImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'callSafeImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'callSafeImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'isLoadedImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLoadedImpl'/1(_A0)
+      in _F0
+
+'moduleToStringImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'moduleToStringImpl'/1(_A0)
+      in _F0
+
+'stringToModuleImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stringToModuleImpl'/1(_A0)
+      in _F0
+end

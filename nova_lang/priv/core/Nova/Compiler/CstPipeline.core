@@ -1,0 +1,48 @@
+module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'lexSource'/0, 'parseModuleCst'/0, 'parseModuleToCst'/0]
+  attributes []
+'parseModuleCst'/1 =
+  fun (Source) ->
+    let <Tokens> = call 'Nova.Compiler.CstLexer':'lexModule'(Source)
+      in case call 'Nova.Compiler.CstParser':'runParser'(call 'Nova.Compiler.CstParser':'parseModule'(), Tokens) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', CstResult}> when 'true' ->
+        let <CstMod> = call 'Data.Tuple':'fst'(CstResult)
+      in call 'Nova.Compiler.CstToAst':'convertModule'(CstMod)
+      <{'Right', CstResult}> when 'true' ->
+        let <CstMod> = call 'Data.Tuple':'fst'(CstResult)
+      in call 'Nova.Compiler.CstToAst':'convertModule'(CstMod)
+      end
+
+'parseModuleToCst'/1 =
+  fun (Source) ->
+    let <Tokens> = call 'Nova.Compiler.CstLexer':'lexModule'(Source)
+      in case call 'Nova.Compiler.CstParser':'runParser'(call 'Nova.Compiler.CstParser':'parseModule'(), Tokens) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', CstResult}> when 'true' ->
+        {'Right', call 'Data.Tuple':'fst'(CstResult)}
+      <{'Right', CstResult}> when 'true' ->
+        {'Right', call 'Data.Tuple':'fst'(CstResult)}
+      end
+
+'lexSource'/0 =
+  fun () ->
+    call 'Nova.Compiler.CstLexer':'lexModule'()
+
+'parseModuleCst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseModuleCst'/1(_A0)
+      in _F0
+
+'parseModuleToCst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseModuleToCst'/1(_A0)
+      in _F0
+end

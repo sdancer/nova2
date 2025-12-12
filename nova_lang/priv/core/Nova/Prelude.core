@@ -1,0 +1,780 @@
+module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, 'flip'/3, 'fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'either'/3, 'isLeft'/1, 'isRight'/1, 'otherwise'/0, 'show'/1, 'map'/2, 'filter'/2, 'length'/1, 'append'/2, 'foldl'/3, 'foldr'/3, 'unit'/0, 'apply'/2, 'applyFlipped'/2, 'void'/1, 'unsafeCrashWith'/1, 'unsafeCoerce'/1, 'top'/0, 'bottom'/0, 'not'/1, 'conj'/2, 'disj'/2, 'concatStrings'/2, 'showImpl'/1, 'negate'/1, 'mapImpl'/2, 'filterImpl'/2, 'lengthImpl'/1, 'appendImpl'/2, 'foldlImpl'/3, 'foldrImpl'/3, 'unsafeCrashWithImpl'/1, 'unsafeCoerceImpl'/1, 'topImpl'/0, 'bottomImpl'/0, 'concatStringsImpl'/2, 'Nothing'/0, 'Just'/1, 'Left'/1, 'Right'/1, 'Unit'/0, 'Tuple'/2, 'fst'/0, 'snd'/0, 'identity'/0, 'const'/0, 'const'/1, 'compose'/0, 'compose'/1, 'compose'/2, 'flip'/0, 'flip'/1, 'flip'/2, 'fromMaybe'/0, 'fromMaybe'/1, 'isJust'/0, 'isNothing'/0, 'maybe'/0, 'maybe'/1, 'maybe'/2, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'show'/0, 'map'/0, 'map'/1, 'filter'/0, 'filter'/1, 'length'/0, 'append'/0, 'append'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'apply'/0, 'apply'/1, 'applyFlipped'/0, 'applyFlipped'/1, 'void'/0, 'unsafeCrashWith'/0, 'unsafeCoerce'/0, 'not'/0, 'conj'/0, 'conj'/1, 'disj'/0, 'disj'/1, 'concatStrings'/0, 'concatStrings'/1, 'showImpl'/0, 'negate'/0, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'lengthImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'unsafeCrashWithImpl'/0, 'unsafeCoerceImpl'/0, 'concatStringsImpl'/0, 'concatStringsImpl'/1, 'Just'/0, 'Left'/0, 'Right'/0, 'Tuple'/0, 'Tuple'/1]
+  attributes []
+% Data type: Maybe
+% Constructors: Nothing, Just
+
+'Nothing'/0 =
+  fun () ->
+    'Nothing'
+
+'Just'/1 =
+  fun (V0) ->
+    {'Just', V0}
+
+% Data type: Either
+% Constructors: Left, Right
+
+'Left'/1 =
+  fun (V0) ->
+    {'Left', V0}
+
+'Right'/1 =
+  fun (V0) ->
+    {'Right', V0}
+
+% Data type: Unit
+% Constructors: Unit
+
+'Unit'/0 =
+  fun () ->
+    'Unit'
+
+% Data type: Tuple
+% Constructors: Tuple
+
+'Tuple'/2 =
+  fun (V0, V1) ->
+    {'Tuple', V0, V1}
+
+'fst'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Tuple', A, _W0}}> when 'true' ->
+        A
+    end
+
+'snd'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Tuple', _W0, B}}> when 'true' ->
+        B
+    end
+
+'identity'/1 =
+  fun (X) ->
+    X
+
+'const'/2 =
+  fun (X, _W0) ->
+    X
+
+'compose'/3 =
+  fun (F, G, X) ->
+    apply F(apply G(X))
+
+'flip'/3 =
+  fun (F, B, A) ->
+    apply F(A, B)
+
+'fromMaybe'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Def, 'Nothing'}> when 'true' ->
+        Def
+      <{_W0, {'Just', X}}> when 'true' ->
+        X
+    end
+
+'isJust'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Just', _W0}}> when 'true' ->
+        'true'
+      <{'Nothing'}> when 'true' ->
+        'false'
+    end
+
+'isNothing'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'Nothing'}> when 'true' ->
+        'true'
+      <{{'Just', _W0}}> when 'true' ->
+        'false'
+    end
+
+'maybe'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{Def, _W0, 'Nothing'}> when 'true' ->
+        Def
+      <{_W0, F, {'Just', X}}> when 'true' ->
+        apply F(X)
+    end
+
+'either'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{F, _W0, {'Left', A}}> when 'true' ->
+        apply F(A)
+      <{_W0, G, {'Right', B}}> when 'true' ->
+        apply G(B)
+    end
+
+'isLeft'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Left', _W0}}> when 'true' ->
+        'true'
+      <{{'Right', _W0}}> when 'true' ->
+        'false'
+    end
+
+'isRight'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Right', _W0}}> when 'true' ->
+        'true'
+      <{{'Left', _W0}}> when 'true' ->
+        'false'
+    end
+
+'otherwise'/0 =
+  fun () ->
+    'true'
+
+'show'/1 =
+  fun (X) ->
+    apply 'showImpl'/1(X)
+
+'map'/2 =
+  fun (F, Xs) ->
+    apply 'mapImpl'/2(F, Xs)
+
+'filter'/2 =
+  fun (F, Xs) ->
+    apply 'filterImpl'/2(F, Xs)
+
+'length'/1 =
+  fun (Xs) ->
+    apply 'lengthImpl'/1(Xs)
+
+'append'/2 =
+  fun (Xs, Ys) ->
+    apply 'appendImpl'/2(Xs, Ys)
+
+'foldl'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldlImpl'/3(F, Acc, Xs)
+
+'foldr'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldrImpl'/3(F, Acc, Xs)
+
+'unit'/0 =
+  fun () ->
+    apply 'Unit'/0()
+
+'apply'/2 =
+  fun (F, X) ->
+    apply F(X)
+
+'applyFlipped'/2 =
+  fun (X, F) ->
+    apply F(X)
+
+'void'/1 =
+  fun (_W0) ->
+    apply 'Unit'/0()
+
+'unsafeCrashWith'/1 =
+  fun (Msg) ->
+    apply 'unsafeCrashWithImpl'/1(Msg)
+
+'unsafeCoerce'/1 =
+  fun (X) ->
+    apply 'unsafeCoerceImpl'/1(X)
+
+'top'/0 =
+  fun () ->
+    apply 'topImpl'/0()
+
+'bottom'/0 =
+  fun () ->
+    apply 'bottomImpl'/0()
+
+'not'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'true'}> when 'true' ->
+        'false'
+      <{'false'}> when 'true' ->
+        'true'
+    end
+
+'conj'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'true', 'true'}> when 'true' ->
+        'true'
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'disj'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'false', 'false'}> when 'true' ->
+        'false'
+      <{_W0, _W1}> when 'true' ->
+        'true'
+    end
+
+'concatStrings'/2 =
+  fun (A, B) ->
+    apply 'concatStringsImpl'/2(A, B)
+
+'showImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'negate'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'mapImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'filterImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'lengthImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+
+'appendImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+
+'foldlImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+
+'foldrImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+
+'unsafeCrashWithImpl'/1 = fun (V0) -> call 'erlang':'error'(V0)
+
+'unsafeCoerceImpl'/1 = fun (V0) -> V0
+
+'topImpl'/0 = fun () -> 9223372036854775807
+
+'bottomImpl'/0 = fun () -> -9223372036854775808
+
+'concatStringsImpl'/2 = fun (V0, V1) -> call 'erlang':'++'(V0, V1)
+
+'fst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fst'/1(_A0)
+      in _F0
+
+'snd'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'snd'/1(_A0)
+      in _F0
+
+'identity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'identity'/1(_A0)
+      in _F0
+
+'const'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'const'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'const'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'const'/2(_A0, _A1)
+      in _F0
+
+'compose'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'compose'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'compose'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'compose'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'compose'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'compose'/3(_A0, _A1, _A2)
+      in _F0
+
+'flip'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'flip'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'flip'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'flip'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'flip'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'flip'/3(_A0, _A1, _A2)
+      in _F0
+
+'fromMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'fromMaybe'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'fromMaybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'fromMaybe'/2(_A0, _A1)
+      in _F0
+
+'isJust'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isJust'/1(_A0)
+      in _F0
+
+'isNothing'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isNothing'/1(_A0)
+      in _F0
+
+'maybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'maybe'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'maybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'maybe'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'maybe'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'maybe'/3(_A0, _A1, _A2)
+      in _F0
+
+'either'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'either'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'either'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'either'/3(_A0, _A1, _A2)
+      in _F0
+
+'isLeft'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLeft'/1(_A0)
+      in _F0
+
+'isRight'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isRight'/1(_A0)
+      in _F0
+
+'show'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'show'/1(_A0)
+      in _F0
+
+'map'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'map'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F0
+
+'filter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'filter'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'filter'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'filter'/2(_A0, _A1)
+      in _F0
+
+'length'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'length'/1(_A0)
+      in _F0
+
+'append'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'append'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'append'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'append'/2(_A0, _A1)
+      in _F0
+
+'foldl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldr'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F0
+
+'apply'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'apply'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'apply'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'apply'/2(_A0, _A1)
+      in _F0
+
+'applyFlipped'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'applyFlipped'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'applyFlipped'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'applyFlipped'/2(_A0, _A1)
+      in _F0
+
+'void'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'void'/1(_A0)
+      in _F0
+
+'unsafeCrashWith'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unsafeCrashWith'/1(_A0)
+      in _F0
+
+'unsafeCoerce'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unsafeCoerce'/1(_A0)
+      in _F0
+
+'not'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'not'/1(_A0)
+      in _F0
+
+'conj'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'conj'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'conj'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'conj'/2(_A0, _A1)
+      in _F0
+
+'disj'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'disj'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'disj'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'disj'/2(_A0, _A1)
+      in _F0
+
+'concatStrings'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'concatStrings'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'concatStrings'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'concatStrings'/2(_A0, _A1)
+      in _F0
+
+'showImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showImpl'/1(_A0)
+      in _F0
+
+'negate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'negate'/1(_A0)
+      in _F0
+
+'mapImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapImpl'/2(_A0, _A1)
+      in _F0
+
+'filterImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'filterImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'filterImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'filterImpl'/2(_A0, _A1)
+      in _F0
+
+'lengthImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lengthImpl'/1(_A0)
+      in _F0
+
+'appendImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'appendImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'appendImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'appendImpl'/2(_A0, _A1)
+      in _F0
+
+'foldlImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldlImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldlImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldrImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldrImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldrImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'unsafeCrashWithImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unsafeCrashWithImpl'/1(_A0)
+      in _F0
+
+'unsafeCoerceImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unsafeCoerceImpl'/1(_A0)
+      in _F0
+
+'concatStringsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'concatStringsImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'concatStringsImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'concatStringsImpl'/2(_A0, _A1)
+      in _F0
+
+'Just'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Just'/1(_A0)
+      in _F0
+
+'Left'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Left'/1(_A0)
+      in _F0
+
+'Right'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'Right'/1(_A0)
+      in _F0
+
+'Tuple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'Tuple'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'Tuple'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'Tuple'/2(_A0, _A1)
+      in _F0
+end

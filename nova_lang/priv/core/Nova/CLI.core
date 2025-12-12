@@ -1,0 +1,4 @@
+module 'Nova.CLI' []
+  attributes []
+
+end

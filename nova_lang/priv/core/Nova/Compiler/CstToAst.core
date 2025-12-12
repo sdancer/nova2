@@ -1,0 +1,3343 @@
+module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel'/1, 'unwrapOperator'/1, 'unwrapModuleName'/1, 'qualifiedProperName'/1, 'extractTypeVar'/1, 'intValueToInt'/1, 'snd'/1, 'traverse'/2, 'listMapWithIndex'/2, 'isUnderscore'/1, 'operatorPrecedence'/1, 'operatorIsRightAssoc'/1, 'convertModule'/1, 'convertImportDecl'/1, 'convertImportItems'/1, 'convertImportItem'/1, 'convertDataMembers'/1, 'convertDeclarations'/1, 'convertDeclaration'/1, 'convertDataType'/2, 'convertDataCtors'/1, 'convertDataCtor'/1, 'convertTypeToField'/1, 'convertTypeAlias'/2, 'convertNewtype'/3, 'convertTypeClass'/2, 'convertMethodSig'/1, 'convertInstance'/1, 'convertInstanceBinding'/1, 'convertDeriveInstance'/1, 'convertFunction'/1, 'convertValueBinding'/1, 'convertWhereExpr'/1, 'convertLetBindings'/1, 'convertWhereBindings'/1, 'convertGuardedExpr'/1, 'convertPatternGuards'/1, 'convertPatternGuard'/1, 'convertTypeSignature'/1, 'extractConstraints'/1, 'convertConstraintType'/1, 'convertFixity'/1, 'convertForeign'/1, 'convertType'/1, 'foldTypeOps'/2, 'convertRow'/1, 'convertRowLabels'/1, 'convertRowLabel'/1, 'convertExpr'/1, 'foldBinOps'/2, 'convertOpList'/1, 'shuntingYard'/2, 'makeBinOpOrSection'/3, 'foldInfixOps'/2, 'convertRecordField'/1, 'convertRecordUpdate'/1, 'convertCaseBranch'/1, 'convertLetBinding'/1, 'convertDoStatement'/1, 'convertBinder'/1, 'foldBinderOps'/2, 'convertRecordBinder'/1, 'unwrapIdent'/0, 'unwrapProper'/0, 'unwrapLabel'/0, 'unwrapOperator'/0, 'unwrapModuleName'/0, 'qualifiedProperName'/0, 'extractTypeVar'/0, 'intValueToInt'/0, 'snd'/0, 'traverse'/0, 'traverse'/1, 'listMapWithIndex'/0, 'listMapWithIndex'/1, 'isUnderscore'/0, 'operatorPrecedence'/0, 'operatorIsRightAssoc'/0, 'convertModule'/0, 'convertImportDecl'/0, 'convertImportItems'/0, 'convertImportItem'/0, 'convertDataMembers'/0, 'convertDeclarations'/0, 'convertDeclaration'/0, 'convertDataType'/0, 'convertDataType'/1, 'convertDataCtors'/0, 'convertDataCtor'/0, 'convertTypeToField'/0, 'convertTypeAlias'/0, 'convertTypeAlias'/1, 'convertNewtype'/0, 'convertNewtype'/1, 'convertNewtype'/2, 'convertTypeClass'/0, 'convertTypeClass'/1, 'convertMethodSig'/0, 'convertInstance'/0, 'convertInstanceBinding'/0, 'convertDeriveInstance'/0, 'convertFunction'/0, 'convertValueBinding'/0, 'convertWhereExpr'/0, 'convertLetBindings'/0, 'convertWhereBindings'/0, 'convertGuardedExpr'/0, 'convertPatternGuards'/0, 'convertPatternGuard'/0, 'convertTypeSignature'/0, 'extractConstraints'/0, 'convertConstraintType'/0, 'convertFixity'/0, 'convertForeign'/0, 'convertType'/0, 'foldTypeOps'/0, 'foldTypeOps'/1, 'convertRow'/0, 'convertRowLabels'/0, 'convertRowLabel'/0, 'convertExpr'/0, 'foldBinOps'/0, 'foldBinOps'/1, 'convertOpList'/0, 'shuntingYard'/0, 'shuntingYard'/1, 'makeBinOpOrSection'/0, 'makeBinOpOrSection'/1, 'makeBinOpOrSection'/2, 'foldInfixOps'/0, 'foldInfixOps'/1, 'convertRecordField'/0, 'convertRecordUpdate'/0, 'convertCaseBranch'/0, 'convertLetBinding'/0, 'convertDoStatement'/0, 'convertBinder'/0, 'foldBinderOps'/0, 'foldBinderOps'/1, 'convertRecordBinder'/0]
+  attributes []
+'unwrapIdent'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Ident', S}}> when 'true' ->
+        S
+    end
+
+'unwrapProper'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Proper', S}}> when 'true' ->
+        S
+    end
+
+'unwrapLabel'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Label', S}}> when 'true' ->
+        S
+    end
+
+'unwrapOperator'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Operator', S}}> when 'true' ->
+        S
+    end
+
+'unwrapModuleName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ModuleName', S}}> when 'true' ->
+        S
+    end
+
+'qualifiedProperName'/1 =
+  fun (Qn) ->
+    case call 'maps':'get'('module', Qn) of
+      <'Nothing'> when 'true' ->
+        apply 'unwrapProper'/1(call 'maps':'get'('name', Qn))
+      <{'Just', ModName}> when 'true' ->
+        call 'erlang':'++'(call 'erlang':'++'(apply 'unwrapModuleName'/1(ModName), "."), apply 'unwrapProper'/1(call 'maps':'get'('name', Qn)))
+    end
+
+'extractTypeVar'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TypeVarKinded', Wrapped}}> when 'true' ->
+        apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', call 'maps':'get'('value', Wrapped))))
+      <{{'TypeVarName', Name}}> when 'true' ->
+        apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))
+    end
+
+'intValueToInt'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'SmallInt', N}}> when 'true' ->
+        N
+      <{{'BigInt', _W0}}> when 'true' ->
+        0
+    end
+
+'snd'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Tuple', _W0, B}}> when 'true' ->
+        B
+    end
+
+'traverse'/2 =
+  fun (F, Lst) ->
+    case Lst of
+      <[]> when 'true' ->
+        {'Right', []}
+      <[Head | Tail]> when 'true' ->
+        case apply F(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', H}> when 'true' ->
+        case apply 'traverse'/2(F, Tail) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', T}> when 'true' ->
+        {'Right', [H | T]}
+      <{'Right', T}> when 'true' ->
+        {'Right', [H | T]}
+      end
+      <{'Right', H}> when 'true' ->
+        case apply 'traverse'/2(F, Tail) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', T}> when 'true' ->
+        {'Right', [H | T]}
+      <{'Right', T}> when 'true' ->
+        {'Right', [H | T]}
+      end
+      end
+    end
+
+'listMapWithIndex'/2 =
+  fun (F, List) ->
+    letrec 'go'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{_W0, []}> when 'true' -> []
+        <{I, [X | Xs]}> when 'true' -> [apply F(I, X) | apply 'go'/2(call 'erlang':'+'(I, 1), Xs)]
+      end
+      in apply 'go'/2(0, List)
+
+'isUnderscore'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'ExprIdent', Qn}}> when 'true' ->
+        call 'erlang':'=:='(apply 'unwrapIdent'/1(call 'maps':'get'('name', Qn)), "_")
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'operatorPrecedence'/1 =
+  fun (Op) ->
+    case Op of
+      <"*"> when 'true' ->
+        7
+      <"/"> when 'true' ->
+        7
+      <"mod"> when 'true' ->
+        7
+      <"+"> when 'true' ->
+        6
+      <"-"> when 'true' ->
+        6
+      <"<>"> when 'true' ->
+        6
+      <"++"> when 'true' ->
+        5
+      <":"> when 'true' ->
+        5
+      <"=="> when 'true' ->
+        4
+      <"/="> when 'true' ->
+        4
+      <"!="> when 'true' ->
+        4
+      <"<"> when 'true' ->
+        4
+      <">"> when 'true' ->
+        4
+      <"<="> when 'true' ->
+        4
+      <">="> when 'true' ->
+        4
+      <"&&"> when 'true' ->
+        3
+      <"||"> when 'true' ->
+        2
+      <"$"> when 'true' ->
+        1
+      <"#"> when 'true' ->
+        1
+      <">>>"> when 'true' ->
+        1
+      <">>="> when 'true' ->
+        1
+      <"<<<"> when 'true' ->
+        1
+      <">>"> when 'true' ->
+        1
+      <"<-"> when 'true' ->
+        0
+      <_W0> when 'true' ->
+        5
+    end
+
+'operatorIsRightAssoc'/1 =
+  fun (Op) ->
+    case Op of
+      <":"> when 'true' ->
+        'true'
+      <"$"> when 'true' ->
+        'true'
+      <">>>"> when 'true' ->
+        'true'
+      <"<<<"> when 'true' ->
+        'true'
+      <_W0> when 'true' ->
+        'false'
+    end
+
+'convertModule'/1 =
+  fun (CstMod) ->
+    let <ModuleName> = apply 'unwrapModuleName'/1(call 'maps':'get'('name', call 'maps':'get'('name', call 'maps':'get'('header', CstMod))))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertImportDecl'/1(_Mf0), call 'maps':'get'('imports', call 'maps':'get'('header', CstMod))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Imports}> when 'true' ->
+        case apply 'convertDeclarations'/1(call 'maps':'get'('decls', call 'maps':'get'('body', CstMod))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Decls}> when 'true' ->
+        let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      <{'Right', Decls}> when 'true' ->
+        let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      end
+      <{'Right', Imports}> when 'true' ->
+        case apply 'convertDeclarations'/1(call 'maps':'get'('decls', call 'maps':'get'('body', CstMod))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Decls}> when 'true' ->
+        let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      <{'Right', Decls}> when 'true' ->
+        let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      end
+      end
+
+'convertImportDecl'/1 =
+  fun (Imp) ->
+    let <ModuleName> = apply 'unwrapModuleName'/1(call 'maps':'get'('name', call 'maps':'get'('module', Imp)))
+      in let <Alias> = case call 'maps':'get'('qualified', Imp) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', {'Tuple', _W0, QualName}}> when 'true' ->
+        {'Just', apply 'unwrapModuleName'/1(call 'maps':'get'('name', QualName))}
+    end
+      in case case call 'maps':'get'('names', Imp) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', {'Tuple', _W0, Delim}}> when 'true' ->
+        case apply 'convertImportItems'/1(call 'maps':'get'('value', Delim)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ImportItems}> when 'true' ->
+        {'Right', ImportItems}
+      <{'Right', ImportItems}> when 'true' ->
+        {'Right', ImportItems}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Items}> when 'true' ->
+        let <IsHiding> = case call 'maps':'get'('names', Imp) of
+      <{'Just', {'Tuple', {'Just', _W0}, _W1}}> when 'true' ->
+        'true'
+      <_W0> when 'true' ->
+        'false'
+    end
+      in {'Right', ~{'moduleName'=>ModuleName,'alias'=>Alias,'items'=>Items,'hiding'=>IsHiding}~}
+      <{'Right', Items}> when 'true' ->
+        let <IsHiding> = case call 'maps':'get'('names', Imp) of
+      <{'Just', {'Tuple', {'Just', _W0}, _W1}}> when 'true' ->
+        'true'
+      <_W0> when 'true' ->
+        'false'
+    end
+      in {'Right', ~{'moduleName'=>ModuleName,'alias'=>Alias,'items'=>Items,'hiding'=>IsHiding}~}
+      end
+
+'convertImportItems'/1 =
+  fun (Sep) ->
+    let <AllImports> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, I}}> when 'true' -> I
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertImportItem'/1(_Mf0), AllImports)
+
+'convertImportItem'/1 =
+  fun (Imp) ->
+    case Imp of
+      <{'ImportValue', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ImportValue'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)))}
+      <{'ImportOp', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ImportValue'(apply 'unwrapOperator'/1(call 'maps':'get'('name', Name)))}
+      <{'ImportType', Name, MMembers}> when 'true' ->
+        let <TypeName> = apply 'unwrapProper'/1(call 'maps':'get'('name', Name))
+      in let <Spec> = apply 'convertDataMembers'/1(MMembers)
+      in {'Right', call 'Nova.Compiler.Ast':'ImportType'(TypeName, Spec)}
+      <{'ImportTypeOp', _W0, Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ImportValue'(apply 'unwrapOperator'/1(call 'maps':'get'('name', Name)))}
+      <{'ImportClass', _W0, Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ImportType'(apply 'unwrapProper'/1(call 'maps':'get'('name', Name)), call 'Nova.Compiler.Ast':'ImportNone'())}
+      <{'ImportError', _W0}> when 'true' ->
+        {'Left', "Cannot convert import error"}
+    end
+
+'convertDataMembers'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'Nothing'}> when 'true' ->
+        call 'Nova.Compiler.Ast':'ImportNone'()
+      <{{'Just', {'DataAll', _W0}}}> when 'true' ->
+        call 'Nova.Compiler.Ast':'ImportAll'()
+      <{{'Just', {'DataEnumerated', Delim}}}> when 'true' ->
+        case call 'maps':'get'('value', Delim) of
+      <'Nothing'> when 'true' ->
+        call 'Nova.Compiler.Ast':'ImportNone'()
+      <{'Just', Sep}> when 'true' ->
+        let <Names> = [apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('head', Sep))) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, N}}> when 'true' -> apply 'unwrapProper'/1(call 'maps':'get'('name', N))
+      end, call 'maps':'get'('tail', Sep))]
+      in call 'Nova.Compiler.Ast':'ImportSome'(Names)
+    end
+    end
+
+'convertDeclarations'/1 =
+  fun (Decls) ->
+    apply 'traverse'/2(fun (_Mf0) -> apply 'convertDeclaration'/1(_Mf0), Decls)
+
+'convertDeclaration'/1 =
+  fun (Decl) ->
+    case Decl of
+      <{'DeclData', Head, Ctors}> when 'true' ->
+        apply 'convertDataType'/2(Head, Ctors)
+      <{'DeclType', Head, _W0, Ty}> when 'true' ->
+        apply 'convertTypeAlias'/2(Head, Ty)
+      <{'DeclNewtype', Head, _W0, CtorName, WrappedTy}> when 'true' ->
+        apply 'convertNewtype'/3(Head, CtorName, WrappedTy)
+      <{'DeclClass', Head, Methods}> when 'true' ->
+        apply 'convertTypeClass'/2(Head, Methods)
+      <{'DeclInstanceChain', Chain}> when 'true' ->
+        apply 'convertInstance'/1(Chain)
+      <{'DeclDerive', _W0, _W1, InstHead}> when 'true' ->
+        apply 'convertDeriveInstance'/1(InstHead)
+      <{'DeclSignature', Labeled}> when 'true' ->
+        apply 'convertTypeSignature'/1(Labeled)
+      <{'DeclValue', Vbf}> when 'true' ->
+        apply 'convertFunction'/1(Vbf)
+      <{'DeclFixity', Fields}> when 'true' ->
+        apply 'convertFixity'/1(Fields)
+      <{'DeclForeign', _W0, _W1, Foreign_}> when 'true' ->
+        apply 'convertForeign'/1(Foreign_)
+      <{'DeclError', _W0}> when 'true' ->
+        {'Left', "Cannot convert error declaration"}
+    end
+
+'convertDataType'/2 =
+  fun (Head, MCtors) ->
+    let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('name', Head)))
+      in let <TypeVars> = call 'lists':'map'(fun (_Mf0) -> apply 'extractTypeVar'/1(_Mf0), call 'maps':'get'('vars', Head))
+      in case case MCtors of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', {'Tuple', _W0, Separated}}> when 'true' ->
+        apply 'convertDataCtors'/1(Separated)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ctors}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclDataType'(~{'name'=>Name,'typeVars'=>TypeVars,'constructors'=>Ctors}~)}
+      <{'Right', Ctors}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclDataType'(~{'name'=>Name,'typeVars'=>TypeVars,'constructors'=>Ctors}~)}
+      end
+
+'convertDataCtors'/1 =
+  fun (Sep) ->
+    let <AllCtors> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, C}}> when 'true' -> C
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertDataCtor'/1(_Mf0), AllCtors)
+
+'convertDataCtor'/1 =
+  fun (Ctor) ->
+    let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('name', Ctor)))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertTypeToField'/1(_Mf0), call 'maps':'get'('fields', Ctor)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fields}> when 'true' ->
+        {'Right', ~{'name'=>Name,'fields'=>Fields,'isRecord'=>'false'}~}
+      <{'Right', Fields}> when 'true' ->
+        {'Right', ~{'name'=>Name,'fields'=>Fields,'isRecord'=>'false'}~}
+      end
+
+'convertTypeToField'/1 =
+  fun (Ty) ->
+    case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', ~{'label'=>"",'ty'=>TyExpr}~}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', ~{'label'=>"",'ty'=>TyExpr}~}
+      end
+
+'convertTypeAlias'/2 =
+  fun (Head, Ty) ->
+    let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('name', Head)))
+      in let <TypeVars> = call 'lists':'map'(fun (_Mf0) -> apply 'extractTypeVar'/1(_Mf0), call 'maps':'get'('vars', Head))
+      in case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeAlias'(~{'name'=>Name,'typeVars'=>TypeVars,'ty'=>TyExpr}~)}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeAlias'(~{'name'=>Name,'typeVars'=>TypeVars,'ty'=>TyExpr}~)}
+      end
+
+'convertNewtype'/3 =
+  fun (Head, CtorName, WrappedTy) ->
+    let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('name', Head)))
+      in let <TypeVars> = call 'lists':'map'(fun (_Mf0) -> apply 'extractTypeVar'/1(_Mf0), call 'maps':'get'('vars', Head))
+      in let <Constructor> = apply 'unwrapProper'/1(call 'maps':'get'('name', CtorName))
+      in case apply 'convertType'/1(WrappedTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', WrappedType}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclNewtype'(~{'name'=>Name,'typeVars'=>TypeVars,'constructor'=>Constructor,'wrappedType'=>WrappedType}~)}
+      <{'Right', WrappedType}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclNewtype'(~{'name'=>Name,'typeVars'=>TypeVars,'constructor'=>Constructor,'wrappedType'=>WrappedType}~)}
+      end
+
+'convertTypeClass'/2 =
+  fun (Head, MMethods) ->
+    let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('name', Head)))
+      in let <TypeVars> = call 'lists':'map'(fun (_Mf0) -> apply 'extractTypeVar'/1(_Mf0), call 'maps':'get'('vars', Head))
+      in case case MMethods of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', {'Tuple', _W0, Labeled}}> when 'true' ->
+        apply 'traverse'/2(fun (_Mf0) -> apply 'convertMethodSig'/1(_Mf0), Labeled)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>'Nothing'}~)}
+      <{'Right', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>'Nothing'}~)}
+      end
+
+'convertMethodSig'/1 =
+  fun (Labeled) ->
+    let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', ~{'name'=>Name,'typeVars'=>[],'constraints'=>[],'ty'=>Ty}~}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', ~{'name'=>Name,'typeVars'=>[],'constraints'=>[],'ty'=>Ty}~}
+      end
+
+'convertInstance'/1 =
+  fun (Chain) ->
+    let <Inst> = call 'maps':'get'('head', Chain)
+      in let <ClassName> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('className', call 'maps':'get'('head', Inst))))
+      in case case call 'maps':'get'('types', call 'maps':'get'('head', Inst)) of
+      <[T | _W0]> when 'true' ->
+        apply 'convertType'/1(T)
+      <[]> when 'true' ->
+        {'Left', "Instance needs at least one type"}
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        case case call 'maps':'get'('body', Inst) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', {'Tuple', _W0, Bindings}}> when 'true' ->
+        apply 'traverse'/2(fun (_Mf0) -> apply 'convertInstanceBinding'/1(_Mf0), Bindings)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>Methods,'derived'=>'false'}~)}
+      <{'Right', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>Methods,'derived'=>'false'}~)}
+      end
+      <{'Right', Ty}> when 'true' ->
+        case case call 'maps':'get'('body', Inst) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', {'Tuple', _W0, Bindings}}> when 'true' ->
+        apply 'traverse'/2(fun (_Mf0) -> apply 'convertInstanceBinding'/1(_Mf0), Bindings)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>Methods,'derived'=>'false'}~)}
+      <{'Right', Methods}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>Methods,'derived'=>'false'}~)}
+      end
+      end
+
+'convertInstanceBinding'/1 =
+  fun (Binding) ->
+    case Binding of
+      <{'InstanceBindingSignature', _W0}> when 'true' ->
+        {'Left', "Type signatures in instances not yet supported"}
+      <{'InstanceBindingName', Vbf}> when 'true' ->
+        apply 'convertValueBinding'/1(Vbf)
+    end
+
+'convertDeriveInstance'/1 =
+  fun (Head) ->
+    let <ClassName> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('className', Head)))
+      in case case call 'maps':'get'('types', Head) of
+      <[T | _W0]> when 'true' ->
+        apply 'convertType'/1(T)
+      <[]> when 'true' ->
+        {'Left', "Derived instance needs at least one type"}
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>[],'derived'=>'true'}~)}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClassInstance'(~{'className'=>ClassName,'ty'=>Ty,'methods'=>[],'derived'=>'true'}~)}
+      end
+
+'convertFunction'/1 =
+  fun (Vbf) ->
+    case apply 'convertValueBinding'/1(Vbf) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Func}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclFunction'(Func)}
+      <{'Right', Func}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclFunction'(Func)}
+      end
+
+'convertValueBinding'/1 =
+  fun (Vbf) ->
+    let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('name', Vbf)))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), call 'maps':'get'('binders', Vbf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Params}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
+      end
+      <{'Guarded', GuardedExprs}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertGuardedExpr'/1(_Mf0), GuardedExprs) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Guards}> when 'true' ->
+        case Guards of
+      <[G | _W0]> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression"}
+    end
+      <{'Right', Guards}> when 'true' ->
+        case Guards of
+      <[G | _W0]> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression"}
+    end
+      end
+    end
+      <{'Right', Params}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
+      end
+      <{'Guarded', GuardedExprs}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertGuardedExpr'/1(_Mf0), GuardedExprs) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Guards}> when 'true' ->
+        case Guards of
+      <[G | _W0]> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression"}
+    end
+      <{'Right', Guards}> when 'true' ->
+        case Guards of
+      <[G | _W0]> when 'true' ->
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression"}
+    end
+      end
+    end
+      end
+
+'convertWhereExpr'/1 =
+  fun (Wh) ->
+    case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        case call 'maps':'get'('bindings', Wh) of
+      <'Nothing'> when 'true' ->
+        {'Right', Expr}
+      <{'Just', {'Tuple', _W0, Bindings}}> when 'true' ->
+        case apply 'convertWhereBindings'/1(Bindings) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', LetBinds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(LetBinds, Expr)}
+      <{'Right', LetBinds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(LetBinds, Expr)}
+      end
+    end
+      <{'Right', Expr}> when 'true' ->
+        case call 'maps':'get'('bindings', Wh) of
+      <'Nothing'> when 'true' ->
+        {'Right', Expr}
+      <{'Just', {'Tuple', _W0, Bindings}}> when 'true' ->
+        case apply 'convertWhereBindings'/1(Bindings) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', LetBinds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(LetBinds, Expr)}
+      <{'Right', LetBinds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(LetBinds, Expr)}
+      end
+    end
+      end
+
+'convertLetBindings'/1 =
+  fun (Bindings) ->
+    letrec 'collectLetSignatures'/1 = fun (_L0) ->
+      case {_L0} of
+        <{[]}> when 'true' -> []
+        <{[B | Bs]}> when 'true' -> case B of
+      <{'LetBindingSignature', Labeled}> when 'true' ->
+        let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in [call 'Data.Tuple':'Tuple'(Name, call 'maps':'get'('value', Labeled)) | apply 'collectLetSignatures'/1(Bs)]
+      <_W0> when 'true' ->
+        apply 'collectLetSignatures'/1(Bs)
+    end
+      end
+       'lookupLetSig'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{_W0, []}> when 'true' -> 'Nothing'
+        <{Name, [{'Tuple', N, Ty} | Rest]}> when 'true' -> case call 'erlang':'=:='(Name, N) of
+      <'true'> when 'true' -> {'Just', Ty}
+      <'false'> when 'true' -> apply 'lookupLetSig'/2(Name, Rest)
+    end
+      end
+       'getLetValueBinding'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'LetBindingName', Vbf}}> when 'true' -> {'Just', {'Left', Vbf}}
+        <{{'LetBindingPattern', Binder, Sep, Wh}}> when 'true' -> {'Just', {'Right', ~{'binder'=>Binder,'sep'=>Sep,'wh'=>Wh}~}}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'convertLetBindingWithSig'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{SigMap, {'Left', Vbf}}> when 'true' -> let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('name', Vbf)))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), call 'maps':'get'('binders', Vbf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Params}> when 'true' ->
+        case case apply 'lookupLetSig'/2(Name, SigMap) of
+      <'Nothing'> when 'true' ->
+        {'Right', 'Nothing'}
+      <{'Just', CstTy}> when 'true' ->
+        case apply 'convertType'/1(CstTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TypeAnn}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Right', TypeAnn}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      end
+      end
+      <{'Right', Params}> when 'true' ->
+        case case apply 'lookupLetSig'/2(Name, SigMap) of
+      <'Nothing'> when 'true' ->
+        {'Right', 'Nothing'}
+      <{'Just', CstTy}> when 'true' ->
+        case apply 'convertType'/1(CstTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TypeAnn}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Right', TypeAnn}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>TypeAnn}~}
+      end
+      end
+      end
+        <{_W0, {'Right', ~{'binder':=Binder,'wh':=Wh}~}}> when 'true' -> case apply 'convertBinder'/1(Binder) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      <{'Right', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      end
+      end
+      in let <SigMap> = apply 'collectLetSignatures'/1(Bindings)
+      in let <ValueBindings> = call 'Data.List':'mapMaybe'(fun (_Mf0) -> apply 'getLetValueBinding'/1(_Mf0), Bindings)
+      in apply 'traverse'/2(fun (_Pc0) -> apply 'convertLetBindingWithSig'/2(SigMap, _Pc0), ValueBindings)
+
+'convertWhereBindings'/1 =
+  fun (Bindings) ->
+    letrec 'collectSignatures'/1 = fun (_L0) ->
+      case {_L0} of
+        <{[]}> when 'true' -> []
+        <{[B | Bs]}> when 'true' -> case B of
+      <{'LetBindingSignature', Labeled}> when 'true' ->
+        let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in [call 'Data.Tuple':'Tuple'(Name, call 'maps':'get'('value', Labeled)) | apply 'collectSignatures'/1(Bs)]
+      <_W0> when 'true' ->
+        apply 'collectSignatures'/1(Bs)
+    end
+      end
+       'lookupSig'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{_W0, []}> when 'true' -> 'Nothing'
+        <{Name, [{'Tuple', N, Ty} | Rest]}> when 'true' -> case call 'erlang':'=:='(Name, N) of
+      <'true'> when 'true' -> {'Just', Ty}
+      <'false'> when 'true' -> apply 'lookupSig'/2(Name, Rest)
+    end
+      end
+       'getValueBinding'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'LetBindingName', Vbf}}> when 'true' -> {'Just', Vbf}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'convertLetBindWithSig'/2 = fun (SigMap, Vbf) ->
+      let <BindName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('name', Vbf)))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), call 'maps':'get'('binders', Vbf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BindParams}> when 'true' ->
+        case case apply 'lookupSig'/2(BindName, SigMap) of
+      <'Nothing'> when 'true' ->
+        {'Right', 'Nothing'}
+      <{'Just', CstTy}> when 'true' ->
+        case apply 'convertType'/1(CstTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TypeAnn}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      <{'Right', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Guarded', _W0}> when 'true' ->
+        {'Left', "Guarded where bindings not yet supported"}
+    end
+      <{'Right', TypeAnn}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      <{'Right', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Guarded', _W0}> when 'true' ->
+        {'Left', "Guarded where bindings not yet supported"}
+    end
+      end
+      <{'Right', BindParams}> when 'true' ->
+        case case apply 'lookupSig'/2(BindName, SigMap) of
+      <'Nothing'> when 'true' ->
+        {'Right', 'Nothing'}
+      <{'Just', CstTy}> when 'true' ->
+        case apply 'convertType'/1(CstTy) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', {'Just', Ty}}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TypeAnn}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      <{'Right', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Guarded', _W0}> when 'true' ->
+        {'Left', "Guarded where bindings not yet supported"}
+    end
+      <{'Right', TypeAnn}> when 'true' ->
+        case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertWhereExpr'/1(Wh) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      <{'Right', BindBody}> when 'true' ->
+        let <Value> = case BindParams of
+      <[]> when 'true' ->
+        BindBody
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprLambda'(BindParams, BindBody)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
+      end
+      <{'Guarded', _W0}> when 'true' ->
+        {'Left', "Guarded where bindings not yet supported"}
+    end
+      end
+      end
+      in let <SigMap> = apply 'collectSignatures'/1(Bindings)
+      in let <ValueBindings> = call 'Data.List':'mapMaybe'(fun (_Mf0) -> apply 'getValueBinding'/1(_Mf0), Bindings)
+      in apply 'traverse'/2(fun (_Pc0) -> apply 'convertLetBindWithSig'/2(SigMap, _Pc0), ValueBindings)
+
+'convertGuardedExpr'/1 =
+  fun (Ge) ->
+    case apply 'convertPatternGuards'/1(call 'maps':'get'('patterns', Ge)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Guards}> when 'true' ->
+        case apply 'convertWhereExpr'/1(call 'maps':'get'('where', Ge)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'guards'=>Guards,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'guards'=>Guards,'body'=>Body}~}
+      end
+      <{'Right', Guards}> when 'true' ->
+        case apply 'convertWhereExpr'/1(call 'maps':'get'('where', Ge)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'guards'=>Guards,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'guards'=>Guards,'body'=>Body}~}
+      end
+      end
+
+'convertPatternGuards'/1 =
+  fun (Sep) ->
+    let <AllGuards> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, G}}> when 'true' -> G
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertPatternGuard'/1(_Mf0), AllGuards)
+
+'convertPatternGuard'/1 =
+  fun (Pg) ->
+    case call 'maps':'get'('binder', Pg) of
+      <'Nothing'> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Pg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardExpr'(Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardExpr'(Expr)}
+      end
+      <{'Just', {'Tuple', Binder, _W0}}> when 'true' ->
+        case apply 'convertBinder'/1(Binder) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Pg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardPat'(Pat, Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardPat'(Pat, Expr)}
+      end
+      <{'Right', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Pg)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardPat'(Pat, Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'GuardPat'(Pat, Expr)}
+      end
+      end
+    end
+
+'convertTypeSignature'/1 =
+  fun (Labeled) ->
+    let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'extractConstraints'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', {'Tuple', Constraints, Ty}}> when 'true' ->
+        case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeSig'(~{'name'=>Name,'typeVars'=>[],'constraints'=>Constraints,'ty'=>TyExpr}~)}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeSig'(~{'name'=>Name,'typeVars'=>[],'constraints'=>Constraints,'ty'=>TyExpr}~)}
+      end
+      <{'Right', {'Tuple', Constraints, Ty}}> when 'true' ->
+        case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeSig'(~{'name'=>Name,'typeVars'=>[],'constraints'=>Constraints,'ty'=>TyExpr}~)}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeSig'(~{'name'=>Name,'typeVars'=>[],'constraints'=>Constraints,'ty'=>TyExpr}~)}
+      end
+      end
+
+'extractConstraints'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TypeConstrained', Constraint, _W0, Rest}> when 'true' ->
+        case apply 'convertConstraintType'/1(Constraint) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', C}> when 'true' ->
+        case apply 'extractConstraints'/1(Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', {'Tuple', RestCs, RestTy}}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'([C | RestCs], RestTy)}
+      <{'Right', {'Tuple', RestCs, RestTy}}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'([C | RestCs], RestTy)}
+      end
+      <{'Right', C}> when 'true' ->
+        case apply 'extractConstraints'/1(Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', {'Tuple', RestCs, RestTy}}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'([C | RestCs], RestTy)}
+      <{'Right', {'Tuple', RestCs, RestTy}}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'([C | RestCs], RestTy)}
+      end
+      end
+      <_W0> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'([], Ty)}
+    end
+
+'convertConstraintType'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TypeConstructor', Qn}> when 'true' ->
+        let <ClassName> = apply 'unwrapProper'/1(call 'maps':'get'('name', Qn))
+      in {'Right', ~{'className'=>ClassName,'types'=>[]}~}
+      <{'TypeApp', {'TypeConstructor', Qn}, Args}> when 'true' ->
+        let <ClassName> = apply 'unwrapProper'/1(call 'maps':'get'('name', Qn))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertType'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Types}> when 'true' ->
+        {'Right', ~{'className'=>ClassName,'types'=>Types}~}
+      <{'Right', Types}> when 'true' ->
+        {'Right', ~{'className'=>ClassName,'types'=>Types}~}
+      end
+      <_W0> when 'true' ->
+        {'Left', "Invalid constraint type"}
+    end
+
+'convertFixity'/1 =
+  fun (Fields) ->
+    let <Assoc> = case apply 'snd'/1(call 'maps':'get'('keyword', Fields)) of
+      <'Infix'> when 'true' ->
+        call 'Nova.Compiler.Ast':'AssocNone'()
+      <'Infixl'> when 'true' ->
+        call 'Nova.Compiler.Ast':'AssocLeft'()
+      <'Infixr'> when 'true' ->
+        call 'Nova.Compiler.Ast':'AssocRight'()
+    end
+      in let <Prec> = apply 'snd'/1(call 'maps':'get'('prec', Fields))
+      in case call 'maps':'get'('operator', Fields) of
+      <{'FixityValue', Qn, _W0, OpName}> when 'true' ->
+        let <FunctionName> = case call 'maps':'get'('name', Qn) of
+      <{'Left', Ident}> when 'true' ->
+        apply 'unwrapIdent'/1(Ident)
+      <{'Right', Proper}> when 'true' ->
+        apply 'unwrapProper'/1(Proper)
+    end
+      in let <Operator> = apply 'unwrapOperator'/1(call 'maps':'get'('name', OpName))
+      in {'Right', call 'Nova.Compiler.Ast':'DeclInfix'(~{'associativity'=>Assoc,'precedence'=>Prec,'functionName'=>FunctionName,'operator'=>Operator}~)}
+      <{'FixityType', _W0, Qn, _W1, OpName}> when 'true' ->
+        let <FunctionName> = apply 'unwrapProper'/1(call 'maps':'get'('name', Qn))
+      in let <Operator> = apply 'unwrapOperator'/1(call 'maps':'get'('name', OpName))
+      in {'Right', call 'Nova.Compiler.Ast':'DeclInfix'(~{'associativity'=>Assoc,'precedence'=>Prec,'functionName'=>FunctionName,'operator'=>Operator}~)}
+    end
+
+'convertForeign'/1 =
+  fun (Foreign_) ->
+    case Foreign_ of
+      <{'ForeignValue', Labeled}> when 'true' ->
+        let <FunctionName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
+      end
+      <{'ForeignValueInline', Labeled, _W0, Impl}> when 'true' ->
+        let <FunctionName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+      end
+      <{'ForeignData', _W0, Labeled}> when 'true' ->
+        let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeAlias'(~{'name'=>Name,'typeVars'=>[],'ty'=>Ty}~)}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeAlias'(~{'name'=>Name,'typeVars'=>[],'ty'=>Ty}~)}
+      end
+    end
+
+'convertType'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TypeVar', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)))}
+      <{'TypeConstructor', Qn}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(apply 'qualifiedProperName'/1(Qn))}
+      <{'TypeWildcard', _W0}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'("_")}
+      <{'TypeHole', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'(call 'erlang':'++'("?", apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))))}
+      <{'TypeString', _W0, S}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(call 'erlang':'++'(call 'erlang':'++'("\"", S), "\""))}
+      <{'TypeInt', _W0, _W1}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'("Int")}
+      <{'TypeRow', Wrapped}> when 'true' ->
+        case apply 'convertRow'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Row}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprRecord'(call 'maps':'get'('fields', Row), call 'maps':'get'('tail', Row))}
+      <{'Right', Row}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprRecord'(call 'maps':'get'('fields', Row), call 'maps':'get'('tail', Row))}
+      end
+      <{'TypeRecord', Wrapped}> when 'true' ->
+        case apply 'convertRow'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Row}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprRecord'(call 'maps':'get'('fields', Row), call 'maps':'get'('tail', Row))}
+      <{'Right', Row}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprRecord'(call 'maps':'get'('fields', Row), call 'maps':'get'('tail', Row))}
+      end
+      <{'TypeForall', _W0, Vars, _W1, Body}> when 'true' ->
+        let <VarNames> = call 'lists':'map'(fun (_Mf0) -> apply 'extractTypeVar'/1(_Mf0), Vars)
+      in case apply 'convertType'/1(Body) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprForAll'(VarNames, BodyTy)}
+      <{'Right', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprForAll'(VarNames, BodyTy)}
+      end
+      <{'TypeKinded', T, _W0, _W1}> when 'true' ->
+        apply 'convertType'/1(T)
+      <{'TypeApp', Head, Args}> when 'true' ->
+        case apply 'convertType'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadTy}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertType'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ArgTys}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'TyExprApp'(), HeadTy, ArgTys)}
+      <{'Right', ArgTys}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'TyExprApp'(), HeadTy, ArgTys)}
+      end
+      <{'Right', HeadTy}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertType'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ArgTys}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'TyExprApp'(), HeadTy, ArgTys)}
+      <{'Right', ArgTys}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'TyExprApp'(), HeadTy, ArgTys)}
+      end
+      end
+      <{'TypeOp', Head, Ops}> when 'true' ->
+        case apply 'convertType'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadTy}> when 'true' ->
+        apply 'foldTypeOps'/2(HeadTy, Ops)
+      <{'Right', HeadTy}> when 'true' ->
+        apply 'foldTypeOps'/2(HeadTy, Ops)
+      end
+      <{'TypeArrow', From, _W0, To}> when 'true' ->
+        case apply 'convertType'/1(From) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', FromTy}> when 'true' ->
+        case apply 'convertType'/1(To) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ToTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprArrow'(FromTy, ToTy)}
+      <{'Right', ToTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprArrow'(FromTy, ToTy)}
+      end
+      <{'Right', FromTy}> when 'true' ->
+        case apply 'convertType'/1(To) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ToTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprArrow'(FromTy, ToTy)}
+      <{'Right', ToTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprArrow'(FromTy, ToTy)}
+      end
+      end
+      <{'TypeConstrained', Constraint, _W0, Body}> when 'true' ->
+        case apply 'convertConstraintType'/1(Constraint) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', C}> when 'true' ->
+        case apply 'convertType'/1(Body) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprConstrained'([C | []], BodyTy)}
+      <{'Right', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprConstrained'([C | []], BodyTy)}
+      end
+      <{'Right', C}> when 'true' ->
+        case apply 'convertType'/1(Body) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprConstrained'([C | []], BodyTy)}
+      <{'Right', BodyTy}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprConstrained'([C | []], BodyTy)}
+      end
+      end
+      <{'TypeParens', Wrapped}> when 'true' ->
+        case apply 'convertType'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprParens'(Inner)}
+      <{'Right', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'TyExprParens'(Inner)}
+      end
+      <{'TypeError', _W0}> when 'true' ->
+        {'Left', "Cannot convert type error"}
+    end
+
+'foldTypeOps'/2 =
+  fun (Acc, Ops) ->
+    case Ops of
+      <[]> when 'true' ->
+        {'Right', Acc}
+      <[{'Tuple', Op, Ty} | Rest]> when 'true' ->
+        let <OpName> = apply 'unwrapOperator'/1(call 'maps':'get'('name', Op))
+      in case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'TyExprApp'(call 'Nova.Compiler.Ast':'TyExprApp'(call 'Nova.Compiler.Ast':'TyExprCon'(OpName), Acc), TyExpr)
+      in apply 'foldTypeOps'/2(Combined, Rest)
+      <{'Right', TyExpr}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'TyExprApp'(call 'Nova.Compiler.Ast':'TyExprApp'(call 'Nova.Compiler.Ast':'TyExprCon'(OpName), Acc), TyExpr)
+      in apply 'foldTypeOps'/2(Combined, Rest)
+      end
+    end
+
+'convertRow'/1 =
+  fun (Row) ->
+    case case call 'maps':'get'('labels', Row) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', Sep}> when 'true' ->
+        apply 'convertRowLabels'/1(Sep)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fields}> when 'true' ->
+        let <Tail> = case call 'maps':'get'('tail', Row) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', {'Tuple', _W0, Ty}}> when 'true' ->
+        case Ty of
+      <{'TypeVar', Name}> when 'true' ->
+        {'Just', apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+    end
+      in {'Right', ~{'fields'=>Fields,'tail'=>Tail}~}
+      <{'Right', Fields}> when 'true' ->
+        let <Tail> = case call 'maps':'get'('tail', Row) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', {'Tuple', _W0, Ty}}> when 'true' ->
+        case Ty of
+      <{'TypeVar', Name}> when 'true' ->
+        {'Just', apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+    end
+      in {'Right', ~{'fields'=>Fields,'tail'=>Tail}~}
+      end
+
+'convertRowLabels'/1 =
+  fun (Sep) ->
+    let <AllLabels> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, L}}> when 'true' -> L
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertRowLabel'/1(_Mf0), AllLabels)
+
+'convertRowLabel'/1 =
+  fun (Labeled) ->
+    let <Label> = apply 'unwrapLabel'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Ty)}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Ty)}
+      end
+
+'convertExpr'/1 =
+  fun (Expr) ->
+    case Expr of
+      <{'ExprHole', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprVar'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)))}
+      <{'ExprSection', _W0}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprSection'("_")}
+      <{'ExprIdent', Qn}> when 'true' ->
+        case call 'maps':'get'('module', Qn) of
+      <'Nothing'> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprVar'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Qn)))}
+      <{'Just', ModName}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprQualified'(apply 'unwrapModuleName'/1(ModName), apply 'unwrapIdent'/1(call 'maps':'get'('name', Qn)))}
+    end
+      <{'ExprConstructor', Qn}> when 'true' ->
+        case call 'maps':'get'('module', Qn) of
+      <'Nothing'> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprVar'(apply 'unwrapProper'/1(call 'maps':'get'('name', Qn)))}
+      <{'Just', ModName}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprQualified'(apply 'unwrapModuleName'/1(ModName), apply 'unwrapProper'/1(call 'maps':'get'('name', Qn)))}
+    end
+      <{'ExprBoolean', _W0, B}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLit'(call 'Nova.Compiler.Ast':'LitBool'(B))}
+      <{'ExprChar', _W0, C}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLit'(call 'Nova.Compiler.Ast':'LitChar'(C))}
+      <{'ExprString', _W0, S}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLit'(call 'Nova.Compiler.Ast':'LitString'(S))}
+      <{'ExprInt', _W0, IntVal}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLit'(call 'Nova.Compiler.Ast':'LitInt'(apply 'intValueToInt'/1(IntVal)))}
+      <{'ExprNumber', _W0, N}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLit'(call 'Nova.Compiler.Ast':'LitNumber'(N))}
+      <{'ExprArray', Del}> when 'true' ->
+        case case call 'maps':'get'('value', Del) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', Sep}> when 'true' ->
+        let <AllItems> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, E}}> when 'true' -> E
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertExpr'/1(_Mf0), AllItems)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Items}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprList'(Items)}
+      <{'Right', Items}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprList'(Items)}
+      end
+      <{'ExprRecord', Del}> when 'true' ->
+        case case call 'maps':'get'('value', Del) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', Sep}> when 'true' ->
+        let <AllFields> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, F}}> when 'true' -> F
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertRecordField'/1(_Mf0), AllFields)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecord'(Fields)}
+      <{'Right', Fields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecord'(Fields)}
+      end
+      <{'ExprParens', Wrapped}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprParens'(Inner)}
+      <{'Right', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprParens'(Inner)}
+      end
+      <{'ExprTyped', E, _W0, Ty}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr_}> when 'true' ->
+        case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprTyped'(Expr_, TyExpr)}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprTyped'(Expr_, TyExpr)}
+      end
+      <{'Right', Expr_}> when 'true' ->
+        case apply 'convertType'/1(Ty) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprTyped'(Expr_, TyExpr)}
+      <{'Right', TyExpr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprTyped'(Expr_, TyExpr)}
+      end
+      end
+      <{'ExprInfix', Head, Ops}> when 'true' ->
+        case apply 'convertExpr'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadE}> when 'true' ->
+        apply 'foldInfixOps'/2(HeadE, Ops)
+      <{'Right', HeadE}> when 'true' ->
+        apply 'foldInfixOps'/2(HeadE, Ops)
+      end
+      <{'ExprOp', Head, Ops}> when 'true' ->
+        case apply 'convertExpr'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadE}> when 'true' ->
+        apply 'foldBinOps'/2(HeadE, Ops)
+      <{'Right', HeadE}> when 'true' ->
+        apply 'foldBinOps'/2(HeadE, Ops)
+      end
+      <{'ExprOpName', Qn}> when 'true' ->
+        case call 'maps':'get'('module', Qn) of
+      <'Nothing'> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprVar'(apply 'unwrapOperator'/1(call 'maps':'get'('name', Qn)))}
+      <{'Just', ModName}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprQualified'(apply 'unwrapModuleName'/1(ModName), apply 'unwrapOperator'/1(call 'maps':'get'('name', Qn)))}
+    end
+      <{'ExprNegate', _W0, E}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'("-", Inner)}
+      <{'Right', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'("-", Inner)}
+      end
+      <{'ExprRecordAccessor', Acc}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Acc)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Base}> when 'true' ->
+        let <Path> = [call 'maps':'get'('head', call 'maps':'get'('path', Acc)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, L}}> when 'true' -> L
+      end, call 'maps':'get'('tail', call 'maps':'get'('path', Acc)))]
+      in let <Labels> = call 'lists':'map'(fun (L) ->
+      apply 'unwrapLabel'/1(call 'maps':'get'('name', L)), Path)
+      in case Labels of
+      <[FirstLabel | Rest]> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprRecordAccess'(), call 'Nova.Compiler.Ast':'ExprRecordAccess'(Base, FirstLabel), Rest)}
+      <[]> when 'true' ->
+        {'Left', "Empty record accessor path"}
+    end
+      <{'Right', Base}> when 'true' ->
+        let <Path> = [call 'maps':'get'('head', call 'maps':'get'('path', Acc)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, L}}> when 'true' -> L
+      end, call 'maps':'get'('tail', call 'maps':'get'('path', Acc)))]
+      in let <Labels> = call 'lists':'map'(fun (L) ->
+      apply 'unwrapLabel'/1(call 'maps':'get'('name', L)), Path)
+      in case Labels of
+      <[FirstLabel | Rest]> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprRecordAccess'(), call 'Nova.Compiler.Ast':'ExprRecordAccess'(Base, FirstLabel), Rest)}
+      <[]> when 'true' ->
+        {'Left', "Empty record accessor path"}
+    end
+      end
+      <{'ExprRecordUpdate', Base, Updates}> when 'true' ->
+        case apply 'convertExpr'/1(Base) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BaseE}> when 'true' ->
+        let <AllUpdates> = [call 'maps':'get'('head', call 'maps':'get'('value', Updates)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, U}}> when 'true' -> U
+      end, call 'maps':'get'('tail', call 'maps':'get'('value', Updates)))]
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertRecordUpdate'/1(_Mf0), AllUpdates) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', UpdateFields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecordUpdate'(BaseE, UpdateFields)}
+      <{'Right', UpdateFields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecordUpdate'(BaseE, UpdateFields)}
+      end
+      <{'Right', BaseE}> when 'true' ->
+        let <AllUpdates> = [call 'maps':'get'('head', call 'maps':'get'('value', Updates)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, U}}> when 'true' -> U
+      end, call 'maps':'get'('tail', call 'maps':'get'('value', Updates)))]
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertRecordUpdate'/1(_Mf0), AllUpdates) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', UpdateFields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecordUpdate'(BaseE, UpdateFields)}
+      <{'Right', UpdateFields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprRecordUpdate'(BaseE, UpdateFields)}
+      end
+      end
+      <{'ExprApp', Head, Args}> when 'true' ->
+        case apply 'convertExpr'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadE}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertExpr'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ArgEs}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprApp'(), HeadE, ArgEs)}
+      <{'Right', ArgEs}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprApp'(), HeadE, ArgEs)}
+      end
+      <{'Right', HeadE}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertExpr'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ArgEs}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprApp'(), HeadE, ArgEs)}
+      <{'Right', ArgEs}> when 'true' ->
+        {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprApp'(), HeadE, ArgEs)}
+      end
+      end
+      <{'ExprLambda', Lam}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), call 'maps':'get'('binders', Lam)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Params}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('body', Lam)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLambda'(Params, Body)}
+      <{'Right', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLambda'(Params, Body)}
+      end
+      <{'Right', Params}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('body', Lam)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLambda'(Params, Body)}
+      <{'Right', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLambda'(Params, Body)}
+      end
+      end
+      <{'ExprIf', Ite}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('cond', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', CondE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('thenBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ThenE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('elseBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      <{'Right', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      end
+      <{'Right', ThenE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('elseBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      <{'Right', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      end
+      end
+      <{'Right', CondE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('thenBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ThenE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('elseBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      <{'Right', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      end
+      <{'Right', ThenE}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('elseBranch', Ite)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      <{'Right', ElseE}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprIf'(CondE, ThenE, ElseE)}
+      end
+      end
+      end
+      <{'ExprCase', CaseOf}> when 'true' ->
+        let <AllHeads> = [call 'maps':'get'('head', call 'maps':'get'('head', CaseOf)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, E}}> when 'true' -> E
+      end, call 'maps':'get'('tail', call 'maps':'get'('head', CaseOf)))]
+      in case AllHeads of
+      <[Single | []]> when 'true' ->
+        case apply 'isUnderscore'/1(Single) of
+      <'true'> when 'true' -> case apply 'traverse'/2(fun (_Mf0) -> apply 'convertCaseBranch'/1(_Mf0), call 'maps':'get'('branches', CaseOf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Clauses}> when 'true' ->
+        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'("lamcase__")
+      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'("lamcase__"), Clauses)
+      in {'Right', call 'Nova.Compiler.Ast':'ExprLambda'([LamParam | []], LamBody)}
+      <{'Right', Clauses}> when 'true' ->
+        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'("lamcase__")
+      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'("lamcase__"), Clauses)
+      in {'Right', call 'Nova.Compiler.Ast':'ExprLambda'([LamParam | []], LamBody)}
+      end
+      <'false'> when 'true' -> case apply 'convertExpr'/1(Single) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadE}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertCaseBranch'/1(_Mf0), call 'maps':'get'('branches', CaseOf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(HeadE, Clauses)}
+      <{'Right', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(HeadE, Clauses)}
+      end
+      <{'Right', HeadE}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertCaseBranch'/1(_Mf0), call 'maps':'get'('branches', CaseOf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(HeadE, Clauses)}
+      <{'Right', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(HeadE, Clauses)}
+      end
+      end
+    end
+      <Multiple> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertExpr'/1(_Mf0), Multiple) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Es}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertCaseBranch'/1(_Mf0), call 'maps':'get'('branches', CaseOf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprTuple'(Es), Clauses)}
+      <{'Right', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprTuple'(Es), Clauses)}
+      end
+      <{'Right', Es}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertCaseBranch'/1(_Mf0), call 'maps':'get'('branches', CaseOf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprTuple'(Es), Clauses)}
+      <{'Right', Clauses}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprTuple'(Es), Clauses)}
+      end
+      end
+    end
+      <{'ExprLet', LetIn}> when 'true' ->
+        case apply 'convertLetBindings'/1(call 'maps':'get'('bindings', LetIn)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Bindings}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('body', LetIn)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(Bindings, Body)}
+      <{'Right', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(Bindings, Body)}
+      end
+      <{'Right', Bindings}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('body', LetIn)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(Bindings, Body)}
+      <{'Right', Body}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprLet'(Bindings, Body)}
+      end
+      end
+      <{'ExprDo', DoBlock}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertDoStatement'/1(_Mf0), call 'maps':'get'('statements', DoBlock)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Stmts}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(Stmts)}
+      <{'Right', Stmts}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(Stmts)}
+      end
+      <{'ExprAdo', AdoBlock}> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertDoStatement'/1(_Mf0), call 'maps':'get'('statements', AdoBlock)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Stmts}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('result', AdoBlock)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Result}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+      <{'Right', Result}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+      end
+      <{'Right', Stmts}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('result', AdoBlock)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Result}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+      <{'Right', Result}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+      end
+      end
+      <{'ExprError', _W0}> when 'true' ->
+        {'Left', "Cannot convert expression error"}
+    end
+
+'foldBinOps'/2 =
+  fun (FirstExpr, Ops) ->
+    case apply 'convertOpList'/1(Ops) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Converted}> when 'true' ->
+        apply 'shuntingYard'/2(FirstExpr, Converted)
+      <{'Right', Converted}> when 'true' ->
+        apply 'shuntingYard'/2(FirstExpr, Converted)
+      end
+
+'convertOpList'/1 =
+  fun (Ops) ->
+    case Ops of
+      <[]> when 'true' ->
+        {'Right', []}
+      <[{'Tuple', Op, E} | Rest]> when 'true' ->
+        let <OpName> = apply 'unwrapOperator'/1(call 'maps':'get'('name', Op))
+      in case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ExprE}> when 'true' ->
+        case apply 'convertOpList'/1(Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestConverted}> when 'true' ->
+        {'Right', [call 'Data.Tuple':'Tuple'(OpName, ExprE) | RestConverted]}
+      <{'Right', RestConverted}> when 'true' ->
+        {'Right', [call 'Data.Tuple':'Tuple'(OpName, ExprE) | RestConverted]}
+      end
+      <{'Right', ExprE}> when 'true' ->
+        case apply 'convertOpList'/1(Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', RestConverted}> when 'true' ->
+        {'Right', [call 'Data.Tuple':'Tuple'(OpName, ExprE) | RestConverted]}
+      <{'Right', RestConverted}> when 'true' ->
+        {'Right', [call 'Data.Tuple':'Tuple'(OpName, ExprE) | RestConverted]}
+      end
+      end
+    end
+
+'shuntingYard'/2 =
+  fun (FirstExpr, Ops) ->
+    letrec 'go'/3 = fun (_L0, _L1, _L2) ->
+      case {_L0, _L1, _L2} of
+        <{Output, OpStack, []}> when 'true' -> apply 'reduceAll'/2(Output, OpStack)
+        <{Output, OpStack, [{'Tuple', Op, Expr} | Rest]}> when 'true' -> let <NewPrec> = apply 'operatorPrecedence'/1(Op)
+      in let <IsRightAssoc> = apply 'operatorIsRightAssoc'/1(Op)
+      in case apply 'popHigherPrec'/4(Output, OpStack, NewPrec, IsRightAssoc) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Result}> when 'true' ->
+        let <NewOutput> = call 'maps':'get'('output', Result)
+      in let <NewOpStack> = call 'maps':'get'('opStack', Result)
+      in apply 'go'/3([Expr | NewOutput], [Op | NewOpStack], Rest)
+      <{'Right', Result}> when 'true' ->
+        let <NewOutput> = call 'maps':'get'('output', Result)
+      in let <NewOpStack> = call 'maps':'get'('opStack', Result)
+      in apply 'go'/3([Expr | NewOutput], [Op | NewOpStack], Rest)
+      end
+      end
+       'popHigherPrec'/4 = fun (Output, OpStack, Prec, IsRightAssoc) ->
+      case OpStack of
+      <[]> when 'true' ->
+        {'Right', ~{'output'=>Output,'opStack'=>OpStack}~}
+      <[TopOp | RestOps]> when 'true' ->
+        let <TopPrec> = apply 'operatorPrecedence'/1(TopOp)
+      in let <ShouldPop> = case IsRightAssoc of
+      <'true'> when 'true' -> call 'erlang':'>'(TopPrec, Prec)
+      <'false'> when 'true' -> call 'erlang':'>='(TopPrec, Prec)
+    end
+      in case ShouldPop of
+      <'true'> when 'true' -> case Output of
+      <[Right | [Left | RestOutput]]> when 'true' ->
+        let <Combined> = apply 'makeBinOpOrSection'/3(TopOp, Left, Right)
+      in apply 'popHigherPrec'/4([Combined | RestOutput], RestOps, Prec, IsRightAssoc)
+      <_W0> when 'true' ->
+        {'Left', "Not enough operands for operator"}
+    end
+      <'false'> when 'true' -> {'Right', ~{'output'=>Output,'opStack'=>OpStack}~}
+    end
+    end
+       'reduceAll'/2 = fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Output, []}> when 'true' -> case Output of
+      <[Result | []]> when 'true' ->
+        {'Right', Result}
+      <_W0> when 'true' ->
+        {'Left', "Invalid expression: multiple values remaining"}
+    end
+        <{Output, [Op | RestOps]}> when 'true' -> case Output of
+      <[Right | [Left | RestOutput]]> when 'true' ->
+        let <Combined> = apply 'makeBinOpOrSection'/3(Op, Left, Right)
+      in apply 'reduceAll'/2([Combined | RestOutput], RestOps)
+      <_W0> when 'true' ->
+        {'Left', "Not enough operands for operator"}
+    end
+      end
+      in apply 'go'/3([FirstExpr | []], [], Ops)
+
+'makeBinOpOrSection'/3 =
+  fun (Op, Left, Right) ->
+    case Left of
+      <{'ExprSection', "_"}> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprSectionRight'(Op, Right)
+      <_W0> when 'true' ->
+        case Right of
+      <{'ExprSection', "_"}> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprSectionLeft'(Left, Op)
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Ast':'ExprBinOp'(Op, Left, Right)
+    end
+    end
+
+'foldInfixOps'/2 =
+  fun (Acc, Ops) ->
+    case Ops of
+      <[]> when 'true' ->
+        {'Right', Acc}
+      <[{'Tuple', Wrapped, E} | Rest]> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fn}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ExprE}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'ExprApp'(call 'Nova.Compiler.Ast':'ExprApp'(Fn, Acc), ExprE)
+      in apply 'foldInfixOps'/2(Combined, Rest)
+      <{'Right', ExprE}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'ExprApp'(call 'Nova.Compiler.Ast':'ExprApp'(Fn, Acc), ExprE)
+      in apply 'foldInfixOps'/2(Combined, Rest)
+      end
+      <{'Right', Fn}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ExprE}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'ExprApp'(call 'Nova.Compiler.Ast':'ExprApp'(Fn, Acc), ExprE)
+      in apply 'foldInfixOps'/2(Combined, Rest)
+      <{'Right', ExprE}> when 'true' ->
+        let <Combined> = call 'Nova.Compiler.Ast':'ExprApp'(call 'Nova.Compiler.Ast':'ExprApp'(Fn, Acc), ExprE)
+      in apply 'foldInfixOps'/2(Combined, Rest)
+      end
+      end
+    end
+
+'convertRecordField'/1 =
+  fun (Field) ->
+    case Field of
+      <{'RecordPun', Name}> when 'true' ->
+        let <Label> = apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))
+      in {'Right', call 'Data.Tuple':'Tuple'(Label, call 'Nova.Compiler.Ast':'ExprVar'(Label))}
+      <{'RecordField', Name, _W0, Value}> when 'true' ->
+        let <Label> = apply 'unwrapLabel'/1(call 'maps':'get'('name', Name))
+      in case apply 'convertExpr'/1(Value) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Expr)}
+      end
+    end
+
+'convertRecordUpdate'/1 =
+  fun (Update) ->
+    case Update of
+      <{'RecordUpdateLeaf', Name, _W0, Expr}> when 'true' ->
+        let <Label> = apply 'unwrapLabel'/1(call 'maps':'get'('name', Name))
+      in case apply 'convertExpr'/1(Expr) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', E}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, E)}
+      <{'Right', E}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, E)}
+      end
+      <{'RecordUpdateBranch', Name, Updates}> when 'true' ->
+        let <Label> = apply 'unwrapLabel'/1(call 'maps':'get'('name', Name))
+      in let <AllUpdates> = [call 'maps':'get'('head', call 'maps':'get'('value', Updates)) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, U}}> when 'true' -> U
+      end, call 'maps':'get'('tail', call 'maps':'get'('value', Updates)))]
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertRecordUpdate'/1(_Mf0), AllUpdates) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fields}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, call 'Nova.Compiler.Ast':'ExprRecord'(Fields))}
+      <{'Right', Fields}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, call 'Nova.Compiler.Ast':'ExprRecord'(Fields))}
+      end
+    end
+
+'convertCaseBranch'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'Tuple', Patterns, Guarded}}> when 'true' ->
+        let <AllPats> = [call 'maps':'get'('head', Patterns) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, P}}> when 'true' -> P
+      end, call 'maps':'get'('tail', Patterns))]
+      in case case AllPats of
+      <[Single | []]> when 'true' ->
+        apply 'convertBinder'/1(Single)
+      <Multiple> when 'true' ->
+        case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), Multiple) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ps}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatRecord'(apply 'listMapWithIndex'/2(fun (I, P) ->
+      call 'Data.Tuple':'Tuple'(call 'erlang':'integer_to_list'(I), P), Ps))}
+      <{'Right', Ps}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatRecord'(apply 'listMapWithIndex'/2(fun (I, P) ->
+      call 'Data.Tuple':'Tuple'(call 'erlang':'integer_to_list'(I), P), Ps))}
+      end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        case Guarded of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
+      end
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        case apply 'convertPatternGuards'/1(call 'maps':'get'('patterns', Ge)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', GuardClauses}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      end
+      <{'Right', GuardClauses}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      end
+      end
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression in case"}
+    end
+    end
+      <{'Right', Pat}> when 'true' ->
+        case Guarded of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
+      end
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        case apply 'convertPatternGuards'/1(call 'maps':'get'('patterns', Ge)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', GuardClauses}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      end
+      <{'Right', GuardClauses}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge))) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      <{'Right', Body}> when 'true' ->
+        let <Guard> = case GuardClauses of
+      <[{'GuardExpr', E} | _W0]> when 'true' ->
+        {'Just', E}
+      <_W0> when 'true' ->
+        'Nothing'
+    end
+      in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
+      end
+      end
+      <[]> when 'true' ->
+        {'Left', "Empty guarded expression in case"}
+    end
+    end
+      end
+    end
+
+'convertLetBinding'/1 =
+  fun (Binding) ->
+    case Binding of
+      <{'LetBindingSignature', Labeled}> when 'true' ->
+        let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
+      in case apply 'convertType'/1(call 'maps':'get'('value', Labeled)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Ty}> when 'true' ->
+        {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>call 'Nova.Compiler.Ast':'ExprVar'(Name),'typeAnn'=>{'Just', Ty}}~}
+      <{'Right', Ty}> when 'true' ->
+        {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>call 'Nova.Compiler.Ast':'ExprVar'(Name),'typeAnn'=>{'Just', Ty}}~}
+      end
+      <{'LetBindingName', Vbf}> when 'true' ->
+        let <Name> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('name', Vbf)))
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), call 'maps':'get'('binders', Vbf)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Params}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      <{'Right', Params}> when 'true' ->
+        case case call 'maps':'get'('guarded', Vbf) of
+      <{'Unconditional', _W0, Wh}> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', Wh))
+      <{'Guarded', Guards}> when 'true' ->
+        case Guards of
+      <[Ge | _W0]> when 'true' ->
+        apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
+      <[]> when 'true' ->
+        {'Left', "Empty guarded let binding"}
+    end
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', BodyExpr}> when 'true' ->
+        let <Body> = case call 'Data.List':'null'(Params) of
+      <'true'> when 'true' -> BodyExpr
+      <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
+    end
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      end
+      <{'LetBindingPattern', Binder, _W0, Wh}> when 'true' ->
+        case apply 'convertBinder'/1(Binder) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      <{'Right', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      <{'Right', Body}> when 'true' ->
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
+      end
+      end
+      <{'LetBindingError', _W0}> when 'true' ->
+        {'Left', "Cannot convert let binding error"}
+    end
+
+'convertDoStatement'/1 =
+  fun (Stmt) ->
+    case Stmt of
+      <{'DoLet', _W0, Bindings}> when 'true' ->
+        case apply 'convertLetBindings'/1(Bindings) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Binds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoLet'(Binds)}
+      <{'Right', Binds}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoLet'(Binds)}
+      end
+      <{'DoDiscard', E}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoExpr'(Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoExpr'(Expr)}
+      end
+      <{'DoBind', Binder, _W0, E}> when 'true' ->
+        case apply 'convertBinder'/1(Binder) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoBind'(Pat, Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoBind'(Pat, Expr)}
+      end
+      <{'Right', Pat}> when 'true' ->
+        case apply 'convertExpr'/1(E) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoBind'(Pat, Expr)}
+      <{'Right', Expr}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'DoBind'(Pat, Expr)}
+      end
+      end
+      <{'DoError', _W0}> when 'true' ->
+        {'Left', "Cannot convert do statement error"}
+    end
+
+'convertBinder'/1 =
+  fun (Binder) ->
+    case Binder of
+      <{'BinderWildcard', _W0}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatWildcard'()}
+      <{'BinderVar', Name}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatVar'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)))}
+      <{'BinderNamed', Name, _W0, Inner}> when 'true' ->
+        case apply 'convertBinder'/1(Inner) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', InnerPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatAs'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)), InnerPat)}
+      <{'Right', InnerPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatAs'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)), InnerPat)}
+      end
+      <{'BinderConstructor', Qn, Args}> when 'true' ->
+        let <Name> = apply 'qualifiedProperName'/1(Qn)
+      in case apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), Args) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', ArgPats}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCon'(Name, ArgPats)}
+      <{'Right', ArgPats}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCon'(Name, ArgPats)}
+      end
+      <{'BinderBoolean', _W0, B}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatLit'(call 'Nova.Compiler.Ast':'LitBool'(B))}
+      <{'BinderChar', _W0, C}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatLit'(call 'Nova.Compiler.Ast':'LitChar'(C))}
+      <{'BinderString', _W0, S}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatLit'(call 'Nova.Compiler.Ast':'LitString'(S))}
+      <{'BinderInt', Neg, _W0, IntVal}> when 'true' ->
+        let <N> = apply 'intValueToInt'/1(IntVal)
+      in let <N_> = case Neg of
+      <'Nothing'> when 'true' ->
+        N
+      <{'Just', _W0}> when 'true' ->
+        call 'erlang':'-'(N)
+    end
+      in {'Right', call 'Nova.Compiler.Ast':'PatLit'(call 'Nova.Compiler.Ast':'LitInt'(N_))}
+      <{'BinderNumber', Neg, _W0, Num}> when 'true' ->
+        let <N_> = case Neg of
+      <'Nothing'> when 'true' ->
+        Num
+      <{'Just', _W0}> when 'true' ->
+        call 'erlang':'-'(Num)
+    end
+      in {'Right', call 'Nova.Compiler.Ast':'PatLit'(call 'Nova.Compiler.Ast':'LitNumber'(N_))}
+      <{'BinderArray', Del}> when 'true' ->
+        case case call 'maps':'get'('value', Del) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', Sep}> when 'true' ->
+        let <AllItems> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, B}}> when 'true' -> B
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertBinder'/1(_Mf0), AllItems)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Items}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatList'(Items)}
+      <{'Right', Items}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatList'(Items)}
+      end
+      <{'BinderRecord', Del}> when 'true' ->
+        case case call 'maps':'get'('value', Del) of
+      <'Nothing'> when 'true' ->
+        {'Right', []}
+      <{'Just', Sep}> when 'true' ->
+        let <AllFields> = [call 'maps':'get'('head', Sep) | call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', _W0, F}}> when 'true' -> F
+      end, call 'maps':'get'('tail', Sep))]
+      in apply 'traverse'/2(fun (_Mf0) -> apply 'convertRecordBinder'/1(_Mf0), AllFields)
+    end of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Fields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatRecord'(Fields)}
+      <{'Right', Fields}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatRecord'(Fields)}
+      end
+      <{'BinderParens', Wrapped}> when 'true' ->
+        case apply 'convertBinder'/1(call 'maps':'get'('value', Wrapped)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatParens'(Inner)}
+      <{'Right', Inner}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatParens'(Inner)}
+      end
+      <{'BinderTyped', Inner, _W0, _W1}> when 'true' ->
+        apply 'convertBinder'/1(Inner)
+      <{'BinderOp', Head, Ops}> when 'true' ->
+        case apply 'convertBinder'/1(Head) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', HeadPat}> when 'true' ->
+        apply 'foldBinderOps'/2(HeadPat, Ops)
+      <{'Right', HeadPat}> when 'true' ->
+        apply 'foldBinderOps'/2(HeadPat, Ops)
+      end
+      <{'BinderError', _W0}> when 'true' ->
+        {'Left', "Cannot convert binder error"}
+    end
+
+'foldBinderOps'/2 =
+  fun (Acc, Ops) ->
+    case Ops of
+      <[]> when 'true' ->
+        {'Right', Acc}
+      <[{'Tuple', Op, B} | Rest]> when 'true' ->
+        let <OpName> = apply 'unwrapOperator'/1(call 'maps':'get'('name', Op))
+      in case apply 'convertBinder'/1(B) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', BinderPat}> when 'true' ->
+        case call 'erlang':'=:='(OpName, ":") of
+      <'true'> when 'true' -> case apply 'foldBinderOps'/2(BinderPat, Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TailPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCons'(Acc, TailPat)}
+      <{'Right', TailPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCons'(Acc, TailPat)}
+      end
+      <'false'> when 'true' -> let <Combined> = call 'Nova.Compiler.Ast':'PatCon'(OpName, [Acc | [BinderPat | []]])
+      in apply 'foldBinderOps'/2(Combined, Rest)
+    end
+      <{'Right', BinderPat}> when 'true' ->
+        case call 'erlang':'=:='(OpName, ":") of
+      <'true'> when 'true' -> case apply 'foldBinderOps'/2(BinderPat, Rest) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', TailPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCons'(Acc, TailPat)}
+      <{'Right', TailPat}> when 'true' ->
+        {'Right', call 'Nova.Compiler.Ast':'PatCons'(Acc, TailPat)}
+      end
+      <'false'> when 'true' -> let <Combined> = call 'Nova.Compiler.Ast':'PatCon'(OpName, [Acc | [BinderPat | []]])
+      in apply 'foldBinderOps'/2(Combined, Rest)
+    end
+      end
+    end
+
+'convertRecordBinder'/1 =
+  fun (Field) ->
+    case Field of
+      <{'RecordPun', Name}> when 'true' ->
+        let <Label> = apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))
+      in {'Right', call 'Data.Tuple':'Tuple'(Label, call 'Nova.Compiler.Ast':'PatVar'(Label))}
+      <{'RecordField', Name, _W0, Binder}> when 'true' ->
+        let <Label> = apply 'unwrapLabel'/1(call 'maps':'get'('name', Name))
+      in case apply 'convertBinder'/1(Binder) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', Pat}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Pat)}
+      <{'Right', Pat}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Label, Pat)}
+      end
+    end
+
+'unwrapIdent'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unwrapIdent'/1(_A0)
+      in _F0
+
+'unwrapProper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unwrapProper'/1(_A0)
+      in _F0
+
+'unwrapLabel'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unwrapLabel'/1(_A0)
+      in _F0
+
+'unwrapOperator'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unwrapOperator'/1(_A0)
+      in _F0
+
+'unwrapModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'unwrapModuleName'/1(_A0)
+      in _F0
+
+'qualifiedProperName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'qualifiedProperName'/1(_A0)
+      in _F0
+
+'extractTypeVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractTypeVar'/1(_A0)
+      in _F0
+
+'intValueToInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'intValueToInt'/1(_A0)
+      in _F0
+
+'snd'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'snd'/1(_A0)
+      in _F0
+
+'traverse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'traverse'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'traverse'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'traverse'/2(_A0, _A1)
+      in _F0
+
+'listMapWithIndex'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'listMapWithIndex'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'listMapWithIndex'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'listMapWithIndex'/2(_A0, _A1)
+      in _F0
+
+'isUnderscore'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isUnderscore'/1(_A0)
+      in _F0
+
+'operatorPrecedence'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'operatorPrecedence'/1(_A0)
+      in _F0
+
+'operatorIsRightAssoc'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'operatorIsRightAssoc'/1(_A0)
+      in _F0
+
+'convertModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertModule'/1(_A0)
+      in _F0
+
+'convertImportDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertImportDecl'/1(_A0)
+      in _F0
+
+'convertImportItems'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertImportItems'/1(_A0)
+      in _F0
+
+'convertImportItem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertImportItem'/1(_A0)
+      in _F0
+
+'convertDataMembers'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDataMembers'/1(_A0)
+      in _F0
+
+'convertDeclarations'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDeclarations'/1(_A0)
+      in _F0
+
+'convertDeclaration'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDeclaration'/1(_A0)
+      in _F0
+
+'convertDataType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'convertDataType'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'convertDataType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'convertDataType'/2(_A0, _A1)
+      in _F0
+
+'convertDataCtors'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDataCtors'/1(_A0)
+      in _F0
+
+'convertDataCtor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDataCtor'/1(_A0)
+      in _F0
+
+'convertTypeToField'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertTypeToField'/1(_A0)
+      in _F0
+
+'convertTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'convertTypeAlias'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'convertTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'convertTypeAlias'/2(_A0, _A1)
+      in _F0
+
+'convertNewtype'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'convertNewtype'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'convertNewtype'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'convertNewtype'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'convertNewtype'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'convertNewtype'/3(_A0, _A1, _A2)
+      in _F0
+
+'convertTypeClass'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'convertTypeClass'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'convertTypeClass'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'convertTypeClass'/2(_A0, _A1)
+      in _F0
+
+'convertMethodSig'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertMethodSig'/1(_A0)
+      in _F0
+
+'convertInstance'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertInstance'/1(_A0)
+      in _F0
+
+'convertInstanceBinding'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertInstanceBinding'/1(_A0)
+      in _F0
+
+'convertDeriveInstance'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDeriveInstance'/1(_A0)
+      in _F0
+
+'convertFunction'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertFunction'/1(_A0)
+      in _F0
+
+'convertValueBinding'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertValueBinding'/1(_A0)
+      in _F0
+
+'convertWhereExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertWhereExpr'/1(_A0)
+      in _F0
+
+'convertLetBindings'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertLetBindings'/1(_A0)
+      in _F0
+
+'convertWhereBindings'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertWhereBindings'/1(_A0)
+      in _F0
+
+'convertGuardedExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertGuardedExpr'/1(_A0)
+      in _F0
+
+'convertPatternGuards'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertPatternGuards'/1(_A0)
+      in _F0
+
+'convertPatternGuard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertPatternGuard'/1(_A0)
+      in _F0
+
+'convertTypeSignature'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertTypeSignature'/1(_A0)
+      in _F0
+
+'extractConstraints'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractConstraints'/1(_A0)
+      in _F0
+
+'convertConstraintType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertConstraintType'/1(_A0)
+      in _F0
+
+'convertFixity'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertFixity'/1(_A0)
+      in _F0
+
+'convertForeign'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertForeign'/1(_A0)
+      in _F0
+
+'convertType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertType'/1(_A0)
+      in _F0
+
+'foldTypeOps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'foldTypeOps'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'foldTypeOps'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'foldTypeOps'/2(_A0, _A1)
+      in _F0
+
+'convertRow'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRow'/1(_A0)
+      in _F0
+
+'convertRowLabels'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRowLabels'/1(_A0)
+      in _F0
+
+'convertRowLabel'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRowLabel'/1(_A0)
+      in _F0
+
+'convertExpr'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertExpr'/1(_A0)
+      in _F0
+
+'foldBinOps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'foldBinOps'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'foldBinOps'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'foldBinOps'/2(_A0, _A1)
+      in _F0
+
+'convertOpList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertOpList'/1(_A0)
+      in _F0
+
+'shuntingYard'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'shuntingYard'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'shuntingYard'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'shuntingYard'/2(_A0, _A1)
+      in _F0
+
+'makeBinOpOrSection'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'makeBinOpOrSection'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'makeBinOpOrSection'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'makeBinOpOrSection'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'makeBinOpOrSection'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'makeBinOpOrSection'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldInfixOps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'foldInfixOps'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'foldInfixOps'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'foldInfixOps'/2(_A0, _A1)
+      in _F0
+
+'convertRecordField'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRecordField'/1(_A0)
+      in _F0
+
+'convertRecordUpdate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRecordUpdate'/1(_A0)
+      in _F0
+
+'convertCaseBranch'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertCaseBranch'/1(_A0)
+      in _F0
+
+'convertLetBinding'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertLetBinding'/1(_A0)
+      in _F0
+
+'convertDoStatement'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertDoStatement'/1(_A0)
+      in _F0
+
+'convertBinder'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertBinder'/1(_A0)
+      in _F0
+
+'foldBinderOps'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'foldBinderOps'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'foldBinderOps'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'foldBinderOps'/2(_A0, _A1)
+      in _F0
+
+'convertRecordBinder'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'convertRecordBinder'/1(_A0)
+      in _F0
+end

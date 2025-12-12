@@ -1,0 +1,196 @@
+module 'MCP.Transport' ['stdioReadLine'/1, 'stdioWriteLine'/1, 'stderrWrite'/1, 'tcpListen'/1, 'tcpAccept'/1, 'tcpReadLine'/1, 'tcpWriteLine'/2, 'tcpClose'/1, 'initStdio'/0, 'initTcp'/1, 'stdioReadLineImpl'/1, 'stdioWriteLineImpl'/1, 'stderrWriteImpl'/1, 'tcpListenImpl'/1, 'tcpAcceptImpl'/1, 'tcpReadLineImpl'/1, 'tcpWriteLineImpl'/2, 'tcpCloseImpl'/1, 'StdioTransport'/0, 'TcpTransport'/1, 'stdioReadLine'/0, 'stdioWriteLine'/0, 'stderrWrite'/0, 'tcpListen'/0, 'tcpAccept'/0, 'tcpReadLine'/0, 'tcpWriteLine'/0, 'tcpWriteLine'/1, 'tcpClose'/0, 'initTcp'/0, 'stdioReadLineImpl'/0, 'stdioWriteLineImpl'/0, 'stderrWriteImpl'/0, 'tcpListenImpl'/0, 'tcpAcceptImpl'/0, 'tcpReadLineImpl'/0, 'tcpWriteLineImpl'/0, 'tcpWriteLineImpl'/1, 'tcpCloseImpl'/0, 'TcpTransport'/0]
+  attributes []
+% Data type: Transport
+% Constructors: StdioTransport, TcpTransport
+
+'StdioTransport'/0 =
+  fun () ->
+    'StdioTransport'
+
+'TcpTransport'/1 =
+  fun (V0) ->
+    {'TcpTransport', V0}
+
+'stdioReadLine'/1 =
+  fun (_W0) ->
+    apply 'stdioReadLineImpl'/1('unit')
+
+'stdioWriteLine'/1 =
+  fun (S) ->
+    apply 'stdioWriteLineImpl'/1(S)
+
+'stderrWrite'/1 =
+  fun (S) ->
+    apply 'stderrWriteImpl'/1(S)
+
+'tcpListen'/1 =
+  fun (Port) ->
+    apply 'tcpListenImpl'/1(Port)
+
+'tcpAccept'/1 =
+  fun (Sock) ->
+    apply 'tcpAcceptImpl'/1(Sock)
+
+'tcpReadLine'/1 =
+  fun (Sock) ->
+    apply 'tcpReadLineImpl'/1(Sock)
+
+'tcpWriteLine'/2 =
+  fun (Sock, Msg) ->
+    apply 'tcpWriteLineImpl'/2(Sock, Msg)
+
+'tcpClose'/1 =
+  fun (Sock) ->
+    apply 'tcpCloseImpl'/1(Sock)
+
+'initStdio'/0 =
+  fun () ->
+    apply 'StdioTransport'/0()
+
+'initTcp'/1 =
+  fun (Port) ->
+    case apply 'tcpListen'/1(Port) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to listen: ", Err)}
+    end
+
+'stdioReadLineImpl'/1 = fun (V0) -> case call 'io':'get_line'('') of <'eof'> when 'true' -> {'Left', [101,111,102]} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Line> when 'true' -> {'Right', call 'string':'trim'(Line)} end
+
+'stdioWriteLineImpl'/1 = fun (V0) -> let <_> = call 'io':'put_chars'(V0) in let <_> = call 'io':'nl'() in 'unit'
+
+'stderrWriteImpl'/1 = fun (V0) -> let <_> = call 'io':'put_chars'('standard_error', V0) in let <_> = call 'io':'nl'('standard_error') in 'unit'
+
+'tcpListenImpl'/1 = fun (V0) -> case call 'gen_tcp':'listen'(V0, ['binary', {'packet', 'line'}, {'active', 'false'}, {'reuseaddr', 'true'}]) of <{'ok', Socket}> when 'true' -> {'Right', Socket} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end
+
+'tcpAcceptImpl'/1 = fun (V0) -> case call 'gen_tcp':'accept'(V0) of <{'ok', ClientSocket}> when 'true' -> {'Right', ClientSocket} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end
+
+'tcpReadLineImpl'/1 = fun (V0) -> case call 'gen_tcp':'recv'(V0, 0) of <{'ok', Data}> when 'true' -> {'Right', call 'erlang':'binary_to_list'(call 'string':'trim'(Data))} <{'error', 'closed'}> when 'true' -> {'Left', [99,108,111,115,101,100]} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end
+
+'tcpWriteLineImpl'/2 = fun (V0, V1) -> let <NL> = call 'erlang':'list_to_binary'([10]) in case call 'gen_tcp':'send'(V0, [call 'erlang':'list_to_binary'(V1), NL]) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end
+
+'tcpCloseImpl'/1 = fun (V0) -> let <_> = call 'gen_tcp':'close'(V0) in 'unit'
+
+'stdioReadLine'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stdioReadLine'/1(_A0)
+      in _F0
+
+'stdioWriteLine'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stdioWriteLine'/1(_A0)
+      in _F0
+
+'stderrWrite'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stderrWrite'/1(_A0)
+      in _F0
+
+'tcpListen'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpListen'/1(_A0)
+      in _F0
+
+'tcpAccept'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpAccept'/1(_A0)
+      in _F0
+
+'tcpReadLine'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpReadLine'/1(_A0)
+      in _F0
+
+'tcpWriteLine'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tcpWriteLine'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tcpWriteLine'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tcpWriteLine'/2(_A0, _A1)
+      in _F0
+
+'tcpClose'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpClose'/1(_A0)
+      in _F0
+
+'initTcp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'initTcp'/1(_A0)
+      in _F0
+
+'stdioReadLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stdioReadLineImpl'/1(_A0)
+      in _F0
+
+'stdioWriteLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stdioWriteLineImpl'/1(_A0)
+      in _F0
+
+'stderrWriteImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stderrWriteImpl'/1(_A0)
+      in _F0
+
+'tcpListenImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpListenImpl'/1(_A0)
+      in _F0
+
+'tcpAcceptImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpAcceptImpl'/1(_A0)
+      in _F0
+
+'tcpReadLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpReadLineImpl'/1(_A0)
+      in _F0
+
+'tcpWriteLineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'tcpWriteLineImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'tcpWriteLineImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'tcpWriteLineImpl'/2(_A0, _A1)
+      in _F0
+
+'tcpCloseImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tcpCloseImpl'/1(_A0)
+      in _F0
+
+'TcpTransport'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'TcpTransport'/1(_A0)
+      in _F0
+end
