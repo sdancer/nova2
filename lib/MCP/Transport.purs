@@ -3,10 +3,9 @@ module MCP.Transport where
 
 import Prelude
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
 
--- | Opaque socket type
-foreign import data Socket :: Type
+-- | Socket type (opaque - represented as Erlang term)
+type Socket = Unit
 
 -- | Transport type
 data Transport
@@ -14,64 +13,60 @@ data Transport
   | TcpTransport { listenSocket :: Socket, clientSocket :: Socket, port :: Int }
 
 -- | Read a line from STDIO
-foreign import stdioReadLine :: Unit -> Either String String
-  = "case call 'io':'get_line'('') of
-       <'eof'> when 'true' -> {'Left', \"EOF\"}
-       <{'error', Reason}> when 'true' ->
-         {'Left', call 'erlang':'binary_to_list'(call 'erlang':'term_to_binary'(Reason))}
-       <Line> when 'true' ->
-         {'Right', call 'string':'trim'(Line)}
-     end"
+stdioReadLine :: Unit -> Either String String
+stdioReadLine _ = stdioReadLineImpl unit
+
+foreign import stdioReadLineImpl :: Unit -> Either String String
+  = "case call 'io':'get_line'('') of <'eof'> when 'true' -> {'Left', [101,111,102]} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Line> when 'true' -> {'Right', call 'string':'trim'(Line)} end"
 
 -- | Write a line to STDOUT
-foreign import stdioWriteLine :: String -> Unit
-  = "do call 'io':'put_chars'($0)
-        call 'io':'nl'()
-        'unit'"
+stdioWriteLine :: String -> Unit
+stdioWriteLine s = stdioWriteLineImpl s
+
+foreign import stdioWriteLineImpl :: String -> Unit
+  = "let <_> = call 'io':'put_chars'($0) in let <_> = call 'io':'nl'() in 'unit'"
 
 -- | Write to STDERR (for logging)
-foreign import stderrWrite :: String -> Unit
-  = "do call 'io':'put_chars'('standard_error', $0)
-        call 'io':'nl'('standard_error')
-        'unit'"
+stderrWrite :: String -> Unit
+stderrWrite s = stderrWriteImpl s
+
+foreign import stderrWriteImpl :: String -> Unit
+  = "let <_> = call 'io':'put_chars'('standard_error', $0) in let <_> = call 'io':'nl'('standard_error') in 'unit'"
 
 -- | Listen on a TCP port
-foreign import tcpListen :: Int -> Either String Socket
-  = "case call 'gen_tcp':'listen'($0, ['binary', {'packet', 'line'}, {'active', 'false'}, {'reuseaddr', 'true'}]) of
-       <{'ok', Socket}> when 'true' -> {'Right', Socket}
-       <{'error', Reason}> when 'true' ->
-         {'Left', call 'erlang':'binary_to_list'(call 'erlang':'atom_to_binary'(Reason, 'utf8'))}
-     end"
+tcpListen :: Int -> Either String Socket
+tcpListen port = tcpListenImpl port
+
+foreign import tcpListenImpl :: Int -> Either String Socket
+  = "case call 'gen_tcp':'listen'($0, ['binary', {'packet', 'line'}, {'active', 'false'}, {'reuseaddr', 'true'}]) of <{'ok', Socket}> when 'true' -> {'Right', Socket} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end"
 
 -- | Accept a TCP connection
-foreign import tcpAccept :: Socket -> Either String Socket
-  = "case call 'gen_tcp':'accept'($0) of
-       <{'ok', ClientSocket}> when 'true' -> {'Right', ClientSocket}
-       <{'error', Reason}> when 'true' ->
-         {'Left', call 'erlang':'binary_to_list'(call 'erlang':'atom_to_binary'(Reason, 'utf8'))}
-     end"
+tcpAccept :: Socket -> Either String Socket
+tcpAccept sock = tcpAcceptImpl sock
+
+foreign import tcpAcceptImpl :: Socket -> Either String Socket
+  = "case call 'gen_tcp':'accept'($0) of <{'ok', ClientSocket}> when 'true' -> {'Right', ClientSocket} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end"
 
 -- | Read a line from TCP socket
-foreign import tcpReadLine :: Socket -> Either String String
-  = "case call 'gen_tcp':'recv'($0, 0) of
-       <{'ok', Data}> when 'true' ->
-         {'Right', call 'erlang':'binary_to_list'(call 'string':'trim'(Data))}
-       <{'error', 'closed'}> when 'true' -> {'Left', \"Connection closed\"}
-       <{'error', Reason}> when 'true' ->
-         {'Left', call 'erlang':'binary_to_list'(call 'erlang':'atom_to_binary'(Reason, 'utf8'))}
-     end"
+tcpReadLine :: Socket -> Either String String
+tcpReadLine sock = tcpReadLineImpl sock
+
+foreign import tcpReadLineImpl :: Socket -> Either String String
+  = "case call 'gen_tcp':'recv'($0, 0) of <{'ok', Data}> when 'true' -> {'Right', call 'erlang':'binary_to_list'(call 'string':'trim'(Data))} <{'error', 'closed'}> when 'true' -> {'Left', [99,108,111,115,101,100]} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end"
 
 -- | Write a line to TCP socket
-foreign import tcpWriteLine :: Socket -> String -> Either String Unit
-  = "case call 'gen_tcp':'send'($0, [call 'erlang':'list_to_binary'($1), <<\"\\n\">>]) of
-       <'ok'> when 'true' -> {'Right', 'unit'}
-       <{'error', Reason}> when 'true' ->
-         {'Left', call 'erlang':'binary_to_list'(call 'erlang':'atom_to_binary'(Reason, 'utf8'))}
-     end"
+tcpWriteLine :: Socket -> String -> Either String Unit
+tcpWriteLine sock msg = tcpWriteLineImpl sock msg
+
+foreign import tcpWriteLineImpl :: Socket -> String -> Either String Unit
+  = "let <NL> = call 'erlang':'list_to_binary'([10]) in case call 'gen_tcp':'send'($0, [call 'erlang':'list_to_binary'($1), NL]) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} end"
 
 -- | Close a TCP socket
-foreign import tcpClose :: Socket -> Unit
-  = "do call 'gen_tcp':'close'($0) 'unit'"
+tcpClose :: Socket -> Unit
+tcpClose sock = tcpCloseImpl sock
+
+foreign import tcpCloseImpl :: Socket -> Unit
+  = "let <_> = call 'gen_tcp':'close'($0) in 'unit'"
 
 -- | Initialize STDIO transport
 initStdio :: Transport
@@ -81,32 +76,31 @@ initStdio = StdioTransport
 initTcp :: Int -> Either String Transport
 initTcp port =
   case tcpListen port of
-    Left err -> Left ("Failed to listen on port " <> show port <> ": " <> err)
-    Right listenSock -> do
-      let _ = stderrWrite ("MCP server listening on port " <> show port)
-      let _ = stderrWrite "Waiting for client connection..."
-      case tcpAccept listenSock of
-        Left err -> Left ("Failed to accept connection: " <> err)
-        Right clientSock -> do
+    Left err -> Left ("Failed to listen: " <> err)
+    Right listenSock ->
+      let _ = stderrWrite ("Listening on port " <> show port)
+      in case tcpAccept listenSock of
+        Left err -> Left ("Failed to accept: " <> err)
+        Right clientSock ->
           let _ = stderrWrite "Client connected"
-          Right (TcpTransport { listenSocket: listenSock, clientSocket: clientSock, port: port })
+          in Right (TcpTransport { listenSocket: listenSock, clientSocket: clientSock, port: port })
 
 -- | Read a line from transport
 readLine :: Transport -> Either String String
 readLine StdioTransport = stdioReadLine unit
-readLine (TcpTransport { clientSocket }) = tcpReadLine clientSocket
+readLine (TcpTransport r) = tcpReadLine r.clientSocket
 
 -- | Write a line to transport
 writeLine :: Transport -> String -> Either String Unit
 writeLine StdioTransport msg = Right (stdioWriteLine msg)
-writeLine (TcpTransport { clientSocket }) msg = tcpWriteLine clientSocket msg
+writeLine (TcpTransport r) msg = tcpWriteLine r.clientSocket msg
 
 -- | Close transport
 closeTransport :: Transport -> Unit
 closeTransport StdioTransport = unit
-closeTransport (TcpTransport { listenSocket, clientSocket }) = do
-  let _ = tcpClose clientSocket
-  tcpClose listenSocket
+closeTransport (TcpTransport r) =
+  let _ = tcpClose r.clientSocket
+  in tcpClose r.listenSocket
 
 -- | Log a message (always goes to stderr)
 logInfo :: String -> Unit

@@ -118,9 +118,13 @@ extractImports source =
 -- | e.g., "Data.List" -> "./lib/Data/List.purs"
 moduleToPath :: FileSystem -> RegenerateConfig -> String -> Maybe String
 moduleToPath fs cfg modName =
-  -- Library modules (Data.*, Control.*, Prelude)
+  -- Library modules (Data.*, Control.*, MCP.*, OTP.*, System.*, Effect.*, Prelude)
   if String.indexOf (String.Pattern "Data.") modName == Just 0 ||
      String.indexOf (String.Pattern "Control.") modName == Just 0 ||
+     String.indexOf (String.Pattern "MCP.") modName == Just 0 ||
+     String.indexOf (String.Pattern "OTP.") modName == Just 0 ||
+     String.indexOf (String.Pattern "System.") modName == Just 0 ||
+     String.indexOf (String.Pattern "Effect.") modName == Just 0 ||
      modName == "Prelude"
   then
     let path = cfg.libBase <> String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
