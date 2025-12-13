@@ -77,6 +77,21 @@ show :: forall a. a -> String
 show x = showImpl x
 
 foreign import showImpl :: forall a. a -> String
+  = "call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [$0]))"
+
+-- Show for Int (returns binary string)
+showInt :: Int -> String
+showInt n = showIntImpl n
+
+foreign import showIntImpl :: Int -> String
+  = "call 'erlang':'integer_to_binary'($0)"
+
+-- Show for Number (returns binary string)
+showNumber :: Number -> String
+showNumber n = showNumberImpl n
+
+foreign import showNumberImpl :: Number -> String
+  = "call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [$0]))"
 
 -- Basic numeric operations (these map to runtime)
 foreign import negate :: Int -> Int

@@ -1,4 +1,4 @@
-module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, 'flip'/3, 'fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'either'/3, 'isLeft'/1, 'isRight'/1, 'otherwise'/0, 'show'/1, 'map'/2, 'filter'/2, 'length'/1, 'append'/2, 'foldl'/3, 'foldr'/3, 'unit'/0, 'apply'/2, 'applyFlipped'/2, 'void'/1, 'unsafeCrashWith'/1, 'unsafeCoerce'/1, 'top'/0, 'bottom'/0, 'not'/1, 'conj'/2, 'disj'/2, 'concatStrings'/2, 'semigroupAppend'/2, 'showImpl'/1, 'negate'/1, 'mapImpl'/2, 'filterImpl'/2, 'lengthImpl'/1, 'appendImpl'/2, 'foldlImpl'/3, 'foldrImpl'/3, 'unsafeCrashWithImpl'/1, 'unsafeCoerceImpl'/1, 'topImpl'/0, 'bottomImpl'/0, 'concatStringsImpl'/2, 'semigroupAppendImpl'/2, 'Nothing'/0, 'Just'/1, 'Left'/1, 'Right'/1, 'Unit'/0, 'Tuple'/2, 'fst'/0, 'snd'/0, 'identity'/0, 'const'/0, 'const'/1, 'compose'/0, 'compose'/1, 'compose'/2, 'flip'/0, 'flip'/1, 'flip'/2, 'fromMaybe'/0, 'fromMaybe'/1, 'isJust'/0, 'isNothing'/0, 'maybe'/0, 'maybe'/1, 'maybe'/2, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'show'/0, 'map'/0, 'map'/1, 'filter'/0, 'filter'/1, 'length'/0, 'append'/0, 'append'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'apply'/0, 'apply'/1, 'applyFlipped'/0, 'applyFlipped'/1, 'void'/0, 'unsafeCrashWith'/0, 'unsafeCoerce'/0, 'not'/0, 'conj'/0, 'conj'/1, 'disj'/0, 'disj'/1, 'concatStrings'/0, 'concatStrings'/1, 'semigroupAppend'/0, 'semigroupAppend'/1, 'showImpl'/0, 'negate'/0, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'lengthImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'unsafeCrashWithImpl'/0, 'unsafeCoerceImpl'/0, 'concatStringsImpl'/0, 'concatStringsImpl'/1, 'semigroupAppendImpl'/0, 'semigroupAppendImpl'/1, 'Just'/0, 'Left'/0, 'Right'/0, 'Tuple'/0, 'Tuple'/1]
+module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, 'flip'/3, 'fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'either'/3, 'isLeft'/1, 'isRight'/1, 'otherwise'/0, 'show'/1, 'showInt'/1, 'showNumber'/1, 'map'/2, 'filter'/2, 'length'/1, 'append'/2, 'foldl'/3, 'foldr'/3, 'unit'/0, 'apply'/2, 'applyFlipped'/2, 'void'/1, 'unsafeCrashWith'/1, 'unsafeCoerce'/1, 'top'/0, 'bottom'/0, 'not'/1, 'conj'/2, 'disj'/2, 'concatStrings'/2, 'semigroupAppend'/2, 'showImpl'/1, 'showIntImpl'/1, 'showNumberImpl'/1, 'negate'/1, 'mapImpl'/2, 'filterImpl'/2, 'lengthImpl'/1, 'appendImpl'/2, 'foldlImpl'/3, 'foldrImpl'/3, 'unsafeCrashWithImpl'/1, 'unsafeCoerceImpl'/1, 'topImpl'/0, 'bottomImpl'/0, 'concatStringsImpl'/2, 'semigroupAppendImpl'/2, 'Nothing'/0, 'Just'/1, 'Left'/1, 'Right'/1, 'Unit'/0, 'Tuple'/2, 'fst'/0, 'snd'/0, 'identity'/0, 'const'/0, 'const'/1, 'compose'/0, 'compose'/1, 'compose'/2, 'flip'/0, 'flip'/1, 'flip'/2, 'fromMaybe'/0, 'fromMaybe'/1, 'isJust'/0, 'isNothing'/0, 'maybe'/0, 'maybe'/1, 'maybe'/2, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'show'/0, 'showInt'/0, 'showNumber'/0, 'map'/0, 'map'/1, 'filter'/0, 'filter'/1, 'length'/0, 'append'/0, 'append'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'apply'/0, 'apply'/1, 'applyFlipped'/0, 'applyFlipped'/1, 'void'/0, 'unsafeCrashWith'/0, 'unsafeCoerce'/0, 'not'/0, 'conj'/0, 'conj'/1, 'disj'/0, 'disj'/1, 'concatStrings'/0, 'concatStrings'/1, 'semigroupAppend'/0, 'semigroupAppend'/1, 'showImpl'/0, 'showIntImpl'/0, 'showNumberImpl'/0, 'negate'/0, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'lengthImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'unsafeCrashWithImpl'/0, 'unsafeCoerceImpl'/0, 'concatStringsImpl'/0, 'concatStringsImpl'/1, 'semigroupAppendImpl'/0, 'semigroupAppendImpl'/1, 'Just'/0, 'Left'/0, 'Right'/0, 'Tuple'/0, 'Tuple'/1]
   attributes []
 % Data type: Maybe
 % Constructors: Nothing, Just
@@ -137,6 +137,14 @@ module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, '
   fun (X) ->
     apply 'showImpl'/1(X)
 
+'showInt'/1 =
+  fun (N) ->
+    apply 'showIntImpl'/1(N)
+
+'showNumber'/1 =
+  fun (N) ->
+    apply 'showNumberImpl'/1(N)
+
 'map'/2 =
   fun (F, Xs) ->
     apply 'mapImpl'/2(F, Xs)
@@ -228,7 +236,11 @@ module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, '
   fun (X, Y) ->
     apply 'semigroupAppendImpl'/2(X, Y)
 
-'showImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'showImpl'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [V0]))
+
+'showIntImpl'/1 = fun (V0) -> call 'erlang':'integer_to_binary'(V0)
+
+'showNumberImpl'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [V0]))
 
 'negate'/1 = fun (V0) -> 'ffi_not_implemented'
 
@@ -426,6 +438,18 @@ module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, '
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'show'/1(_A0)
+      in _F0
+
+'showInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showInt'/1(_A0)
+      in _F0
+
+'showNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showNumber'/1(_A0)
       in _F0
 
 'map'/0 =
@@ -636,6 +660,18 @@ module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, '
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'showImpl'/1(_A0)
+      in _F0
+
+'showIntImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showIntImpl'/1(_A0)
+      in _F0
+
+'showNumberImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showNumberImpl'/1(_A0)
       in _F0
 
 'negate'/0 =

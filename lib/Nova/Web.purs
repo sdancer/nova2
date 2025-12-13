@@ -22,14 +22,31 @@ stateKey :: String
 stateKey = "nova_web_state"
 
 -- | Initialize the service if not already initialized
+-- | Also loads all lib/ and src/ .purs files into namespaces
 initServiceIfNeeded :: Unit -> Unit
 initServiceIfNeeded _ =
   case PT.get stateKey of
     Nothing ->
       case NS.init unit of
-        Right st -> PT.put stateKey st
+        Right st ->
+          let _s = PT.put stateKey st
+              -- Load from parent directory (we run from nova_lang/)
+              _lib = importAllFromDir "../lib"
+              _src = importAllFromDir "../src"
+          in unit
         Left _ -> unit
     Just _ -> unit
+
+-- | Import all .purs files from a directory recursively
+importAllFromDir :: String -> Array (Either String { moduleName :: String, declCount :: Int })
+importAllFromDir dir =
+  let files = listPursFilesRecursive dir
+  in Array.map importFile files
+
+-- | List all .purs files recursively in a directory
+-- | Returns binary strings (converts from charlists)
+foreign import listPursFilesRecursive :: String -> Array String
+  = "let <Pattern> = call 'erlang':'binary_to_list'(call 'erlang':'iolist_to_binary'([$0, [47,42,42,47,42,46,112,117,114,115]])) in let <Files> = call 'filelib':'wildcard'(Pattern) in call 'lists':'map'(fun (F) -> call 'erlang':'list_to_binary'(F), Files)"
 
 -- | Get the current service state (unsafe - assumes initialized)
 foreign import getState :: Unit -> NS.ServiceState
@@ -335,11 +352,19 @@ renderUpdateTuple (Tuple name v) = name <> " = " <> renderExpr v
 -- | Render a literal
 renderLiteral :: Ast.Literal -> String
 renderLiteral lit = case lit of
-  Ast.LitInt n -> show n
-  Ast.LitNumber n -> show n
+  Ast.LitInt n -> showInt n
+  Ast.LitNumber n -> showNum n
   Ast.LitString s -> "\"" <> escapeString s <> "\""
   Ast.LitChar c -> "'" <> String.singleton (Char.toCharCode c) <> "'"
   Ast.LitBool b -> if b then "true" else "false"
+
+-- | Show Int as binary string
+foreign import showInt :: Int -> String
+  = "call 'erlang':'integer_to_binary'($0)"
+
+-- | Show Number as binary string
+foreign import showNum :: Number -> String
+  = "call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [$0]))"
 
 -- | Escape string for rendering
 escapeString :: String -> String
