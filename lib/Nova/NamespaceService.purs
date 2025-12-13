@@ -37,6 +37,7 @@ type ServiceState =
   , declarations :: Ets.Table
   , nameIndex :: Ets.Table
   , counter :: Ets.Table
+  , refTo :: Ets.Table  -- qname -> [referenced symbols]
   }
 
 -- | Initialize the namespace service
@@ -54,12 +55,16 @@ init _u =
               case Ets.new "nova_counter" Ets.publicSetOptions of
                 Left err -> Left err
                 Right cntTab ->
-                  let _w = Ets.insert cntTab "counter" 0
-                  in Right { namespaces: nsTab
-                           , declarations: declTab
-                           , nameIndex: idxTab
-                           , counter: cntTab
-                           }
+                  case Ets.new "nova_ref_to" Ets.publicSetOptions of
+                    Left err -> Left err
+                    Right refTab ->
+                      let _w = Ets.insert cntTab "counter" 0
+                      in Right { namespaces: nsTab
+                               , declarations: declTab
+                               , nameIndex: idxTab
+                               , counter: cntTab
+                               , refTo: refTab
+                               }
 
 -- | Create a new namespace
 createNamespace :: ServiceState -> String -> Either String Unit
@@ -214,6 +219,27 @@ emptyArray = emptyArrayImpl unit
 foreign import emptyArrayImpl :: forall a. Unit -> Array a
   = "[]"
 
+-- | Set references for a qualified name
+setRefs :: ServiceState -> String -> Array String -> Unit
+setRefs st qname refs = Ets.insert st.refTo qname refs
+
+-- | Get references for a qualified name
+getRefs :: ServiceState -> String -> Array String
+getRefs st qname =
+  case Ets.lookup st.refTo qname of
+    Nothing -> emptyArray
+    Just refs -> refs
+
+-- | Clear references for a qualified name
+clearRefs :: ServiceState -> String -> Unit
+clearRefs st qname = Ets.delete st.refTo qname
+
+-- | Get all qnames that reference a given symbol (reverse lookup)
+getReferencedBy :: ServiceState -> String -> Array String
+getReferencedBy st symbol =
+  let allRefs = Ets.allKeys st.refTo
+  in Array.filter (\qname -> Array.elem symbol (getRefs st qname)) allRefs
+
 -- | Shutdown the service (delete tables)
 shutdown :: ServiceState -> Unit
 shutdown st =
@@ -221,6 +247,7 @@ shutdown st =
       _w2 = Ets.deleteTable st.declarations
       _w3 = Ets.deleteTable st.nameIndex
       _w4 = Ets.deleteTable st.counter
+      _w5 = Ets.deleteTable st.refTo
   in unit
 
 -- | Save all tables to a directory
@@ -237,7 +264,10 @@ save st dir =
             Right _ ->
               case Ets.tab2file st.counter (dir <> "/counter.ets") of
                 Left err -> Left ("Failed to save counter: " <> err)
-                Right _ -> Right unit
+                Right _ ->
+                  case Ets.tab2file st.refTo (dir <> "/ref_to.ets") of
+                    Left err -> Left ("Failed to save ref_to: " <> err)
+                    Right _ -> Right unit
 
 -- | Load all tables from a directory
 load :: String -> Either String ServiceState
@@ -254,8 +284,12 @@ load dir =
               case Ets.file2tab (dir <> "/counter.ets") of
                 Left err -> Left ("Failed to load counter: " <> err)
                 Right cntTab ->
-                  Right { namespaces: nsTab
-                        , declarations: declTab
-                        , nameIndex: idxTab
-                        , counter: cntTab
-                        }
+                  case Ets.file2tab (dir <> "/ref_to.ets") of
+                    Left err -> Left ("Failed to load ref_to: " <> err)
+                    Right refTab ->
+                      Right { namespaces: nsTab
+                            , declarations: declTab
+                            , nameIndex: idxTab
+                            , counter: cntTab
+                            , refTo: refTab
+                            }

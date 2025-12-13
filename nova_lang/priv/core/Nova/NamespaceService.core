@@ -1,4 +1,4 @@
-module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0]
+module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'setRefs'/3, 'getRefs'/2, 'clearRefs'/2, 'getReferencedBy'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'getRefs'/0, 'getRefs'/1, 'clearRefs'/0, 'clearRefs'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0]
   attributes []
 % Data type: DeclStatus
 % Constructors: Fresh, Valid, Invalid, Stale
@@ -56,8 +56,13 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', Err}
       <{'Right', CntTab}> when 'true' ->
+        case call 'OTP.Ets':'new'("nova_ref_to", call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', RefTab}> when 'true' ->
         let <_W0> = call 'OTP.Ets':'insert'(CntTab, "counter", 0)
-      in {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab}~}
+      in {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refTo'=>RefTab}~}
+    end
     end
     end
     end
@@ -216,12 +221,36 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun () ->
     apply 'emptyArrayImpl'/1('unit')
 
+'setRefs'/3 =
+  fun (St, Qname, Refs) ->
+    call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), Qname, Refs)
+
+'getRefs'/2 =
+  fun (St, Qname) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), Qname) of
+      <'Nothing'> when 'true' ->
+        apply 'emptyArray'/0()
+      <{'Just', Refs}> when 'true' ->
+        Refs
+    end
+
+'clearRefs'/2 =
+  fun (St, Qname) ->
+    call 'OTP.Ets':'delete'(call 'maps':'get'('refTo', St), Qname)
+
+'getReferencedBy'/2 =
+  fun (St, Symbol) ->
+    let <AllRefs> = call 'OTP.Ets':'allKeys'(call 'maps':'get'('refTo', St))
+      in call 'Data.Array':'filter'(fun (Qname) ->
+      call 'Data.Array':'elem'(Symbol, apply 'getRefs'/2(St, Qname)), AllRefs)
+
 'shutdown'/1 =
   fun (St) ->
     let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('namespaces', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('declarations', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('nameIndex', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('counter', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('refTo', St))
       in 'unit'
 
 'save'/2 =
@@ -242,7 +271,12 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', call 'erlang':'++'("Failed to save counter: ", Err)}
       <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('refTo', St), call 'erlang':'++'(Dir, "/ref_to.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to save ref_to: ", Err)}
+      <{'Right', _W0}> when 'true' ->
         {'Right', 'unit'}
+    end
     end
     end
     end
@@ -266,7 +300,12 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', call 'erlang':'++'("Failed to load counter: ", Err)}
       <{'Right', CntTab}> when 'true' ->
-        {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab}~}
+        case call 'OTP.Ets':'file2tab'(call 'erlang':'++'(Dir, "/ref_to.ets")) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'erlang':'++'("Failed to load ref_to: ", Err)}
+      <{'Right', RefTab}> when 'true' ->
+        {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refTo'=>RefTab}~}
+    end
     end
     end
     end
@@ -574,6 +613,72 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'statusEq'/2(_A0, _A1)
+      in _F0
+
+'setRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setRefs'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F0
+
+'getRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefs'/2(_A0, _A1)
+      in _F0
+
+'clearRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'clearRefs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'clearRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'clearRefs'/2(_A0, _A1)
+      in _F0
+
+'getReferencedBy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getReferencedBy'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getReferencedBy'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getReferencedBy'/2(_A0, _A1)
       in _F0
 
 'shutdown'/0 =
