@@ -89,10 +89,10 @@ defmodule Nova.HTTPServer do
   defp call_handler(handler_module, request) do
     try do
       # Call Nova handler: handler_module.handle(method, path, body)
-      # Nova uses charlists (Erlang strings), so convert binaries to charlists
-      method = to_charlist(request.method)
-      path = to_charlist(request.path)
-      body = to_charlist(request.body)
+      # Nova uses binary strings
+      method = request.method
+      path = request.path
+      body = request.body
       result = apply(handler_module, :handle, [method, path, body])
       normalize_response(result)
     rescue
