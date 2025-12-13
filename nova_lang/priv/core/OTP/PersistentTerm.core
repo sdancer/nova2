@@ -1,0 +1,106 @@
+module 'OTP.PersistentTerm' ['get'/1, 'getWithDefault'/2, 'put'/2, 'erase'/1, 'getImpl'/1, 'getWithDefaultImpl'/2, 'putImpl'/2, 'eraseImpl'/1, 'get'/0, 'getWithDefault'/0, 'getWithDefault'/1, 'put'/0, 'put'/1, 'erase'/0, 'getImpl'/0, 'getWithDefaultImpl'/0, 'getWithDefaultImpl'/1, 'putImpl'/0, 'putImpl'/1, 'eraseImpl'/0]
+  attributes []
+'get'/1 =
+  fun (Key) ->
+    apply 'getImpl'/1(Key)
+
+'getWithDefault'/2 =
+  fun (Key, Def) ->
+    apply 'getWithDefaultImpl'/2(Key, Def)
+
+'put'/2 =
+  fun (Key, Val) ->
+    apply 'putImpl'/2(Key, Val)
+
+'erase'/1 =
+  fun (Key) ->
+    apply 'eraseImpl'/1(Key)
+
+'getImpl'/1 = fun (V0) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in case call 'persistent_term':'get'(Key, 'undefined') of <'undefined'> when 'true' -> 'Nothing' <V> when 'true' -> {'Just', V} end
+
+'getWithDefaultImpl'/2 = fun (V0, V1) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in call 'persistent_term':'get'(Key, V1)
+
+'putImpl'/2 = fun (V0, V1) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in let <_> = call 'persistent_term':'put'(Key, V1) in 'unit'
+
+'eraseImpl'/1 = fun (V0) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in let <_> = call 'persistent_term':'erase'(Key) in 'unit'
+
+'get'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'get'/1(_A0)
+      in _F0
+
+'getWithDefault'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getWithDefault'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getWithDefault'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getWithDefault'/2(_A0, _A1)
+      in _F0
+
+'put'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'put'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'put'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'put'/2(_A0, _A1)
+      in _F0
+
+'erase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'erase'/1(_A0)
+      in _F0
+
+'getImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getImpl'/1(_A0)
+      in _F0
+
+'getWithDefaultImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getWithDefaultImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getWithDefaultImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getWithDefaultImpl'/2(_A0, _A1)
+      in _F0
+
+'putImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'putImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'putImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'putImpl'/2(_A0, _A1)
+      in _F0
+
+'eraseImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'eraseImpl'/1(_A0)
+      in _F0
+end

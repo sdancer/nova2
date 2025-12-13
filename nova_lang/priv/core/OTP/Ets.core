@@ -114,7 +114,7 @@ module 'OTP.Ets' ['defaultOptions'/0, 'publicSetOptions'/0, 'publicOrderedSetOpt
   fun (Filename) ->
     apply 'file2tabImpl'/1(Filename)
 
-'newImpl'/5 = fun (V0, V1, V2, V3, V4) -> let <Name> = call 'erlang':'list_to_atom'(V0) in let <Type> = call 'erlang':'list_to_atom'(V1) in let <Access> = call 'erlang':'list_to_atom'(V2) in let <Opts0> = [Type, Access, {'keypos', V4}] in let <Opts> = case V3 of <'true'> when 'true' -> ['named_table' | Opts0] <'false'> when 'true' -> Opts0 end in case catch call 'ets':'new'(Name, Opts) of <{'EXIT', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Tab> when 'true' -> {'Right', Tab} end
+'newImpl'/5 = fun (V0, V1, V2, V3, V4) -> let <Name> = call 'erlang':'binary_to_atom'(V0) in let <Type> = call 'erlang':'binary_to_atom'(V1) in let <Access> = call 'erlang':'binary_to_atom'(V2) in let <Opts0> = [Type, Access, {'keypos', V4}] in let <Opts> = case V3 of <'true'> when 'true' -> ['named_table' | Opts0] <'false'> when 'true' -> Opts0 end in case catch call 'ets':'new'(Name, Opts) of <{'EXIT', _R}> when 'true' -> {'Left', #{}#} <Tab> when 'true' -> {'Right', Tab} end
 
 'insertImpl'/3 = fun (V0, V1, V2) -> let <_> = call 'ets':'insert'(V0, {V1, V2}) in 'unit'
 

@@ -1,8 +1,26 @@
-module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, 'handleEvalPost'/1, 'handleCreateNamespace'/1, 'handleDeleteNamespace'/1, 'handleAddDecl'/1, 'styles'/0, 'htmlPage'/2, 'indexPage'/0, 'namespacesPage'/1, 'renderNsItem'/1, 'namespaceDetailPage'/1, 'renderDeclItem'/1, 'evalPage'/0, 'notFoundPage'/0, 'initServiceIfNeededImpl'/1, 'listNamespacesImpl'/1, 'namespaceExistsImpl'/1, 'createNamespaceImpl'/1, 'deleteNamespaceImpl'/1, 'getNamespaceDeclsImpl'/1, 'addDeclImpl'/4, 'startServerImpl'/1, 'extractJsonField'/2, 'escapeJson'/1, 'startServer'/0, 'handle'/0, 'handle'/1, 'handle'/2, 'handleGet'/0, 'handlePost'/0, 'handlePost'/1, 'handleEvalPost'/0, 'handleCreateNamespace'/0, 'handleDeleteNamespace'/0, 'handleAddDecl'/0, 'htmlPage'/0, 'htmlPage'/1, 'namespacesPage'/0, 'renderNsItem'/0, 'namespaceDetailPage'/0, 'renderDeclItem'/0, 'initServiceIfNeededImpl'/0, 'listNamespacesImpl'/0, 'namespaceExistsImpl'/0, 'createNamespaceImpl'/0, 'deleteNamespaceImpl'/0, 'getNamespaceDeclsImpl'/0, 'addDeclImpl'/0, 'addDeclImpl'/1, 'addDeclImpl'/2, 'addDeclImpl'/3, 'startServerImpl'/0, 'extractJsonField'/0, 'extractJsonField'/1, 'escapeJson'/0]
+module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, 'extractJsonField'/2, 'handleEvalPost'/1, 'handleCreateNamespace'/1, 'handleDeleteNamespace'/1, 'handleAddDecl'/1, 'styles'/0, 'htmlPage'/2, 'indexPage'/0, 'namespacesPage'/1, 'renderNsItem'/1, 'namespaceDetailPage'/1, 'renderDeclItem'/1, 'evalPage'/0, 'notFoundPage'/0, 'getState'/1, 'listNamespaces'/1, 'namespaceExists'/1, 'createNamespace'/1, 'deleteNamespace'/1, 'getNamespaceDecls'/1, 'addDecl'/4, 'startServerImpl'/1, 'escapeJson'/1, 'initServiceIfNeeded'/0, 'startServer'/0, 'handle'/0, 'handle'/1, 'handle'/2, 'handleGet'/0, 'handlePost'/0, 'handlePost'/1, 'extractJsonField'/0, 'extractJsonField'/1, 'handleEvalPost'/0, 'handleCreateNamespace'/0, 'handleDeleteNamespace'/0, 'handleAddDecl'/0, 'htmlPage'/0, 'htmlPage'/1, 'namespacesPage'/0, 'renderNsItem'/0, 'namespaceDetailPage'/0, 'renderDeclItem'/0, 'getState'/0, 'listNamespaces'/0, 'namespaceExists'/0, 'createNamespace'/0, 'deleteNamespace'/0, 'getNamespaceDecls'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'startServerImpl'/0, 'escapeJson'/0]
   attributes []
+'stateKey'/0 =
+  fun () ->
+    #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+
+'initServiceIfNeeded'/1 =
+  fun (_W0) ->
+    case call 'OTP.PersistentTerm':'get'(apply 'stateKey'/0()) of
+      <'Nothing'> when 'true' ->
+        case call 'Nova.NamespaceService':'init'('unit') of
+      <{'Right', St}> when 'true' ->
+        call 'OTP.PersistentTerm':'put'(apply 'stateKey'/0(), St)
+      <{'Left', _W0}> when 'true' ->
+        'unit'
+    end
+      <{'Just', _W0}> when 'true' ->
+        'unit'
+    end
+
 'startServer'/1 =
   fun (Port) ->
-    let <_W0> = apply 'initServiceIfNeededImpl'/1('unit')
+    let <_W0> = apply 'initServiceIfNeeded'/1('unit')
       in apply 'startServerImpl'/1(Port)
 
 'handle'/3 =
@@ -48,6 +66,15 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
     end
     end
 
+'extractJsonField'/2 =
+  fun (JsonStr, Field) ->
+    case call 'Data.Json':'decode'(JsonStr) of
+      <'Nothing'> when 'true' ->
+        #{}#
+      <{'Just', Obj}> when 'true' ->
+        call 'Data.Maybe':'fromMaybe'(#{}#, call 'Data.Json':'getString'(Obj, Field))
+    end
+
 'handleEvalPost'/1 =
   fun (Body) ->
     let <Action> = apply 'extractJsonField'/2(Body, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#)
@@ -76,7 +103,7 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
     let <Name> = apply 'extractJsonField'/2(Body, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
       in case call 'erlang':'=:='(Name, #{}#) of
       <'true'> when 'true' -> ~{'status'=>400,'contentType'=>#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#,'body'=>#{#<123>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<113>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#}~
-      <'false'> when 'true' -> case apply 'createNamespaceImpl'/1(Name) of
+      <'false'> when 'true' -> case apply 'createNamespace'/1(Name) of
       <{'Right', _W0}> when 'true' ->
         ~{'status'=>200,'contentType'=>#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#,'body'=>#{#<123>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#}~
       <{'Left', Err}> when 'true' ->
@@ -87,7 +114,7 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
 'handleDeleteNamespace'/1 =
   fun (Body) ->
     let <Name> = apply 'extractJsonField'/2(Body, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in case apply 'deleteNamespaceImpl'/1(Name) of
+      in case apply 'deleteNamespace'/1(Name) of
       <{'Right', _W0}> when 'true' ->
         ~{'status'=>200,'contentType'=>#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#,'body'=>#{#<123>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#}~
       <{'Left', Err}> when 'true' ->
@@ -110,7 +137,7 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
     end
     end
     end
-      in case apply 'addDeclImpl'/4(Namespace, Name, Source, Kind) of
+      in case apply 'addDecl'/4(Namespace, Name, Source, Kind) of
       <{'Right', DeclId}> when 'true' ->
         ~{'status'=>200,'contentType'=>#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#,'body'=>call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<73>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']])}#, apply 'escapeJson'/1(DeclId)), #{#<34>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)}~
       <{'Left', Err}> when 'true' ->
@@ -131,7 +158,7 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
 
 'namespacesPage'/1 =
   fun (_W0) ->
-    let <Namespaces> = apply 'listNamespacesImpl'/1('unit')
+    let <Namespaces> = apply 'listNamespaces'/1('unit')
       in let <NsListHtml> = case call 'Data.Array':'null'(Namespaces) of
       <'true'> when 'true' -> #{#<60>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <'false'> when 'true' -> call 'Data.String':'joinWith'(#{}#, call 'Data.Array':'map'(fun (_Mf0) -> apply 'renderNsItem'/1(_Mf0), Namespaces))
@@ -144,9 +171,9 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
 
 'namespaceDetailPage'/1 =
   fun (NsName) ->
-    case call 'erlang':'not'(apply 'namespaceExistsImpl'/1(NsName)) of
+    case call 'erlang':'not'(apply 'namespaceExists'/1(NsName)) of
       <'true'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'htmlPage'/2(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#, #{#<60>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<59>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<49>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<49>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']])}#), NsName), #{#<34>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#)
-      <'false'> when 'true' -> let <Decls> = apply 'getNamespaceDeclsImpl'/1(NsName)
+      <'false'> when 'true' -> let <Decls> = apply 'getNamespaceDecls'/1(NsName)
       in let <DeclsHtml> = case call 'Data.Array':'null'(Decls) of
       <'true'> when 'true' -> #{#<60>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <'false'> when 'true' -> call 'Data.String':'joinWith'(#{}#, call 'Data.Array':'map'(fun (_Mf0) -> apply 'renderDeclItem'/1(_Mf0), Decls))
@@ -193,25 +220,29 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
   fun () ->
     apply 'htmlPage'/2(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, #{#<60>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<49>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<52>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']]),#<52>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<49>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<34>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<71>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#)
 
-'initServiceIfNeededImpl'/1 = fun (V0) -> case catch call 'persistent_term':'get'('nova_web_state') of <{'EXIT', _}> when 'true' -> let <St> = case apply 'Nova.NamespaceService':'init'/1('unit') of <{'Right', S}> when 'true' -> S <{'Left', _}> when 'true' -> 'undefined' end in let <_> = call 'persistent_term':'put'('nova_web_state', St) in 'unit' <_> when 'true' -> 'unit' end
+'getState'/1 = fun (V0) -> call 'persistent_term':'get'('nova_web_state')
 
-'listNamespacesImpl'/1 = fun (V0) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'listNamespaces'/1(St)
+'listNamespaces'/1 = fun (V0) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'listNamespaces'(St)
 
-'namespaceExistsImpl'/1 = fun (V0) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'namespaceExists'/2(St, V0)
+'namespaceExists'/1 = fun (V0) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'namespaceExists'(St, V0)
 
-'createNamespaceImpl'/1 = fun (V0) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'createNamespace'/2(St, V0)
+'createNamespace'/1 = fun (V0) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'createNamespace'(St, V0)
 
-'deleteNamespaceImpl'/1 = fun (V0) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'deleteNamespace'/2(St, V0)
+'deleteNamespace'/1 = fun (V0) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'deleteNamespace'(St, V0)
 
-'getNamespaceDeclsImpl'/1 = fun (V0) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'getNamespaceDecls'/2(St, V0)
+'getNamespaceDecls'/1 = fun (V0) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'getNamespaceDecls'(St, V0)
 
-'addDeclImpl'/4 = fun (V0, V1, V2, V3) -> let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'addDecl'/5(St, V0, V1, V2, V3)
+'addDecl'/4 = fun (V0, V1, V2, V3) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDecl'(St, V0, V1, V2, V3)
 
 'startServerImpl'/1 = fun (V0) -> call 'Elixir.Nova.HTTPServer':'start'(V0, 'Nova.Web')
 
-'extractJsonField'/2 = fun (V0, V1) -> case catch call 'json':'decode'(V0) of <{'EXIT', _}> when 'true' -> #{}# <Map> when call 'erlang':'is_map'(Map) -> case call 'maps':'find'(V1, Map) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> V <_> when 'true' -> #{}# end <_> when 'true' -> #{}# end
-
 'escapeJson'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'lists':'map'(fun (C) -> case C of <34> when 'true' -> [92,34] <92> when 'true' -> [92,92] <10> when 'true' -> [92,110] <13> when 'true' -> [92,114] <9> when 'true' -> [92,116] <_> when 'true' -> [C] end, call 'unicode':'characters_to_list'(V0)))
+
+'initServiceIfNeeded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'initServiceIfNeeded'/1(_A0)
+      in _F0
 
 'startServer'/0 =
   fun () ->
@@ -261,6 +292,20 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'handlePost'/2(_A0, _A1)
+      in _F0
+
+'extractJsonField'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'extractJsonField'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'extractJsonField'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'extractJsonField'/2(_A0, _A1)
       in _F0
 
 'handleEvalPost'/0 =
@@ -325,96 +370,82 @@ module 'Nova.Web' ['startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, '
         apply 'renderDeclItem'/1(_A0)
       in _F0
 
-'initServiceIfNeededImpl'/0 =
+'getState'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'initServiceIfNeededImpl'/1(_A0)
+        apply 'getState'/1(_A0)
       in _F0
 
-'listNamespacesImpl'/0 =
+'listNamespaces'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'listNamespacesImpl'/1(_A0)
+        apply 'listNamespaces'/1(_A0)
       in _F0
 
-'namespaceExistsImpl'/0 =
+'namespaceExists'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'namespaceExistsImpl'/1(_A0)
+        apply 'namespaceExists'/1(_A0)
       in _F0
 
-'createNamespaceImpl'/0 =
+'createNamespace'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'createNamespaceImpl'/1(_A0)
+        apply 'createNamespace'/1(_A0)
       in _F0
 
-'deleteNamespaceImpl'/0 =
+'deleteNamespace'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'deleteNamespaceImpl'/1(_A0)
+        apply 'deleteNamespace'/1(_A0)
       in _F0
 
-'getNamespaceDeclsImpl'/0 =
+'getNamespaceDecls'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'getNamespaceDeclsImpl'/1(_A0)
+        apply 'getNamespaceDecls'/1(_A0)
       in _F0
 
-'addDeclImpl'/0 =
+'addDecl'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
         let <_F2> = fun (_A2) ->
         let <_F3> = fun (_A3) ->
-        apply 'addDeclImpl'/4(_A0, _A1, _A2, _A3)
+        apply 'addDecl'/4(_A0, _A1, _A2, _A3)
       in _F3
       in _F2
       in _F1
       in _F0
 
-'addDeclImpl'/1 =
+'addDecl'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         let <_F1> = fun (_A2) ->
         let <_F2> = fun (_A3) ->
-        apply 'addDeclImpl'/4(_A0, _A1, _A2, _A3)
+        apply 'addDecl'/4(_A0, _A1, _A2, _A3)
       in _F2
       in _F1
       in _F0
 
-'addDeclImpl'/2 =
+'addDecl'/2 =
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         let <_F1> = fun (_A3) ->
-        apply 'addDeclImpl'/4(_A0, _A1, _A2, _A3)
+        apply 'addDecl'/4(_A0, _A1, _A2, _A3)
       in _F1
       in _F0
 
-'addDeclImpl'/3 =
+'addDecl'/3 =
   fun (_A0, _A1, _A2) ->
     let <_F0> = fun (_A3) ->
-        apply 'addDeclImpl'/4(_A0, _A1, _A2, _A3)
+        apply 'addDecl'/4(_A0, _A1, _A2, _A3)
       in _F0
 
 'startServerImpl'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'startServerImpl'/1(_A0)
-      in _F0
-
-'extractJsonField'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'extractJsonField'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'extractJsonField'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'extractJsonField'/2(_A0, _A1)
       in _F0
 
 'escapeJson'/0 =

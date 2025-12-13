@@ -65,7 +65,7 @@ accessToAtom Protected = "protected"
 accessToAtom Private = "private"
 
 foreign import newImpl :: String -> String -> String -> Boolean -> Int -> Either String Table
-  = "let <Name> = call 'erlang':'list_to_atom'($0) in let <Type> = call 'erlang':'list_to_atom'($1) in let <Access> = call 'erlang':'list_to_atom'($2) in let <Opts0> = [Type, Access, {'keypos', $4}] in let <Opts> = case $3 of <'true'> when 'true' -> ['named_table' | Opts0] <'false'> when 'true' -> Opts0 end in case catch call 'ets':'new'(Name, Opts) of <{'EXIT', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Tab> when 'true' -> {'Right', Tab} end"
+  = "let <Name> = call 'erlang':'binary_to_atom'($0) in let <Type> = call 'erlang':'binary_to_atom'($1) in let <Access> = call 'erlang':'binary_to_atom'($2) in let <Opts0> = [Type, Access, {'keypos', $4}] in let <Opts> = case $3 of <'true'> when 'true' -> ['named_table' | Opts0] <'false'> when 'true' -> Opts0 end in case catch call 'ets':'new'(Name, Opts) of <{'EXIT', _R}> when 'true' -> {'Left', #{}#} <Tab> when 'true' -> {'Right', Tab} end"
 
 -- | Insert a key-value pair into the table
 insert :: forall k v. Table -> k -> v -> Unit

@@ -88,7 +88,7 @@ callFunction :: String -> String -> Either String String
 callFunction modName funcName = callFunctionImpl modName funcName
 
 foreign import callFunctionImpl :: String -> String -> Either String String
-  = "let <Mod> = call 'erlang':'list_to_atom'($0) in let <Func> = call 'erlang':'list_to_atom'($1) in case catch call Mod:Func() of <{'EXIT', {Reason, _}}> when 'true' -> {'Left', call 'lists':'flatten'(call 'io_lib':'format'([126,112], [Reason]))} <Result> when 'true' -> {'Right', call 'lists':'flatten'(call 'io_lib':'format'([126,112], [Result]))} end"
+  = "let <Mod> = call 'erlang':'binary_to_atom'($0) in let <Func> = call 'erlang':'binary_to_atom'($1) in case catch call Mod:Func() of <{'EXIT', {Reason, _}}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [Reason]))} <Result> when 'true' -> {'Right', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [Result]))} end"
 
 -- | Evaluate with a fresh context each time
 eval :: String -> Either String String

@@ -3,46 +3,61 @@ module Nova.Web where
 
 import Prelude
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array as Array
 import Data.String as String
+import Data.Json as Json
+import OTP.PersistentTerm as PT
 import Nova.Eval as Eval
 import Nova.NamespaceService as NS
 
--- | Global state initialization and access via FFI
--- All state operations are done directly in FFI to avoid type checker issues
-foreign import initServiceIfNeededImpl :: Unit -> Unit
-  = "case catch call 'persistent_term':'get'('nova_web_state') of <{'EXIT', _}> when 'true' -> let <St> = case apply 'Nova.NamespaceService':'init'/1('unit') of <{'Right', S}> when 'true' -> S <{'Left', _}> when 'true' -> 'undefined' end in let <_> = call 'persistent_term':'put'('nova_web_state', St) in 'unit' <_> when 'true' -> 'unit' end"
+-- | Global state key
+stateKey :: String
+stateKey = "nova_web_state"
 
--- | List all namespace names
-foreign import listNamespacesImpl :: Unit -> Array String
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'listNamespaces'/1(St)"
+-- | Initialize the service if not already initialized
+initServiceIfNeeded :: Unit -> Unit
+initServiceIfNeeded _ =
+  case PT.get stateKey of
+    Nothing ->
+      case NS.init unit of
+        Right st -> PT.put stateKey st
+        Left _ -> unit
+    Just _ -> unit
+
+-- | Get the current service state (unsafe - assumes initialized)
+foreign import getState :: Unit -> NS.ServiceState
+  = "call 'persistent_term':'get'('nova_web_state')"
+
+-- | List all namespace names (uses FFI to avoid type checker issues with ServiceState)
+foreign import listNamespaces :: Unit -> Array String
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'listNamespaces'(St)"
 
 -- | Check if namespace exists
-foreign import namespaceExistsImpl :: String -> Boolean
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'namespaceExists'/2(St, $0)"
+foreign import namespaceExists :: String -> Boolean
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'namespaceExists'(St, $0)"
 
 -- | Create a namespace
-foreign import createNamespaceImpl :: String -> Either String Unit
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'createNamespace'/2(St, $0)"
+foreign import createNamespace :: String -> Either String Unit
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'createNamespace'(St, $0)"
 
 -- | Delete a namespace
-foreign import deleteNamespaceImpl :: String -> Either String Unit
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'deleteNamespace'/2(St, $0)"
+foreign import deleteNamespace :: String -> Either String Unit
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'deleteNamespace'(St, $0)"
 
 -- | Get declarations in a namespace
-foreign import getNamespaceDeclsImpl :: String -> Array NS.ManagedDecl
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'getNamespaceDecls'/2(St, $0)"
+foreign import getNamespaceDecls :: String -> Array NS.ManagedDecl
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'getNamespaceDecls'(St, $0)"
 
 -- | Add a declaration
-foreign import addDeclImpl :: String -> String -> String -> NS.DeclKind -> Either String String
-  = "let <_> = apply 'Nova.Web':'initServiceIfNeededImpl'/1('unit') in let <St> = call 'persistent_term':'get'('nova_web_state') in apply 'Nova.NamespaceService':'addDecl'/5(St, $0, $1, $2, $3)"
+foreign import addDecl :: String -> String -> String -> NS.DeclKind -> Either String String
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDecl'(St, $0, $1, $2, $3)"
 
 -- | Start the web server on a given port
 -- Uses Nova.HTTPServer Elixir wrapper
 startServer :: Int -> Unit
 startServer port =
-  let _w = initServiceIfNeededImpl unit
+  let _w = initServiceIfNeeded unit
   in startServerImpl port
 
 foreign import startServerImpl :: Int -> Unit
@@ -85,6 +100,13 @@ handlePost path body =
   then handleAddDecl body
   else { status: 404, contentType: "application/json", body: "{\"error\":\"Not Found\"}" }
 
+-- | Extract field from JSON using Json module
+extractJsonField :: String -> String -> String
+extractJsonField jsonStr field =
+  case Json.decode jsonStr of
+    Nothing -> ""
+    Just obj -> fromMaybe "" (Json.getString obj field)
+
 -- | Handle POST /api/eval
 handleEvalPost :: String -> { status :: Int, contentType :: String, body :: String }
 handleEvalPost body =
@@ -107,7 +129,7 @@ handleCreateNamespace body =
   let name = extractJsonField body "name"
   in if name == ""
      then { status: 400, contentType: "application/json", body: "{\"error\":\"Name required\"}" }
-     else case createNamespaceImpl name of
+     else case createNamespace name of
        Right _ -> { status: 200, contentType: "application/json", body: "{\"success\":true}" }
        Left err -> { status: 400, contentType: "application/json", body: "{\"error\":\"" <> escapeJson err <> "\"}" }
 
@@ -115,7 +137,7 @@ handleCreateNamespace body =
 handleDeleteNamespace :: String -> { status :: Int, contentType :: String, body :: String }
 handleDeleteNamespace body =
   let name = extractJsonField body "name"
-  in case deleteNamespaceImpl name of
+  in case deleteNamespace name of
        Right _ -> { status: 200, contentType: "application/json", body: "{\"success\":true}" }
        Left err -> { status: 400, contentType: "application/json", body: "{\"error\":\"" <> escapeJson err <> "\"}" }
 
@@ -130,13 +152,9 @@ handleAddDecl body =
              else if kindStr == "typealias" then NS.TypeAliasDecl
              else if kindStr == "foreign" then NS.ForeignDecl
              else NS.FunctionDecl
-  in case addDeclImpl namespace name source kind of
+  in case addDecl namespace name source kind of
        Right declId -> { status: 200, contentType: "application/json", body: "{\"declId\":\"" <> escapeJson declId <> "\"}" }
        Left err -> { status: 400, contentType: "application/json", body: "{\"error\":\"" <> escapeJson err <> "\"}" }
-
--- | Extract field from JSON (now handles binaries)
-foreign import extractJsonField :: String -> String -> String
-  = "case catch call 'json':'decode'($0) of <{'EXIT', _}> when 'true' -> #{}# <Map> when call 'erlang':'is_map'(Map) -> case call 'maps':'find'($1, Map) of <{'ok', V}> when call 'erlang':'is_binary'(V) -> V <_> when 'true' -> #{}# end <_> when 'true' -> #{}# end"
 
 -- | Escape JSON string
 foreign import escapeJson :: String -> String
@@ -158,7 +176,7 @@ indexPage = htmlPage "Nova Lang" "<div class=\"hero\"><h1>Nova Lang</h1><p>A Pur
 -- | Namespaces page
 namespacesPage :: Unit -> String
 namespacesPage _u =
-  let namespaces = listNamespacesImpl unit
+  let namespaces = listNamespaces unit
       nsListHtml = if Array.null namespaces
                    then "<div class=\"empty\">No namespaces yet. Create one to get started.</div>"
                    else String.joinWith "" (Array.map renderNsItem namespaces)
@@ -171,10 +189,10 @@ renderNsItem name =
 -- | Namespace detail page
 namespaceDetailPage :: String -> String
 namespaceDetailPage nsName =
-  if not (namespaceExistsImpl nsName)
+  if not (namespaceExists nsName)
   then htmlPage "Not Found - Nova" "<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>Namespace Not Found</h1><p>The namespace \"" <> nsName <> "\" does not exist.</p>"
   else
-    let decls = getNamespaceDeclsImpl nsName
+    let decls = getNamespaceDecls nsName
         declsHtml = if Array.null decls
                     then "<div class=\"empty\">No declarations in this namespace.</div>"
                     else String.joinWith "" (Array.map renderDeclItem decls)
