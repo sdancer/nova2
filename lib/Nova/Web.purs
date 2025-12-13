@@ -76,6 +76,10 @@ foreign import getNamespaceDecls :: String -> Array NS.ManagedDecl
 foreign import addDecl :: String -> String -> String -> NS.DeclKind -> Either String String
   = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDecl'(St, $0, $1, $2, $3)"
 
+-- | Add a declaration with type signature
+foreign import addDeclWithType :: String -> String -> String -> NS.DeclKind -> Maybe String -> Either String String
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDeclWithType'(St, $0, $1, $2, $3, $4)"
+
 -- ============================================================================
 -- Module Import Functions
 -- ============================================================================
@@ -103,23 +107,31 @@ importDeclaration :: String -> Ast.Declaration -> Maybe (Either String String)
 importDeclaration namespace decl =
   case decl of
     Ast.DeclFunction f ->
-      let src = renderFunction f
-      in Just (addDecl namespace f.name src NS.FunctionDecl)
+      let src = renderFunctionBody f
+          typeSig = case f.typeSignature of
+            Just sig -> Just (renderTypeExpr sig.ty)
+            Nothing -> Nothing
+      in Just (addDeclWithType namespace f.name src NS.FunctionDecl typeSig)
     Ast.DeclDataType d ->
       let src = renderDataType d
-      in Just (addDecl namespace d.name src NS.DatatypeDecl)
+          typeSig = Just (renderDataTypeSig d)
+      in Just (addDeclWithType namespace d.name src NS.DatatypeDecl typeSig)
     Ast.DeclNewtype n ->
       let src = renderNewtype n
-      in Just (addDecl namespace n.name src NS.DatatypeDecl)
+          typeSig = Just (renderNewtypeSig n)
+      in Just (addDeclWithType namespace n.name src NS.DatatypeDecl typeSig)
     Ast.DeclTypeAlias a ->
       let src = renderTypeAlias a
-      in Just (addDecl namespace a.name src NS.TypeAliasDecl)
+          typeSig = Just (renderTypeExpr a.ty)
+      in Just (addDeclWithType namespace a.name src NS.TypeAliasDecl typeSig)
     Ast.DeclForeignImport f ->
-      let src = renderForeign f
-      in Just (addDecl namespace f.functionName src NS.ForeignDecl)
+      let src = renderForeignBody f
+          typeSig = Just (renderTypeExpr f.typeSignature)
+      in Just (addDeclWithType namespace f.functionName src NS.ForeignDecl typeSig)
     Ast.DeclTypeClass c ->
       let src = renderClass c
-      in Just (addDecl namespace c.name src NS.DatatypeDecl)
+          typeSig = Just ("class " <> c.name)
+      in Just (addDeclWithType namespace c.name src NS.DatatypeDecl typeSig)
     -- Skip imports, type signatures (merged with functions), instances, infix
     _ -> Nothing
 
@@ -134,7 +146,7 @@ countSuccesses arr = Array.length (Array.filter isRight arr)
 -- Declaration Renderers (using actual Ast types)
 -- ============================================================================
 
--- | Render a function declaration to source
+-- | Render a function declaration to source (with signature)
 renderFunction :: Ast.FunctionDeclaration -> String
 renderFunction f =
   let sigPart = case f.typeSignature of
@@ -144,6 +156,13 @@ renderFunction f =
       paramPart = if params == "" then "" else " " <> params
   in sigPart <> f.name <> paramPart <> " = " <> renderExpr f.body
 
+-- | Render function body only (without signature, for display)
+renderFunctionBody :: Ast.FunctionDeclaration -> String
+renderFunctionBody f =
+  let params = String.joinWith " " (Array.fromFoldable (List.map renderPattern f.parameters))
+      paramPart = if params == "" then "" else " " <> params
+  in f.name <> paramPart <> " = " <> renderExpr f.body
+
 -- | Render a data type to source
 renderDataType :: Ast.DataType -> String
 renderDataType d =
@@ -151,6 +170,13 @@ renderDataType d =
       varPart = if vars == "" then "" else " " <> vars
       ctors = String.joinWith " | " (Array.fromFoldable (List.map renderDataCtor d.constructors))
   in "data " <> d.name <> varPart <> " = " <> ctors
+
+-- | Render data type signature (for display)
+renderDataTypeSig :: Ast.DataType -> String
+renderDataTypeSig d =
+  let vars = String.joinWith " " (Array.fromFoldable d.typeVars)
+      varPart = if vars == "" then "" else " " <> vars
+  in "data " <> d.name <> varPart
 
 -- | Render a data constructor (DataField has label and ty)
 renderDataCtor :: Ast.DataConstructor -> String
@@ -165,6 +191,13 @@ renderNewtype n =
       varPart = if vars == "" then "" else " " <> vars
   in "newtype " <> n.name <> varPart <> " = " <> n.constructor <> " " <> renderTypeExpr n.wrappedType
 
+-- | Render newtype signature (for display)
+renderNewtypeSig :: Ast.NewtypeDecl -> String
+renderNewtypeSig n =
+  let vars = String.joinWith " " (Array.fromFoldable n.typeVars)
+      varPart = if vars == "" then "" else " " <> vars
+  in "newtype " <> n.name <> varPart
+
 -- | Render a type alias to source
 renderTypeAlias :: Ast.TypeAlias -> String
 renderTypeAlias a =
@@ -172,10 +205,15 @@ renderTypeAlias a =
       varPart = if vars == "" then "" else " " <> vars
   in "type " <> a.name <> varPart <> " = " <> renderTypeExpr a.ty
 
--- | Render a foreign import to source
+-- | Render a foreign import to source (full)
 renderForeign :: Ast.ForeignImport -> String
 renderForeign f =
   "foreign import " <> f.functionName <> " :: " <> renderTypeExpr f.typeSignature
+
+-- | Render a foreign import body (without type, for display)
+renderForeignBody :: Ast.ForeignImport -> String
+renderForeignBody f =
+  "foreign import " <> f.functionName
 
 -- | Render a type class to source
 renderClass :: Ast.TypeClass -> String
@@ -501,7 +539,7 @@ foreign import escapeJson :: String -> String
 
 -- | CSS styles
 styles :: String
-styles = "<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;padding:2rem}.hero{text-align:center;padding:3rem 0}.hero h1{font-size:3rem;color:#00d4ff;margin-bottom:.5rem}.hero p{font-size:1.2rem;color:#888}.nav-cards{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}.card{background:#252540;padding:1.5rem 2rem;border-radius:8px;text-decoration:none;color:#eee;transition:transform .2s,background .2s;border:1px solid #333}.card:hover{transform:translateY(-2px);background:#303050;border-color:#00d4ff}.card h2{color:#00d4ff;margin-bottom:.5rem}.card p{color:#888;font-size:.9rem}h1{color:#00d4ff;margin-bottom:1rem}h2{color:#00d4ff;margin:1.5rem 0 1rem}.repl-container{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}.input-section,.output-section{background:#252540;padding:1rem;border-radius:8px}label{display:block;margin-bottom:.5rem;color:#888}textarea,input[type=text]{width:100%;background:#1a1a2e;color:#eee;border:1px solid #444;border-radius:4px;padding:.75rem;font-family:Monaco,Menlo,monospace;font-size:14px}textarea{resize:vertical}textarea:focus,input:focus{outline:none;border-color:#00d4ff}.buttons{margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap}button{background:#00d4ff;color:#1a1a2e;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer;font-weight:600;transition:background .2s}button:hover{background:#00b8e6}button.danger{background:#ff4757}button.danger:hover{background:#ff3344}pre{background:#1a1a2e;padding:1rem;border-radius:4px;overflow-x:auto;font-family:Monaco,Menlo,monospace;font-size:14px;white-space:pre-wrap;min-height:100px}.ns-list{display:grid;gap:1rem;margin-top:1rem}.ns-item{background:#252540;padding:1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #333}.ns-item:hover{border-color:#444}.ns-item a{color:#00d4ff;text-decoration:none;font-size:1.1rem}.ns-item a:hover{text-decoration:underline}.ns-item .actions{display:flex;gap:.5rem}.decl-list{margin-top:1rem}.decl-item{background:#252540;padding:1rem;border-radius:8px;margin-bottom:.5rem;border-left:3px solid #00d4ff}.decl-item.invalid{border-left-color:#ff4757}.decl-item.stale{border-left-color:#ffa502}.decl-item h3{color:#eee;margin-bottom:.5rem;font-size:1rem}.decl-item .meta{color:#888;font-size:.85rem;margin-bottom:.5rem}.decl-item pre{margin-top:.5rem;font-size:12px;max-height:150px;overflow:auto}.form-group{margin-bottom:1rem}.back-link{color:#888;text-decoration:none;display:inline-block;margin-bottom:1rem}.back-link:hover{color:#00d4ff}.badge{display:inline-block;padding:.2rem .5rem;border-radius:3px;font-size:.75rem;margin-left:.5rem}.badge.fresh{background:#00d4ff;color:#1a1a2e}.badge.valid{background:#2ed573;color:#1a1a2e}.badge.invalid{background:#ff4757;color:#fff}.badge.stale{background:#ffa502;color:#1a1a2e}.empty{color:#888;text-align:center;padding:2rem}</style>"
+styles = "<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;padding:2rem}.hero{text-align:center;padding:3rem 0}.hero h1{font-size:3rem;color:#00d4ff;margin-bottom:.5rem}.hero p{font-size:1.2rem;color:#888}.nav-cards{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}.card{background:#252540;padding:1.5rem 2rem;border-radius:8px;text-decoration:none;color:#eee;transition:transform .2s,background .2s;border:1px solid #333}.card:hover{transform:translateY(-2px);background:#303050;border-color:#00d4ff}.card h2{color:#00d4ff;margin-bottom:.5rem}.card p{color:#888;font-size:.9rem}h1{color:#00d4ff;margin-bottom:1rem}h2{color:#00d4ff;margin:1.5rem 0 1rem}h3.section-title{color:#888;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;margin:1.5rem 0 .75rem;padding-bottom:.5rem;border-bottom:1px solid #333}.repl-container{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}.input-section,.output-section{background:#252540;padding:1rem;border-radius:8px}label{display:block;margin-bottom:.5rem;color:#888}textarea,input[type=text]{width:100%;background:#1a1a2e;color:#eee;border:1px solid #444;border-radius:4px;padding:.75rem;font-family:Monaco,Menlo,monospace;font-size:14px}textarea{resize:vertical}textarea:focus,input:focus{outline:none;border-color:#00d4ff}.buttons{margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap}button{background:#00d4ff;color:#1a1a2e;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer;font-weight:600;transition:background .2s}button:hover{background:#00b8e6}button.danger{background:#ff4757}button.danger:hover{background:#ff3344}pre{background:#1a1a2e;padding:1rem;border-radius:4px;overflow-x:auto;font-family:Monaco,Menlo,monospace;font-size:14px;white-space:pre-wrap;min-height:100px}.ns-list{display:grid;gap:1rem;margin-top:1rem}.ns-item{background:#252540;padding:1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #333}.ns-item:hover{border-color:#444}.ns-item a{color:#00d4ff;text-decoration:none;font-size:1.1rem}.ns-item a:hover{text-decoration:underline}.ns-item .actions{display:flex;gap:.5rem}.decl-list{margin-top:1rem}.decl-item{background:#252540;padding:.75rem 1rem;border-radius:6px;margin-bottom:.5rem;border-left:3px solid #00d4ff}.decl-item.kind-data{border-left-color:#9b59b6}.decl-item.kind-type{border-left-color:#3498db}.decl-item.kind-function{border-left-color:#2ecc71}.decl-item.kind-foreign{border-left-color:#e67e22}.decl-name{font-weight:600;color:#fff;font-size:1rem;margin-bottom:.25rem}.decl-sig{margin-bottom:.5rem}.decl-sig code{color:#00d4ff;font-family:Monaco,Menlo,monospace;font-size:.85rem;background:#1a1a2e;padding:.2rem .4rem;border-radius:3px}.decl-source{margin:0;font-size:.8rem;max-height:120px;overflow:auto;min-height:auto;padding:.5rem;background:#1a1a2e;border-radius:4px}.form-group{margin-bottom:1rem}.back-link{color:#888;text-decoration:none;display:inline-block;margin-bottom:1rem}.back-link:hover{color:#00d4ff}.empty{color:#888;text-align:center;padding:2rem}</style>"
 
 -- | HTML wrapper
 htmlPage :: String -> String -> String
@@ -532,28 +570,59 @@ namespaceDetailPage nsName =
   then htmlPage "Not Found - Nova" "<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>Namespace Not Found</h1><p>The namespace \"" <> nsName <> "\" does not exist.</p>"
   else
     let decls = getNamespaceDecls nsName
+        -- Sort by kind then name: data types, type aliases, functions, foreign
+        sortedDecls = sortDeclarations decls
+        -- Group by kind for display
+        dataDecls = Array.filter (\d -> kindEq d.kind NS.DatatypeDecl) sortedDecls
+        typeDecls = Array.filter (\d -> kindEq d.kind NS.TypeAliasDecl) sortedDecls
+        funcDecls = Array.filter (\d -> kindEq d.kind NS.FunctionDecl) sortedDecls
+        foreignDecls = Array.filter (\d -> kindEq d.kind NS.ForeignDecl) sortedDecls
+        -- Render each section
+        dataSection = if Array.null dataDecls then ""
+                      else "<h3 class=\"section-title\">Data Types</h3>" <> String.joinWith "" (Array.map renderDeclItem dataDecls)
+        typeSection = if Array.null typeDecls then ""
+                      else "<h3 class=\"section-title\">Type Aliases</h3>" <> String.joinWith "" (Array.map renderDeclItem typeDecls)
+        funcSection = if Array.null funcDecls then ""
+                      else "<h3 class=\"section-title\">Functions</h3>" <> String.joinWith "" (Array.map renderDeclItem funcDecls)
+        foreignSection = if Array.null foreignDecls then ""
+                         else "<h3 class=\"section-title\">Foreign Imports</h3>" <> String.joinWith "" (Array.map renderDeclItem foreignDecls)
         declsHtml = if Array.null decls
                     then "<div class=\"empty\">No declarations in this namespace.</div>"
-                    else String.joinWith "" (Array.map renderDeclItem decls)
-    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><h2>Declarations</h2><div class=\"decl-list\">" <> declsHtml <> "</div><script>async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
+                    else dataSection <> typeSection <> funcSection <> foreignSection
+    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><div class=\"decl-list\">" <> declsHtml <> "</div><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><script>async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
+
+-- | Sort declarations by kind then name
+sortDeclarations :: Array NS.ManagedDecl -> Array NS.ManagedDecl
+sortDeclarations decls = sortByNameImpl decls
+
+-- | Kind equality helper
+kindEq :: NS.DeclKind -> NS.DeclKind -> Boolean
+kindEq NS.FunctionDecl NS.FunctionDecl = true
+kindEq NS.DatatypeDecl NS.DatatypeDecl = true
+kindEq NS.TypeAliasDecl NS.TypeAliasDecl = true
+kindEq NS.ForeignDecl NS.ForeignDecl = true
+kindEq _ _ = false
+
+-- | Sort declarations by name (FFI for simplicity)
+foreign import sortByNameImpl :: Array NS.ManagedDecl -> Array NS.ManagedDecl
+  = "call 'lists':'sort'(fun (A, B) -> call 'erlang':'<'(call 'erlang':'element'(4, A), call 'erlang':'element'(4, B)), $0)"
 
 renderDeclItem :: NS.ManagedDecl -> String
 renderDeclItem decl =
-  let statusClass = case decl.status of
-        NS.Fresh -> "fresh"
-        NS.Valid -> "valid"
-        NS.Invalid -> "invalid"
-        NS.Stale -> "stale"
-      statusBadge = "<span class=\"badge " <> statusClass <> "\">" <> statusClass <> "</span>"
-      kindStr = case decl.kind of
-        NS.FunctionDecl -> "function"
-        NS.DatatypeDecl -> "data"
-        NS.TypeAliasDecl -> "type"
-        NS.ForeignDecl -> "foreign"
-      typeInfo = case decl.inferredType of
+  let kindClass = case decl.kind of
+        NS.FunctionDecl -> "kind-function"
+        NS.DatatypeDecl -> "kind-data"
+        NS.TypeAliasDecl -> "kind-type"
+        NS.ForeignDecl -> "kind-foreign"
+      -- Show signature prominently
+      sigHtml = case decl.inferredType of
         Nothing -> ""
-        Just t -> " :: " <> t
-  in "<div class=\"decl-item " <> statusClass <> "\"><h3>" <> decl.name <> typeInfo <> statusBadge <> "</h3><div class=\"meta\">Kind: " <> kindStr <> " | ID: " <> decl.declId <> "</div><pre>" <> decl.sourceText <> "</pre></div>"
+        Just t -> "<div class=\"decl-sig\"><code>" <> escapeHtml t <> "</code></div>"
+  in "<div class=\"decl-item " <> kindClass <> "\"><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> "<pre class=\"decl-source\">" <> escapeHtml decl.sourceText <> "</pre></div>"
+
+-- | Escape HTML entities
+foreign import escapeHtml :: String -> String
+  = "call 'erlang':'iolist_to_binary'(call 'lists':'map'(fun (C) -> case C of <60> when 'true' -> [38,108,116,59] <62> when 'true' -> [38,103,116,59] <38> when 'true' -> [38,97,109,112,59] <34> when 'true' -> [38,113,117,111,116,59] <_> when 'true' -> [C] end, call 'unicode':'characters_to_list'($0)))"
 
 -- | REPL page
 evalPage :: String

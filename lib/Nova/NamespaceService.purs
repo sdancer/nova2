@@ -103,6 +103,11 @@ foreign import intToString :: Int -> String
 -- | Add a declaration to a namespace
 addDecl :: ServiceState -> String -> String -> String -> DeclKind -> Either String String
 addDecl st namespace name sourceText kind =
+  addDeclWithType st namespace name sourceText kind Nothing
+
+-- | Add a declaration with an optional type signature
+addDeclWithType :: ServiceState -> String -> String -> String -> DeclKind -> Maybe String -> Either String String
+addDeclWithType st namespace name sourceText kind typeStr =
   if not (Ets.member st.namespaces namespace)
   then Left "Namespace not found"
   else
@@ -113,7 +118,7 @@ addDecl st namespace name sourceText kind =
                , kind: kind
                , sourceText: sourceText
                , status: Fresh
-               , inferredType: Nothing
+               , inferredType: typeStr
                , errors: emptyArray
                }
         _w1 = Ets.insert st.declarations declId decl

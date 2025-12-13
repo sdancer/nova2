@@ -1,4 +1,4 @@
-module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'setRefs'/3, 'getRefs'/2, 'clearRefs'/2, 'getReferencedBy'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'getRefs'/0, 'getRefs'/1, 'clearRefs'/0, 'clearRefs'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0]
+module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'addDeclWithType'/6, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'setRefs'/3, 'getRefs'/2, 'clearRefs'/2, 'getReferencedBy'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'addDeclWithType'/5, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'getRefs'/0, 'getRefs'/1, 'clearRefs'/0, 'clearRefs'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0]
   attributes []
 % Data type: DeclStatus
 % Constructors: Fresh, Valid, Invalid, Stale
@@ -102,11 +102,15 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
 
 'addDecl'/5 =
   fun (St, Namespace, Name, SourceText, Kind) ->
+    apply 'addDeclWithType'/6(St, Namespace, Name, SourceText, Kind, 'Nothing')
+
+'addDeclWithType'/6 =
+  fun (St, Namespace, Name, SourceText, Kind, TypeStr) ->
     case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Namespace)) of
       <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
       <'false'> when 'true' -> let <DeclId> = apply 'genDeclId'/1(St)
       in let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
-      in let <Decl> = ~{'declId'=>DeclId,'namespace'=>Namespace,'name'=>Name,'kind'=>Kind,'sourceText'=>SourceText,'status'=>apply 'Fresh'/0(),'inferredType'=>'Nothing','errors'=>apply 'emptyArray'/0()}~
+      in let <Decl> = ~{'declId'=>DeclId,'namespace'=>Namespace,'name'=>Name,'kind'=>Kind,'sourceText'=>SourceText,'status'=>apply 'Fresh'/0(),'inferredType'=>TypeStr,'errors'=>apply 'emptyArray'/0()}~
       in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('nameIndex', St), IdxKey, DeclId)
       in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('declarations', St), DeclId, Decl)
       in {'Right', DeclId}
@@ -403,6 +407,72 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun (_A0, _A1, _A2, _A3) ->
     let <_F0> = fun (_A4) ->
         apply 'addDecl'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'addDeclWithType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        let <_F4> = fun (_A4) ->
+        let <_F5> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
+      in _F5
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'addDeclWithType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        let <_F3> = fun (_A4) ->
+        let <_F4> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
+      in _F4
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'addDeclWithType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        let <_F2> = fun (_A4) ->
+        let <_F3> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'addDeclWithType'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        let <_F1> = fun (_A4) ->
+        let <_F2> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
+      in _F2
+      in _F1
+      in _F0
+
+'addDeclWithType'/4 =
+  fun (_A0, _A1, _A2, _A3) ->
+    let <_F0> = fun (_A4) ->
+        let <_F1> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
+      in _F1
+      in _F0
+
+'addDeclWithType'/5 =
+  fun (_A0, _A1, _A2, _A3, _A4) ->
+    let <_F0> = fun (_A5) ->
+        apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
       in _F0
 
 'updateDecl'/0 =
