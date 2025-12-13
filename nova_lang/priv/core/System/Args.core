@@ -10,7 +10,7 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
 
 'defaultArgs'/0 =
   fun () ->
-    ~{'command'=>"compile",'files'=>[],'outputDir'=>".",'deps'=>[],'port'=>9999,'shared'=>'false','help'=>'false','version'=>'false'}~
+    ~{'command'=>#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'files'=>[],'outputDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']])}#,'deps'=>[],'port'=>9999,'shared'=>'false','help'=>'false','version'=>'false'}~
 
 'parseArgs'/1 =
   fun (Args) ->
@@ -26,75 +26,75 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
     end
       <{'Just', ~{'head':=Arg,'tail':=Rest}~}> when 'true' ->
         case Arg of
-      <"mcp"> when 'true' ->
-        apply 'parseArgsLoop'/2(Rest, call 'maps':'merge'(Acc, ~{'command'=>"mcp"}~))
-      <"--help"> when 'true' ->
+      <#{#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
+        apply 'parseArgsLoop'/2(Rest, call 'maps':'merge'(Acc, ~{'command'=>#{#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}~))
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         {'Right', call 'maps':'merge'(Acc, ~{'help'=>'true'}~)}
-      <"-h"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         {'Right', call 'maps':'merge'(Acc, ~{'help'=>'true'}~)}
-      <"--version"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         {'Right', call 'maps':'merge'(Acc, ~{'version'=>'true'}~)}
-      <"-v"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         {'Right', call 'maps':'merge'(Acc, ~{'version'=>'true'}~)}
-      <"--output"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dir}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for --output"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"-o"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dir}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for -o"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"--dep"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dep}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for --dep"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"-d"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dep}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for -d"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"--port"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', PortStr}> when 'true' ->
         case apply 'parseInt'/1(PortStr) of
       <{'Just', Port}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
       <'Nothing'> when 'true' ->
-        {'Left', call 'erlang':'++'("Invalid port number: ", PortStr)}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, PortStr)}
     end
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for --port"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"-p"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', PortStr}> when 'true' ->
         case apply 'parseInt'/1(PortStr) of
       <{'Just', Port}> when 'true' ->
         apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
       <'Nothing'> when 'true' ->
-        {'Left', call 'erlang':'++'("Invalid port number: ", PortStr)}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, PortStr)}
     end
       <'Nothing'> when 'true' ->
-        {'Left', "Missing argument for -p"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}
     end
-      <"--shared"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         apply 'parseArgsLoop'/2(Rest, call 'maps':'merge'(Acc, ~{'shared'=>'true'}~))
-      <"-s"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         apply 'parseArgsLoop'/2(Rest, call 'maps':'merge'(Acc, ~{'shared'=>'true'}~))
       <_W0> when 'true' ->
-        case apply 'startsWith'/2("-", Arg) of
-      <'true'> when 'true' -> {'Left', call 'erlang':'++'("Unknown option: ", Arg)}
+        case apply 'startsWith'/2(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, Arg) of
+      <'true'> when 'true' -> {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Arg)}
       <'false'> when 'true' -> apply 'parseArgsLoop'/2(Rest, call 'maps':'merge'(Acc, ~{'files'=>call 'Data.Array':'snoc'(call 'maps':'get'('files', Acc), Arg)}~))
     end
     end
@@ -110,7 +110,7 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
 
 'getArgsImpl'/0 = fun () -> call 'lists':'map'(fun (A) -> call 'erlang':'list_to_binary'(A), call 'init':'get_plain_arguments'())
 
-'getProgNameImpl'/0 = fun () -> case call 'init':'get_argument'('progname') of <{'ok', [[Name]]}> when 'true' -> call 'erlang':'list_to_binary'(Name) <_> when 'true' -> <<"nova">> end
+'getProgNameImpl'/0 = fun () -> case call 'init':'get_argument'('progname') of <{'ok', [[Name]]}> when 'true' -> call 'erlang':'list_to_binary'(Name) <_> when 'true' -> #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# end
 
 'parseIntImpl'/1 = fun (V0) -> case catch call 'erlang':'binary_to_integer'(V0) of <N> when call 'erlang':'is_integer'(N) -> {'Just', N} <_> when 'true' -> 'Nothing' end
 

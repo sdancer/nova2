@@ -354,23 +354,23 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
 
 'makeDeclId'/4 =
   fun (Namespace, Kind, Name, _W0) ->
-    call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(Namespace, ":"), apply 'kindToString'/1(Kind)), ":"), Name), ":0")
+    call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), apply 'kindToString'/1(Kind)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name), #{#<58>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#)
 
 'kindToString'/1 =
   fun (_P0) ->
     case {_P0} of
       <{'KindFunction'}> when 'true' ->
-        "function"
+        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
       <{'KindDataType'}> when 'true' ->
-        "datatype"
+        #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
       <{'KindTypeAlias'}> when 'true' ->
-        "typealias"
+        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
       <{'KindTypeClass'}> when 'true' ->
-        "typeclass"
+        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
       <{'KindInstance'}> when 'true' ->
-        "instance"
+        #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
       <{'KindForeignImport'}> when 'true' ->
-        "foreign"
+        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
     end
 
 'getDeclKind'/1 =
@@ -416,7 +416,7 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
       <{{'DeclTypeClass', C}}> when 'true' ->
         call 'maps':'get'('name', C)
       <{{'DeclTypeClassInstance', I}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('className', I), "_"), apply 'typeExprToString'/1(call 'maps':'get'('ty', I)))
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('className', I), #{#<95>(8,1,'integer',['unsigned'|['big']])}#), apply 'typeExprToString'/1(call 'maps':'get'('ty', I)))
       <{{'DeclForeignImport', F}}> when 'true' ->
         call 'maps':'get'('functionName', F)
       <{{'DeclTypeSig', S}}> when 'true' ->
@@ -439,9 +439,9 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
       <{{'TyExprVar', S}}> when 'true' ->
         S
       <{{'TyExprApp', T1, T2}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(apply 'typeExprToString'/1(T1), "_"), apply 'typeExprToString'/1(T2))
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'typeExprToString'/1(T1), #{#<95>(8,1,'integer',['unsigned'|['big']])}#), apply 'typeExprToString'/1(T2))
       <{_W0}> when 'true' ->
-        "complex"
+        #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#
     end
 
 'makeDeclId'/0 =

@@ -2,7 +2,7 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
   attributes []
 'defaultListenOptions'/0 =
   fun () ->
-    ~{'port'=>9999,'reuseaddr'=>'true','active'=>'false','packet'=>"line"}~
+    ~{'port'=>9999,'reuseaddr'=>'true','active'=>'false','packet'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}~
 
 'listen'/1 =
   fun (Port) ->

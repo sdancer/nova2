@@ -72,7 +72,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'Just', Alias}> when 'true' ->
         call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, Alias)
       <'Nothing'> when 'true' ->
-        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('moduleName', Imp)) of
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
@@ -332,7 +332,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'TyExprApp', Base, Arg}> when 'true' ->
         case apply 'typeExprToType'/2(Aliases, Base) of
       <{'TyCon', Tc}> when 'true' ->
-        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'erlang':'++'(call 'maps':'get'('args', Tc), [apply 'typeExprToType'/2(Aliases, Arg)])}~}
+        {'TyCon', ~{'name'=>call 'maps':'get'('name', Tc),'args'=>call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('args', Tc), [apply 'typeExprToType'/2(Aliases, Arg)])}~}
       <Other> when 'true' ->
         Other
     end
@@ -341,7 +341,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'TyExprTuple', Items}> when 'true' ->
         let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(Items)
       in let <ArgTypes> = apply 'arrayMap'/2(fun (_Pc0) -> apply 'typeExprToType'/2(Aliases, _Pc0), ItemsAsArray)
-      in {'TyCon', ~{'name'=>"Tuple",'args'=>ArgTypes}~}
+      in {'TyCon', ~{'name'=>#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'args'=>ArgTypes}~}
     end
 
 'typeExprToTypeWithAllAliases'/4 =
@@ -416,7 +416,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'TyExprTuple', Items}> when 'true' ->
         let <ItemsAsArray> = call 'Data.List':'toUnfoldable'(Items)
       in let <ArgTypes> = apply 'arrayMap'/2(fun (_Pc0) -> apply 'typeExprToTypeWithAllAliases'/4(SimpleAliases, FullAliases, ParamAliases, _Pc0), ItemsAsArray)
-      in {'TyCon', ~{'name'=>"Tuple",'args'=>ArgTypes}~}
+      in {'TyCon', ~{'name'=>#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'args'=>ArgTypes}~}
     end
 
 'collectTypeApp'/1 =
@@ -427,10 +427,10 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{{'TyExprApp', Base, Arg}}> when 'true' ->
         let <_Let0> = apply 'collectTypeApp'/1(Base)
       in case _Let0 of
-        <{'Tuple', Name, Args}> when 'true' -> call 'Data.Tuple':'Tuple'(Name, call 'erlang':'++'(Args, [Arg]))
+        <{'Tuple', Name, Args}> when 'true' -> call 'Data.Tuple':'Tuple'(Name, call 'Nova.Prelude':'semigroupAppendImpl'(Args, [Arg]))
       end
       <{_W0}> when 'true' ->
-        call 'Data.Tuple':'Tuple'("Unknown", [])
+        call 'Data.Tuple':'Tuple'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, [])
     end
 
 'collectTypeExprNames'/1 =

@@ -17,23 +17,23 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
 
 'defaultConfig'/0 =
   fun () ->
-    ~{'srcBase'=>"./src/",'libBase'=>"./lib/",'outputDir'=>"./output/",'targetDir'=>"./nova_lang/priv/core/"}~
+    ~{'srcBase'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'libBase'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'outputDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'targetDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#}~
 
 'extractImports'/1 =
   fun (Source) ->
-    let <Lines> = call 'Data.String':'split'(call 'Data.String':'Pattern'("\n"), Source)
+    let <Lines> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), Source)
       in letrec 'extractImport'/1 = fun (Line) ->
-      case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("import "), Line) of
+      case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Line) of
       <'Nothing'> when 'true' ->
         'Nothing'
       <{'Just', Idx}> when 'true' ->
         let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
-      in let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(" "), Rest)
+      in let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#), Rest)
       in case call 'Data.Array':'head'(Parts) of
       <'Nothing'> when 'true' ->
         'Nothing'
       <{'Just', ModName}> when 'true' ->
-        let <CleanName> = case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'("("), ModName) of
+        let <CleanName> = case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#), ModName) of
       <'Nothing'> when 'true' ->
         ModName
       <{'Just', ParenIdx}> when 'true' ->
@@ -49,9 +49,9 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
 
 'moduleToPath'/3 =
   fun (Fs, Cfg, ModName) ->
-    let <RelPath> = call 'erlang':'++'(call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), ModName), ".purs")
-      in let <LibPath> = call 'erlang':'++'(call 'maps':'get'('libBase', Cfg), RelPath)
-      in let <SrcPath> = call 'erlang':'++'(call 'maps':'get'('srcBase', Cfg), RelPath)
+    let <RelPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LibPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('libBase', Cfg), RelPath)
+      in let <SrcPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('srcBase', Cfg), RelPath)
       in case apply call 'maps':'get'('fileExists', Fs)(LibPath) of
       <'true'> when 'true' -> {'Just', LibPath}
       <'false'> when 'true' -> case apply call 'maps':'get'('fileExists', Fs)(SrcPath) of
@@ -118,11 +118,11 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
   fun (Registry, Source) ->
     case call 'Nova.Compiler.CstPipeline':'parseModuleCst'(Source) of
       <{'Left', Err}> when 'true' ->
-        {'Left', call 'erlang':'++'("Parse error: ", Err)}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
       <{'Right', Mod}> when 'true' ->
         case call 'Nova.Compiler.TypeChecker':'checkModule'(Registry, call 'Nova.Compiler.Types':'emptyEnv'(), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))) of
       <{'Left', Err}> when 'true' ->
-        {'Left', call 'erlang':'++'("Type error: ", call 'erlang':'integer_to_list'(Err))}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(Err))}
       <{'Right', Env}> when 'true' ->
         let <ModDeclsArray> = call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))
       in let <Exports> = call 'Nova.Compiler.TypeChecker':'extractExports'(ModDeclsArray)
@@ -146,11 +146,11 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('libBase', Cfg)), Path), {'Just', 0}) of
       <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('libBase', Cfg)), Path)
       in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
-      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("/"), call 'Data.String':'Replacement'("."), WithoutExt)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
       <'false'> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('srcBase', Cfg)), Path), {'Just', 0}) of
       <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('srcBase', Cfg)), Path)
       in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
-      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("/"), call 'Data.String':'Replacement'("."), WithoutExt)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
       <'false'> when 'true' -> let <Match> = apply 'getFileBaseName'/1(Path)
       in Match
     end
@@ -158,7 +158,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
 
 'getFileBaseName'/1 =
   fun (Path) ->
-    let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'("/"), Path)
+    let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), Path)
       in case call 'Data.Array':'last'(Parts) of
       <'Nothing'> when 'true' ->
         Path
@@ -176,25 +176,25 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
       case {_L0, _L1, _L2, _L3} of
         <{Fs_, Cfg_, {'Tuple', Registry, Logs}, Path}> when 'true' -> case apply call 'maps':'get'('readFile', Fs_)(Path) of
       <'Nothing'> when 'true' ->
-        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'erlang':'++'("Cannot read: ", Path))))
+        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Path))))
       <{'Just', Source}> when 'true' ->
         let <ModName> = apply 'getModuleName'/2(Cfg_, Path)
       in case apply 'parseAndCheckModule'/2(Registry, Source) of
       <{'Left', Err}> when 'true' ->
-        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'erlang':'++'(call 'erlang':'++'(ModName, ": "), Err))))
+        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(ModName, #{#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Err))))
       <{'Right', Result}> when 'true' ->
         let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(Registry, ModName, call 'maps':'get'('exports', Result))
       in let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
-      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), ModName)
-      in let <OutputFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('outputDir', Cfg_), ModPath), ".core")
-      in let <TargetFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('targetDir', Cfg_), ModPath), ".core")
+      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName)
+      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
-      in call 'Data.Tuple':'Tuple'(Registry_, call 'Data.Array':'snoc'(Logs, apply 'LogInfo'/1(call 'erlang':'++'("Compiled library: ", ModName))))
+      in call 'Data.Tuple':'Tuple'(Registry_, call 'Data.Array':'snoc'(Logs, apply 'LogInfo'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ModName))))
     end
     end
       end
-      in let <Initial> = call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), "Prelude", call 'Nova.Compiler.Types':'preludeExports'()), [])
+      in let <Initial> = call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), #{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'Nova.Compiler.Types':'preludeExports'()), [])
       in call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileLibModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
 
 'compileSourceModules'/4 =
@@ -202,22 +202,22 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     letrec 'compileSrcModule'/4 = fun (Fs_, Cfg_, Acc, Path) ->
       case apply call 'maps':'get'('readFile', Fs_)(Path) of
       <'Nothing'> when 'true' ->
-        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'erlang':'++'("Cannot read: ", Path)))}~)
+        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Path)))}~)
       <{'Just', Source}> when 'true' ->
         let <FullModName> = apply 'getModuleName'/2(Cfg_, Path)
       in case apply 'parseAndCheckModule'/2(call 'maps':'get'('registry', Acc), Source) of
       <{'Left', Err}> when 'true' ->
-        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'erlang':'++'(call 'erlang':'++'(FullModName, ": "), Err)))}~)
+        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(FullModName, #{#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Err)))}~)
       <{'Right', Result}> when 'true' ->
         let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
       in let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Acc), FullModName, call 'maps':'get'('exports', Result))
-      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'("."), call 'Data.String':'Replacement'("/"), FullModName)
-      in let <OutputFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('outputDir', Cfg_), ModPath), ".core")
-      in let <TargetFile> = call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('targetDir', Cfg_), ModPath), ".core")
-      in let <LineCount> = call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'("\n"), Code))
+      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), FullModName)
+      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LineCount> = call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), Code))
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
-      in let <LogMsg> = call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("Compiled ", FullModName), " ("), call 'erlang':'integer_to_list'(LineCount)), " lines)")
+      in let <LogMsg> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FullModName), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(LineCount)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#)
       in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 1),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
     end
     end
@@ -227,8 +227,8 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
 
 'regenerate'/2 =
   fun (Fs, Cfg) ->
-    let <LibFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('libBase', Cfg), ".purs")
-      in let <SrcFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('srcBase', Cfg), ".purs")
+    let <LibFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('libBase', Cfg), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <SrcFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('srcBase', Cfg), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
       in let <LibDeps> = apply 'buildDependencyGraph'/4(Fs, Cfg, LibFiles, 'true')
       in let <SrcDeps> = apply 'buildDependencyGraph'/4(Fs, Cfg, SrcFiles, 'false')
       in let <SortedLibModules> = apply 'topologicalSort'/1(LibDeps)
@@ -237,7 +237,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
       in case _Let0 of
         <{'Tuple', LibRegistry, LibLogs}> when 'true' -> let <_Let1> = apply 'compileSourceModules'/4(Fs, Cfg, LibRegistry, SortedSrcModules)
       in case _Let1 of
-        <{'Tuple', SrcCount, SrcLogs}> when 'true' -> ~{'success'=>'true','modulesCompiled'=>call 'erlang':'+'(SrcCount, call 'Data.Array':'length'(SortedLibModules)),'logs'=>call 'erlang':'++'(LibLogs, SrcLogs)}~
+        <{'Tuple', SrcCount, SrcLogs}> when 'true' -> ~{'success'=>'true','modulesCompiled'=>call 'erlang':'+'(SrcCount, call 'Data.Array':'length'(SortedLibModules)),'logs'=>call 'Nova.Prelude':'semigroupAppendImpl'(LibLogs, SrcLogs)}~
       end
       end
 
@@ -245,16 +245,16 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
   fun (_P0) ->
     case {_P0} of
       <{{'LogInfo', Msg}}> when 'true' ->
-        call 'erlang':'++'("[INFO] ", Msg)
+        call 'Nova.Prelude':'semigroupAppendImpl'(#{#<91>(8,1,'integer',['unsigned'|['big']]),#<73>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<93>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Msg)
       <{{'LogWarning', Msg}}> when 'true' ->
-        call 'erlang':'++'("[WARN] ", Msg)
+        call 'Nova.Prelude':'semigroupAppendImpl'(#{#<91>(8,1,'integer',['unsigned'|['big']]),#<87>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<93>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Msg)
       <{{'LogError', Msg}}> when 'true' ->
-        call 'erlang':'++'("[ERROR] ", Msg)
+        call 'Nova.Prelude':'semigroupAppendImpl'(#{#<91>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<93>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Msg)
     end
 
 'showLogs'/0 =
   fun () ->
-    let <_cor0> = call 'Data.String':'joinWith'("\n") in let <_cor1> = call 'lists':'map'(fun (_Mf0) -> apply 'showLogEntry'/1(_Mf0)) in fun (_cor2) -> apply _cor0 (apply _cor1 (_cor2))
+    let <_cor0> = call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#) in let <_cor1> = call 'lists':'map'(fun (_Mf0) -> apply 'showLogEntry'/1(_Mf0)) in fun (_cor2) -> apply _cor0 (apply _cor1 (_cor2))
 
 'extractImports'/0 =
   fun () ->

@@ -6,7 +6,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
 
 'keywords'/0 =
   fun () ->
-    ["foreign", "module", "where", "import", "data", "type", "class", "instance", "let", "in", "if", "then", "else", "case", "of", "do", "ado", "derive", "newtype", "infixl", "infixr", "infix", "forall", "as", "hiding", "true", "false", "role", "nominal", "representational", "phantom"]
+    [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<112>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#]
 
 'isIndented'/1 =
   fun (Lyt) ->
@@ -43,7 +43,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       <{Acc, [{'Tuple', Pos, Lyt} | Rest]}> when 'true' ->
         case apply 'isIndented'/1(Lyt) of
       <'true'> when 'true' -> let <EndTok> = apply 'lytToken'/2(Pos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(call 'maps':'get'('column', Pos)))
-      in apply 'closeLayoutsGo'/2(call 'erlang':'++'(Acc, [EndTok | []]), Rest)
+      in apply 'closeLayoutsGo'/2(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [EndTok | []]), Rest)
       <'false'> when 'true' -> apply 'closeLayoutsGo'/2(Acc, Rest)
     end
     end
@@ -56,7 +56,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
   fun (Stack, Toks, Acc) ->
     case Toks of
       <[]> when 'true' ->
-        call 'erlang':'++'(Acc, apply 'closeLayouts'/1(Stack))
+        call 'Nova.Prelude':'semigroupAppendImpl'(Acc, apply 'closeLayouts'/1(Stack))
       <[Tok | Rest]> when 'true' ->
         let <NextPos> = case Rest of
       <[Next | _W0]> when 'true' ->
@@ -67,7 +67,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       in case apply 'callInsertLayout'/3(Tok, NextPos, Stack) of
       <{'Tuple', NewStack, OutputTokens}> when 'true' ->
         let <NewToks> = call 'lists':'map'(call 'Data.Tuple':'fst'(), OutputTokens)
-      in apply 'insertLayoutGo'/3(NewStack, Rest, call 'erlang':'++'(Acc, NewToks))
+      in apply 'insertLayoutGo'/3(NewStack, Rest, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, NewToks))
     end
     end
 
@@ -94,7 +94,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       <'Nothing'> when 'true' ->
         Acc
       <{'Just', {'Tuple', Tok, State_}}> when 'true' ->
-        apply 'lexTokensGo'/2(State_, call 'erlang':'++'(Acc, [Tok | []]))
+        apply 'lexTokensGo'/2(State_, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Tok | []]))
     end
 
 'lexToken'/1 =
@@ -331,7 +331,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
 'lexIdentOrKeyword'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <_Let0> = apply 'consumeIdent'/2(State, "")
+      in let <_Let0> = apply 'consumeIdent'/2(State, #{}#)
       in case _Let0 of
         <{'Tuple', Name, State_}> when 'true' -> let <Tok> = case call 'Data.Array':'elem'(Name, apply 'keywords'/0()) of
       <'true'> when 'true' -> apply 'makeKeywordToken'/3(Name, StartState, State_)
@@ -343,7 +343,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
 'makeKeywordToken'/3 =
   fun (Name, StartState, EndState) ->
     let <Token> = case Name of
-      <"forall"> when 'true' ->
+      <#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokForall'()
       <_W0> when 'true' ->
         call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name)
@@ -357,7 +357,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
 'lexUpperIdentifier'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <_Let0> = apply 'consumeUpperIdent'/2(State, "")
+      in let <_Let0> = apply 'consumeUpperIdent'/2(State, #{}#)
       in case _Let0 of
         <{'Tuple', Name, State_}> when 'true' -> let <Result> = case apply 'peek'/1(State_) of
       <{'Just', $.}> when 'true' ->
@@ -377,9 +377,9 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     case apply 'peek'/1(State) of
       <{'Just', C}> when 'true' ->
         case apply 'isUpper'/1(C) of
-      <'true'> when 'true' -> let <_Let0> = apply 'consumeUpperIdent'/2(State, "")
+      <'true'> when 'true' -> let <_Let0> = apply 'consumeUpperIdent'/2(State, #{}#)
       in case _Let0 of
-        <{'Tuple', Name, State_}> when 'true' -> let <FullPrefix> = call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name)
+        <{'Tuple', Name, State_}> when 'true' -> let <FullPrefix> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name)
       in case apply 'peek'/1(State_) of
       <{'Just', $.}> when 'true' ->
         apply 'checkQualifiedChain'/2(FullPrefix, apply 'advance'/2(State_, 1))
@@ -388,12 +388,12 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     end
       end
       <'false'> when 'true' -> case apply 'isLower'/1(C) of
-      <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State, "")
+      <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State, #{}#)
       in case _Let0 of
         <{'Tuple', Name, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokLowerName'({'Just', Prefix}, Name), State_)
       end
       <'false'> when 'true' -> case apply 'isOperatorChar'/1(C) of
-      <'true'> when 'true' -> let <_Let0> = apply 'consumeOperator'/2(State, "")
+      <'true'> when 'true' -> let <_Let0> = apply 'consumeOperator'/2(State, #{}#)
       in case _Let0 of
         <{'Tuple', Op, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokOperator'({'Just', Prefix}, Op), State_)
       end
@@ -410,7 +410,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     case apply 'peek'/1(State) of
       <{'Just', C}> when 'true' ->
         case apply 'isIdentChar'/1(C) of
-      <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+      <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
       <'false'> when 'true' -> call 'Data.Tuple':'Tuple'(Acc, State)
     end
       <_W0> when 'true' ->
@@ -422,7 +422,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     case apply 'peek'/1(State) of
       <{'Just', C}> when 'true' ->
         case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of
-      <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+      <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
       <'false'> when 'true' -> call 'Data.Tuple':'Tuple'(Acc, State)
     end
       <_W0> when 'true' ->
@@ -432,26 +432,26 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
 'lexOperator'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <_Let0> = apply 'consumeOperator'/2(State, "")
+      in let <_Let0> = apply 'consumeOperator'/2(State, #{}#)
       in case _Let0 of
         <{'Tuple', Op, State_}> when 'true' -> let <Tok> = case Op of
-      <"::"> when 'true' ->
+      <#{#<58>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokDoubleColon'()
-      <"="> when 'true' ->
+      <#{#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokEquals'()
-      <"|"> when 'true' ->
+      <#{#<124>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokPipe'()
-      <"."> when 'true' ->
+      <#{#<46>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokDot'()
-      <"\\"> when 'true' ->
+      <#{#<92>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokBackslash'()
-      <"->"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokRightArrow'()
-      <"<-"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokLeftArrow'()
-      <"=>"> when 'true' ->
+      <#{#<61>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokRightFatArrow'()
-      <"@"> when 'true' ->
+      <#{#<64>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokAt'()
       <_W0> when 'true' ->
         call 'Nova.Compiler.Cst':'TokOperator'('Nothing', Op)
@@ -464,7 +464,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     case apply 'peek'/1(State) of
       <{'Just', C}> when 'true' ->
         case apply 'isOperatorChar'/1(C) of
-      <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+      <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
       <'false'> when 'true' -> call 'Data.Tuple':'Tuple'(Acc, State)
     end
       <_W0> when 'true' ->
@@ -535,7 +535,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       in case apply 'peek'/1(State_) of
       <{'Just', C}> when 'true' ->
         case apply 'isIdentChar'/1(C) of
-      <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State_, "")
+      <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State_, #{}#)
       in case _Let0 of
         <{'Tuple', Name, State__}> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokHole'(Name), StartState, State__), State__)}
       end
@@ -551,7 +551,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       let <IntVal> = call 'Nova.Compiler.Cst':'SmallInt'(call 'Data.Maybe':'fromMaybe'(0, call 'Data.Int':'fromString'(IntPart)))
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokInt'(IntPart, IntVal), StartState, EndState), EndState)}
       in let <StartState> = State
-      in case apply 'consumeNumber'/2(State, "") of
+      in case apply 'consumeNumber'/2(State, #{}#) of
       <{'Tuple', IntPart, AfterInt}> when 'true' ->
         case apply 'peek'/1(AfterInt) of
       <{'Just', $.}> when 'true' ->
@@ -559,9 +559,9 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       <{'Just', C}> when 'true' ->
         case apply 'isDigit'/1(C) of
       <'true'> when 'true' -> let <AfterDot> = apply 'advance'/2(AfterInt, 1)
-      in case apply 'consumeNumber'/2(AfterDot, "") of
+      in case apply 'consumeNumber'/2(AfterDot, #{}#) of
       <{'Tuple', FracPart, AfterFrac}> when 'true' ->
-        let <NumStr> = call 'erlang':'++'(call 'erlang':'++'(IntPart, "."), FracPart)
+        let <NumStr> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(IntPart, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), FracPart)
       in case call 'Data.Number':'fromString'(NumStr) of
       <{'Just', N}> when 'true' ->
         {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokNumber'(NumStr, N), StartState, AfterFrac), AfterFrac)}
@@ -584,7 +584,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
     case apply 'peek'/1(State) of
       <{'Just', C}> when 'true' ->
         case apply 'isDigit'/1(C) of
-      <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+      <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
       <'false'> when 'true' -> case call 'erlang':'=:='(C, $_) of
       <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 1), Acc)
       <'false'> when 'true' -> call 'Data.Tuple':'Tuple'(Acc, State)
@@ -598,7 +598,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
   fun (State) ->
     let <StartState> = State
       in let <AfterOpen> = apply 'advance'/2(State, 1)
-      in case apply 'consumeString'/2(AfterOpen, "") of
+      in case apply 'consumeString'/2(AfterOpen, #{}#) of
       <{'Tuple', Content, AfterContent}> when 'true' ->
         let <AfterClose> = apply 'advance'/2(AfterContent, 1)
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokString'(Content, Content), StartState, AfterClose), AfterClose)}
@@ -614,31 +614,31 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       <{'Just', $\\}> when 'true' ->
         case apply 'peekAt'/2(State, 1) of
       <{'Just', $n}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, "\n"))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<10>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', $t}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, "\t"))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<9>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', $r}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, "\r"))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<13>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', $"}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, "\""))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<34>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', $\\}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, "\\"))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<92>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', C}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
       <'Nothing'> when 'true' ->
         call 'Data.Tuple':'Tuple'(Acc, State)
     end
       <{'Just', $\n}> when 'true' ->
         call 'Data.Tuple':'Tuple'(Acc, State)
       <{'Just', C}> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+        apply 'consumeString'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
     end
 
 'lexRawString'/1 =
   fun (State) ->
     let <StartState> = State
       in let <AfterOpen> = apply 'advance'/2(State, 3)
-      in case apply 'consumeRawString'/2(AfterOpen, "") of
+      in case apply 'consumeRawString'/2(AfterOpen, #{}#) of
       <{'Tuple', Content, AfterContent}> when 'true' ->
         let <AfterClose> = apply 'advance'/2(AfterContent, 3)
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokRawString'(Content), StartState, AfterClose), AfterClose)}
@@ -656,16 +656,16 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'keywords'/0, 'isIndented'/1,
       <{'Just', $"}> when 'true' ->
         call 'Data.Tuple':'Tuple'(Acc, State)
       <_W0> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, "\""))
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<34>(8,1,'integer',['unsigned'|['big']])}#))
     end
       <_W0> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, "\""))
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<34>(8,1,'integer',['unsigned'|['big']])}#))
     end
       <{'Just', $\n}> when 'true' ->
         let <State_> = apply 'advanceNewline'/1(apply 'advance'/2(State, 1))
-      in apply 'consumeRawString'/2(State_, call 'erlang':'++'(Acc, "\n"))
+      in apply 'consumeRawString'/2(State_, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, #{#<10>(8,1,'integer',['unsigned'|['big']])}#))
       <{'Just', C}> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'erlang':'++'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), call 'Nova.Prelude':'semigroupAppendImpl'(Acc, call 'Data.String.CodeUnits':'singleton'(C)))
     end
 
 'lexChar'/1 =

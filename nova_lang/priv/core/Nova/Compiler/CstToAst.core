@@ -41,7 +41,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <'Nothing'> when 'true' ->
         apply 'unwrapProper'/1(call 'maps':'get'('name', Qn))
       <{'Just', ModName}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(apply 'unwrapModuleName'/1(ModName), "."), apply 'unwrapProper'/1(call 'maps':'get'('name', Qn)))
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'unwrapModuleName'/1(ModName), #{#<46>(8,1,'integer',['unsigned'|['big']])}#), apply 'unwrapProper'/1(call 'maps':'get'('name', Qn)))
     end
 
 'extractTypeVar'/1 =
@@ -118,7 +118,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
   fun (_P0) ->
     case {_P0} of
       <{{'ExprIdent', Qn}}> when 'true' ->
-        call 'erlang':'=:='(apply 'unwrapIdent'/1(call 'maps':'get'('name', Qn)), "_")
+        call 'erlang':'=:='(apply 'unwrapIdent'/1(call 'maps':'get'('name', Qn)), #{#<95>(8,1,'integer',['unsigned'|['big']])}#)
       <{_W0}> when 'true' ->
         'false'
     end
@@ -126,53 +126,53 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
 'operatorPrecedence'/1 =
   fun (Op) ->
     case Op of
-      <"*"> when 'true' ->
+      <#{#<42>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         7
-      <"/"> when 'true' ->
+      <#{#<47>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         7
-      <"mod"> when 'true' ->
+      <#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         7
-      <"+"> when 'true' ->
+      <#{#<43>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         6
-      <"-"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         6
-      <"<>"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         6
-      <"++"> when 'true' ->
+      <#{#<43>(8,1,'integer',['unsigned'|['big']]),#<43>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         5
-      <":"> when 'true' ->
+      <#{#<58>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         5
-      <"=="> when 'true' ->
+      <#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <"/="> when 'true' ->
+      <#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <"!="> when 'true' ->
+      <#{#<33>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <"<"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <">"> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <"<="> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <">="> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         4
-      <"&&"> when 'true' ->
+      <#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         3
-      <"||"> when 'true' ->
+      <#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         2
-      <"$"> when 'true' ->
+      <#{#<36>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <"#"> when 'true' ->
+      <#{#<35>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <">>>"> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <">>="> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <"<<<"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <">>"> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         1
-      <"<-"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         0
       <_W0> when 'true' ->
         5
@@ -181,13 +181,13 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
 'operatorIsRightAssoc'/1 =
   fun (Op) ->
     case Op of
-      <":"> when 'true' ->
+      <#{#<58>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         'true'
-      <"$"> when 'true' ->
+      <#{#<36>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         'true'
-      <">>>"> when 'true' ->
+      <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         'true'
-      <"<<<"> when 'true' ->
+      <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         'true'
       <_W0> when 'true' ->
         'false'
@@ -209,10 +209,10 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         {'Left', _Err}
       <{'Just', Decls}> when 'true' ->
         let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
-      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'Nova.Prelude':'semigroupAppendImpl'(ImportDecls, Decls)}~}
       <{'Right', Decls}> when 'true' ->
         let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
-      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'Nova.Prelude':'semigroupAppendImpl'(ImportDecls, Decls)}~}
       end
       <{'Right', Imports}> when 'true' ->
         case apply 'convertDeclarations'/1(call 'maps':'get'('decls', call 'maps':'get'('body', CstMod))) of
@@ -222,10 +222,10 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         {'Left', _Err}
       <{'Just', Decls}> when 'true' ->
         let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
-      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'Nova.Prelude':'semigroupAppendImpl'(ImportDecls, Decls)}~}
       <{'Right', Decls}> when 'true' ->
         let <ImportDecls> = call 'lists':'map'(call 'Nova.Compiler.Ast':'DeclImport'(), Imports)
-      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'erlang':'++'(ImportDecls, Decls)}~}
+      in {'Right', ~{'name'=>ModuleName,'declarations'=>call 'Nova.Prelude':'semigroupAppendImpl'(ImportDecls, Decls)}~}
       end
       end
 
@@ -299,7 +299,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'ImportClass', _W0, Name}> when 'true' ->
         {'Right', call 'Nova.Compiler.Ast':'ImportType'(apply 'unwrapProper'/1(call 'maps':'get'('name', Name)), call 'Nova.Compiler.Ast':'ImportNone'())}
       <{'ImportError', _W0}> when 'true' ->
-        {'Left', "Cannot convert import error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'convertDataMembers'/1 =
@@ -350,7 +350,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'DeclForeign', _W0, _W1, Foreign_}> when 'true' ->
         apply 'convertForeign'/1(Foreign_)
       <{'DeclError', _W0}> when 'true' ->
-        {'Left', "Cannot convert error declaration"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'convertDataType'/2 =
@@ -403,9 +403,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', TyExpr}> when 'true' ->
-        {'Right', ~{'label'=>"",'ty'=>TyExpr}~}
+        {'Right', ~{'label'=>#{}#,'ty'=>TyExpr}~}
       <{'Right', TyExpr}> when 'true' ->
-        {'Right', ~{'label'=>"",'ty'=>TyExpr}~}
+        {'Right', ~{'label'=>#{}#,'ty'=>TyExpr}~}
       end
 
 'convertTypeAlias'/2 =
@@ -481,7 +481,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[T | _W0]> when 'true' ->
         apply 'convertType'/1(T)
       <[]> when 'true' ->
-        {'Left', "Instance needs at least one type"}
+        {'Left', #{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -525,7 +525,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
   fun (Binding) ->
     case Binding of
       <{'InstanceBindingSignature', _W0}> when 'true' ->
-        {'Left', "Type signatures in instances not yet supported"}
+        {'Left', #{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
       <{'InstanceBindingName', Vbf}> when 'true' ->
         apply 'convertValueBinding'/1(Vbf)
     end
@@ -537,7 +537,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[T | _W0]> when 'true' ->
         apply 'convertType'/1(T)
       <[]> when 'true' ->
-        {'Left', "Derived instance needs at least one type"}
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -594,14 +594,14 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[G | _W0]> when 'true' ->
         {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
         {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
     end
@@ -629,14 +629,14 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[G | _W0]> when 'true' ->
         {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
         {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
     end
@@ -747,7 +747,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -776,7 +776,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -826,7 +826,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -855,7 +855,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -989,7 +989,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
       end
       <{'Guarded', _W0}> when 'true' ->
-        {'Left', "Guarded where bindings not yet supported"}
+        {'Left', #{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', TypeAnn}> when 'true' ->
         case call 'maps':'get'('guarded', Vbf) of
@@ -1017,7 +1017,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
       end
       <{'Guarded', _W0}> when 'true' ->
-        {'Left', "Guarded where bindings not yet supported"}
+        {'Left', #{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
       <{'Right', BindParams}> when 'true' ->
@@ -1066,7 +1066,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
       end
       <{'Guarded', _W0}> when 'true' ->
-        {'Left', "Guarded where bindings not yet supported"}
+        {'Left', #{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', TypeAnn}> when 'true' ->
         case call 'maps':'get'('guarded', Vbf) of
@@ -1094,7 +1094,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(BindName),'value'=>Value,'typeAnn'=>TypeAnn}~}
       end
       <{'Guarded', _W0}> when 'true' ->
-        {'Left', "Guarded where bindings not yet supported"}
+        {'Left', #{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
       end
@@ -1273,7 +1273,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         {'Right', ~{'className'=>ClassName,'types'=>Types}~}
       end
       <_W0> when 'true' ->
-        {'Left', "Invalid constraint type"}
+        {'Left', #{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'convertFixity'/1 =
@@ -1314,9 +1314,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
       <{'Right', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
       end
       <{'ForeignValueInline', Labeled, _W0, Impl}> when 'true' ->
         let <FunctionName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
@@ -1326,9 +1326,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
       <{'Right', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>"",'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
       end
       <{'ForeignData', _W0, Labeled}> when 'true' ->
         let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
@@ -1352,13 +1352,13 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'TypeConstructor', Qn}> when 'true' ->
         {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(apply 'qualifiedProperName'/1(Qn))}
       <{'TypeWildcard', _W0}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'("_")}
+        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#)}
       <{'TypeHole', Name}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'(call 'erlang':'++'("?", apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))))}
+        {'Right', call 'Nova.Compiler.Ast':'TyExprVar'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<63>(8,1,'integer',['unsigned'|['big']])}#, apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))))}
       <{'TypeString', _W0, S}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(call 'erlang':'++'(call 'erlang':'++'("\"", S), "\""))}
+        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<34>(8,1,'integer',['unsigned'|['big']])}#, S), #{#<34>(8,1,'integer',['unsigned'|['big']])}#))}
       <{'TypeInt', _W0, _W1}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'("Int")}
+        {'Right', call 'Nova.Compiler.Ast':'TyExprCon'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#)}
       <{'TypeRow', Wrapped}> when 'true' ->
         case apply 'convertRow'/1(call 'maps':'get'('value', Wrapped)) of
       <'Nothing'> when 'true' ->
@@ -1505,7 +1505,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         {'Right', call 'Nova.Compiler.Ast':'TyExprParens'(Inner)}
       end
       <{'TypeError', _W0}> when 'true' ->
-        {'Left', "Cannot convert type error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'foldTypeOps'/2 =
@@ -1597,7 +1597,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'ExprHole', Name}> when 'true' ->
         {'Right', call 'Nova.Compiler.Ast':'ExprVar'(apply 'unwrapIdent'/1(call 'maps':'get'('name', Name)))}
       <{'ExprSection', _W0}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprSection'("_")}
+        {'Right', call 'Nova.Compiler.Ast':'ExprSection'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#)}
       <{'ExprIdent', Qn}> when 'true' ->
         case call 'maps':'get'('module', Qn) of
       <'Nothing'> when 'true' ->
@@ -1738,9 +1738,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Inner}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'("-", Inner)}
+        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, Inner)}
       <{'Right', Inner}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'("-", Inner)}
+        {'Right', call 'Nova.Compiler.Ast':'ExprUnaryOp'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, Inner)}
       end
       <{'ExprRecordAccessor', Acc}> when 'true' ->
         case apply 'convertExpr'/1(call 'maps':'get'('expr', Acc)) of
@@ -1759,7 +1759,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[FirstLabel | Rest]> when 'true' ->
         {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprRecordAccess'(), call 'Nova.Compiler.Ast':'ExprRecordAccess'(Base, FirstLabel), Rest)}
       <[]> when 'true' ->
-        {'Left', "Empty record accessor path"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', Base}> when 'true' ->
         let <Path> = [call 'maps':'get'('head', call 'maps':'get'('path', Acc)) | call 'lists':'map'(fun (_L0) ->
@@ -1772,7 +1772,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[FirstLabel | Rest]> when 'true' ->
         {'Right', call 'Data.List':'foldl'(call 'Nova.Compiler.Ast':'ExprRecordAccess'(), call 'Nova.Compiler.Ast':'ExprRecordAccess'(Base, FirstLabel), Rest)}
       <[]> when 'true' ->
-        {'Left', "Empty record accessor path"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
       <{'ExprRecordUpdate', Base, Updates}> when 'true' ->
@@ -1949,12 +1949,12 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Clauses}> when 'true' ->
-        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'("lamcase__")
-      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'("lamcase__"), Clauses)
+        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#), Clauses)
       in {'Right', call 'Nova.Compiler.Ast':'ExprLambda'([LamParam | []], LamBody)}
       <{'Right', Clauses}> when 'true' ->
-        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'("lamcase__")
-      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'("lamcase__"), Clauses)
+        let <LamParam> = call 'Nova.Compiler.Ast':'PatVar'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LamBody> = call 'Nova.Compiler.Ast':'ExprCase'(call 'Nova.Compiler.Ast':'ExprVar'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#), Clauses)
       in {'Right', call 'Nova.Compiler.Ast':'ExprLambda'([LamParam | []], LamBody)}
       end
       <'false'> when 'true' -> case apply 'convertExpr'/1(Single) of
@@ -2069,9 +2069,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Result}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'Nova.Prelude':'semigroupAppendImpl'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
       <{'Right', Result}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'Nova.Prelude':'semigroupAppendImpl'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
       end
       <{'Right', Stmts}> when 'true' ->
         case apply 'convertExpr'/1(call 'maps':'get'('result', AdoBlock)) of
@@ -2080,13 +2080,13 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Result}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'Nova.Prelude':'semigroupAppendImpl'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
       <{'Right', Result}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'erlang':'++'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
+        {'Right', call 'Nova.Compiler.Ast':'ExprDo'(call 'Nova.Prelude':'semigroupAppendImpl'(Stmts, [call 'Nova.Compiler.Ast':'DoExpr'(Result) | []]))}
       end
       end
       <{'ExprError', _W0}> when 'true' ->
-        {'Left', "Cannot convert expression error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'foldBinOps'/2 =
@@ -2177,7 +2177,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         let <Combined> = apply 'makeBinOpOrSection'/3(TopOp, Left, Right)
       in apply 'popHigherPrec'/4([Combined | RestOutput], RestOps, Prec, IsRightAssoc)
       <_W0> when 'true' ->
-        {'Left', "Not enough operands for operator"}
+        {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <'false'> when 'true' -> {'Right', ~{'output'=>Output,'opStack'=>OpStack}~}
     end
@@ -2188,14 +2188,14 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Result | []]> when 'true' ->
         {'Right', Result}
       <_W0> when 'true' ->
-        {'Left', "Invalid expression: multiple values remaining"}
+        {'Left', #{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
         <{Output, [Op | RestOps]}> when 'true' -> case Output of
       <[Right | [Left | RestOutput]]> when 'true' ->
         let <Combined> = apply 'makeBinOpOrSection'/3(Op, Left, Right)
       in apply 'reduceAll'/2([Combined | RestOutput], RestOps)
       <_W0> when 'true' ->
-        {'Left', "Not enough operands for operator"}
+        {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
       end
       in apply 'go'/3([FirstExpr | []], [], Ops)
@@ -2203,11 +2203,11 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
 'makeBinOpOrSection'/3 =
   fun (Op, Left, Right) ->
     case Left of
-      <{'ExprSection', "_"}> when 'true' ->
+      <{'ExprSection', #{#<95>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         call 'Nova.Compiler.Ast':'ExprSectionRight'(Op, Right)
       <_W0> when 'true' ->
         case Right of
-      <{'ExprSection', "_"}> when 'true' ->
+      <{'ExprSection', #{#<95>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         call 'Nova.Compiler.Ast':'ExprSectionLeft'(Left, Op)
       <_W0> when 'true' ->
         call 'Nova.Compiler.Ast':'ExprBinOp'(Op, Left, Right)
@@ -2405,7 +2405,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
       end
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression in case"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end
       <{'Right', Pat}> when 'true' ->
@@ -2477,7 +2477,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
       end
       <[]> when 'true' ->
-        {'Left', "Empty guarded expression in case"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end
       end
@@ -2514,7 +2514,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -2543,7 +2543,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[Ge | _W0]> when 'true' ->
         apply 'convertExpr'/1(call 'maps':'get'('expr', call 'maps':'get'('where', Ge)))
       <[]> when 'true' ->
-        {'Left', "Empty guarded let binding"}
+        {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end of
       <'Nothing'> when 'true' ->
@@ -2594,7 +2594,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
       end
       <{'LetBindingError', _W0}> when 'true' ->
-        {'Left', "Cannot convert let binding error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'convertDoStatement'/1 =
@@ -2652,7 +2652,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
       end
       <{'DoError', _W0}> when 'true' ->
-        {'Left', "Cannot convert do statement error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'convertBinder'/1 =
@@ -2773,7 +2773,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
         apply 'foldBinderOps'/2(HeadPat, Ops)
       end
       <{'BinderError', _W0}> when 'true' ->
-        {'Left', "Cannot convert binder error"}
+        {'Left', #{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'foldBinderOps'/2 =
@@ -2789,7 +2789,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', BinderPat}> when 'true' ->
-        case call 'erlang':'=:='(OpName, ":") of
+        case call 'erlang':'=:='(OpName, #{#<58>(8,1,'integer',['unsigned'|['big']])}#) of
       <'true'> when 'true' -> case apply 'foldBinderOps'/2(BinderPat, Rest) of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -2804,7 +2804,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       in apply 'foldBinderOps'/2(Combined, Rest)
     end
       <{'Right', BinderPat}> when 'true' ->
-        case call 'erlang':'=:='(OpName, ":") of
+        case call 'erlang':'=:='(OpName, #{#<58>(8,1,'integer',['unsigned'|['big']])}#) of
       <'true'> when 'true' -> case apply 'foldBinderOps'/2(BinderPat, Rest) of
       <'Nothing'> when 'true' ->
         'Nothing'

@@ -33,7 +33,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{Ctx, {'UnifyErr', E}}> when 'true' ->
         apply 'UnifyErrWithContext'/2(E, Ctx)
       <{Ctx, {'UnifyErrWithContext', E, OldCtx}}> when 'true' ->
-        apply 'UnifyErrWithContext'/2(E, call 'erlang':'++'(call 'erlang':'++'(OldCtx, " -> "), Ctx))
+        apply 'UnifyErrWithContext'/2(E, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(OldCtx, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Ctx))
       <{_W0, Err}> when 'true' ->
         Err
     end
@@ -53,54 +53,54 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{{'ExprVar', N}}> when 'true' ->
         N
       <{{'ExprQualified', M, N}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(M, "."), N)
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(M, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), N)
       <{{'ExprLit', {'LitInt', N}}}> when 'true' ->
         call 'erlang':'integer_to_list'(N)
       <{{'ExprLit', {'LitString', S}}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'("\"", call 'Data.String':'take'(20, S)), "\"")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<34>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'take'(20, S)), #{#<34>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprLit', {'LitBool', B}}}> when 'true' ->
         case B of
-      <'true'> when 'true' -> "true"
-      <'false'> when 'true' -> "false"
+      <'true'> when 'true' -> #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <'false'> when 'true' -> #{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
     end
       <{{'ExprLit', _W0}}> when 'true' ->
-        "<lit>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprApp', F, A}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showExprShort'/1(F)), " "), apply 'showExprShort'/1(A)), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showExprShort'/1(F)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showExprShort'/1(A)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprLambda', _W0, _W1}}> when 'true' ->
-        "<lambda>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprLet', _W0, _W1}}> when 'true' ->
-        "<let>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprIf', _W0, _W1, _W2}}> when 'true' ->
-        "<if>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprCase', _W0, _W1}}> when 'true' ->
-        "<case>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprBinOp', Op, _W0, _W1}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'("<binop ", Op), ">")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Op), #{#<62>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprRecord', _W0}}> when 'true' ->
-        "<record>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprRecordAccess', E, F}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(apply 'showExprShort'/1(E), "."), F)
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'showExprShort'/1(E), #{#<46>(8,1,'integer',['unsigned'|['big']])}#), F)
       <{{'ExprRecordUpdate', _W0, _W1}}> when 'true' ->
-        "<record-update>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprList', _W0}}> when 'true' ->
-        "<list>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprDo', _W0}}> when 'true' ->
-        "<do>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprParens', E}}> when 'true' ->
         apply 'showExprShort'/1(E)
       <{{'ExprTyped', E, _W0}}> when 'true' ->
         apply 'showExprShort'/1(E)
       <{{'ExprUnaryOp', Op, _W0}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'("<unary ", Op), ">")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Op), #{#<62>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprTuple', _W0}}> when 'true' ->
-        "<tuple>"
+        #{#<60>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#
       <{{'ExprSection', S}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'("(", S), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, S), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprSectionLeft', E, Op}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showExprShort'/1(E)), " "), Op), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showExprShort'/1(E)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), Op), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprSectionRight', Op, E}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", Op), " "), apply 'showExprShort'/1(E)), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, Op), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showExprShort'/1(E)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
 'listMapWithIndex'/2 =
@@ -151,13 +151,13 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
       case {_L0} of
         <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(NewId)
-      in apply _Oa0(call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<116>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(NewId))))})
       end, IdPairs))
       in let <Vars> = call 'lists':'map'(fun (_L0) ->
       case {_L0} of
         <{{'Tuple', _W0, NewId}}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(NewId)
-      in apply _Oa0(call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<116>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(NewId))))
       end, IdPairs)
       in let <RemappedTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(RemapSub)
@@ -171,7 +171,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{{'LitInt', _W0}}> when 'true' ->
         call 'Nova.Compiler.Types':'tInt'()
       <{{'LitNumber', _W0}}> when 'true' ->
-        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Number")
+        {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0([])}
       <{{'LitString', _W0}}> when 'true' ->
         call 'Nova.Compiler.Types':'tString'()
@@ -200,7 +200,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in {'Right', ~{'ty'=>call 'maps':'get'('ty', R),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>call 'maps':'get'('env', R)}~}
     end
       <{Env, {'ExprQualified', M, Name}}> when 'true' ->
-        let <FullName> = call 'erlang':'++'(call 'erlang':'++'(M, "."), Name)
+        let <FullName> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(M, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name)
       in case let <_Oa0> = call 'Nova.Compiler.Types':'lookupEnv'(Env)
       in apply _Oa0(FullName) of
       <{'Just', Scheme}> when 'true' ->
@@ -227,7 +227,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', Err}
       <{'Right', R2}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', R2))
-      in apply _Oa0("r")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', Tv, Env3}> when 'true' -> let <ResultTy> = {'TyVar', Tv}
       in let <FuncTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', R2))
@@ -237,7 +237,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
       in apply apply _Oa0(FuncTy)(ExpectedTy) of
       <{'Left', Ue}> when 'true' ->
-        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("app: ", apply 'showExprShort'/1(Func)), " applied to "), apply 'showExprShort'/1(A)))}
+        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showExprShort'/1(Func)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showExprShort'/1(A)))}
       <{'Right', S3}> when 'true' ->
         let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S3)
       in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', R2))
@@ -249,12 +249,12 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     end
     end
       in case F of
-      <{'ExprVar', "-"}> when 'true' ->
+      <{'ExprVar', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case Arg of
       <{'ExprLit', {'LitInt', _W0}}> when 'true' ->
         {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
       <{'ExprLit', {'LitNumber', _W0}}> when 'true' ->
-        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Number")
+        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0([])},'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
       <{'ExprParens', {'ExprLit', {'LitInt', _W0}}}> when 'true' ->
         {'Right', ~{'ty'=>call 'Nova.Compiler.Types':'tInt'(),'sub'=>call 'Nova.Compiler.Types':'emptySubst'(),'env'=>Env}~}
@@ -270,7 +270,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         apply 'infer'/2(Env, Body)
       <{'Just', ~{'head':=Pat,'tail':=RestPats}~}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0("a")
+      in apply _Oa0(#{#<97>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ArgTv, Env1}> when 'true' -> let <ArgTy> = {'TyVar', ArgTv}
       in case apply 'inferPat'/3(Env1, Pat, ArgTy) of
@@ -346,7 +346,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', E}
       <{'Right', ScrutRes}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ScrutRes))
-      in apply _Oa0("case")
+      in apply _Oa0(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResultTv, Env2}> when 'true' -> let <ResultTy> = {'TyVar', ResultTv}
       in case apply 'inferClauses'/5(Env2, call 'maps':'get'('ty', ScrutRes), ResultTy, Clauses, call 'maps':'get'('sub', ScrutRes)) of
@@ -360,14 +360,14 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     end
       <{Env, {'ExprBinOp', Op, L, R}}> when 'true' ->
         case L of
-      <{'ExprSection', "_"}> when 'true' ->
-        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', "_x"}|[]], {'ExprBinOp', Op, {'ExprVar', "_x"}, R}})
+      <{'ExprSection', #{#<95>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
+        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', #{#<95>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#}|[]], {'ExprBinOp', Op, {'ExprVar', #{#<95>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#}, R}})
       <_W0> when 'true' ->
         case R of
-      <{'ExprSection', "_"}> when 'true' ->
-        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', "_x"}|[]], {'ExprBinOp', Op, L, {'ExprVar', "_x"}}})
+      <{'ExprSection', #{#<95>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
+        apply 'infer'/2(Env, {'ExprLambda', [{'PatVar', #{#<95>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#}|[]], {'ExprBinOp', Op, L, {'ExprVar', #{#<95>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#}}})
       <_W0> when 'true' ->
-        let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Op) of
+        let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Op) of
       <{'Just', Idx}> when 'true' ->
         apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, Op), call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Op))
       <'Nothing'> when 'true' ->
@@ -388,7 +388,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', E}
       <{'Right', RRes}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', RRes))
-      in apply _Oa0("binop")
+      in apply _Oa0(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResTv, Env4}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env4)
       in apply apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(call 'maps':'get'('sub', RRes))
@@ -413,14 +413,14 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     end
       <{Env, {'ExprList', Elems}}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0("elem")
+      in apply _Oa0(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ElemTv, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemTv}
       in case apply 'inferElems'/3(Env1, ElemTy, Elems) of
       <{'Left', E}> when 'true' ->
         {'Left', E}
       <{'Right', Res}> when 'true' ->
-        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'("Array")
+        {'Right', ~{'ty'=>{'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0([let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(call 'maps':'get'('sub', Res))
       in apply _Oa0(ElemTy)])},'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
     end
@@ -445,16 +445,16 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', E}
       <{'Right', RecRes}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', RecRes))
-      in apply _Oa0("field")
+      in apply _Oa0(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResultTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let1 of
         <{'Tuple', RowTv, Env3}> when 'true' -> let <ExpectedRec> = {'TyRecord', ~{'fields'=>call 'Data.Map':'singleton'(Field, {'TyVar', ResultTv}),'row'=>{'Just', RowTv}}~}
       in case let <_Oa0> = apply 'unifyEnv'/1(Env3)
       in apply apply _Oa0(call 'maps':'get'('ty', RecRes))(ExpectedRec) of
       <{'Left', Ue}> when 'true' ->
-        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("field access: ", apply 'showExprShort'/1(Rec)), "."), Field))}
+        {'Left', apply 'UnifyErrWithContext'/2(Ue, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showExprShort'/1(Rec)), #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Field))}
       <{'Right', S2}> when 'true' ->
         let <Sub> = let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S2)
       in apply _Oa0(call 'maps':'get'('sub', RecRes))
@@ -475,13 +475,13 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{Env, {'ExprDo', Stmts}}> when 'true' ->
         apply 'inferDo'/2(Env, call 'Data.Array':'fromFoldable'(Stmts))
       <{Env, {'ExprSection', Name}}> when 'true' ->
-        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), ".") of
+        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), #{#<46>(8,1,'integer',['unsigned'|['big']])}#) of
       <'true'> when 'true' -> let <Field> = call 'Data.String':'drop'(1, Name)
       in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0("field")
+      in apply _Oa0(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResultTv, Env1}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env1)
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let1 of
         <{'Tuple', RowTv, Env2}> when 'true' -> let <ResultType> = {'TyVar', ResultTv}
       in let <InputType> = {'TyRecord', ~{'fields'=>call 'Data.Map':'singleton'(Field, {'TyVar', ResultTv}),'row'=>{'Just', RowTv}}~}
@@ -512,10 +512,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', E}
       <{'Right', ExprRes}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ExprRes))
-      in apply _Oa0("secres")
+      in apply _Oa0(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
-      in apply _Oa0("secright")
+      in apply _Oa0(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let1 of
         <{'Tuple', RightTv, Env3}> when 'true' -> let <ExpectedOpTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', ExprRes))
       in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'({'TyVar', RightTv})
@@ -550,10 +550,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', E}
       <{'Right', ExprRes}> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', ExprRes))
-      in apply _Oa0("secres")
+      in apply _Oa0(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
         <{'Tuple', ResTv, Env2}> when 'true' -> let <_Let1> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env2)
-      in apply _Oa0("secleft")
+      in apply _Oa0(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let1 of
         <{'Tuple', LeftTv, Env3}> when 'true' -> let <ExpectedOpTy> = let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'({'TyVar', LeftTv})
       in apply _Oa0(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', ExprRes))
@@ -577,7 +577,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
     end
       <{_W0, _W1}> when 'true' ->
-        {'Left', apply 'NotImplemented'/1("expression form")}
+        {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#)}
     end
 
 'inferRecordUpdate'/3 =
@@ -595,7 +595,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', _Err}
       <{'Just', UpdateRes}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
       in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
@@ -614,7 +614,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       <{'Right', UpdateRes}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
       in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
@@ -640,7 +640,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', _Err}
       <{'Just', UpdateRes}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
       in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
@@ -659,7 +659,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       <{'Right', UpdateRes}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', UpdateRes))
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', RowVar, Env2}> when 'true' -> let <UpdateFields> = call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', UpdateRes))
       in let <ExpectedRec> = {'TyRecord', ~{'fields'=>UpdateFields,'row'=>{'Just', RowVar}}~}
@@ -682,7 +682,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
 'inferUnaryOp'/3 =
   fun (Env, Op, E) ->
     case Op of
-      <"-"> when 'true' ->
+      <#{#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case apply 'infer'/2(Env, E) of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -707,7 +707,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0(call 'maps':'get'('sub', Res)),'env'=>call 'maps':'get'('env', Res)}~}
     end
       end
-      <"!"> when 'true' ->
+      <#{#<33>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case apply 'infer'/2(Env, E) of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -746,7 +746,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', _Err}
       <{'Just', Res}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res))
-      in apply _Oa0("unary")
+      in apply _Oa0(#{#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', ResTv, Env2}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env2)
       in apply apply _Oa0(call 'maps':'get'('ty', OpInst))(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', Res))
@@ -762,7 +762,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       <{'Right', Res}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res))
-      in apply _Oa0("unary")
+      in apply _Oa0(#{#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', ResTv, Env2}> when 'true' -> case let <_Oa0> = apply 'unifyEnv'/1(Env2)
       in apply apply _Oa0(call 'maps':'get'('ty', OpInst))(let <_Oa0> = call 'Nova.Compiler.Types':'tArrow'(call 'maps':'get'('ty', Res))
@@ -784,7 +784,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
   fun (Env, Stmts) ->
     case call 'Data.Array':'uncons'(Stmts) of
       <'Nothing'> when 'true' ->
-        {'Left', apply 'NotImplemented'/1("empty do block")}
+        {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']])}#)}
       <{'Just', ~{'head':=Stmt,'tail':=Rest}~}> when 'true' ->
         case Stmt of
       <{'DoExpr', E}> when 'true' ->
@@ -831,7 +831,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Left', _Err}
       <{'Just', Res1}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res1))
-      in apply _Oa0("inner")
+      in apply _Oa0(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', InnerTv, Env1}> when 'true' -> let <InnerTy> = {'TyVar', InnerTv}
       in case apply 'inferPat'/3(Env1, Pat, InnerTy) of
@@ -877,7 +877,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       <{'Right', Res1}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(call 'maps':'get'('env', Res1))
-      in apply _Oa0("inner")
+      in apply _Oa0(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', InnerTv, Env1}> when 'true' -> let <InnerTy> = {'TyVar', InnerTv}
       in case apply 'inferPat'/3(Env1, Pat, InnerTy) of
@@ -1023,13 +1023,13 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         {'Right', ~{'env'=>Env,'sub'=>S}~}
     end
       <{Env, {'PatCon', ConName, Pats}, Ty}> when 'true' ->
-        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), ConName) of
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), ConName) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), ConName)
       <'Nothing'> when 'true' ->
         ConName
     end
-      in let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), ConName) of
+      in let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), ConName) of
       <{'Just', Idx}> when 'true' ->
         apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, ConName), UnqualifiedName)
       <'Nothing'> when 'true' ->
@@ -1081,7 +1081,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in {'Right', ~{'env'=>Env_,'sub'=>call 'maps':'get'('sub', PatRes)}~}
       end
       <{_W0, _W1, _W2}> when 'true' ->
-        {'Left', apply 'NotImplemented'/1("pattern form")}
+        {'Left', apply 'NotImplemented'/1(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#)}
     end
 
 'inferRecordPatGo'/5 =
@@ -1089,7 +1089,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     case {_P0, _P1, _P2, _P3, _P4} of
       <{Ty, E, [], FieldTypes, Sub}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
-      in apply _Oa0("row")
+      in apply _Oa0(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', RowVar, E_}> when 'true' -> let <ExpectedRec> = {'TyRecord', ~{'fields'=>FieldTypes,'row'=>{'Just', RowVar}}~}
       in case let <_Oa0> = apply 'unifyEnv'/1(E_)
@@ -1104,7 +1104,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       <{Ty, E, [{'Tuple', Label, Pat}|Rest], FieldTypes, Sub}> when 'true' ->
         let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
-      in apply _Oa0(call 'erlang':'++'("f_", Label))
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, Label))
       in case _DLet0 of
         <{'Tuple', FieldVar, E1}> when 'true' -> let <FieldTy> = {'TyVar', FieldVar}
       in case apply 'inferPat'/3(E1, Pat, FieldTy) of
@@ -1149,7 +1149,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       end
       end
       in let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0("elem")
+      in apply _Oa0(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', ElemVar, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemVar}
       in case let <_Oa0> = apply 'unifyEnv'/1(Env1)
@@ -1166,7 +1166,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
 'inferConsPat'/4 =
   fun (Env, HdPat, TlPat, Ty) ->
     let <_DLet0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0("elem")
+      in apply _Oa0(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#)
       in case _DLet0 of
         <{'Tuple', ElemVar, Env1}> when 'true' -> let <ElemTy> = {'TyVar', ElemVar}
       in case let <_Oa0> = apply 'unifyEnv'/1(Env1)
@@ -1234,7 +1234,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{ResultTy, E, Ty, [P|Rest], Sub}> when 'true' ->
         case Ty of
       <{'TyCon', C}> when 'true' ->
-        case call 'erlang':'=:='(call 'maps':'get'('name', C), "Fun") of
+        case call 'erlang':'=:='(call 'maps':'get'('name', C), #{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#) of
           <'true'> when 'true' -> case ~{'a'=>call 'Data.Array':'head'(call 'maps':'get'('args', C)),'b'=>call 'Data.Array':'last'(call 'maps':'get'('args', C))}~ of
       <~{'a':={'Just', ArgTy},'b':={'Just', ResTy}}~> when 'true' ->
         case apply 'inferPat'/3(E, P, ArgTy) of
@@ -1245,12 +1245,12 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0(Sub))
     end
       <_W0> when 'true' ->
-        {'Left', apply 'NotImplemented'/1("malformed function type")}
+        {'Left', apply 'NotImplemented'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)}
     end
-          <_> when 'true' -> {'Left', apply 'NotImplemented'/1("expected function type in constructor")}
+          <_> when 'true' -> {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)}
         end
       <_W0> when 'true' ->
-        {'Left', apply 'NotImplemented'/1("expected function type in constructor")}
+        {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)}
     end
     end
 
@@ -1274,7 +1274,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply apply _Oa0(Name)(Scheme)
       <'Nothing'> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
-      in apply _Oa0(call 'erlang':'++'("let_", Name))
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, Name))
       in case _Let0 of
         <{'Tuple', Tv, E_}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E_)
       in apply apply _Oa0(Name)(let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
@@ -1337,7 +1337,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
 'inferGuardExpr'/2 =
   fun (_P0, _P1) ->
     case {_P0, _P1} of
-      <{E, {'ExprBinOp', "&&", Left, Right}}> when 'true' ->
+      <{E, {'ExprBinOp', #{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, Left, Right}}> when 'true' ->
         case apply 'inferGuardExpr'/2(E, Left) of
       <{'Left', Err}> when 'true' ->
         {'Left', Err}
@@ -1350,7 +1350,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0(call 'maps':'get'('sub', LeftRes))}~}
     end
     end
-      <{E, {'ExprBinOp', "<-", PatExpr, ValExpr}}> when 'true' ->
+      <{E, {'ExprBinOp', #{#<60>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']])}#, PatExpr, ValExpr}}> when 'true' ->
         case apply 'infer'/2(E, ValExpr) of
       <{'Left', Err}> when 'true' ->
         {'Left', Err}
@@ -1364,8 +1364,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0(call 'maps':'get'('sub', ValRes))}~}
     end
     end
-      <{E, {'ExprBinOp', ",", Left, Right}}> when 'true' ->
-        apply 'inferGuardExpr'/2(E, {'ExprBinOp', "&&", Left, Right})
+      <{E, {'ExprBinOp', #{#<44>(8,1,'integer',['unsigned'|['big']])}#, Left, Right}}> when 'true' ->
+        apply 'inferGuardExpr'/2(E, {'ExprBinOp', #{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, Left, Right})
       <{E, Expr}> when 'true' ->
         case apply 'infer'/2(E, Expr) of
       <{'Left', Err}> when 'true' ->
@@ -1435,7 +1435,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
   fun (_P0) ->
     case {_P0} of
       <{[]}> when 'true' ->
-        {'ExprVar', "undefined"}
+        {'ExprVar', #{#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
       <{[Ge|[]]}> when 'true' ->
         apply 'wrapWithPatternGuards'/2(call 'maps':'get'('guards', Ge), call 'maps':'get'('body', Ge))
       <{[Ge|Rest]}> when 'true' ->
@@ -1449,11 +1449,11 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
   fun (_P0) ->
     case {_P0} of
       <{[]}> when 'true' ->
-        {'ExprVar', "true"}
+        {'ExprVar', #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
       <{[Gc|[]]}> when 'true' ->
         apply 'guardClauseToCondExpr'/1(Gc)
       <{[Gc|Rest]}> when 'true' ->
-        {'ExprBinOp', "&&", apply 'guardClauseToCondExpr'/1(Gc), apply 'guardsToCondition'/1(Rest)}
+        {'ExprBinOp', #{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, apply 'guardClauseToCondExpr'/1(Gc), apply 'guardsToCondition'/1(Rest)}
     end
 
 'guardClauseToCondExpr'/1 =
@@ -1462,7 +1462,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{{'GuardExpr', E}}> when 'true' ->
         E
       <{{'GuardPat', _W0, _W1}}> when 'true' ->
-        {'ExprVar', "true"}
+        {'ExprVar', #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
     end
 
 'wrapWithPatternGuards'/2 =
@@ -1490,11 +1490,11 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
   fun (Env, Func) ->
     letrec 'isPlaceholder'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TyVar', Tv}}> when 'true' -> case call 'erlang':'>='(call 'maps':'get'('id', Tv), 0) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(3, call 'maps':'get'('name', Tv)), "fn_") <_> when 'true' -> 'false' end
+        <{{'TyVar', Tv}}> when 'true' -> case call 'erlang':'>='(call 'maps':'get'('id', Tv), 0) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(3, call 'maps':'get'('name', Tv)), #{#<102>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
         <{_W0}> when 'true' -> 'false'
       end
       in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
-      in apply _Oa0(call 'erlang':'++'("fn_", call 'maps':'get'('name', Func)))
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('name', Func)))
       in case _Let0 of
         <{'Tuple', FuncTv, Env1}> when 'true' -> let <FuncTy> = {'TyVar', FuncTv}
       in let <Body> = case call 'maps':'get'('guards', Func) of
@@ -1702,7 +1702,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0([])}
     end
       <{AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
-        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
@@ -1811,7 +1811,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Oa0([])}
     end
       <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
-        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+        let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
@@ -1928,7 +1928,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         <{'Tuple', Name, Args}> when 'true' -> call 'Data.Tuple':'Tuple'(Name, call 'Data.Array':'snoc'(Args, Arg))
       end
       <{_W0}> when 'true' ->
-        call 'Data.Tuple':'Tuple'("", [])
+        call 'Data.Tuple':'Tuple'(#{}#, [])
     end
 
 'substituteTypeExpr'/4 =
@@ -2006,10 +2006,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     end
       <{VarMap, {'TyExprCon', Name}}> when 'true' ->
         case Name of
-      <"_"> when 'true' ->
+      <#{#<95>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(999))
-      in apply _Oa0("_")}
-      <"Boolean"> when 'true' ->
+      in apply _Oa0(#{#<95>(8,1,'integer',['unsigned'|['big']])}#)}
+      <#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Types':'tBool'()
       <_W0> when 'true' ->
         {'TyCon', let <_Oa0> = call 'Nova.Compiler.Types':'mkTCon'(Name)
@@ -2131,7 +2131,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <Env2> = apply 'processNonFunctionsWithAliases'/3(ImportedAliases, Env1, Decls)
       in let <Env3> = apply 'addFunctionPlaceholdersWithAliases'/3(ImportedAliases, Env2, Decls)
       in let <Env4> = apply 'processInfixDeclarations'/2(Env3, Decls)
-      in apply 'withContext'/2("checkFunctionBodies", apply 'checkFunctionBodies'/2(Env4, Decls))
+      in apply 'withContext'/2(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'checkFunctionBodies'/2(Env4, Decls))
 
 'typeCheckModule'/3 =
   fun (Registry, Env, Mod) ->
@@ -2182,7 +2182,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', Alias}> when 'true' ->
         call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, Alias)
       <'Nothing'> when 'true' ->
-        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+        let <LastPart> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('moduleName', Imp)) of
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
@@ -2375,7 +2375,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       case {_L0} of
         <{{'Tuple', K, _W0}}> when 'true' -> K
       end, call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports)))
-      in call 'erlang':'++'(ValueNames, CtorNames)
+      in call 'Nova.Prelude':'semigroupAppendImpl'(ValueNames, CtorNames)
 
 'getImportItemName'/1 =
   fun (_P0) ->
@@ -2400,7 +2400,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', Alias}> when 'true' ->
         Alias
       <'Nothing'> when 'true' ->
-        case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), call 'maps':'get'('moduleName', Imp)) of
+        case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('moduleName', Imp)) of
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
@@ -2410,7 +2410,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <Acc1> = call 'Data.Map':'union'(Acc, Aliases)
       in letrec 'addWithPrefix'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
-        <{M, {'Tuple', Name, Info}}> when 'true' -> call 'Data.Map':'insert'(call 'erlang':'++'(call 'erlang':'++'(Prefix, "."), Name), Info, M)
+        <{M, {'Tuple', Name, Info}}> when 'true' -> call 'Data.Map':'insert'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Info, M)
       end
       in let <Acc2> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addWithPrefix'/2(_Mf0, _Mf1), Acc1, call 'Data.Map':'toUnfoldable'(Aliases))
       in Acc2
@@ -2464,12 +2464,12 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 1))), FreeVars)
       in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
       case {_L0} of
-        <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', ~{'id'=>NewId,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+        <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', ~{'id'=>NewId,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(NewId)))}~})
       end, IdPairs))
       in let <Tvars> = call 'lists':'map'(fun (_L0) ->
       case {_L0} of
-        <{{'Tuple', _W0, NewId}}> when 'true' -> ~{'id'=>NewId,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+        <{{'Tuple', _W0, NewId}}> when 'true' -> ~{'id'=>NewId,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(NewId)))}~
       end, IdPairs)
       in let <RemappedTy> = let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(RemapSub)
@@ -2656,7 +2656,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ForallVars> = call 'Data.Array':'filter'(fun (Id) ->
       call 'erlang':'<'(Id, 0), FreeVarIds)
       in let <Tvars> = call 'lists':'map'(fun (Id) ->
-      ~{'id'=>Id,'name'=>call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      ~{'id'=>Id,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<116>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(Id)))}~, ForallVars)
       in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
       in apply _Oa0(Ty)
@@ -2670,7 +2670,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ForallVars> = call 'Data.Array':'filter'(fun (Id) ->
       call 'erlang':'<'(Id, 0), FreeVarIds)
       in let <Tvars> = call 'lists':'map'(fun (Id) ->
-      ~{'id'=>Id,'name'=>call 'erlang':'++'("t", let <_Fn0> = apply 'intToString'/0()
+      ~{'id'=>Id,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<116>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(call 'erlang':'-'(Id)))}~, ForallVars)
       in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
       in apply _Oa0(Ty)
@@ -2678,7 +2678,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply apply _Oa0(call 'maps':'get'('name', Func))(Scheme)
       <'Nothing'> when 'true' ->
         let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(E)
-      in apply _Oa0(call 'erlang':'++'("fn_", call 'maps':'get'('name', Func)))
+      in apply _Oa0(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('name', Func)))
       in case _Let0 of
         <{'Tuple', Tv, E_}> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'extendEnv'(E_)
       in apply apply _Oa0(call 'maps':'get'('name', Func))(let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'([])
@@ -2690,7 +2690,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
         let <Ty> = apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, call 'Data.Map':'empty'(), call 'maps':'get'('typeSignature', Fi))
       in let <FreeVars> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
       in let <Tvars> = call 'lists':'map'(fun (Id) ->
-      ~{'id'=>Id,'name'=>call 'erlang':'++'("a", let <_Fn0> = apply 'intToString'/0()
+      ~{'id'=>Id,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(Id))}~, FreeVars)
       in let <Scheme> = let <_Oa0> = call 'Nova.Compiler.Types':'mkScheme'(Tvars)
       in apply _Oa0(Ty)
@@ -2711,7 +2711,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', ~{'head':={'DeclFunction', Func},'tail':=Rest}~}> when 'true' ->
         case apply 'checkFunction'/2(E, Func) of
       <{'Left', Err}> when 'true' ->
-        {'Left', apply 'addErrorContext'/2(call 'erlang':'++'(call 'erlang':'++'("function '", call 'maps':'get'('name', Func)), "'"), Err)}
+        {'Left', apply 'addErrorContext'/2(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('name', Func)), #{#<39>(8,1,'integer',['unsigned'|['big']])}#), Err)}
       <{'Right', R}> when 'true' ->
         apply 'checkFunctionBodiesGo'/2(call 'maps':'get'('env', R), Rest)
     end
@@ -2760,13 +2760,13 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
        'mergeClausesIntoOne'/1 = fun (Clauses) ->
       case call 'Data.Array':'head'(Clauses) of
       <'Nothing'> when 'true' ->
-        ~{'name'=>"",'parameters'=>[],'body'=>{'ExprVar', "error"},'guards'=>[],'typeSignature'=>'Nothing'}~
+        ~{'name'=>#{}#,'parameters'=>[],'body'=>{'ExprVar', #{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#},'guards'=>[],'typeSignature'=>'Nothing'}~
       <{'Just', First}> when 'true' ->
         let <Name> = call 'maps':'get'('name', First)
       in let <NumParams> = call 'Data.List':'length'(call 'maps':'get'('parameters', First))
       in let <ClausesList> = call 'Data.List':'fromFoldable'(Clauses)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'erlang':'++'("__arg", let <_Fn0> = apply 'intToString'/0()
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 1)))
       in let <ParamPats> = call 'lists':'map'('PatVar', ParamNames)
       in let <ParamVars> = call 'lists':'map'('ExprVar', ParamNames)
@@ -2796,8 +2796,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
        'clauseToTupleCase'/2 = fun (_W0, Func) ->
       let <N> = call 'Data.List':'length'(call 'maps':'get'('parameters', Func))
       in let <TupName> = case call 'erlang':'=:='(N, 2) of
-      <'true'> when 'true' -> "Tuple"
-      <'false'> when 'true' -> call 'erlang':'++'("Tuple", let <_Fn0> = apply 'intToString'/0()
+      <'true'> when 'true' -> #{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(N))
     end
       in case call 'erlang':'>'(N, 1) of

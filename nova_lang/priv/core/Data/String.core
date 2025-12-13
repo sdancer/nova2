@@ -134,30 +134,21 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
   fun (Cps) ->
     apply 'fromCodePointArrayImpl'/1(Cps)
 
-'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'byte_size'(V0)
 
-'takeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+'takeImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in let <N> = case call 'erlang':'>'(V0, Len) of <'true'> when 'true' -> Len <'false'> when 'true' -> V0 end in call 'erlang':'binary_part'(V1, 0, N)
 
-'dropImpl'/2 = fun (V0, V1) -> case V0 of
-        <0> when 'true' -> V1
-        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
-      end
+'dropImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'>='(V0, Len) of <'true'> when 'true' -> #{}# <'false'> when 'true' -> call 'erlang':'binary_part'(V1, V0, call 'erlang':'-'(Len, V0)) end
 
-'charAtImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
-        <'false'> when 'true' -> 'Nothing'
-        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
-      end
+'charAtImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, Len)) of <'false'> when 'true' -> 'Nothing' <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, V0, 1)} end
 
-'containsImpl'/2 = fun (V0, V1) -> case call 'string':'find'(V1, V0) of
-        <'nomatch'> when 'true' -> 'false'
-        <_> when 'true' -> 'true'
-      end
+'containsImpl'/2 = fun (V0, V1) -> case call 'binary':'match'(V1, V0) of <'nomatch'> when 'true' -> 'false' <_> when 'true' -> 'true' end
 
-'splitImpl'/2 = fun (V0, V1) -> call 'string':'split'(V1, V0, 'all')
+'splitImpl'/2 = fun (V0, V1) -> call 'binary':'split'(V1, V0, ['global'])
 
-'joinWithImpl'/2 = fun (V0, V1) -> call 'lists':'join'(V0, V1)
+'joinWithImpl'/2 = fun (V0, V1) -> call 'erlang':'iolist_to_binary'(call 'lists':'join'(V0, V1))
 
-'replaceAllImpl'/3 = fun (V0, V1, V2) -> call 'string':'replace'(V2, V0, V1, 'all')
+'replaceAllImpl'/3 = fun (V0, V1, V2) -> call 'binary':'replace'(V2, V0, V1, ['global'])
 
 'trimImpl'/1 = fun (V0) -> call 'string':'trim'(V0)
 
@@ -165,64 +156,37 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
 
 'toUpperImpl'/1 = fun (V0) -> call 'string':'uppercase'(V0)
 
-'stripPrefixImpl'/2 = fun (V0, V1) -> case call 'lists':'prefix'(V0, V1) of
-        <'true'> when 'true' -> {'Just', call 'lists':'nthtail'(call 'erlang':'length'(V0), V1)}
-        <'false'> when 'true' -> 'Nothing'
-      end
+'stripPrefixImpl'/2 = fun (V0, V1) -> let <PLen> = call 'erlang':'byte_size'(V0) in let <SLen> = call 'erlang':'byte_size'(V1) in case call 'erlang':'<'(SLen, PLen) of <'true'> when 'true' -> 'Nothing' <'false'> when 'true' -> case call 'erlang':'=:='(call 'erlang':'binary_part'(V1, 0, PLen), V0) of <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, PLen, call 'erlang':'-'(SLen, PLen))} <'false'> when 'true' -> 'Nothing' end end
 
-'lastIndexOfImpl'/2 = fun (V0, V1) -> case call 'string':'rstr'(V1, V0) of
-        <0> when 'true' -> 'Nothing'
-        <N> when 'true' -> {'Just', call 'erlang':'-'(N, 1)}
-      end
+'lastIndexOfImpl'/2 = fun (V0, V1) -> case call 'binary':'matches'(V1, V0) of <[]> when 'true' -> 'Nothing' <Matches> when 'true' -> case call 'lists':'last'(Matches) of <{Pos, _Len}> when 'true' -> {'Just', Pos} end end
 
-'toIntImpl'/1 = fun (V0) -> case call 'string':'to_integer'(V0) of
-        <{I, []}> when 'true' -> {'Just', I}
-        <_> when 'true' -> 'Nothing'
-      end
+'toIntImpl'/1 = fun (V0) -> case catch call 'erlang':'binary_to_integer'(V0) of <N> when call 'erlang':'is_integer'(N) -> {'Just', N} <_> when 'true' -> 'Nothing' end
 
-'toCodePointArrayImpl'/1 = fun (V0) -> V0
+'toCodePointArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_list'(V0)
 
-'singletonImpl'/1 = fun (V0) -> [V0]
+'singletonImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'([V0])
 
-'fromCharArrayImpl'/1 = fun (V0) -> V0
+'fromCharArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'(V0)
 
-'codeUnitIndexImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
-        <'false'> when 'true' -> 'Nothing'
-        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
-      end
+'codeUnitIndexImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, Len)) of <'false'> when 'true' -> 'Nothing' <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, V0, 1)} end
 
-'codeUnitTakeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+'codeUnitTakeImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in let <N> = case call 'erlang':'>'(V0, Len) of <'true'> when 'true' -> Len <'false'> when 'true' -> V0 end in call 'erlang':'binary_part'(V1, 0, N)
 
-'codeUnitDropImpl'/2 = fun (V0, V1) -> case V0 of
-        <0> when 'true' -> V1
-        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
-      end
+'codeUnitDropImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'>='(V0, Len) of <'true'> when 'true' -> #{}# <'false'> when 'true' -> call 'erlang':'binary_part'(V1, V0, call 'erlang':'-'(Len, V0)) end
 
-'codeUnitLengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+'codeUnitLengthImpl'/1 = fun (V0) -> call 'erlang':'byte_size'(V0)
 
-'indexOfImpl'/2 = fun (V0, V1) -> case call 'string':'str'(V1, V0) of
-        <0> when 'true' -> 'Nothing'
-        <N> when 'true' -> {'Just', call 'erlang':'-'(N, 1)}
-      end
+'indexOfImpl'/2 = fun (V0, V1) -> case call 'binary':'match'(V1, V0) of <'nomatch'> when 'true' -> 'Nothing' <{Pos, _Len}> when 'true' -> {'Just', Pos} end
 
-'unconsImpl'/1 = fun (V0) -> case V0 of
-        <[]> when 'true' -> 'Nothing'
-        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}
-      end
+'unconsImpl'/1 = fun (V0) -> case V0 of <#{}#> when 'true' -> 'Nothing' <_> when 'true' -> let <H> = call 'erlang':'binary_part'(V0, 0, 1) in let <T> = call 'erlang':'binary_part'(V0, 1, call 'erlang':'-'(call 'erlang':'byte_size'(V0), 1)) in {'Just', ~{'head'=>H,'tail'=>T}~} end
 
-'sliceImpl'/3 = fun (V0, V1, V2) -> call 'lists':'sublist'(call 'lists':'nthtail'(V0, V2), call 'erlang':'-'(V1, V0))
+'sliceImpl'/3 = fun (V0, V1, V2) -> let <Len> = call 'erlang':'byte_size'(V2) in let <Start> = case call 'erlang':'<'(V0, 0) of <'true'> when 'true' -> 0 <'false'> when 'true' -> V0 end in let <End> = case call 'erlang':'>'(V1, Len) of <'true'> when 'true' -> Len <'false'> when 'true' -> V1 end in case call 'erlang':'>='(Start, End) of <'true'> when 'true' -> #{}# <'false'> when 'true' -> call 'erlang':'binary_part'(V2, Start, call 'erlang':'-'(End, Start)) end
 
-'nullImpl'/1 = fun (V0) -> case V0 of
-        <[]> when 'true' -> 'true'
-        <_> when 'true' -> 'false'
-      end
+'nullImpl'/1 = fun (V0) -> case call 'erlang':'byte_size'(V0) of <0> when 'true' -> 'true' <_> when 'true' -> 'false' end
 
-'codePointAtImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
-        <'false'> when 'true' -> 'Nothing'
-        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
-      end
+'codePointAtImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, Len)) of <'false'> when 'true' -> 'Nothing' <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, V0, 1)} end
 
-'fromCodePointArrayImpl'/1 = fun (V0) -> V0
+'fromCodePointArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'(V0)
 
 'length'/0 =
   fun () ->

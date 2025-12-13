@@ -14,7 +14,7 @@ foreign import getArgsImpl :: Array String = "call 'lists':'map'(fun (A) -> call
 getProgName :: String
 getProgName = getProgNameImpl
 
-foreign import getProgNameImpl :: String = "case call 'init':'get_argument'('progname') of <{'ok', [[Name]]}> when 'true' -> call 'erlang':'list_to_binary'(Name) <_> when 'true' -> <<\"nova\">> end"
+foreign import getProgNameImpl :: String = "case call 'init':'get_argument'('progname') of <{'ok', [[Name]]}> when 'true' -> call 'erlang':'list_to_binary'(Name) <_> when 'true' -> #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# end"
 
 -- | Parsed command line options
 type ParsedArgs =

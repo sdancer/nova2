@@ -51,7 +51,7 @@ module 'MCP.Transport' ['stdioReadLine'/1, 'stdioWriteLine'/1, 'stderrWrite'/1, 
   fun (Port) ->
     case apply 'tcpListen'/1(Port) of
       <{'Left', Err}> when 'true' ->
-        {'Left', call 'erlang':'++'("Failed to listen: ", Err)}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
     end
 
 'stdioReadLineImpl'/1 = fun (V0) -> case call 'io':'get_line'('') of <'eof'> when 'true' -> {'Left', [101,111,102]} <{'error', _R}> when 'true' -> {'Left', [101,114,114,111,114]} <Line> when 'true' -> {'Right', call 'string':'trim'(Line)} end

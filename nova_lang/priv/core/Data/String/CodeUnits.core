@@ -32,30 +32,21 @@ module 'Data.String.CodeUnits' ['singleton'/1, 'take'/2, 'drop'/2, 'length'/1, '
   fun (Cs) ->
     apply 'fromCharArrayImpl'/1(Cs)
 
-'singletonImpl'/1 = fun (V0) -> [V0]
+'singletonImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'([V0])
 
-'takeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
+'takeImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in let <N> = case call 'erlang':'>'(V0, Len) of <'true'> when 'true' -> Len <'false'> when 'true' -> V0 end in call 'erlang':'binary_part'(V1, 0, N)
 
-'dropImpl'/2 = fun (V0, V1) -> case V0 of
-        <0> when 'true' -> V1
-        <N> when 'true' -> call 'lists':'nthtail'(N, V1)
-      end
+'dropImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'>='(V0, Len) of <'true'> when 'true' -> #{}# <'false'> when 'true' -> call 'erlang':'binary_part'(V1, V0, call 'erlang':'-'(Len, V0)) end
 
-'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'byte_size'(V0)
 
-'charAtImpl'/2 = fun (V0, V1) -> case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, call 'erlang':'length'(V1))) of
-        <'false'> when 'true' -> 'Nothing'
-        <'true'> when 'true' -> {'Just', call 'lists':'nth'(call 'erlang':'+'(V0, 1), V1)}
-      end
+'charAtImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, Len)) of <'false'> when 'true' -> 'Nothing' <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, V0, 1)} end
 
-'unconsImpl'/1 = fun (V0) -> case V0 of
-        <[]> when 'true' -> 'Nothing'
-        <[H|T]> when 'true' -> {'Just', ~{'head'=>H,'tail'=>T}~}
-      end
+'unconsImpl'/1 = fun (V0) -> case call 'erlang':'byte_size'(V0) of <0> when 'true' -> 'Nothing' <_> when 'true' -> let <H> = call 'erlang':'binary_part'(V0, 0, 1) in let <T> = call 'erlang':'binary_part'(V0, 1, call 'erlang':'-'(call 'erlang':'byte_size'(V0), 1)) in {'Just', ~{'head'=>H,'tail'=>T}~} end
 
-'toCharArrayImpl'/1 = fun (V0) -> V0
+'toCharArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_list'(V0)
 
-'fromCharArrayImpl'/1 = fun (V0) -> V0
+'fromCharArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'(V0)
 
 'singleton'/0 =
   fun () ->

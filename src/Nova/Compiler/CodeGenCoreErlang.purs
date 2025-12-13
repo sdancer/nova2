@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing)
 import Data.Tuple (Tuple(..))
 import Data.String as String
 import Data.String.CodeUnits as SCU
+import Data.Char (toCharCode)
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Map (Map)
@@ -804,8 +805,8 @@ genExpr ctx (ExprBinOp ":" l r) =
   "[" <> genExpr ctx l <> " | " <> genExpr ctx r <> "]"
 
 genExpr ctx (ExprBinOp "<>" l r) =
-  -- String/list append
-  "call 'erlang':'++'(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
+  -- Polymorphic semigroup append - works for both binaries and lists
+  "call 'Nova.Prelude':'semigroupAppendImpl'(" <> genExpr ctx l <> ", " <> genExpr ctx r <> ")"
 
 -- The # operator is "applyFlipped": x # f = f x
 -- We must use let-binding since apply can't directly take a call result
@@ -1523,10 +1524,23 @@ genDoLetWithBodyParser ctx binds rest =
 genLiteral :: Literal -> String
 genLiteral (LitInt n) = show n
 genLiteral (LitNumber n) = show n
-genLiteral (LitString s) = "\"" <> escapeString s <> "\""
+genLiteral (LitString s) = genBinaryString s
 genLiteral (LitChar c) = "$" <> escapeChar c
 genLiteral (LitBool true) = atom "true"
 genLiteral (LitBool false) = atom "false"
+
+-- | Generate Core Erlang binary string literal
+-- Core Erlang uses #{#<byte>(8,1,'integer',['unsigned'|['big']])}# syntax
+genBinaryString :: String -> String
+genBinaryString s =
+  let chars = SCU.toCharArray s
+      codes = map toCharCode chars
+      segments = map genBinarySegment codes
+  in "#{" <> String.joinWith "," segments <> "}#"
+
+-- | Generate a single byte segment for Core Erlang binary
+genBinarySegment :: Int -> String
+genBinarySegment code = "#<" <> show code <> ">(8,1,'integer',['unsigned'|['big']])"
 
 -- | Escape string for Core Erlang
 -- Order matters: escape backslashes FIRST, then other chars, then special chars last

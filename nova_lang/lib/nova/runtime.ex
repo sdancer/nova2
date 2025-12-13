@@ -744,3 +744,47 @@ defmodule Nova.String do
     end
   end
 end
+
+defmodule Nova.CoreErlangEval do
+  @moduledoc """
+  Compile and load Core Erlang modules at runtime.
+  Used for self-hosting verification.
+  """
+
+  @doc """
+  Compile Core Erlang source and load into the BEAM VM.
+  Returns {:ok, module_name} on success, {:error, reason} on failure.
+  """
+  def compile_and_load(core_source) when is_binary(core_source) do
+    compile_and_load(String.to_charlist(core_source))
+  end
+
+  def compile_and_load(core_source) when is_list(core_source) do
+    case :core_scan.string(core_source) do
+      {:ok, tokens, _} ->
+        case :core_parse.parse(tokens) do
+          {:ok, core_module} ->
+            case :compile.forms(core_module, [:from_core, :binary, :return_errors]) do
+              {:ok, mod_name, binary} ->
+                case :code.load_binary(mod_name, ~c"nofile", binary) do
+                  {:module, ^mod_name} -> {:ok, mod_name}
+                  {:error, reason} -> {:error, {:load, reason}}
+                end
+              {:ok, mod_name, binary, _warnings} ->
+                case :code.load_binary(mod_name, ~c"nofile", binary) do
+                  {:module, ^mod_name} -> {:ok, mod_name}
+                  {:error, reason} -> {:error, {:load, reason}}
+                end
+              {:error, errors, _warnings} ->
+                {:error, {:compile, errors}}
+              error ->
+                {:error, {:compile, error}}
+            end
+          {:error, reason} ->
+            {:error, {:parse, reason}}
+        end
+      {:error, reason, _} ->
+        {:error, {:scan, reason}}
+    end
+  end
+end

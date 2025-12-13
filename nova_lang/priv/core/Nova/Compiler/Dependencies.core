@@ -87,7 +87,7 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
       <{'ExprVar', Name}> when 'true' ->
         call 'Data.Set':'singleton'(Name)
       <{'ExprQualified', Ns, Name}> when 'true' ->
-        call 'Data.Set':'singleton'(call 'erlang':'++'(call 'erlang':'++'(Ns, "."), Name))
+        call 'Data.Set':'singleton'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Ns, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name))
       <{'ExprLit', _W0}> when 'true' ->
         call 'Data.Set':'empty'()
       <{'ExprApp', E1, E2}> when 'true' ->
@@ -359,7 +359,7 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
       <{'Just', N}> when 'true' ->
         call 'Data.Map':'insert'(Dep, call 'erlang':'-'(N, 1), Acc)
     end, InDegree, Dependents)
-      in let <NewQueue> = call 'erlang':'++'(RestQueue, call 'Data.Array':'filter'(fun (D) ->
+      in let <NewQueue> = call 'Nova.Prelude':'semigroupAppendImpl'(RestQueue, call 'Data.Array':'filter'(fun (D) ->
       case call 'Data.Map':'lookup'(D, NewInDegree) of
       <'Nothing'> when 'true' ->
         'false'

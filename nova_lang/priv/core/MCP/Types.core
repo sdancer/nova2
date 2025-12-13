@@ -6,7 +6,7 @@ module 'MCP.Types' ['initialState'/0, 'genDeclId'/1, 'emptyNamespace'/1, 'genDec
 
 'genDeclId'/1 =
   fun (State) ->
-    let <Id> = call 'erlang':'++'("decl_", call 'erlang':'integer_to_list'(call 'maps':'get'('nextDeclId', State)))
+    let <Id> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('nextDeclId', State)))
       in ~{'id'=>Id,'state'=>call 'maps':'merge'(State, ~{'nextDeclId'=>call 'erlang':'+'(call 'maps':'get'('nextDeclId', State), 1)}~)}~
 
 'emptyNamespace'/1 =

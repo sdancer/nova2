@@ -39,16 +39,16 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
   fun (JsonStr) ->
     case call 'MCP.Json':'decode'(JsonStr) of
       <{'Left', Err}> when 'true' ->
-        {'Left', call 'erlang':'++'("JSON parse error: ", Err)}
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<74>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
       <{'Right', Json}> when 'true' ->
-        case let <_Oa0> = call 'MCP.Json':'getField'("method")
+        case let <_Oa0> = call 'MCP.Json':'getField'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(Json) of
       <'Nothing'> when 'true' ->
-        {'Left', "Missing 'method' field"}
+        {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
       <{'Just', MethodVal}> when 'true' ->
         case call 'MCP.Json':'isString'(MethodVal) of
       <'true'> when 'true' -> let <Method> = call 'MCP.Json':'jsonStringToString'(MethodVal)
-      in let <Params> = case let <_Oa0> = call 'MCP.Json':'getField'("params")
+      in let <Params> = case let <_Oa0> = call 'MCP.Json':'getField'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(Json) of
       <'Nothing'> when 'true' ->
         call 'MCP.Json':'object'([])
@@ -57,14 +57,14 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
     end
       in let <ReqId> = apply 'parseId'/1(Json)
       in {'Right', ~{'id'=>ReqId,'method'=>Method,'params'=>Params}~}
-      <'false'> when 'true' -> {'Left', "'method' must be a string"}
+      <'false'> when 'true' -> {'Left', #{#<39>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#}
     end
     end
     end
 
 'parseId'/1 =
   fun (Json) ->
-    case let <_Oa0> = call 'MCP.Json':'getField'("id")
+    case let <_Oa0> = call 'MCP.Json':'getField'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(Json) of
       <'Nothing'> when 'true' ->
         'Nothing'
@@ -95,9 +95,9 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
 'encodeSuccess'/2 =
   fun (ReqId, Result) ->
     let <IdJson> = apply 'encodeId'/1(ReqId)
-      in let <Response> = call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("jsonrpc")
-      in apply _Oa0(call 'MCP.Json':'toJsonString'("2.0")), let <_Oa0> = call 'MCP.Json':'kv'("id")
-      in apply _Oa0(IdJson), let <_Oa0> = call 'MCP.Json':'kv'("result")
+      in let <Response> = call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'(#{#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(#{#<50>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#)), let <_Oa0> = call 'MCP.Json':'kv'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(IdJson), let <_Oa0> = call 'MCP.Json':'kv'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(Result)])
       in call 'MCP.Json':'encode'(Response)
 
@@ -111,18 +111,18 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
     end
       in let <ErrorObj> = case MaybeData of
       <'Nothing'> when 'true' ->
-        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("code")
-      in apply _Oa0(call 'MCP.Json':'toJsonInt'(Code)), let <_Oa0> = call 'MCP.Json':'kv'("message")
+        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(call 'MCP.Json':'toJsonInt'(Code)), let <_Oa0> = call 'MCP.Json':'kv'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(call 'MCP.Json':'toJsonString'(Message))])
       <{'Just', D}> when 'true' ->
-        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("code")
-      in apply _Oa0(call 'MCP.Json':'toJsonInt'(Code)), let <_Oa0> = call 'MCP.Json':'kv'("message")
-      in apply _Oa0(call 'MCP.Json':'toJsonString'(Message)), let <_Oa0> = call 'MCP.Json':'kv'("data")
+        call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(call 'MCP.Json':'toJsonInt'(Code)), let <_Oa0> = call 'MCP.Json':'kv'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(Message)), let <_Oa0> = call 'MCP.Json':'kv'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(D)])
     end
-      in let <Response> = call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'("jsonrpc")
-      in apply _Oa0(call 'MCP.Json':'toJsonString'("2.0")), let <_Oa0> = call 'MCP.Json':'kv'("id")
-      in apply _Oa0(IdJson), let <_Oa0> = call 'MCP.Json':'kv'("error")
+      in let <Response> = call 'MCP.Json':'object'([let <_Oa0> = call 'MCP.Json':'kv'(#{#<106>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(call 'MCP.Json':'toJsonString'(#{#<50>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#)), let <_Oa0> = call 'MCP.Json':'kv'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(IdJson), let <_Oa0> = call 'MCP.Json':'kv'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(ErrorObj)])
       in call 'MCP.Json':'encode'(Response)
 
@@ -143,7 +143,7 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
 
 'mkMethodNotFound'/2 =
   fun (ReqId, Method) ->
-    apply 'encodeError'/4({'Just', ReqId}, apply 'methodNotFound'/0(), call 'erlang':'++'("Method not found: ", Method), 'Nothing')
+    apply 'encodeError'/4({'Just', ReqId}, apply 'methodNotFound'/0(), call 'Nova.Prelude':'semigroupAppendImpl'(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Method), 'Nothing')
 
 'mkInternalError'/2 =
   fun (ReqId, Msg) ->

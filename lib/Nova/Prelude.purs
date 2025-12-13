@@ -172,4 +172,10 @@ disj _ _ = true
 concatStrings :: String -> String -> String
 concatStrings a b = concatStringsImpl a b
 
-foreign import concatStringsImpl :: String -> String -> String = "call 'erlang':'++'($0, $1)"
+foreign import concatStringsImpl :: String -> String -> String = "call 'erlang':'iolist_to_binary'([$0, $1])"
+
+-- | Polymorphic semigroup append - works for binaries (strings) and lists
+semigroupAppend :: forall a. a -> a -> a
+semigroupAppend x y = semigroupAppendImpl x y
+
+foreign import semigroupAppendImpl :: forall a. a -> a -> a = "case call 'erlang':'is_binary'($0) of <'true'> when 'true' -> call 'erlang':'iolist_to_binary'([$0, $1]) <'false'> when 'true' -> call 'erlang':'++'($0, $1) end"

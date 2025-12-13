@@ -23,26 +23,26 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
   fun (_P0) ->
     case {_P0} of
       <{{'TyVar', V}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', V), "["), call 'erlang':'integer_to_list'(call 'maps':'get'('id', V))), "]")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('name', V), #{#<91>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(call 'maps':'get'('id', V))), #{#<93>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'TyCon', Tc}}> when 'true' ->
         case call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', Tc)), 0) of
       <'true'> when 'true' -> call 'maps':'get'('name', Tc)
-      <'false'> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(call 'maps':'get'('name', Tc), " "), call 'Data.String':'joinWith'(" ", call 'lists':'map'(fun (_Mf0) -> apply 'showTypeParens'/1(_Mf0), call 'maps':'get'('args', Tc))))
+      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('name', Tc), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'joinWith'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'lists':'map'(fun (_Mf0) -> apply 'showTypeParens'/1(_Mf0), call 'maps':'get'('args', Tc))))
     end
       <{{'TyRecord', R}}> when 'true' ->
         let <FieldEntries> = call 'Data.Array':'fromFoldable'(call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R)))
       in let <Suffix> = case call 'erlang':'>'(call 'Data.Array':'length'(FieldEntries), 8) of
-      <'true'> when 'true' -> ", ..."
-      <'false'> when 'true' -> ""
+      <'true'> when 'true' -> #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#
+      <'false'> when 'true' -> #{}#
     end
       in letrec 'showField'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'Tuple', Name, Ty}}> when 'true' -> call 'erlang':'++'(call 'erlang':'++'(Name, " :: "), apply 'showType'/1(Ty))
+        <{{'Tuple', Name, Ty}}> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Name, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Ty))
       end
       in let <FieldStrs> = call 'lists':'map'(fun (_Mf0) -> apply 'showField'/1(_Mf0), call 'Data.Array':'take'(8, FieldEntries))
-      in call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("{ ", call 'Data.String':'joinWith'(", ", FieldStrs)), Suffix), " }")
+      in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FieldStrs)), Suffix), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'TyApp', F, Arg}}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(F)), " "), apply 'showType'/1(Arg)), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(F)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Arg)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
 'showTypeParens'/1 =
@@ -58,7 +58,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{T = {'TyRecord', _W0}}> when 'true' ->
         apply 'showType'/1(T)
       <{T}> when 'true' ->
-        call 'erlang':'++'(call 'erlang':'++'("(", apply 'showType'/1(T)), ")")
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(T)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
 'occurs'/2 =
@@ -85,7 +85,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
 
 'stripModulePrefix'/1 =
   fun (Name) ->
-    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'("."), Name) of
+    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
@@ -98,13 +98,13 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
         <'true'> when 'true' -> 'true'
         <_> when 'true' -> case call 'erlang':'=:='(apply 'stripModulePrefix'/1(N1), apply 'stripModulePrefix'/1(N2)) of
         <'true'> when 'true' -> 'true'
-        <_> when 'true' -> case case call 'erlang':'=:='(N1, "List") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Array") <_> when 'true' -> 'false' end of
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, #{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(N2, #{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end of
         <'true'> when 'true' -> 'true'
-        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Array") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "List") <_> when 'true' -> 'false' end of
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, #{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(N2, #{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end of
         <'true'> when 'true' -> 'true'
-        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Number") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Int") <_> when 'true' -> 'false' end of
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, #{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(N2, #{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end of
         <'true'> when 'true' -> 'true'
-        <_> when 'true' -> case case call 'erlang':'=:='(N1, "Int") of <'true'> when 'true' -> call 'erlang':'=:='(N2, "Number") <_> when 'true' -> 'false' end of
+        <_> when 'true' -> case case call 'erlang':'=:='(N1, #{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(N2, #{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end of
         <'true'> when 'true' -> 'true'
         <_> when 'true' -> case 'true' of
         <'true'> when 'true' -> 'false'
@@ -127,7 +127,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', _W0}> when 'true' ->
         'false'
       <'Nothing'> when 'true' ->
-        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'("."), Name) of
+        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
@@ -154,7 +154,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', _W0}> when 'true' ->
         'Nothing'
       <'Nothing'> when 'true' ->
-        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'("."), Name) of
+        let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
@@ -261,7 +261,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', Arg}> when 'true' ->
         Arg
       <'Nothing'> when 'true' ->
-        {'TyCon', ~{'name'=>"Unit",'args'=>[]}~}
+        {'TyCon', ~{'name'=>#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'args'=>[]}~}
     end
       in case apply 'unifyWithAliases'/3(Aliases, F, HeadTyCon) of
       <'Nothing'> when 'true' ->
@@ -312,7 +312,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', Arg}> when 'true' ->
         Arg
       <'Nothing'> when 'true' ->
-        {'TyCon', ~{'name'=>"Unit",'args'=>[]}~}
+        {'TyCon', ~{'name'=>#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'args'=>[]}~}
     end
       in case apply 'unifyWithAliases'/3(Aliases, F, HeadTyCon) of
       <'Nothing'> when 'true' ->

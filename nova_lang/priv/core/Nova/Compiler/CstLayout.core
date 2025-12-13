@@ -157,7 +157,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       in let <Tok> = call 'maps':'get'('value', Src)
       in letrec 'insert'/1 = fun (State) ->
       case Tok of
-      <{'TokLowerName', 'Nothing', "data"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_HashF> = fun (_Mf0) -> apply 'insertDefault'/1(_Mf0) in apply _HashF(State) of
       <State_ = {'Tuple', Stk_, _W0}> when 'true' ->
         case apply 'isTopDecl'/2(TokPos, Stk_) of
@@ -167,7 +167,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <State_> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'popStack'/2(fun (X) -> call 'erlang':'=:='(X, apply 'LytProperty'/0()), _Pc0) in apply _HashF(State_)
     end
-      <{'TokLowerName', 'Nothing', "class"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_HashF> = fun (_Mf0) -> apply 'insertDefault'/1(_Mf0) in apply _HashF(State) of
       <State_ = {'Tuple', Stk_, _W0}> when 'true' ->
         case apply 'isTopDecl'/2(TokPos, Stk_) of
@@ -177,7 +177,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <State_> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'popStack'/2(fun (X) -> call 'erlang':'=:='(X, apply 'LytProperty'/0()), _Pc0) in apply _HashF(State_)
     end
-      <{'TokLowerName', 'Nothing', "where"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case Stack of
       <[{'Tuple', _W0, 'LytTopDeclHead'} | Stk_]> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertStart'/2(apply 'LytWhere'/0(), _Pc0) in apply _HashF(let <_HashF> = fun (_Pc0) -> apply 'insertToken'/2(Src, _Pc0) in apply _HashF(call 'Data.Tuple':'Tuple'(Stk_, call 'Data.Tuple':'snd'(State))))
@@ -186,7 +186,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <_W0> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertStart'/2(apply 'LytWhere'/0(), _Pc0) in apply _HashF(let <_HashF> = fun (_Pc0) -> apply 'insertToken'/2(Src, _Pc0) in apply _HashF(let <_HashF> = apply 'collapse'/1(fun (_Mf0, _Mf1) -> apply 'whereP'/2(_Mf0, _Mf1)) in apply _HashF(State)))
     end
-      <{'TokLowerName', 'Nothing', "in"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_Oa0> = apply 'collapse'/1(fun (_Mf0, _Mf1) -> apply 'inP'/2(_Mf0, _Mf1))
       in apply _Oa0(State) of
       <{'Tuple', [{'Tuple', Pos1, 'LytLetStmt'} | [{'Tuple', Pos2, 'LytAdo'} | Stk_]], Acc_}> when 'true' ->
@@ -199,15 +199,15 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <_W0> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'popStack'/2(fun (X) -> call 'erlang':'=:='(X, apply 'LytProperty'/0()), _Pc0) in apply _HashF(let <_HashF> = fun (_Mf0) -> apply 'insertDefault'/1(_Mf0) in apply _HashF(State))
     end
-      <{'TokLowerName', 'Nothing', "let"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertKwProperty'/2(fun (_Mf0) -> apply 'letNext'/1(_Mf0), _Pc0) in apply _HashF(State)
-      <{'TokLowerName', _W0, "do"}> when 'true' ->
+      <{'TokLowerName', _W0, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertKwProperty'/2(fun (_Pc0) -> apply 'insertStart'/2(apply 'LytDo'/0(), _Pc0), _Pc0) in apply _HashF(State)
-      <{'TokLowerName', _W0, "ado"}> when 'true' ->
+      <{'TokLowerName', _W0, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertKwProperty'/2(fun (_Pc0) -> apply 'insertStart'/2(apply 'LytAdo'/0(), _Pc0), _Pc0) in apply _HashF(State)
-      <{'TokLowerName', 'Nothing', "case"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertKwProperty'/2(fun (_Pc0) -> apply 'pushStack'/3(TokPos, apply 'LytCase'/0(), _Pc0), _Pc0) in apply _HashF(State)
-      <{'TokLowerName', 'Nothing', "of"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_Oa0> = apply 'collapse'/1(fun (_Mf0, _Mf1) -> apply 'indentedP'/2(_Mf0, _Mf1))
       in apply _Oa0(State) of
       <{'Tuple', [{'Tuple', _W0, 'LytCase'} | Stk_], Acc_}> when 'true' ->
@@ -215,16 +215,16 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <State_> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'popStack'/2(fun (X) -> call 'erlang':'=:='(X, apply 'LytProperty'/0()), _Pc0) in apply _HashF(let <_HashF> = fun (_Mf0) -> apply 'insertDefault'/1(_Mf0) in apply _HashF(State_))
     end
-      <{'TokLowerName', 'Nothing', "if"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertKwProperty'/2(fun (_Pc0) -> apply 'pushStack'/3(TokPos, apply 'LytIf'/0(), _Pc0), _Pc0) in apply _HashF(State)
-      <{'TokLowerName', 'Nothing', "then"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_HashF> = apply 'collapse'/1(fun (_Mf0, _Mf1) -> apply 'indentedP'/2(_Mf0, _Mf1)) in apply _HashF(State) of
       <{'Tuple', [{'Tuple', _W0, 'LytIf'} | Stk_], Acc_}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'pushStack'/3(TokPos, apply 'LytThen'/0(), _Pc0) in apply _HashF(let <_HashF> = fun (_Pc0) -> apply 'insertToken'/2(Src, _Pc0) in apply _HashF(call 'Data.Tuple':'Tuple'(Stk_, Acc_)))
       <_W0> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'popStack'/2(fun (X) -> call 'erlang':'=:='(X, apply 'LytProperty'/0()), _Pc0) in apply _HashF(let <_HashF> = fun (_Mf0) -> apply 'insertDefault'/1(_Mf0) in apply _HashF(State))
     end
-      <{'TokLowerName', 'Nothing', "else"}> when 'true' ->
+      <{'TokLowerName', 'Nothing', #{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         case let <_HashF> = apply 'collapse'/1(fun (_Mf0, _Mf1) -> apply 'indentedP'/2(_Mf0, _Mf1)) in apply _HashF(State) of
       <{'Tuple', [{'Tuple', _W0, 'LytThen'} | Stk_], Acc_}> when 'true' ->
         let <_HashF> = fun (_Pc0) -> apply 'insertToken'/2(Src, _Pc0) in apply _HashF(call 'Data.Tuple':'Tuple'(Stk_, Acc_))
@@ -369,7 +369,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       fun (_Pc0) -> apply 'insertToken'/2(apply 'lytToken'/2(TokPos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(Indent)), _Pc0)
        'insertToken'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
-        <{Token, {'Tuple', Stk, Acc}}> when 'true' -> call 'Data.Tuple':'Tuple'(Stk, call 'erlang':'++'(Acc, [call 'Data.Tuple':'Tuple'(Token, Stk) | []]))
+        <{Token, {'Tuple', Stk, Acc}}> when 'true' -> call 'Data.Tuple':'Tuple'(Stk, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [call 'Data.Tuple':'Tuple'(Token, Stk) | []]))
       end
        'pushStack'/3 = fun (_L0, _L1, _L2) ->
       case {_L0, _L1, _L2} of
@@ -391,7 +391,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <{'Tuple', [{'Tuple', LytPos, Lyt} | Stk_], Acc}> when 'true' ->
         case apply P(LytPos, Lyt) of
       <'true'> when 'true' -> apply 'go'/1(let <_DollarF> = call 'Data.Tuple':'Tuple'(Stk_) in apply _DollarF(case apply 'isIndented'/1(Lyt) of
-      <'true'> when 'true' -> call 'erlang':'++'(Acc, [call 'Data.Tuple':'Tuple'(apply 'lytToken'/2(TokPos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(call 'maps':'get'('column', LytPos))), Stk_) | []])
+      <'true'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [call 'Data.Tuple':'Tuple'(apply 'lytToken'/2(TokPos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(call 'maps':'get'('column', LytPos))), Stk_) | []])
       <'false'> when 'true' -> Acc
     end))
       <'false'> when 'true' -> State

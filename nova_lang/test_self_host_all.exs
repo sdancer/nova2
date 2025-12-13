@@ -123,10 +123,9 @@ compile_file = fn {path, expected_name} ->
 
   case File.read(full_path) do
     {:ok, source} ->
-      source_charlist = String.to_charlist(source)
-
-      # Parse using self-hosted compiler
-      case apply(:"Nova.Compiler.CstPipeline", :parseModuleCst, [source_charlist]) do
+      # Strings are now binaries in the self-hosted compiler
+      # Pass the binary directly, not a charlist
+      case apply(:"Nova.Compiler.CstPipeline", :parseModuleCst, [source]) do
         {:Left, error} ->
           IO.puts("PARSE ERROR")
           {:error, expected_name, {:parse, error}}
@@ -135,7 +134,8 @@ compile_file = fn {path, expected_name} ->
           # Generate Core Erlang
           try do
             code = apply(:"Nova.Compiler.CodeGenCoreErlang", :genModule, [mod])
-            code_str = List.to_string(code)
+            # code is now a binary (string) directly, not a charlist
+            code_str = if is_binary(code), do: code, else: List.to_string(code)
             IO.puts("OK (#{String.length(code_str)} chars)")
             {:ok, expected_name, code_str}
           rescue
