@@ -5,11 +5,17 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array as Array
+import Data.Char as Char
+import Data.List (List)
+import Data.List as List
 import Data.String as String
 import Data.Json as Json
+import Data.Tuple (Tuple(..))
 import OTP.PersistentTerm as PT
 import Nova.Eval as Eval
 import Nova.NamespaceService as NS
+import Nova.Compiler.CstPipeline as Pipeline
+import Nova.Compiler.Ast as Ast
 
 -- | Global state key
 stateKey :: String
@@ -52,6 +58,314 @@ foreign import getNamespaceDecls :: String -> Array NS.ManagedDecl
 -- | Add a declaration
 foreign import addDecl :: String -> String -> String -> NS.DeclKind -> Either String String
   = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDecl'(St, $0, $1, $2, $3)"
+
+-- ============================================================================
+-- Module Import Functions
+-- ============================================================================
+
+-- | Import a PureScript module source into the namespace service
+-- | Parses the source, creates namespace, and adds each declaration
+importModule :: String -> Either String { moduleName :: String, declCount :: Int }
+importModule source =
+  case Pipeline.parseModuleCst source of
+    Left err -> Left ("Parse error: " <> err)
+    Right mod ->
+      let modName = mod.name
+          _ns = createNamespace modName
+          results = importDeclarations modName mod.declarations
+          successCount = countSuccesses results
+      in Right { moduleName: modName, declCount: successCount }
+
+-- | Import a list of declarations into a namespace
+importDeclarations :: String -> List Ast.Declaration -> Array (Either String String)
+importDeclarations namespace decls =
+  Array.fromFoldable (List.mapMaybe (importDeclaration namespace) decls)
+
+-- | Import a single declaration, returns Nothing for imports/type sigs (handled with functions)
+importDeclaration :: String -> Ast.Declaration -> Maybe (Either String String)
+importDeclaration namespace decl =
+  case decl of
+    Ast.DeclFunction f ->
+      let src = renderFunction f
+      in Just (addDecl namespace f.name src NS.FunctionDecl)
+    Ast.DeclDataType d ->
+      let src = renderDataType d
+      in Just (addDecl namespace d.name src NS.DatatypeDecl)
+    Ast.DeclNewtype n ->
+      let src = renderNewtype n
+      in Just (addDecl namespace n.name src NS.DatatypeDecl)
+    Ast.DeclTypeAlias a ->
+      let src = renderTypeAlias a
+      in Just (addDecl namespace a.name src NS.TypeAliasDecl)
+    Ast.DeclForeignImport f ->
+      let src = renderForeign f
+      in Just (addDecl namespace f.functionName src NS.ForeignDecl)
+    Ast.DeclTypeClass c ->
+      let src = renderClass c
+      in Just (addDecl namespace c.name src NS.DatatypeDecl)
+    -- Skip imports, type signatures (merged with functions), instances, infix
+    _ -> Nothing
+
+-- | Count successful imports
+countSuccesses :: Array (Either String String) -> Int
+countSuccesses arr = Array.length (Array.filter isRight arr)
+  where
+    isRight (Right _) = true
+    isRight (Left _) = false
+
+-- ============================================================================
+-- Declaration Renderers (using actual Ast types)
+-- ============================================================================
+
+-- | Render a function declaration to source
+renderFunction :: Ast.FunctionDeclaration -> String
+renderFunction f =
+  let sigPart = case f.typeSignature of
+        Just sig -> f.name <> " :: " <> renderTypeExpr sig.ty <> "\n"
+        Nothing -> ""
+      params = String.joinWith " " (Array.fromFoldable (List.map renderPattern f.parameters))
+      paramPart = if params == "" then "" else " " <> params
+  in sigPart <> f.name <> paramPart <> " = " <> renderExpr f.body
+
+-- | Render a data type to source
+renderDataType :: Ast.DataType -> String
+renderDataType d =
+  let vars = String.joinWith " " (Array.fromFoldable d.typeVars)
+      varPart = if vars == "" then "" else " " <> vars
+      ctors = String.joinWith " | " (Array.fromFoldable (List.map renderDataCtor d.constructors))
+  in "data " <> d.name <> varPart <> " = " <> ctors
+
+-- | Render a data constructor (DataField has label and ty)
+renderDataCtor :: Ast.DataConstructor -> String
+renderDataCtor ctor =
+  let fields = String.joinWith " " (Array.fromFoldable (List.map (\df -> renderTypeExpr df.ty) ctor.fields))
+  in if fields == "" then ctor.name else ctor.name <> " " <> fields
+
+-- | Render a newtype to source
+renderNewtype :: Ast.NewtypeDecl -> String
+renderNewtype n =
+  let vars = String.joinWith " " (Array.fromFoldable n.typeVars)
+      varPart = if vars == "" then "" else " " <> vars
+  in "newtype " <> n.name <> varPart <> " = " <> n.constructor <> " " <> renderTypeExpr n.wrappedType
+
+-- | Render a type alias to source
+renderTypeAlias :: Ast.TypeAlias -> String
+renderTypeAlias a =
+  let vars = String.joinWith " " (Array.fromFoldable a.typeVars)
+      varPart = if vars == "" then "" else " " <> vars
+  in "type " <> a.name <> varPart <> " = " <> renderTypeExpr a.ty
+
+-- | Render a foreign import to source
+renderForeign :: Ast.ForeignImport -> String
+renderForeign f =
+  "foreign import " <> f.functionName <> " :: " <> renderTypeExpr f.typeSignature
+
+-- | Render a type class to source
+renderClass :: Ast.TypeClass -> String
+renderClass c =
+  let vars = String.joinWith " " (Array.fromFoldable c.typeVars)
+      methods = String.joinWith "\n  " (Array.fromFoldable (List.map renderMethodSig c.methods))
+  in "class " <> c.name <> " " <> vars <> " where\n  " <> methods
+
+-- | Render a method signature
+renderMethodSig :: Ast.TypeSignature -> String
+renderMethodSig sig = sig.name <> " :: " <> renderTypeExpr sig.ty
+
+-- | Render a type expression to source (using actual Ast.TypeExpr)
+renderTypeExpr :: Ast.TypeExpr -> String
+renderTypeExpr ty = case ty of
+  Ast.TyExprCon name -> name
+  Ast.TyExprVar name -> name
+  Ast.TyExprApp t1 t2 -> renderTypeExpr t1 <> " " <> wrapTypeExpr t2
+  Ast.TyExprArrow t1 t2 -> wrapTypeExpr t1 <> " -> " <> renderTypeExpr t2
+  Ast.TyExprRecord fields maybeRow ->
+    let fieldStr = renderRecordTypeFields fields
+        rowStr = case maybeRow of
+          Nothing -> ""
+          Just r -> " | " <> r
+    in "{ " <> fieldStr <> rowStr <> " }"
+  Ast.TyExprForAll vars ty' ->
+    "forall " <> String.joinWith " " (Array.fromFoldable vars) <> ". " <> renderTypeExpr ty'
+  Ast.TyExprConstrained constraints ty' ->
+    renderConstraints constraints <> " => " <> renderTypeExpr ty'
+  Ast.TyExprParens t -> "(" <> renderTypeExpr t <> ")"
+  Ast.TyExprTuple tys ->
+    "(" <> String.joinWith ", " (Array.fromFoldable (List.map renderTypeExpr tys)) <> ")"
+
+-- | Wrap type expression in parens if needed
+wrapTypeExpr :: Ast.TypeExpr -> String
+wrapTypeExpr ty = case ty of
+  Ast.TyExprApp _ _ -> "(" <> renderTypeExpr ty <> ")"
+  Ast.TyExprArrow _ _ -> "(" <> renderTypeExpr ty <> ")"
+  _ -> renderTypeExpr ty
+
+-- | Render record type fields (List (Tuple String TypeExpr))
+renderRecordTypeFields :: List (Tuple String Ast.TypeExpr) -> String
+renderRecordTypeFields fields =
+  String.joinWith ", " (Array.fromFoldable (List.map renderTupleField fields))
+  where
+    renderTupleField (Tuple name t) = name <> " :: " <> renderTypeExpr t
+
+-- | Render constraints
+renderConstraints :: List Ast.Constraint -> String
+renderConstraints cs =
+  let rendered = Array.fromFoldable (List.map renderConstraint cs)
+  in if Array.length rendered == 1
+     then fromMaybe "" (Array.head rendered)
+     else "(" <> String.joinWith ", " rendered <> ")"
+
+-- | Render a single constraint (types not args)
+renderConstraint :: Ast.Constraint -> String
+renderConstraint c = c.className <> " " <> String.joinWith " " (Array.fromFoldable (List.map wrapTypeExpr c.types))
+
+-- | Render a pattern (using actual Ast.Pattern)
+renderPattern :: Ast.Pattern -> String
+renderPattern pat = case pat of
+  Ast.PatVar name -> name
+  Ast.PatWildcard -> "_"
+  Ast.PatLit lit -> renderLiteral lit
+  Ast.PatCon name pats ->
+    let args = String.joinWith " " (Array.fromFoldable (List.map wrapPattern pats))
+    in if args == "" then name else "(" <> name <> " " <> args <> ")"
+  Ast.PatRecord fields ->
+    "{ " <> String.joinWith ", " (Array.fromFoldable (List.map renderPatTupleField fields)) <> " }"
+  Ast.PatList pats ->
+    "[" <> String.joinWith ", " (Array.fromFoldable (List.map renderPattern pats)) <> "]"
+  Ast.PatCons h t -> renderPattern h <> " : " <> renderPattern t
+  Ast.PatAs name pat' -> name <> "@" <> wrapPattern pat'
+  Ast.PatParens p -> "(" <> renderPattern p <> ")"
+
+-- | Wrap pattern in parens if needed
+wrapPattern :: Ast.Pattern -> String
+wrapPattern pat = case pat of
+  Ast.PatCon _ ps -> if List.null ps then renderPattern pat else "(" <> renderPattern pat <> ")"
+  _ -> renderPattern pat
+
+-- | Render pattern record field (Tuple String Pattern)
+renderPatTupleField :: Tuple String Ast.Pattern -> String
+renderPatTupleField (Tuple name p) = name <> ": " <> renderPattern p
+
+-- | Render an expression (using actual Ast.Expr)
+renderExpr :: Ast.Expr -> String
+renderExpr expr = case expr of
+  Ast.ExprVar name -> name
+  Ast.ExprQualified ns name -> ns <> "." <> name
+  Ast.ExprLit lit -> renderLiteral lit
+  Ast.ExprApp e1 e2 -> renderExpr e1 <> " " <> wrapExpr e2
+  Ast.ExprLambda pats body ->
+    "\\" <> String.joinWith " " (Array.fromFoldable (List.map renderPattern pats)) <> " -> " <> renderExpr body
+  Ast.ExprLet binds body ->
+    "let " <> renderBindings binds <> " in " <> renderExpr body
+  Ast.ExprIf cond t f ->
+    "if " <> renderExpr cond <> " then " <> renderExpr t <> " else " <> renderExpr f
+  Ast.ExprCase e clauses ->
+    "case " <> renderExpr e <> " of " <> renderClauses clauses
+  Ast.ExprDo stmts -> "do " <> renderDoStmts stmts
+  Ast.ExprBinOp op e1 e2 -> renderExpr e1 <> " " <> op <> " " <> renderExpr e2
+  Ast.ExprUnaryOp op e -> op <> renderExpr e
+  Ast.ExprList items ->
+    "[" <> String.joinWith ", " (Array.fromFoldable (List.map renderExpr items)) <> "]"
+  Ast.ExprTuple items ->
+    "(" <> String.joinWith ", " (Array.fromFoldable (List.map renderExpr items)) <> ")"
+  Ast.ExprRecord fields ->
+    "{ " <> String.joinWith ", " (Array.fromFoldable (List.map renderExprTupleField fields)) <> " }"
+  Ast.ExprRecordAccess e field -> renderExpr e <> "." <> field
+  Ast.ExprRecordUpdate e updates ->
+    renderExpr e <> " { " <> String.joinWith ", " (Array.fromFoldable (List.map renderUpdateTuple updates)) <> " }"
+  Ast.ExprTyped e ty -> renderExpr e <> " :: " <> renderTypeExpr ty
+  Ast.ExprParens e -> "(" <> renderExpr e <> ")"
+  Ast.ExprSection s -> "(" <> s <> ")"
+  Ast.ExprSectionLeft e op -> "(" <> renderExpr e <> " " <> op <> ")"
+  Ast.ExprSectionRight op e -> "(" <> op <> " " <> renderExpr e <> ")"
+
+-- | Wrap expression in parens if needed
+wrapExpr :: Ast.Expr -> String
+wrapExpr e = case e of
+  Ast.ExprApp _ _ -> "(" <> renderExpr e <> ")"
+  Ast.ExprLambda _ _ -> "(" <> renderExpr e <> ")"
+  Ast.ExprLet _ _ -> "(" <> renderExpr e <> ")"
+  Ast.ExprCase _ _ -> "(" <> renderExpr e <> ")"
+  Ast.ExprIf _ _ _ -> "(" <> renderExpr e <> ")"
+  Ast.ExprBinOp _ _ _ -> "(" <> renderExpr e <> ")"
+  _ -> renderExpr e
+
+-- | Render let bindings (List LetBind)
+renderBindings :: List Ast.LetBind -> String
+renderBindings binds =
+  String.joinWith "; " (Array.fromFoldable (List.map renderBinding binds))
+
+-- | Render a single let binding (LetBind is a record)
+renderBinding :: Ast.LetBind -> String
+renderBinding bind =
+  renderPattern bind.pattern <> " = " <> renderExpr bind.value
+
+-- | Render case clauses (List CaseClause)
+renderClauses :: List Ast.CaseClause -> String
+renderClauses clauses =
+  String.joinWith "; " (Array.fromFoldable (List.map renderClause clauses))
+
+-- | Render a single case clause
+renderClause :: Ast.CaseClause -> String
+renderClause clause =
+  let guardPart = case clause.guard of
+        Nothing -> ""
+        Just g -> " | " <> renderExpr g
+  in renderPattern clause.pattern <> guardPart <> " -> " <> renderExpr clause.body
+
+-- | Render do statements
+renderDoStmts :: List Ast.DoStatement -> String
+renderDoStmts stmts =
+  String.joinWith "; " (Array.fromFoldable (List.map renderDoStmt stmts))
+
+-- | Render a single do statement
+renderDoStmt :: Ast.DoStatement -> String
+renderDoStmt stmt = case stmt of
+  Ast.DoLet binds -> "let " <> renderBindings binds
+  Ast.DoBind pat e -> renderPattern pat <> " <- " <> renderExpr e
+  Ast.DoExpr e -> renderExpr e
+
+-- | Render expression record field (Tuple String Expr)
+renderExprTupleField :: Tuple String Ast.Expr -> String
+renderExprTupleField (Tuple name v) = name <> ": " <> renderExpr v
+
+-- | Render record update (Tuple String Expr)
+renderUpdateTuple :: Tuple String Ast.Expr -> String
+renderUpdateTuple (Tuple name v) = name <> " = " <> renderExpr v
+
+-- | Render a literal
+renderLiteral :: Ast.Literal -> String
+renderLiteral lit = case lit of
+  Ast.LitInt n -> show n
+  Ast.LitNumber n -> show n
+  Ast.LitString s -> "\"" <> escapeString s <> "\""
+  Ast.LitChar c -> "'" <> String.singleton (Char.toCharCode c) <> "'"
+  Ast.LitBool b -> if b then "true" else "false"
+
+-- | Escape string for rendering
+escapeString :: String -> String
+escapeString s = s -- TODO: proper escaping
+
+-- | Read a file from the filesystem
+foreign import readFile :: String -> Maybe String
+  = "case call 'file':'read_file'($0) of <{'ok', Content}> when 'true' -> {'Just', Content} <_> when 'true' -> 'Nothing' end"
+
+-- | Import a module from a file path
+importFile :: String -> Either String { moduleName :: String, declCount :: Int }
+importFile path =
+  case readFile path of
+    Nothing -> Left ("Cannot read file: " <> path)
+    Just source -> importModule source
+
+-- | Import all .purs files from a directory (non-recursive)
+-- | Returns array of results
+foreign import listPursFiles :: String -> Array String
+  = "let <Pattern> = call 'erlang':'iolist_to_binary'([$0, #{}#, [42,46,112,117,114,115]]) in call 'filelib':'wildcard'(Pattern)"
+
+-- | Import all library modules from a directory
+importDirectory :: String -> Array (Either String { moduleName :: String, declCount :: Int })
+importDirectory dir =
+  let files = listPursFiles dir
+  in Array.map importFile files
 
 -- | Start the web server on a given port
 -- Uses Nova.HTTPServer Elixir wrapper

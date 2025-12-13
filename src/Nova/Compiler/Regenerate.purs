@@ -315,29 +315,61 @@ compileSourceModules fs cfg libRegistry sortedPaths =
                  }
 
 -- | Main entry point: regenerate all compiler modules
+-- | Combines lib/ and src/ files into one dependency graph and sorts topologically
 regenerate :: FileSystem -> RegenerateConfig -> RegenerateResult
 regenerate fs cfg =
   let -- Find all source files (lib/** and src/**)
       libFiles = fs.listFiles cfg.libBase ".purs"
       srcFiles = fs.listFiles cfg.srcBase ".purs"
 
-      -- Build dependency graphs
-      libDeps = buildDependencyGraph fs cfg libFiles true
-      srcDeps = buildDependencyGraph fs cfg srcFiles false
+      -- Combine all files into one list
+      allFiles = libFiles <> srcFiles
 
-      -- Sort topologically
-      sortedLibModules = topologicalSort libDeps
-      sortedSrcModules = topologicalSort srcDeps
+      -- Build ONE combined dependency graph for all files
+      combinedDeps = buildDependencyGraph fs cfg allFiles false
 
-      -- Compile library modules first
-      Tuple libRegistry libLogs = compileLibraryModules fs cfg sortedLibModules
+      -- Sort topologically - dependencies come before dependents
+      sortedModules = topologicalSort combinedDeps
 
-      -- Compile source modules
-      Tuple srcCount srcLogs = compileSourceModules fs cfg libRegistry sortedSrcModules
+      -- Compile all modules in order, building registry as we go
+      Tuple count logs = compileAllModules fs cfg sortedModules
   in { success: true
-     , modulesCompiled: srcCount + Array.length sortedLibModules
-     , logs: libLogs <> srcLogs
+     , modulesCompiled: count
+     , logs: logs
      }
+
+-- | Compile all modules (lib and src combined), building up registry incrementally
+compileAllModules :: FileSystem -> RegenerateConfig -> Array String -> Tuple Int (Array LogEntry)
+compileAllModules fs cfg sortedPaths =
+  let initial = { registry: Types.registerModule Types.emptyRegistry "Prelude" Types.preludeExports, count: 0, logs: [] }
+      result = foldl (compileOneModule fs cfg) initial sortedPaths
+  in Tuple result.count result.logs
+  where
+    compileOneModule :: FileSystem -> RegenerateConfig -> { registry :: Types.ModuleRegistry, count :: Int, logs :: Array LogEntry } -> String -> { registry :: Types.ModuleRegistry, count :: Int, logs :: Array LogEntry }
+    compileOneModule fs' cfg' acc path =
+      case fs'.readFile path of
+        Nothing ->
+          acc { logs = Array.snoc acc.logs (LogError ("Cannot read: " <> path)) }
+        Just source ->
+          let fullModName = getModuleName cfg' path
+          in case parseAndCheckModule acc.registry source of
+            Left err ->
+              acc { logs = Array.snoc acc.logs (LogError (fullModName <> ": " <> err)) }
+            Right result ->
+              let code = CodeGen.genModule result.mod
+                  registry' = Types.registerModule acc.registry fullModName result.exports
+                  -- Convert "Nova.Compiler.Ast" to "Nova/Compiler/Ast.core"
+                  modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") fullModName
+                  outputFile = cfg'.outputDir <> modPath <> ".core"
+                  targetFile = cfg'.targetDir <> modPath <> ".core"
+                  _written1 = fs'.writeFile outputFile code
+                  _written2 = fs'.writeFile targetFile code
+                  lineCount = Array.length (String.split (String.Pattern "\n") code)
+                  logMsg = "Compiled " <> fullModName <> " (" <> show lineCount <> " lines)"
+              in { registry: registry'
+                 , count: acc.count + 1
+                 , logs: Array.snoc acc.logs (LogInfo logMsg)
+                 }
 
 -- ============================================================================
 -- Logging Helpers
