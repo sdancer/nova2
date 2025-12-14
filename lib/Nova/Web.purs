@@ -98,20 +98,51 @@ importModule source =
       in Right { moduleName: modName, declCount: successCount }
 
 -- | Import a list of declarations into a namespace
+-- | Groups multi-clause functions together to preserve pattern match order
 importDeclarations :: String -> List Ast.Declaration -> Array (Either String String)
 importDeclarations namespace decls =
-  Array.fromFoldable (List.mapMaybe (importDeclaration namespace) decls)
+  let -- Separate functions from other declarations
+      funcs = List.mapMaybe getFuncDecl decls
+      others = List.filter (not <<< isFuncDecl) decls
+      -- Group functions by name, preserving order
+      groupedFuncs = groupFunctionsByName funcs
+      -- Import grouped functions
+      funcResults = Array.map (importGroupedFunction namespace) groupedFuncs
+      -- Import other declarations
+      otherResults = Array.fromFoldable (List.mapMaybe (importOtherDecl namespace) others)
+  in funcResults <> otherResults
 
--- | Import a single declaration, returns Nothing for imports/type sigs (handled with functions)
-importDeclaration :: String -> Ast.Declaration -> Maybe (Either String String)
-importDeclaration namespace decl =
+-- | Extract function declaration if present
+getFuncDecl :: Ast.Declaration -> Maybe Ast.FunctionDeclaration
+getFuncDecl (Ast.DeclFunction f) = Just f
+getFuncDecl _ = Nothing
+
+-- | Check if declaration is a function
+isFuncDecl :: Ast.Declaration -> Boolean
+isFuncDecl (Ast.DeclFunction _) = true
+isFuncDecl _ = false
+
+-- | Group function clauses by name, preserving order within each group
+-- | Returns array of {name, clauses, typeSig} records
+groupFunctionsByName :: List Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
+groupFunctionsByName funcs = groupFunctionsImpl (Array.fromFoldable funcs)
+
+-- | FFI to group functions - preserves order within groups
+foreign import groupFunctionsImpl :: Array Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
+  = "let <Groups> = call 'lists':'foldl'(fun (F, Acc) -> let <Name> = call 'maps':'get'('name', F) in let <Sig> = call 'maps':'get'('typeSignature', F) in case call 'lists':'keyfind'(Name, 1, Acc) of <'false'> when 'true' -> [{Name, [F], Sig} | Acc] <{_, Clauses, OldSig}> when 'true' -> let <NewSig> = case OldSig of <'Nothing'> when 'true' -> Sig <S> when 'true' -> S end in call 'lists':'keyreplace'(Name, 1, Acc, {Name, Clauses ++ [F], NewSig}) end, [], $0) in call 'lists':'map'(fun ({N, Cs, S}) -> let <SigStr> = case S of <'Nothing'> when 'true' -> 'Nothing' <{'Just', Sig}> when 'true' -> {'Just', apply 'renderTypeExpr'/1(call 'maps':'get'('ty', Sig))} end in #{'name' => N, 'clauses' => Cs, 'typeSig' => SigStr}#, call 'lists':'reverse'(Groups))"
+
+-- | Import a grouped function (all clauses combined)
+importGroupedFunction :: String -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String } -> Either String String
+importGroupedFunction namespace group =
+  let -- Render all clauses in order
+      clauseTexts = Array.map renderFunctionBody group.clauses
+      src = String.joinWith "\n" clauseTexts
+  in addDeclWithType namespace group.name src NS.FunctionDecl group.typeSig
+
+-- | Import non-function declarations
+importOtherDecl :: String -> Ast.Declaration -> Maybe (Either String String)
+importOtherDecl namespace decl =
   case decl of
-    Ast.DeclFunction f ->
-      let src = renderFunctionBody f
-          typeSig = case f.typeSignature of
-            Just sig -> Just (renderTypeExpr sig.ty)
-            Nothing -> Nothing
-      in Just (addDeclWithType namespace f.name src NS.FunctionDecl typeSig)
     Ast.DeclDataType d ->
       let src = renderDataType d
           typeSig = Just (renderDataTypeSig d)
@@ -132,7 +163,7 @@ importDeclaration namespace decl =
       let src = renderClass c
           typeSig = Just ("class " <> c.name)
       in Just (addDeclWithType namespace c.name src NS.DatatypeDecl typeSig)
-    -- Skip imports, type signatures (merged with functions), instances, infix
+    -- Skip imports, type signatures (merged with functions), instances, infix, functions
     _ -> Nothing
 
 -- | Count successful imports

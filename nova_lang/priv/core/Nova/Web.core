@@ -1,4 +1,4 @@
-module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 'importModule'/1, 'importDeclarations'/2, 'importDeclaration'/2, 'countSuccesses'/1, 'renderFunction'/1, 'renderFunctionBody'/1, 'renderDataType'/1, 'renderDataTypeSig'/1, 'renderDataCtor'/1, 'renderNewtype'/1, 'renderNewtypeSig'/1, 'renderTypeAlias'/1, 'renderForeign'/1, 'renderForeignBody'/1, 'renderClass'/1, 'renderMethodSig'/1, 'renderTypeExpr'/1, 'wrapTypeExpr'/1, 'renderRecordTypeFields'/1, 'renderConstraints'/1, 'renderConstraint'/1, 'renderPattern'/1, 'wrapPattern'/1, 'renderPatTupleField'/1, 'renderExpr'/1, 'wrapExpr'/1, 'renderBindings'/1, 'renderBinding'/1, 'renderClauses'/1, 'renderClause'/1, 'renderDoStmts'/1, 'renderDoStmt'/1, 'renderExprTupleField'/1, 'renderUpdateTuple'/1, 'renderLiteral'/1, 'escapeString'/1, 'importFile'/1, 'importDirectory'/1, 'startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, 'extractJsonField'/2, 'handleEvalPost'/1, 'handleCreateNamespace'/1, 'handleDeleteNamespace'/1, 'handleAddDecl'/1, 'styles'/0, 'htmlPage'/2, 'indexPage'/0, 'namespacesPage'/1, 'renderNsItem'/1, 'namespaceDetailPage'/1, 'sortDeclarations'/1, 'kindEq'/2, 'renderDeclItem'/1, 'evalPage'/0, 'notFoundPage'/0, 'listPursFilesRecursive'/1, 'getState'/1, 'listNamespaces'/1, 'namespaceExists'/1, 'createNamespace'/1, 'deleteNamespace'/1, 'getNamespaceDecls'/1, 'addDecl'/4, 'addDeclWithType'/5, 'showInt'/1, 'showNum'/1, 'readFile'/1, 'listPursFiles'/1, 'startServerImpl'/1, 'escapeJson'/1, 'sortByNameImpl'/1, 'escapeHtml'/1, 'initServiceIfNeeded'/0, 'importAllFromDir'/0, 'importModule'/0, 'importDeclarations'/0, 'importDeclarations'/1, 'importDeclaration'/0, 'importDeclaration'/1, 'countSuccesses'/0, 'renderFunction'/0, 'renderFunctionBody'/0, 'renderDataType'/0, 'renderDataTypeSig'/0, 'renderDataCtor'/0, 'renderNewtype'/0, 'renderNewtypeSig'/0, 'renderTypeAlias'/0, 'renderForeign'/0, 'renderForeignBody'/0, 'renderClass'/0, 'renderMethodSig'/0, 'renderTypeExpr'/0, 'wrapTypeExpr'/0, 'renderRecordTypeFields'/0, 'renderConstraints'/0, 'renderConstraint'/0, 'renderPattern'/0, 'wrapPattern'/0, 'renderPatTupleField'/0, 'renderExpr'/0, 'wrapExpr'/0, 'renderBindings'/0, 'renderBinding'/0, 'renderClauses'/0, 'renderClause'/0, 'renderDoStmts'/0, 'renderDoStmt'/0, 'renderExprTupleField'/0, 'renderUpdateTuple'/0, 'renderLiteral'/0, 'escapeString'/0, 'importFile'/0, 'importDirectory'/0, 'startServer'/0, 'handle'/0, 'handle'/1, 'handle'/2, 'handleGet'/0, 'handlePost'/0, 'handlePost'/1, 'extractJsonField'/0, 'extractJsonField'/1, 'handleEvalPost'/0, 'handleCreateNamespace'/0, 'handleDeleteNamespace'/0, 'handleAddDecl'/0, 'htmlPage'/0, 'htmlPage'/1, 'namespacesPage'/0, 'renderNsItem'/0, 'namespaceDetailPage'/0, 'sortDeclarations'/0, 'kindEq'/0, 'kindEq'/1, 'renderDeclItem'/0, 'listPursFilesRecursive'/0, 'getState'/0, 'listNamespaces'/0, 'namespaceExists'/0, 'createNamespace'/0, 'deleteNamespace'/0, 'getNamespaceDecls'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'showInt'/0, 'showNum'/0, 'readFile'/0, 'listPursFiles'/0, 'startServerImpl'/0, 'escapeJson'/0, 'sortByNameImpl'/0, 'escapeHtml'/0]
+module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 'importModule'/1, 'importDeclarations'/2, 'getFuncDecl'/1, 'isFuncDecl'/1, 'groupFunctionsByName'/1, 'importGroupedFunction'/2, 'importOtherDecl'/2, 'countSuccesses'/1, 'renderFunction'/1, 'renderFunctionBody'/1, 'renderDataType'/1, 'renderDataTypeSig'/1, 'renderDataCtor'/1, 'renderNewtype'/1, 'renderNewtypeSig'/1, 'renderTypeAlias'/1, 'renderForeign'/1, 'renderForeignBody'/1, 'renderClass'/1, 'renderMethodSig'/1, 'renderTypeExpr'/1, 'wrapTypeExpr'/1, 'renderRecordTypeFields'/1, 'renderConstraints'/1, 'renderConstraint'/1, 'renderPattern'/1, 'wrapPattern'/1, 'renderPatTupleField'/1, 'renderExpr'/1, 'wrapExpr'/1, 'renderBindings'/1, 'renderBinding'/1, 'renderClauses'/1, 'renderClause'/1, 'renderDoStmts'/1, 'renderDoStmt'/1, 'renderExprTupleField'/1, 'renderUpdateTuple'/1, 'renderLiteral'/1, 'escapeString'/1, 'importFile'/1, 'importDirectory'/1, 'startServer'/1, 'handle'/3, 'handleGet'/1, 'handlePost'/2, 'extractJsonField'/2, 'handleEvalPost'/1, 'handleCreateNamespace'/1, 'handleDeleteNamespace'/1, 'handleAddDecl'/1, 'styles'/0, 'htmlPage'/2, 'indexPage'/0, 'namespacesPage'/1, 'renderNsItem'/1, 'namespaceDetailPage'/1, 'sortDeclarations'/1, 'kindEq'/2, 'renderDeclItem'/1, 'evalPage'/0, 'notFoundPage'/0, 'listPursFilesRecursive'/1, 'getState'/1, 'listNamespaces'/1, 'namespaceExists'/1, 'createNamespace'/1, 'deleteNamespace'/1, 'getNamespaceDecls'/1, 'addDecl'/4, 'addDeclWithType'/5, 'groupFunctionsImpl'/1, 'showInt'/1, 'showNum'/1, 'readFile'/1, 'listPursFiles'/1, 'startServerImpl'/1, 'escapeJson'/1, 'sortByNameImpl'/1, 'escapeHtml'/1, 'initServiceIfNeeded'/0, 'importAllFromDir'/0, 'importModule'/0, 'importDeclarations'/0, 'importDeclarations'/1, 'getFuncDecl'/0, 'isFuncDecl'/0, 'groupFunctionsByName'/0, 'importGroupedFunction'/0, 'importGroupedFunction'/1, 'importOtherDecl'/0, 'importOtherDecl'/1, 'countSuccesses'/0, 'renderFunction'/0, 'renderFunctionBody'/0, 'renderDataType'/0, 'renderDataTypeSig'/0, 'renderDataCtor'/0, 'renderNewtype'/0, 'renderNewtypeSig'/0, 'renderTypeAlias'/0, 'renderForeign'/0, 'renderForeignBody'/0, 'renderClass'/0, 'renderMethodSig'/0, 'renderTypeExpr'/0, 'wrapTypeExpr'/0, 'renderRecordTypeFields'/0, 'renderConstraints'/0, 'renderConstraint'/0, 'renderPattern'/0, 'wrapPattern'/0, 'renderPatTupleField'/0, 'renderExpr'/0, 'wrapExpr'/0, 'renderBindings'/0, 'renderBinding'/0, 'renderClauses'/0, 'renderClause'/0, 'renderDoStmts'/0, 'renderDoStmt'/0, 'renderExprTupleField'/0, 'renderUpdateTuple'/0, 'renderLiteral'/0, 'escapeString'/0, 'importFile'/0, 'importDirectory'/0, 'startServer'/0, 'handle'/0, 'handle'/1, 'handle'/2, 'handleGet'/0, 'handlePost'/0, 'handlePost'/1, 'extractJsonField'/0, 'extractJsonField'/1, 'handleEvalPost'/0, 'handleCreateNamespace'/0, 'handleDeleteNamespace'/0, 'handleAddDecl'/0, 'htmlPage'/0, 'htmlPage'/1, 'namespacesPage'/0, 'renderNsItem'/0, 'namespaceDetailPage'/0, 'sortDeclarations'/0, 'kindEq'/0, 'kindEq'/1, 'renderDeclItem'/0, 'listPursFilesRecursive'/0, 'getState'/0, 'listNamespaces'/0, 'namespaceExists'/0, 'createNamespace'/0, 'deleteNamespace'/0, 'getNamespaceDecls'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'groupFunctionsImpl'/0, 'showInt'/0, 'showNum'/0, 'readFile'/0, 'listPursFiles'/0, 'startServerImpl'/0, 'escapeJson'/0, 'sortByNameImpl'/0, 'escapeHtml'/0]
   attributes []
 'stateKey'/0 =
   fun () ->
@@ -41,20 +41,44 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
 
 'importDeclarations'/2 =
   fun (Namespace, Decls) ->
-    call 'Data.Array':'fromFoldable'(call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'importDeclaration'/2(Namespace, _Pc0), Decls))
+    let <Funcs> = call 'Data.List':'mapMaybe'(fun (_Mf0) -> apply 'getFuncDecl'/1(_Mf0), Decls)
+      in let <Others> = call 'Data.List':'filter'(let <_cor0> = fun (_Pf0) -> call 'erlang':'not'(_Pf0) in let <_cor1> = fun (_Mf0) -> apply 'isFuncDecl'/1(_Mf0) in fun (_cor2) -> apply _cor0 (apply _cor1 (_cor2)), Decls)
+      in let <GroupedFuncs> = apply 'groupFunctionsByName'/1(Funcs)
+      in let <OtherResults> = call 'Data.Array':'fromFoldable'(call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'importOtherDecl'/2(Namespace, _Pc0), Others))
+      in let <FuncResults> = call 'Data.Array':'map'(fun (_Pc0) -> apply 'importGroupedFunction'/2(Namespace, _Pc0), GroupedFuncs)
+      in call 'Nova.Prelude':'semigroupAppendImpl'(FuncResults, OtherResults)
 
-'importDeclaration'/2 =
-  fun (Namespace, Decl) ->
-    case Decl of
-      <{'DeclFunction', F}> when 'true' ->
-        let <Src> = apply 'renderFunctionBody'/1(F)
-      in let <TypeSig> = case call 'maps':'get'('typeSignature', F) of
-      <{'Just', Sig}> when 'true' ->
-        {'Just', apply 'renderTypeExpr'/1(call 'maps':'get'('ty', Sig))}
-      <'Nothing'> when 'true' ->
+'getFuncDecl'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'DeclFunction', F}}> when 'true' ->
+        {'Just', F}
+      <{_W0}> when 'true' ->
         'Nothing'
     end
-      in {'Just', apply 'addDeclWithType'/5(Namespace, call 'maps':'get'('name', F), Src, call 'Nova.NamespaceService':'FunctionDecl'(), TypeSig)}
+
+'isFuncDecl'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'DeclFunction', _W0}}> when 'true' ->
+        'true'
+      <{_W0}> when 'true' ->
+        'false'
+    end
+
+'groupFunctionsByName'/1 =
+  fun (Funcs) ->
+    apply 'groupFunctionsImpl'/1(call 'Data.Array':'fromFoldable'(Funcs))
+
+'importGroupedFunction'/2 =
+  fun (Namespace, Group) ->
+    let <ClauseTexts> = call 'Data.Array':'map'(fun (_Mf0) -> apply 'renderFunctionBody'/1(_Mf0), call 'maps':'get'('clauses', Group))
+      in let <Src> = call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#, ClauseTexts)
+      in apply 'addDeclWithType'/5(Namespace, call 'maps':'get'('name', Group), Src, call 'Nova.NamespaceService':'FunctionDecl'(), call 'maps':'get'('typeSig', Group))
+
+'importOtherDecl'/2 =
+  fun (Namespace, Decl) ->
+    case Decl of
       <{'DeclDataType', D}> when 'true' ->
         let <Src> = apply 'renderDataType'/1(D)
       in let <TypeSig> = {'Just', apply 'renderDataTypeSig'/1(D)}
@@ -698,6 +722,8 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
 
 'addDeclWithType'/5 = fun (V0, V1, V2, V3, V4) -> let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addDeclWithType'(St, V0, V1, V2, V3, V4)
 
+'groupFunctionsImpl'/1 = fun (V0) -> let <Groups> = call 'lists':'foldl'(fun (F, Acc) -> let <Name> = call 'maps':'get'('name', F) in let <Sig> = call 'maps':'get'('typeSignature', F) in case call 'lists':'keyfind'(Name, 1, Acc) of <'false'> when 'true' -> [{Name, [F], Sig} | Acc] <{_, Clauses, OldSig}> when 'true' -> let <NewSig> = case OldSig of <'Nothing'> when 'true' -> Sig <S> when 'true' -> S end in call 'lists':'keyreplace'(Name, 1, Acc, {Name, Clauses ++ [F], NewSig}) end, [], V0) in call 'lists':'map'(fun ({N, Cs, S}) -> let <SigStr> = case S of <'Nothing'> when 'true' -> 'Nothing' <{'Just', Sig}> when 'true' -> {'Just', apply 'renderTypeExpr'/1(call 'maps':'get'('ty', Sig))} end in #{'name' => N, 'clauses' => Cs, 'typeSig' => SigStr}#, call 'lists':'reverse'(Groups))
+
 'showInt'/1 = fun (V0) -> call 'erlang':'integer_to_binary'(V0)
 
 'showNum'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [V0]))
@@ -746,18 +772,50 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
         apply 'importDeclarations'/2(_A0, _A1)
       in _F0
 
-'importDeclaration'/0 =
+'getFuncDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getFuncDecl'/1(_A0)
+      in _F0
+
+'isFuncDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isFuncDecl'/1(_A0)
+      in _F0
+
+'groupFunctionsByName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'groupFunctionsByName'/1(_A0)
+      in _F0
+
+'importGroupedFunction'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'importDeclaration'/2(_A0, _A1)
+        apply 'importGroupedFunction'/2(_A0, _A1)
       in _F1
       in _F0
 
-'importDeclaration'/1 =
+'importGroupedFunction'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'importDeclaration'/2(_A0, _A1)
+        apply 'importGroupedFunction'/2(_A0, _A1)
+      in _F0
+
+'importOtherDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'importOtherDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'importOtherDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'importOtherDecl'/2(_A0, _A1)
       in _F0
 
 'countSuccesses'/0 =
@@ -1242,6 +1300,12 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
   fun (_A0, _A1, _A2, _A3) ->
     let <_F0> = fun (_A4) ->
         apply 'addDeclWithType'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'groupFunctionsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'groupFunctionsImpl'/1(_A0)
       in _F0
 
 'showInt'/0 =
