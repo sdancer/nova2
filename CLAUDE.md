@@ -20,8 +20,8 @@ Nova Lang: PureScript compiler → Elixir. Self-hosted on BEAM VM.
 ```bash
 npx spago build                    # Build compiler
 npx spago test                     # Run tests
-node scripts/regenerate-purs.js    # Regenerate Elixir output
-cd nova_lang && mix test           # Test compiled output
+node scripts/regenerate-purs.js    # Regenerate Core Erlang output (JS compiler)
+cd nova_lang && mix run regenerate.exs  # Regenerate using BEAM-native compiler
 cd nova_lang && mix run test_self_host_all.exs  # Self-host verification
 ```
 
@@ -30,7 +30,8 @@ cd nova_lang && mix run test_self_host_all.exs  # Self-host verification
 1. `npx spago build` — must pass, zero warnings
 2. `npx spago test` — must pass
 3. `node scripts/regenerate-purs.js` — must succeed (compiler compiles itself)
-4. `cd nova_lang && mix test` — must pass
+4. `cd nova_lang && mix run regenerate.exs` — BEAM-native regenerate (WIP: has type-checker bugs)
+5. `cd nova_lang && mix run test_self_host_all.exs` — must pass (loads modules, runs codegen)
 
 **Self-hosting is the ultimate test.** Output must be byte-for-byte identical. "EXACT MATCH" or "whitespace diff only" = good. Any semantic diff = bug.
 

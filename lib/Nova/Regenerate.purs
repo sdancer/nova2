@@ -145,7 +145,7 @@ foreign import findFilesImpl :: String -> String -> Array String = "letrec 'doFi
 ensureDir :: String -> Unit
 ensureDir dir = ensureDirImpl dir
 
-foreign import ensureDirImpl :: String -> Unit = "do call 'filelib':'ensure_dir'(call 'erlang':'++'($0, \"/\")) 'unit'"
+foreign import ensureDirImpl :: String -> Unit = "do call 'filelib':'ensure_dir'(call 'erlang':'iolist_to_binary'([$0, <<\"/\">>])) 'unit'"
 
 -- | Get directory name
 dirname :: String -> String

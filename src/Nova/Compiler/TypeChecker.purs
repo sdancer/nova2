@@ -1898,8 +1898,8 @@ mergeMultiClauseFunctions decls = goMerge decls []
               numParams = List.length first.parameters
               -- Create fresh parameter names
               paramNames = map (\i -> "__arg" <> intToString i) (List.range 0 (numParams - 1))
-              paramPats = map PatVar paramNames
-              paramVars = map ExprVar paramNames
+              paramPats = map (\n -> PatVar n) paramNames
+              paramVars = map (\n -> ExprVar n) paramNames
               -- Build case clauses from each function clause
               clausesList = List.fromFoldable clauses
               caseClauses = List.mapMaybe (clauseToCaseClause paramVars) clausesList

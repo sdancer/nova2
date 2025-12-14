@@ -2768,8 +2768,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
       call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 1)))
-      in let <ParamPats> = call 'lists':'map'('PatVar', ParamNames)
-      in let <ParamVars> = call 'lists':'map'('ExprVar', ParamNames)
+      in let <ParamPats> = call 'lists':'map'(fun (N) ->
+      {'PatVar', N}, ParamNames)
+      in let <ParamVars> = call 'lists':'map'(fun (N) ->
+      {'ExprVar', N}, ParamNames)
       in let <CaseClauses> = call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'clauseToCaseClause'/2(ParamVars, _Pc0), ClausesList)
       in let <CaseExpr> = case NumParams of
       <0> when 'true' ->

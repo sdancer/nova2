@@ -277,7 +277,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'main'/1, 'runRegenerate'/1, 'log'/
 
 'findFilesImpl'/2 = fun (V0, V1) -> letrec 'doFind'/2 = fun (Dir, Ext) -> let <DirList> = call 'erlang':'binary_to_list'(Dir) in case call 'file':'list_dir'(DirList) of <{'ok', Entries}> when 'true' -> call 'lists':'foldl'(fun (Entry, Acc) -> let <Full> = call 'filename':'join'(DirList, Entry) in let <FullBin> = call 'erlang':'list_to_binary'(Full) in case call 'filelib':'is_dir'(Full) of <'true'> when 'true' -> call 'lists':'append'(Acc, apply 'doFind'/2 (FullBin, Ext)) <'false'> when 'true' -> case call 'lists':'suffix'(call 'erlang':'binary_to_list'(Ext), Entry) of <'true'> when 'true' -> [FullBin|Acc] <'false'> when 'true' -> Acc end end, [], Entries) <{'error', _Reason}> when 'true' -> [] end in apply 'doFind'/2 (V0, V1)
 
-'ensureDirImpl'/1 = fun (V0) -> do call 'filelib':'ensure_dir'(call 'erlang':'++'(V0, "/")) 'unit'
+'ensureDirImpl'/1 = fun (V0) -> do call 'filelib':'ensure_dir'(call 'erlang':'iolist_to_binary'([V0, <<"/">>])) 'unit'
 
 'dirnameImpl'/1 = fun (V0) -> call 'filename':'dirname'(V0)
 
