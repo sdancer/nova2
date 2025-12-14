@@ -125,11 +125,47 @@ isFuncDecl _ = false
 -- | Group function clauses by name, preserving order within each group
 -- | Returns array of {name, clauses, typeSig} records
 groupFunctionsByName :: List Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
-groupFunctionsByName funcs = groupFunctionsImpl (Array.fromFoldable funcs)
+groupFunctionsByName funcs =
+  let -- Fold to group by name, building list of groups in reverse order
+      grouped = List.foldl addToGroup [] funcs
+      -- Reverse to restore original order, and finalize each group
+      finalized = Array.map finalizeGroup (Array.reverse (Array.fromFoldable grouped))
+  in finalized
+  where
+    -- Add a function to the appropriate group
+    addToGroup :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Ast.FunctionDeclaration -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }
+    addToGroup groups func =
+      case findGroup func.name groups of
+        Nothing ->
+          -- New group
+          List.Cons { name: func.name, clauses: List.Cons func List.Nil, sig: func.typeSignature } groups
+        Just { before, group, after } ->
+          -- Add to existing group (append to end to preserve order)
+          let newGroup = group { clauses = List.snoc group.clauses func, sig = case group.sig of
+                Nothing -> func.typeSignature
+                s -> s }
+          in before <> List.Cons newGroup after
 
--- | FFI to group functions - preserves order within groups
-foreign import groupFunctionsImpl :: Array Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
-  = "let <Groups> = call 'lists':'foldl'(fun (F, Acc) -> let <Name> = call 'maps':'get'('name', F) in let <Sig> = call 'maps':'get'('typeSignature', F) in case call 'lists':'keyfind'(Name, 1, Acc) of <'false'> when 'true' -> [{Name, [F], Sig} | Acc] <{_, Clauses, OldSig}> when 'true' -> let <NewSig> = case OldSig of <'Nothing'> when 'true' -> Sig <S> when 'true' -> S end in call 'lists':'keyreplace'(Name, 1, Acc, {Name, call 'erlang':'++'(Clauses, [F]), NewSig}) end, [], $0) in call 'lists':'map'(fun ({N, Cs, S}) -> let <SigStr> = case S of <'Nothing'> when 'true' -> 'Nothing' <{'Just', Sig}> when 'true' -> {'Just', apply 'renderTypeExpr'/1(call 'maps':'get'('ty', Sig))} end in #{'name' => N, 'clauses' => Cs, 'typeSig' => SigStr}#, call 'lists':'reverse'(Groups))"
+    -- Find a group by name, returning the group and surrounding elements
+    findGroup :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
+    findGroup name groups = findGroupHelper name List.Nil groups
+
+    findGroupHelper :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
+    findGroupHelper _ _ List.Nil = Nothing
+    findGroupHelper name before (List.Cons g rest) =
+      if g.name == name
+      then Just { before: List.reverse before, group: g, after: rest }
+      else findGroupHelper name (List.Cons g before) rest
+
+    -- Convert internal group format to output format
+    finalizeGroup :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
+    finalizeGroup g =
+      { name: g.name
+      , clauses: Array.fromFoldable g.clauses
+      , typeSig: case g.sig of
+          Nothing -> Nothing
+          Just sig -> Just (renderTypeExpr sig.ty)
+      }
 
 -- | Import a grouped function (all clauses combined)
 importGroupedFunction :: String -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String } -> Either String String
