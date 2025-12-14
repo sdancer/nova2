@@ -149,3 +149,21 @@ elem :: forall a. Eq a => a -> List a -> Boolean
 elem x xs = elemImpl x xs
 
 foreign import elemImpl :: forall a. a -> List a -> Boolean = "call 'lists':'member'($0, $1)"
+
+-- Zip two lists together
+zip :: forall a b. List a -> List b -> List (Tuple a b)
+zip xs ys = zipImpl xs ys
+
+foreign import zipImpl :: forall a b. List a -> List b -> List (Tuple a b) = "call 'lists':'zipwith'(fun (A, B) -> {'Tuple', A, B}, $0, $1)"
+
+-- Zip with a function
+zipWith :: forall a b c. (a -> b -> c) -> List a -> List b -> List c
+zipWith f xs ys = zipWithImpl f xs ys
+
+foreign import zipWithImpl :: forall a b c. (a -> b -> c) -> List a -> List b -> List c = "call 'lists':'zipwith'(fun (A, B) -> apply $0 (A, B), $1, $2)"
+
+-- Append element to end of list (snoc)
+snoc :: forall a. List a -> a -> List a
+snoc xs x = snocImpl xs x
+
+foreign import snocImpl :: forall a. List a -> a -> List a = "call 'lists':'append'($0, [$1])"

@@ -159,9 +159,9 @@ module 'Data.Map' ['empty'/0, 'findMax'/1, 'findMin'/1, 'fromFoldable'/1, 'isEmp
 
 'toUnfoldableImpl'/1 = fun (V0) -> call 'lists':'map'(fun (_T) -> case _T of <{_K, _V}> when 'true' -> {'Tuple', _K, _V} end, call 'maps':'to_list'(V0))
 
-'unionImpl'/2 = fun (V0, V1) -> call 'maps':'merge'(V0, V1)
+'unionImpl'/2 = fun (V0, V1) -> call 'maps':'merge'(V1, V0)
 
-'unionWithImpl'/3 = fun (V0, V1, V2) -> call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply V0 (V1) in apply F1 (V2), V1, V2)
+'unionWithImpl'/3 = fun (V0, V1, V2) -> call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply V0 (V2) in apply F1 (V1), V1, V0)
 
 'intersectionImpl'/2 = fun (V0, V1) -> call 'maps':'with'(call 'maps':'keys'(V1), V0)
 

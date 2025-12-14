@@ -1,4 +1,4 @@
-module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/1, 'singleton'/1, 'tail'/1, 'toUnfoldable'/1, 'uncons'/1, 'any'/2, 'append'/2, 'cons'/2, 'drop'/2, 'dropWhile'/2, 'elem'/2, 'filter'/2, 'map'/2, 'mapMaybe'/2, 'range'/2, 'take'/2, 'takeWhile'/2, 'foldl'/3, 'foldr'/3, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'nullImpl'/1, 'unconsImpl'/1, 'headImpl'/1, 'tailImpl'/1, 'reverseImpl'/1, 'lengthImpl'/1, 'consImpl'/2, 'singletonImpl'/1, 'appendImpl'/2, 'mapImpl'/2, 'filterImpl'/2, 'foldrImpl'/3, 'foldlImpl'/3, 'takeImpl'/2, 'dropImpl'/2, 'anyImpl'/2, 'mapMaybeImpl'/2, 'takeWhileImpl'/2, 'dropWhileImpl'/2, 'rangeImpl'/2, 'elemImpl'/2, 'fromFoldable'/0, 'head'/0, 'length'/0, 'null'/0, 'reverse'/0, 'singleton'/0, 'tail'/0, 'toUnfoldable'/0, 'uncons'/0, 'any'/0, 'any'/1, 'append'/0, 'append'/1, 'cons'/0, 'cons'/1, 'drop'/0, 'drop'/1, 'dropWhile'/0, 'dropWhile'/1, 'elem'/0, 'elem'/1, 'filter'/0, 'filter'/1, 'map'/0, 'map'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'range'/0, 'range'/1, 'take'/0, 'take'/1, 'takeWhile'/0, 'takeWhile'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'nullImpl'/0, 'unconsImpl'/0, 'headImpl'/0, 'tailImpl'/0, 'reverseImpl'/0, 'lengthImpl'/0, 'consImpl'/0, 'consImpl'/1, 'singletonImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'anyImpl'/0, 'anyImpl'/1, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'takeWhileImpl'/0, 'takeWhileImpl'/1, 'dropWhileImpl'/0, 'dropWhileImpl'/1, 'rangeImpl'/0, 'rangeImpl'/1, 'elemImpl'/0, 'elemImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/1, 'singleton'/1, 'tail'/1, 'toUnfoldable'/1, 'uncons'/1, 'any'/2, 'append'/2, 'cons'/2, 'drop'/2, 'dropWhile'/2, 'elem'/2, 'filter'/2, 'map'/2, 'mapMaybe'/2, 'range'/2, 'snoc'/2, 'take'/2, 'takeWhile'/2, 'zip'/2, 'foldl'/3, 'foldr'/3, 'zipWith'/3, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'nullImpl'/1, 'unconsImpl'/1, 'headImpl'/1, 'tailImpl'/1, 'reverseImpl'/1, 'lengthImpl'/1, 'consImpl'/2, 'singletonImpl'/1, 'appendImpl'/2, 'mapImpl'/2, 'filterImpl'/2, 'foldrImpl'/3, 'foldlImpl'/3, 'takeImpl'/2, 'dropImpl'/2, 'anyImpl'/2, 'mapMaybeImpl'/2, 'takeWhileImpl'/2, 'dropWhileImpl'/2, 'rangeImpl'/2, 'elemImpl'/2, 'zipImpl'/2, 'zipWithImpl'/3, 'snocImpl'/2, 'fromFoldable'/0, 'head'/0, 'length'/0, 'null'/0, 'reverse'/0, 'singleton'/0, 'tail'/0, 'toUnfoldable'/0, 'uncons'/0, 'any'/0, 'any'/1, 'append'/0, 'append'/1, 'cons'/0, 'cons'/1, 'drop'/0, 'drop'/1, 'dropWhile'/0, 'dropWhile'/1, 'elem'/0, 'elem'/1, 'filter'/0, 'filter'/1, 'map'/0, 'map'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'range'/0, 'range'/1, 'snoc'/0, 'snoc'/1, 'take'/0, 'take'/1, 'takeWhile'/0, 'takeWhile'/1, 'zip'/0, 'zip'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'zipWith'/0, 'zipWith'/1, 'zipWith'/2, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'nullImpl'/0, 'unconsImpl'/0, 'headImpl'/0, 'tailImpl'/0, 'reverseImpl'/0, 'lengthImpl'/0, 'consImpl'/0, 'consImpl'/1, 'singletonImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'anyImpl'/0, 'anyImpl'/1, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'takeWhileImpl'/0, 'takeWhileImpl'/1, 'dropWhileImpl'/0, 'dropWhileImpl'/1, 'rangeImpl'/0, 'rangeImpl'/1, 'elemImpl'/0, 'elemImpl'/1, 'zipImpl'/0, 'zipImpl'/1, 'zipWithImpl'/0, 'zipWithImpl'/1, 'zipWithImpl'/2, 'snocImpl'/0, 'snocImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'fromFoldable'/1 =
   fun (Xs) ->
@@ -76,6 +76,10 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
   fun (Start, End) ->
     apply 'rangeImpl'/2(Start, End)
 
+'snoc'/2 =
+  fun (Xs, X) ->
+    apply 'snocImpl'/2(Xs, X)
+
 'take'/2 =
   fun (N, Xs) ->
     apply 'takeImpl'/2(N, Xs)
@@ -84,6 +88,10 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
   fun (F, Xs) ->
     apply 'takeWhileImpl'/2(F, Xs)
 
+'zip'/2 =
+  fun (Xs, Ys) ->
+    apply 'zipImpl'/2(Xs, Ys)
+
 'foldl'/3 =
   fun (F, Acc, Xs) ->
     apply 'foldlImpl'/3(F, Acc, Xs)
@@ -91,6 +99,10 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
 'foldr'/3 =
   fun (F, Acc, Xs) ->
     apply 'foldrImpl'/3(F, Acc, Xs)
+
+'zipWith'/3 =
+  fun (F, Xs, Ys) ->
+    apply 'zipWithImpl'/3(F, Xs, Ys)
 
 'fromFoldableImpl'/1 = fun (V0) -> V0
 
@@ -152,6 +164,12 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
 'rangeImpl'/2 = fun (V0, V1) -> call 'lists':'seq'(V0, V1)
 
 'elemImpl'/2 = fun (V0, V1) -> call 'lists':'member'(V0, V1)
+
+'zipImpl'/2 = fun (V0, V1) -> call 'lists':'zipwith'(fun (A, B) -> {'Tuple', A, B}, V0, V1)
+
+'zipWithImpl'/3 = fun (V0, V1, V2) -> call 'lists':'zipwith'(fun (A, B) -> apply V0 (A, B), V1, V2)
+
+'snocImpl'/2 = fun (V0, V1) -> call 'lists':'append'(V0, [V1])
 
 'fromFoldable'/0 =
   fun () ->
@@ -347,6 +365,20 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
         apply 'range'/2(_A0, _A1)
       in _F0
 
+'snoc'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'snoc'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'snoc'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'snoc'/2(_A0, _A1)
+      in _F0
+
 'take'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -373,6 +405,20 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'takeWhile'/2(_A0, _A1)
+      in _F0
+
+'zip'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'zip'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'zip'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'zip'/2(_A0, _A1)
       in _F0
 
 'foldl'/0 =
@@ -421,6 +467,30 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'foldr'/3(_A0, _A1, _A2)
+      in _F0
+
+'zipWith'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'zipWith'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'zipWith'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'zipWith'/3(_A0, _A1, _A2)
       in _F0
 
 'fromFoldableImpl'/0 =
@@ -691,6 +761,58 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'elemImpl'/2(_A0, _A1)
+      in _F0
+
+'zipImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'zipImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'zipImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'zipImpl'/2(_A0, _A1)
+      in _F0
+
+'zipWithImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'zipWithImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'zipWithImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'zipWithImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'snocImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'snocImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'snocImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'snocImpl'/2(_A0, _A1)
       in _F0
 
 'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.List')

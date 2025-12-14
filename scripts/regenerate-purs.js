@@ -68,6 +68,10 @@ async function main() {
 
   // Convert module name to file path
   function moduleToPath(modName) {
+    // Special case: "Prelude" maps to Nova.Prelude
+    if (modName === 'Prelude') {
+      return config.libBase + 'Nova/Prelude.purs';
+    }
     const relPath = modName.replace(/\./g, '/') + '.purs';
     const libPath = config.libBase + relPath;
     const srcPath = config.srcBase + relPath;
@@ -123,9 +127,21 @@ async function main() {
 
   // Compile modules
   console.log('=== Compiling Modules ===\n');
+  // Start with empty registry - Nova.Prelude will be registered as "Prelude" when compiled
+  // preludeExports contains only primitive operators that will be merged with Nova.Prelude
   let registry = Types.registerModule(Types.emptyRegistry)("Prelude")(Types.preludeExports);
   let compiled = 0;
   let errors = 0;
+
+  // Helper to merge exports with primitive operators
+  const DataMap = await import('../output/Data.Map.Internal/index.js');
+  const DataOrd = await import('../output/Data.Ord/index.js');
+  function mergeWithPrimitives(exports) {
+    return {
+      ...exports,
+      values: DataMap.union(DataOrd.ordString)(exports.values)(Types.preludeExports.values)
+    };
+  }
 
   for (const filePath of sorted) {
     const modName = getModuleName(filePath);
@@ -188,7 +204,15 @@ async function main() {
     // Update registry
     const exports = TypeChecker.extractExports(declsArray);
     const exportsWithValues = TypeChecker.addValuesToExports(exports)(env)(declsArray);
-    registry = Types.registerModule(registry)(modName)(exportsWithValues);
+
+    // When compiling Nova.Prelude, register as "Prelude" with primitive operators merged
+    if (modName === 'Nova.Prelude') {
+      const preludeWithPrimitives = mergeWithPrimitives(exportsWithValues);
+      registry = Types.registerModule(registry)("Prelude")(preludeWithPrimitives);
+      registry = Types.registerModule(registry)(modName)(exportsWithValues);
+    } else {
+      registry = Types.registerModule(registry)(modName)(exportsWithValues);
+    }
 
     const totalTime = performance.now() - modStart;
     const lines = code.split('\n').length;

@@ -1,17 +1,8 @@
-module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToString'/1, 'reverseList'/0, 'listToArray'/1, 'keywords'/0, 'isIndented'/1, 'lytToken'/2, 'closeLayoutsReversed'/1, 'closeLayoutsGo'/2, 'callInsertLayout'/3, 'prependReversed'/2, 'insertLayoutGo'/3, 'insertLayoutTokens'/1, 'lexModule'/1, 'lexTokens'/1, 'lexTokensGo'/2, 'lexToken'/1, 'isDigit'/1, 'isUpper'/1, 'isLower'/1, 'isAlpha'/1, 'isAlphaNum'/1, 'isIdentStart'/1, 'isIdentChar'/1, 'isOperatorChar'/1, 'dropChars'/2, 'advance'/2, 'advanceNewline'/1, 'advanceTab'/1, 'makeToken'/2, 'makeTokenRange'/3, 'lexIdentOrKeyword'/1, 'makeKeywordToken'/3, 'makeIdentToken'/3, 'lexUpperIdentifier'/1, 'checkQualifiedChain'/2, 'consumeIdent'/2, 'consumeUpperIdent'/2, 'lexOperator'/1, 'consumeOperator'/2, 'lexDelimiter'/1, 'lexUnderscore'/1, 'lexNumber'/1, 'consumeNumber'/2, 'lexString'/1, 'consumeString'/2, 'lexRawString'/1, 'consumeRawString'/2, 'lexChar'/1, 'skipLineComment'/1, 'skipBlockComment'/2, 'initLexState'/0, 'arrayToList'/0, 'charsToString'/0, 'listToArray'/0, 'isIndented'/0, 'lytToken'/0, 'lytToken'/1, 'closeLayoutsReversed'/0, 'closeLayoutsGo'/0, 'closeLayoutsGo'/1, 'callInsertLayout'/0, 'callInsertLayout'/1, 'callInsertLayout'/2, 'prependReversed'/0, 'prependReversed'/1, 'insertLayoutGo'/0, 'insertLayoutGo'/1, 'insertLayoutGo'/2, 'insertLayoutTokens'/0, 'lexModule'/0, 'lexTokens'/0, 'lexTokensGo'/0, 'lexTokensGo'/1, 'lexToken'/0, 'isDigit'/0, 'isUpper'/0, 'isLower'/0, 'isAlpha'/0, 'isAlphaNum'/0, 'isIdentStart'/0, 'isIdentChar'/0, 'isOperatorChar'/0, 'dropChars'/0, 'dropChars'/1, 'advance'/0, 'advance'/1, 'advanceNewline'/0, 'advanceTab'/0, 'makeToken'/0, 'makeToken'/1, 'makeTokenRange'/0, 'makeTokenRange'/1, 'makeTokenRange'/2, 'lexIdentOrKeyword'/0, 'makeKeywordToken'/0, 'makeKeywordToken'/1, 'makeKeywordToken'/2, 'makeIdentToken'/0, 'makeIdentToken'/1, 'makeIdentToken'/2, 'lexUpperIdentifier'/0, 'checkQualifiedChain'/0, 'checkQualifiedChain'/1, 'consumeIdent'/0, 'consumeIdent'/1, 'consumeUpperIdent'/0, 'consumeUpperIdent'/1, 'lexOperator'/0, 'consumeOperator'/0, 'consumeOperator'/1, 'lexDelimiter'/0, 'lexUnderscore'/0, 'lexNumber'/0, 'consumeNumber'/0, 'consumeNumber'/1, 'lexString'/0, 'consumeString'/0, 'consumeString'/1, 'lexRawString'/0, 'consumeRawString'/0, 'consumeRawString'/1, 'lexChar'/0, 'skipLineComment'/0, 'skipBlockComment'/0, 'skipBlockComment'/1, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'/1, 'advanceTab'/1, 'arrayToList'/1, 'charsToString'/1, 'closeLayoutsReversed'/1, 'initLexState'/1, 'insertLayoutTokens'/1, 'isAlpha'/1, 'isAlphaNum'/1, 'isDigit'/1, 'isIdentChar'/1, 'isIdentStart'/1, 'isIndented'/1, 'isLower'/1, 'isOperatorChar'/1, 'isUpper'/1, 'lexChar'/1, 'lexDelimiter'/1, 'lexIdentOrKeyword'/1, 'lexModule'/1, 'lexNumber'/1, 'lexOperator'/1, 'lexRawString'/1, 'lexString'/1, 'lexToken'/1, 'lexTokens'/1, 'lexUnderscore'/1, 'lexUpperIdentifier'/1, 'listToArray'/1, 'skipLineComment'/1, 'advance'/2, 'checkQualifiedChain'/2, 'closeLayoutsGo'/2, 'consumeIdent'/2, 'consumeNumber'/2, 'consumeOperator'/2, 'consumeRawString'/2, 'consumeString'/2, 'consumeUpperIdent'/2, 'dropChars'/2, 'lexTokensGo'/2, 'lytToken'/2, 'makeToken'/2, 'prependReversed'/2, 'skipBlockComment'/2, 'callInsertLayout'/3, 'insertLayoutGo'/3, 'makeIdentToken'/3, 'makeKeywordToken'/3, 'makeTokenRange'/3, 'advanceNewline'/0, 'advanceTab'/0, 'arrayToList'/0, 'charsToString'/0, 'closeLayoutsReversed'/0, 'initLexState'/0, 'insertLayoutTokens'/0, 'isAlpha'/0, 'isAlphaNum'/0, 'isDigit'/0, 'isIdentChar'/0, 'isIdentStart'/0, 'isIndented'/0, 'isLower'/0, 'isOperatorChar'/0, 'isUpper'/0, 'lexChar'/0, 'lexDelimiter'/0, 'lexIdentOrKeyword'/0, 'lexModule'/0, 'lexNumber'/0, 'lexOperator'/0, 'lexRawString'/0, 'lexString'/0, 'lexToken'/0, 'lexTokens'/0, 'lexUnderscore'/0, 'lexUpperIdentifier'/0, 'listToArray'/0, 'skipLineComment'/0, 'advance'/0, 'advance'/1, 'checkQualifiedChain'/0, 'checkQualifiedChain'/1, 'closeLayoutsGo'/0, 'closeLayoutsGo'/1, 'consumeIdent'/0, 'consumeIdent'/1, 'consumeNumber'/0, 'consumeNumber'/1, 'consumeOperator'/0, 'consumeOperator'/1, 'consumeRawString'/0, 'consumeRawString'/1, 'consumeString'/0, 'consumeString'/1, 'consumeUpperIdent'/0, 'consumeUpperIdent'/1, 'dropChars'/0, 'dropChars'/1, 'lexTokensGo'/0, 'lexTokensGo'/1, 'lytToken'/0, 'lytToken'/1, 'makeToken'/0, 'makeToken'/1, 'prependReversed'/0, 'prependReversed'/1, 'skipBlockComment'/0, 'skipBlockComment'/1, 'callInsertLayout'/0, 'callInsertLayout'/1, 'callInsertLayout'/2, 'insertLayoutGo'/0, 'insertLayoutGo'/1, 'insertLayoutGo'/2, 'makeIdentToken'/0, 'makeIdentToken'/1, 'makeIdentToken'/2, 'makeKeywordToken'/0, 'makeKeywordToken'/1, 'makeKeywordToken'/2, 'makeTokenRange'/0, 'makeTokenRange'/1, 'makeTokenRange'/2, 'module_info'/0, 'module_info'/1]
   attributes []
-'initLexState'/1 =
-  fun (Input) ->
-    ~{'chars'=>apply 'arrayToList'/1(call 'Data.String.CodeUnits':'toCharArray'(Input)),'line'=>1,'column'=>1}~
-
-'arrayToList'/1 =
-  fun (Arr) ->
-    call 'Data.Array':'foldr'(fun (X, Xs) -> [X|Xs], [], Arr)
-
-'charsToString'/1 =
-  fun (Chars) ->
-    call 'Data.String.CodeUnits':'fromCharArray'(apply 'listToArray'/1(let <_Fn0> = apply 'reverseList'/0()
-      in apply _Fn0(Chars)))
+'keywords'/0 =
+  fun () ->
+    [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<112>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#]
 
 'reverseList'/0 =
   fun () ->
@@ -22,13 +13,61 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       end
       in fun (_Pc0) -> apply 'go'/2([], _Pc0)
 
-'listToArray'/1 =
-  fun (Lst) ->
-    call 'Data.Array':'fromFoldable'(Lst)
+'advanceNewline'/1 =
+  fun (State) ->
+    call 'maps':'merge'(State, ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', State), 0),'column'=>0}~)
 
-'keywords'/0 =
-  fun () ->
-    [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, #{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, #{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, #{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, #{#<112>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#]
+'advanceTab'/1 =
+  fun (State) ->
+    let <Col> = call 'maps':'get'('column', State)
+      in let <NextTab> = call 'erlang':'+'(call 'erlang':'*'(call 'erlang':'+'(call 'erlang':'div'(call 'erlang':'-'(Col, 0), 0), 0), 0), 0)
+      in call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(0, call 'maps':'get'('chars', State)),'column'=>NextTab}~)
+
+'arrayToList'/1 =
+  fun (Arr) ->
+    call 'Data.Array':'foldr'(fun (X, Xs) -> [X|Xs], [], Arr)
+
+'charsToString'/1 =
+  fun (Chars) ->
+    call 'Data.String.CodeUnits':'fromCharArray'(apply 'listToArray'/1(let <_Fn0> = apply 'reverseList'/0()
+      in apply _Fn0(Chars)))
+
+'closeLayoutsReversed'/1 =
+  fun (Stack) ->
+    apply 'closeLayoutsGo'/2([], Stack)
+
+'initLexState'/1 =
+  fun (Input) ->
+    ~{'chars'=>apply 'arrayToList'/1(call 'Data.String.CodeUnits':'toCharArray'(Input)),'line'=>0,'column'=>0}~
+
+'insertLayoutTokens'/1 =
+  fun (Tokens) ->
+    letrec 'getRootLayout'/1 = fun (_W0) ->
+      call 'Nova.Compiler.CstLayout':'rootLayoutDelim'()
+      in let <InitPos> = ~{'line'=>0,'column'=>0}~
+      in let <InitStack> = [call 'Data.Tuple':'Tuple'(InitPos, apply 'getRootLayout'/1(~{}~)) | []]
+      in let <_Fn0> = apply 'reverseList'/0()
+      in apply _Fn0(apply 'insertLayoutGo'/3(InitStack, Tokens, []))
+
+'isAlpha'/1 =
+  fun (C) ->
+    case apply 'isUpper'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'isLower'/1(C) end
+
+'isAlphaNum'/1 =
+  fun (C) ->
+    case apply 'isAlpha'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'isDigit'/1(C) end
+
+'isDigit'/1 =
+  fun (C) ->
+    case call 'erlang':'>='(C, $0) of <'true'> when 'true' -> call 'erlang':'=<'(C, $9) <_> when 'true' -> 'false' end
+
+'isIdentChar'/1 =
+  fun (C) ->
+    case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $') end
+
+'isIdentStart'/1 =
+  fun (C) ->
+    case apply 'isLower'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end
 
 'isIndented'/1 =
   fun (Lyt) ->
@@ -49,217 +88,77 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         'false'
     end
 
-'lytToken'/2 =
-  fun (Pos, Value) ->
-    ~{'range'=>~{'start'=>Pos,'end'=>Pos}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Value}~
-
-'closeLayoutsReversed'/1 =
-  fun (Stack) ->
-    apply 'closeLayoutsGo'/2([], Stack)
-
-'closeLayoutsGo'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{Acc, []}> when 'true' ->
-        Acc
-      <{Acc, [{'Tuple', Pos, Lyt} | Rest]}> when 'true' ->
-        case apply 'isIndented'/1(Lyt) of
-      <'true'> when 'true' -> let <EndTok> = apply 'lytToken'/2(Pos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(call 'maps':'get'('column', Pos)))
-      in apply 'closeLayoutsGo'/2([EndTok | Acc], Rest)
-      <'false'> when 'true' -> apply 'closeLayoutsGo'/2(Acc, Rest)
-    end
-    end
-
-'callInsertLayout'/3 =
-  fun (Tok, Pos, Stk) ->
-    call 'Nova.Compiler.CstLayout':'insertLayout'(Tok, Pos, Stk)
-
-'prependReversed'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{[], Acc}> when 'true' ->
-        Acc
-      <{[X | Xs], Acc}> when 'true' ->
-        apply 'prependReversed'/2(Xs, [X | Acc])
-    end
-
-'insertLayoutGo'/3 =
-  fun (Stack, Toks, Acc) ->
-    case Toks of
-      <[]> when 'true' ->
-        apply 'prependReversed'/2(apply 'closeLayoutsReversed'/1(Stack), Acc)
-      <[Tok | Rest]> when 'true' ->
-        let <NextPos> = case Rest of
-      <[Next | _W0]> when 'true' ->
-        call 'maps':'get'('start', call 'maps':'get'('range', Next))
-      <[]> when 'true' ->
-        ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', call 'maps':'get'('end', call 'maps':'get'('range', Tok))), 1),'column'=>1}~
-    end
-      in case apply 'callInsertLayout'/3(Tok, NextPos, Stack) of
-      <{'Tuple', NewStack, OutputTokens}> when 'true' ->
-        let <NewToks> = call 'lists':'map'(call 'Data.Tuple':'fst'(), OutputTokens)
-      in apply 'insertLayoutGo'/3(NewStack, Rest, apply 'prependReversed'/2(NewToks, Acc))
-    end
-    end
-
-'insertLayoutTokens'/1 =
-  fun (Tokens) ->
-    letrec 'getRootLayout'/1 = fun (_W0) ->
-      call 'Nova.Compiler.CstLayout':'rootLayoutDelim'()
-      in let <InitPos> = ~{'line'=>1,'column'=>1}~
-      in let <InitStack> = [call 'Data.Tuple':'Tuple'(InitPos, apply 'getRootLayout'/1(~{}~)) | []]
-      in let <_Fn0> = apply 'reverseList'/0()
-      in apply _Fn0(apply 'insertLayoutGo'/3(InitStack, Tokens, []))
-
-'lexModule'/1 =
-  fun (Source) ->
-    let <RawTokens> = apply 'lexTokens'/1(Source)
-      in apply 'insertLayoutTokens'/1(RawTokens)
-
-'lexTokens'/1 =
-  fun (Source) ->
-    let <_Fn0> = apply 'reverseList'/0()
-      in apply _Fn0(apply 'lexTokensGo'/2(apply 'initLexState'/1(Source), []))
-
-'lexTokensGo'/2 =
-  fun (State, Acc) ->
-    case apply 'lexToken'/1(State) of
-      <'Nothing'> when 'true' ->
-        Acc
-      <{'Just', {'Tuple', Tok, State_}}> when 'true' ->
-        apply 'lexTokensGo'/2(State_, [Tok | Acc])
-    end
-
-'lexToken'/1 =
-  fun (State) ->
-    case call 'maps':'get'('chars', State) of
-      <[]> when 'true' ->
-        'Nothing'
-      <[$  | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advance'/2(State, 1))
-      <[$\t | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceTab'/1(State))
-      <[$\n | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)))
-      <[$\r | [$\n | _W0]]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 2)))
-      <[$\r | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)))
-      <[$- | [$- | _W0]]> when 'true' ->
-        let <State_> = apply 'skipLineComment'/1(apply 'advance'/2(State, 2))
-      in apply 'lexToken'/1(State_)
-      <[${ | [$- | _W0]]> when 'true' ->
-        let <State_> = apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), 1)
-      in apply 'lexToken'/1(State_)
-      <[$" | [$" | [$" | _W0]]]> when 'true' ->
-        apply 'lexRawString'/1(State)
-      <[$" | _W0]> when 'true' ->
-        apply 'lexString'/1(State)
-      <[$' | _W0]> when 'true' ->
-        apply 'lexChar'/1(State)
-      <[$( | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$) | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$[ | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$] | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[${ | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$} | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$, | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$` | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$; | _W0]> when 'true' ->
-        apply 'lexDelimiter'/1(State)
-      <[$@ | _W0]> when 'true' ->
-        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(call 'Nova.Compiler.Cst':'TokAt'(), State), apply 'advance'/2(State, 1))}
-      <[C | _W0]> when 'true' ->
-        case apply 'isDigit'/1(C) of
-      <'true'> when 'true' -> apply 'lexNumber'/1(State)
-      <'false'> when 'true' -> case call 'erlang':'=:='(C, $_) of
-      <'true'> when 'true' -> apply 'lexUnderscore'/1(State)
-      <'false'> when 'true' -> case apply 'isIdentStart'/1(C) of
-      <'true'> when 'true' -> apply 'lexIdentOrKeyword'/1(State)
-      <'false'> when 'true' -> case apply 'isUpper'/1(C) of
-      <'true'> when 'true' -> apply 'lexUpperIdentifier'/1(State)
-      <'false'> when 'true' -> case apply 'isOperatorChar'/1(C) of
-      <'true'> when 'true' -> apply 'lexOperator'/1(State)
-      <'false'> when 'true' -> apply 'lexToken'/1(apply 'advance'/2(State, 1))
-    end
-    end
-    end
-    end
-    end
-    end
-
-'isDigit'/1 =
-  fun (C) ->
-    case call 'erlang':'>='(C, $0) of <'true'> when 'true' -> call 'erlang':'=<'(C, $9) <_> when 'true' -> 'false' end
-
-'isUpper'/1 =
-  fun (C) ->
-    case call 'erlang':'>='(C, $A) of <'true'> when 'true' -> call 'erlang':'=<'(C, $Z) <_> when 'true' -> 'false' end
-
 'isLower'/1 =
   fun (C) ->
     case call 'erlang':'>='(C, $a) of <'true'> when 'true' -> call 'erlang':'=<'(C, $z) <_> when 'true' -> 'false' end
-
-'isAlpha'/1 =
-  fun (C) ->
-    case apply 'isUpper'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'isLower'/1(C) end
-
-'isAlphaNum'/1 =
-  fun (C) ->
-    case apply 'isAlpha'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> apply 'isDigit'/1(C) end
-
-'isIdentStart'/1 =
-  fun (C) ->
-    case apply 'isLower'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end
-
-'isIdentChar'/1 =
-  fun (C) ->
-    case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $') end
 
 'isOperatorChar'/1 =
   fun (C) ->
     case case case case case case case case case case case case case case case case case case call 'erlang':'=:='(C, $:) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $!) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $#) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $$) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $%) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $&) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $*) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $+) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $.) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $/) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $<) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $=) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $>) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $?) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $\\) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $^) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $|) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $-) end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $~) end
 
-'dropChars'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{0, Xs}> when 'true' ->
-        Xs
-      <{_W0, []}> when 'true' ->
-        []
-      <{N, [_W0 | Xs]}> when 'true' ->
-        apply 'dropChars'/2(call 'erlang':'-'(N, 1), Xs)
+'isUpper'/1 =
+  fun (C) ->
+    case call 'erlang':'>='(C, $A) of <'true'> when 'true' -> call 'erlang':'=<'(C, $Z) <_> when 'true' -> 'false' end
+
+'lexChar'/1 =
+  fun (State) ->
+    letrec 'parseCharContent'/1 = fun (S) ->
+      case call 'maps':'get'('chars', S) of
+      <[$\\ | [$n | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($\n, apply 'advance'/2(S, 0))
+      <[$\\ | [$t | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($\t, apply 'advance'/2(S, 0))
+      <[$\\ | [$r | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($\r, apply 'advance'/2(S, 0))
+      <[$\\ | [$' | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($', apply 'advance'/2(S, 0))
+      <[$\\ | [$\\ | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($\\, apply 'advance'/2(S, 0))
+      <[$\\ | [C | _W0]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 0))
+      <[C | _W0]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 0))
+      <[]> when 'true' ->
+        call 'Data.Tuple':'Tuple'($?, S)
+    end
+      in let <StartState> = State
+      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in case apply 'parseCharContent'/1(AfterOpen) of
+      <{'Tuple', Ch, AfterChar}> when 'true' ->
+        let <AfterClose> = apply 'advance'/2(AfterChar, 0)
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokChar'(call 'Data.String.CodeUnits':'singleton'(Ch), Ch), StartState, AfterClose), AfterClose)}
     end
 
-'advance'/2 =
-  fun (State, N) ->
-    call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(N, call 'maps':'get'('chars', State)),'column'=>call 'erlang':'+'(call 'maps':'get'('column', State), N)}~)
-
-'advanceNewline'/1 =
+'lexDelimiter'/1 =
   fun (State) ->
-    call 'maps':'merge'(State, ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', State), 1),'column'=>1}~)
-
-'advanceTab'/1 =
-  fun (State) ->
-    let <Col> = call 'maps':'get'('column', State)
-      in let <NextTab> = call 'erlang':'+'(call 'erlang':'*'(call 'erlang':'+'(call 'erlang':'div'(call 'erlang':'-'(Col, 1), 8), 1), 8), 1)
-      in call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(1, call 'maps':'get'('chars', State)),'column'=>NextTab}~)
-
-'makeToken'/2 =
-  fun (Tok, State) ->
-    ~{'range'=>~{'start'=>~{'line'=>call 'maps':'get'('line', State),'column'=>call 'maps':'get'('column', State)}~,'end'=>~{'line'=>call 'maps':'get'('line', State),'column'=>call 'maps':'get'('column', State)}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Tok}~
-
-'makeTokenRange'/3 =
-  fun (Tok, StartState, EndState) ->
-    ~{'range'=>~{'start'=>~{'line'=>call 'maps':'get'('line', StartState),'column'=>call 'maps':'get'('column', StartState)}~,'end'=>~{'line'=>call 'maps':'get'('line', EndState),'column'=>call 'maps':'get'('column', EndState)}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Tok}~
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        let <Tok> = case C of
+      <$(> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokLeftParen'()
+      <$)> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokRightParen'()
+      <$[> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokLeftSquare'()
+      <$]> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokRightSquare'()
+      <${> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokLeftBrace'()
+      <$}> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokRightBrace'()
+      <$,> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokComma'()
+      <$`> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokTick'()
+      <$;> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokComma'()
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokComma'()
+    end
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(Tok, State), apply 'advance'/2(State, 0))}
+      <[]> when 'true' ->
+        'Nothing'
+    end
 
 'lexIdentOrKeyword'/1 =
   fun (State) ->
@@ -273,92 +172,38 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       in {'Just', call 'Data.Tuple':'Tuple'(Tok, State_)}
       end
 
-'makeKeywordToken'/3 =
-  fun (Name, StartState, EndState) ->
-    let <Token> = case Name of
-      <#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokForall'()
-      <_W0> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name)
-    end
-      in apply 'makeTokenRange'/3(Token, StartState, EndState)
+'lexModule'/1 =
+  fun (Source) ->
+    let <RawTokens> = apply 'lexTokens'/1(Source)
+      in apply 'insertLayoutTokens'/1(RawTokens)
 
-'makeIdentToken'/3 =
-  fun (Name, StartState, EndState) ->
-    apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name), StartState, EndState)
-
-'lexUpperIdentifier'/1 =
+'lexNumber'/1 =
   fun (State) ->
-    let <StartState> = State
-      in let <_Let0> = apply 'consumeUpperIdent'/2(State, [])
-      in case _Let0 of
-        <{'Tuple', Name, State_}> when 'true' -> let <Result> = case call 'maps':'get'('chars', State_) of
-      <[$. | _W0]> when 'true' ->
-        apply 'checkQualifiedChain'/2(Name, apply 'advance'/2(State_, 1))
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Name), State_)
+    letrec 'makeIntResult'/3 = fun (IntPart, StartState, EndState) ->
+      let <IntVal> = call 'Nova.Compiler.Cst':'SmallInt'(call 'Data.Maybe':'fromMaybe'(0, call 'Data.Int':'fromString'(IntPart)))
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokInt'(IntPart, IntVal), StartState, EndState), EndState)}
+      in let <StartState> = State
+      in case apply 'consumeNumber'/2(State, []) of
+      <{'Tuple', IntPart, AfterInt}> when 'true' ->
+        case call 'maps':'get'('chars', AfterInt) of
+      <[$. | [C | _W0]]> when 'true' ->
+        case apply 'isDigit'/1(C) of
+          <'true'> when 'true' -> let <AfterDot> = apply 'advance'/2(AfterInt, 0)
+      in case apply 'consumeNumber'/2(AfterDot, []) of
+      <{'Tuple', FracPart, AfterFrac}> when 'true' ->
+        let <NumStr> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(IntPart, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), FracPart)
+      in case call 'Data.Number':'fromString'(NumStr) of
+      <{'Just', N}> when 'true' ->
+        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokNumber'(NumStr, N), StartState, AfterFrac), AfterFrac)}
+      <'Nothing'> when 'true' ->
+        apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
     end
-      in let <_Let1> = Result
-      in case _Let1 of
-        <{'Tuple', Tok, FinalState}> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(Tok, StartState, FinalState), FinalState)}
-      end
-      end
-
-'checkQualifiedChain'/2 =
-  fun (Prefix, State) ->
-    case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        case apply 'isUpper'/1(C) of
-          <'true'> when 'true' -> let <_Let0> = apply 'consumeUpperIdent'/2(State, [])
-      in case _Let0 of
-        <{'Tuple', Name, State_}> when 'true' -> let <FullPrefix> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name)
-      in case call 'maps':'get'('chars', State_) of
-      <[$. | _W0]> when 'true' ->
-        apply 'checkQualifiedChain'/2(FullPrefix, apply 'advance'/2(State_, 1))
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'({'Just', Prefix}, Name), State_)
     end
-      end
-          <_> when 'true' -> case apply 'isLower'/1(C) of
-            <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State, [])
-      in case _Let0 of
-        <{'Tuple', Name, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokLowerName'({'Just', Prefix}, Name), State_)
-      end
-            <_> when 'true' -> case apply 'isOperatorChar'/1(C) of
-            <'true'> when 'true' -> let <_Let0> = apply 'consumeOperator'/2(State, [])
-      in case _Let0 of
-        <{'Tuple', Op, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokOperator'({'Just', Prefix}, Op), State_)
-      end
-            <_> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
-          end
-          end
+          <_> when 'true' -> apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
         end
       <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
+        apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
     end
-
-'consumeIdent'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        case apply 'isIdentChar'/1(C) of
-          <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 1), [C | Acc])
-          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-        end
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-    end
-
-'consumeUpperIdent'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of
-          <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 1), [C | Acc])
-          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-        end
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
     end
 
 'lexOperator'/1 =
@@ -391,53 +236,101 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(Tok, StartState, State_), State_)}
       end
 
-'consumeOperator'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        case apply 'isOperatorChar'/1(C) of
-          <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 1), [C | Acc])
-          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-        end
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+'lexRawString'/1 =
+  fun (State) ->
+    let <StartState> = State
+      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in case apply 'consumeRawString'/2(AfterOpen, []) of
+      <{'Tuple', Content, AfterContent}> when 'true' ->
+        let <AfterClose> = apply 'advance'/2(AfterContent, 0)
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokRawString'(Content), StartState, AfterClose), AfterClose)}
     end
 
-'lexDelimiter'/1 =
+'lexString'/1 =
+  fun (State) ->
+    let <StartState> = State
+      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in case apply 'consumeString'/2(AfterOpen, []) of
+      <{'Tuple', Content, AfterContent}> when 'true' ->
+        let <AfterClose> = apply 'advance'/2(AfterContent, 0)
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokString'(Content, Content), StartState, AfterClose), AfterClose)}
+    end
+
+'lexToken'/1 =
   fun (State) ->
     case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        let <Tok> = case C of
-      <$(> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokLeftParen'()
-      <$)> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokRightParen'()
-      <$[> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokLeftSquare'()
-      <$]> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokRightSquare'()
-      <${> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokLeftBrace'()
-      <$}> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokRightBrace'()
-      <$,> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokComma'()
-      <$`> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokTick'()
-      <$;> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokComma'()
-      <_W0> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokComma'()
-    end
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(Tok, State), apply 'advance'/2(State, 1))}
       <[]> when 'true' ->
         'Nothing'
+      <[$  | _W0]> when 'true' ->
+        apply 'lexToken'/1(apply 'advance'/2(State, 0))
+      <[$\t | _W0]> when 'true' ->
+        apply 'lexToken'/1(apply 'advanceTab'/1(State))
+      <[$\n | _W0]> when 'true' ->
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+      <[$\r | [$\n | _W0]]> when 'true' ->
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+      <[$\r | _W0]> when 'true' ->
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+      <[$- | [$- | _W0]]> when 'true' ->
+        let <State_> = apply 'skipLineComment'/1(apply 'advance'/2(State, 0))
+      in apply 'lexToken'/1(State_)
+      <[${ | [$- | _W0]]> when 'true' ->
+        let <State_> = apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), 0)
+      in apply 'lexToken'/1(State_)
+      <[$" | [$" | [$" | _W0]]]> when 'true' ->
+        apply 'lexRawString'/1(State)
+      <[$" | _W0]> when 'true' ->
+        apply 'lexString'/1(State)
+      <[$' | _W0]> when 'true' ->
+        apply 'lexChar'/1(State)
+      <[$( | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$) | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$[ | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$] | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[${ | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$} | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$, | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$` | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$; | _W0]> when 'true' ->
+        apply 'lexDelimiter'/1(State)
+      <[$@ | _W0]> when 'true' ->
+        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(call 'Nova.Compiler.Cst':'TokAt'(), State), apply 'advance'/2(State, 0))}
+      <[C | _W0]> when 'true' ->
+        case apply 'isDigit'/1(C) of
+      <'true'> when 'true' -> apply 'lexNumber'/1(State)
+      <'false'> when 'true' -> case call 'erlang':'=:='(C, $_) of
+      <'true'> when 'true' -> apply 'lexUnderscore'/1(State)
+      <'false'> when 'true' -> case apply 'isIdentStart'/1(C) of
+      <'true'> when 'true' -> apply 'lexIdentOrKeyword'/1(State)
+      <'false'> when 'true' -> case apply 'isUpper'/1(C) of
+      <'true'> when 'true' -> apply 'lexUpperIdentifier'/1(State)
+      <'false'> when 'true' -> case apply 'isOperatorChar'/1(C) of
+      <'true'> when 'true' -> apply 'lexOperator'/1(State)
+      <'false'> when 'true' -> apply 'lexToken'/1(apply 'advance'/2(State, 0))
     end
+    end
+    end
+    end
+    end
+    end
+
+'lexTokens'/1 =
+  fun (Source) ->
+    let <_Fn0> = apply 'reverseList'/0()
+      in apply _Fn0(apply 'lexTokensGo'/2(apply 'initLexState'/1(Source), []))
 
 'lexUnderscore'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <State_> = apply 'advance'/2(State, 1)
+      in let <State_> = apply 'advance'/2(State, 0)
       in case call 'maps':'get'('chars', State_) of
       <[C | _W0]> when 'true' ->
         case apply 'isIdentChar'/1(C) of
@@ -451,143 +344,26 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(call 'Nova.Compiler.Cst':'TokUnderscore'(), State), State_)}
     end
 
-'lexNumber'/1 =
-  fun (State) ->
-    letrec 'makeIntResult'/3 = fun (IntPart, StartState, EndState) ->
-      let <IntVal> = call 'Nova.Compiler.Cst':'SmallInt'(call 'Data.Maybe':'fromMaybe'(0, call 'Data.Int':'fromString'(IntPart)))
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokInt'(IntPart, IntVal), StartState, EndState), EndState)}
-      in let <StartState> = State
-      in case apply 'consumeNumber'/2(State, []) of
-      <{'Tuple', IntPart, AfterInt}> when 'true' ->
-        case call 'maps':'get'('chars', AfterInt) of
-      <[$. | [C | _W0]]> when 'true' ->
-        case apply 'isDigit'/1(C) of
-          <'true'> when 'true' -> let <AfterDot> = apply 'advance'/2(AfterInt, 1)
-      in case apply 'consumeNumber'/2(AfterDot, []) of
-      <{'Tuple', FracPart, AfterFrac}> when 'true' ->
-        let <NumStr> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(IntPart, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), FracPart)
-      in case call 'Data.Number':'fromString'(NumStr) of
-      <{'Just', N}> when 'true' ->
-        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokNumber'(NumStr, N), StartState, AfterFrac), AfterFrac)}
-      <'Nothing'> when 'true' ->
-        apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
-    end
-    end
-          <_> when 'true' -> apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
-        end
-      <_W0> when 'true' ->
-        apply 'makeIntResult'/3(IntPart, StartState, AfterInt)
-    end
-    end
-
-'consumeNumber'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[C | _W0]> when 'true' ->
-        case apply 'isDigit'/1(C) of
-          <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 1), [C | Acc])
-          <_> when 'true' -> case call 'maps':'get'('chars', State) of
-      <[$_ | _W0]> when 'true' ->
-        apply 'consumeNumber'/2(apply 'advance'/2(State, 1), Acc)
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-          end
-        end
-      <[$_ | _W0]> when 'true' ->
-        apply 'consumeNumber'/2(apply 'advance'/2(State, 1), Acc)
-      <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-    end
-
-'lexString'/1 =
+'lexUpperIdentifier'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 1)
-      in case apply 'consumeString'/2(AfterOpen, []) of
-      <{'Tuple', Content, AfterContent}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterContent, 1)
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokString'(Content, Content), StartState, AfterClose), AfterClose)}
+      in let <_Let0> = apply 'consumeUpperIdent'/2(State, [])
+      in case _Let0 of
+        <{'Tuple', Name, State_}> when 'true' -> let <Result> = case call 'maps':'get'('chars', State_) of
+      <[$. | _W0]> when 'true' ->
+        apply 'checkQualifiedChain'/2(Name, apply 'advance'/2(State_, 0))
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Name), State_)
     end
+      in let <_Let1> = Result
+      in case _Let1 of
+        <{'Tuple', Tok, FinalState}> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(Tok, StartState, FinalState), FinalState)}
+      end
+      end
 
-'consumeString'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-      <[$" | _W0]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-      <[$\\ | [$n | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\n | Acc])
-      <[$\\ | [$t | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\t | Acc])
-      <[$\\ | [$r | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\r | Acc])
-      <[$\\ | [$" | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$" | Acc])
-      <[$\\ | [$\\ | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\\ | Acc])
-      <[$\\ | [C | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 2), [C | Acc])
-      <[$\n | _W0]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-      <[C | _W0]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 1), [C | Acc])
-    end
-
-'lexRawString'/1 =
-  fun (State) ->
-    let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 3)
-      in case apply 'consumeRawString'/2(AfterOpen, []) of
-      <{'Tuple', Content, AfterContent}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterContent, 3)
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokRawString'(Content), StartState, AfterClose), AfterClose)}
-    end
-
-'consumeRawString'/2 =
-  fun (State, Acc) ->
-    case call 'maps':'get'('chars', State) of
-      <[]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-      <[$" | [$" | [$" | _W0]]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
-      <[$" | _W0]> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), [$" | Acc])
-      <[$\n | _W0]> when 'true' ->
-        let <State_> = apply 'advanceNewline'/1(apply 'advance'/2(State, 1))
-      in apply 'consumeRawString'/2(State_, [$\n | Acc])
-      <[C | _W0]> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), [C | Acc])
-    end
-
-'lexChar'/1 =
-  fun (State) ->
-    letrec 'parseCharContent'/1 = fun (S) ->
-      case call 'maps':'get'('chars', S) of
-      <[$\\ | [$n | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\n, apply 'advance'/2(S, 2))
-      <[$\\ | [$t | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\t, apply 'advance'/2(S, 2))
-      <[$\\ | [$r | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\r, apply 'advance'/2(S, 2))
-      <[$\\ | [$' | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($', apply 'advance'/2(S, 2))
-      <[$\\ | [$\\ | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\\, apply 'advance'/2(S, 2))
-      <[$\\ | [C | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 2))
-      <[C | _W0]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 1))
-      <[]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($?, S)
-    end
-      in let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 1)
-      in case apply 'parseCharContent'/1(AfterOpen) of
-      <{'Tuple', Ch, AfterChar}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterChar, 1)
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokChar'(call 'Data.String.CodeUnits':'singleton'(Ch), Ch), StartState, AfterClose), AfterClose)}
-    end
+'listToArray'/1 =
+  fun (Lst) ->
+    call 'Data.Array':'fromFoldable'(Lst)
 
 'skipLineComment'/1 =
   fun (State) ->
@@ -599,7 +375,190 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       <[$\r | _W0]> when 'true' ->
         State
       <[_W0 | _W1]> when 'true' ->
-        apply 'skipLineComment'/1(apply 'advance'/2(State, 1))
+        apply 'skipLineComment'/1(apply 'advance'/2(State, 0))
+    end
+
+'advance'/2 =
+  fun (State, N) ->
+    call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(N, call 'maps':'get'('chars', State)),'column'=>call 'erlang':'+'(call 'maps':'get'('column', State), N)}~)
+
+'checkQualifiedChain'/2 =
+  fun (Prefix, State) ->
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        case apply 'isUpper'/1(C) of
+          <'true'> when 'true' -> let <_Let0> = apply 'consumeUpperIdent'/2(State, [])
+      in case _Let0 of
+        <{'Tuple', Name, State_}> when 'true' -> let <FullPrefix> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name)
+      in case call 'maps':'get'('chars', State_) of
+      <[$. | _W0]> when 'true' ->
+        apply 'checkQualifiedChain'/2(FullPrefix, apply 'advance'/2(State_, 0))
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'({'Just', Prefix}, Name), State_)
+    end
+      end
+          <_> when 'true' -> case apply 'isLower'/1(C) of
+            <'true'> when 'true' -> let <_Let0> = apply 'consumeIdent'/2(State, [])
+      in case _Let0 of
+        <{'Tuple', Name, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokLowerName'({'Just', Prefix}, Name), State_)
+      end
+            <_> when 'true' -> case apply 'isOperatorChar'/1(C) of
+            <'true'> when 'true' -> let <_Let0> = apply 'consumeOperator'/2(State, [])
+      in case _Let0 of
+        <{'Tuple', Op, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokOperator'({'Just', Prefix}, Op), State_)
+      end
+            <_> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
+          end
+          end
+        end
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
+    end
+
+'closeLayoutsGo'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Acc, []}> when 'true' ->
+        Acc
+      <{Acc, [{'Tuple', Pos, Lyt} | Rest]}> when 'true' ->
+        case apply 'isIndented'/1(Lyt) of
+      <'true'> when 'true' -> let <EndTok> = apply 'lytToken'/2(Pos, call 'Nova.Compiler.Cst':'TokLayoutEnd'(call 'maps':'get'('column', Pos)))
+      in apply 'closeLayoutsGo'/2([EndTok | Acc], Rest)
+      <'false'> when 'true' -> apply 'closeLayoutsGo'/2(Acc, Rest)
+    end
+    end
+
+'consumeIdent'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        case apply 'isIdentChar'/1(C) of
+          <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+        end
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+    end
+
+'consumeNumber'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        case apply 'isDigit'/1(C) of
+          <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <_> when 'true' -> case call 'maps':'get'('chars', State) of
+      <[$_ | _W0]> when 'true' ->
+        apply 'consumeNumber'/2(apply 'advance'/2(State, 0), Acc)
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+          end
+        end
+      <[$_ | _W0]> when 'true' ->
+        apply 'consumeNumber'/2(apply 'advance'/2(State, 0), Acc)
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+    end
+
+'consumeOperator'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        case apply 'isOperatorChar'/1(C) of
+          <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+        end
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+    end
+
+'consumeRawString'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+      <[$" | [$" | [$" | _W0]]]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+      <[$" | _W0]> when 'true' ->
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 0), [$" | Acc])
+      <[$\n | _W0]> when 'true' ->
+        let <State_> = apply 'advanceNewline'/1(apply 'advance'/2(State, 0))
+      in apply 'consumeRawString'/2(State_, [$\n | Acc])
+      <[C | _W0]> when 'true' ->
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 0), [C | Acc])
+    end
+
+'consumeString'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+      <[$" | _W0]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+      <[$\\ | [$n | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\n | Acc])
+      <[$\\ | [$t | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\t | Acc])
+      <[$\\ | [$r | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\r | Acc])
+      <[$\\ | [$" | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$" | Acc])
+      <[$\\ | [$\\ | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\\ | Acc])
+      <[$\\ | [C | _W0]]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [C | Acc])
+      <[$\n | _W0]> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+      <[C | _W0]> when 'true' ->
+        apply 'consumeString'/2(apply 'advance'/2(State, 0), [C | Acc])
+    end
+
+'consumeUpperIdent'/2 =
+  fun (State, Acc) ->
+    case call 'maps':'get'('chars', State) of
+      <[C | _W0]> when 'true' ->
+        case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of
+          <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+        end
+      <_W0> when 'true' ->
+        call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
+    end
+
+'dropChars'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{0, Xs}> when 'true' ->
+        Xs
+      <{_W0, []}> when 'true' ->
+        []
+      <{N, [_W0 | Xs]}> when 'true' ->
+        apply 'dropChars'/2(call 'erlang':'-'(N, 0), Xs)
+    end
+
+'lexTokensGo'/2 =
+  fun (State, Acc) ->
+    case apply 'lexToken'/1(State) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', {'Tuple', Tok, State_}}> when 'true' ->
+        apply 'lexTokensGo'/2(State_, [Tok | Acc])
+    end
+
+'lytToken'/2 =
+  fun (Pos, Value) ->
+    ~{'range'=>~{'start'=>Pos,'end'=>Pos}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Value}~
+
+'makeToken'/2 =
+  fun (Tok, State) ->
+    ~{'range'=>~{'start'=>~{'line'=>call 'maps':'get'('line', State),'column'=>call 'maps':'get'('column', State)}~,'end'=>~{'line'=>call 'maps':'get'('line', State),'column'=>call 'maps':'get'('column', State)}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Tok}~
+
+'prependReversed'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], Acc}> when 'true' ->
+        Acc
+      <{[X | Xs], Acc}> when 'true' ->
+        apply 'prependReversed'/2(Xs, [X | Acc])
     end
 
 'skipBlockComment'/2 =
@@ -612,24 +571,71 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       <[]> when 'true' ->
         State
       <[${ | [$- | _W0]]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), call 'erlang':'+'(Depth, 1))
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), call 'erlang':'+'(Depth, 0))
       <[$- | [$} | _W0]]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), call 'erlang':'-'(Depth, 1))
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), call 'erlang':'-'(Depth, 0))
       <[${ | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
       <[$- | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
       <[$\n | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)), Depth)
+        apply 'skipBlockComment'/2(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)), Depth)
       <[_W0 | _W1]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
     end
     end
 
-'initLexState'/0 =
+'callInsertLayout'/3 =
+  fun (Tok, Pos, Stk) ->
+    call 'Nova.Compiler.CstLayout':'insertLayout'(Tok, Pos, Stk)
+
+'insertLayoutGo'/3 =
+  fun (Stack, Toks, Acc) ->
+    case Toks of
+      <[]> when 'true' ->
+        apply 'prependReversed'/2(apply 'closeLayoutsReversed'/1(Stack), Acc)
+      <[Tok | Rest]> when 'true' ->
+        let <NextPos> = case Rest of
+      <[Next | _W0]> when 'true' ->
+        call 'maps':'get'('start', call 'maps':'get'('range', Next))
+      <[]> when 'true' ->
+        ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', call 'maps':'get'('end', call 'maps':'get'('range', Tok))), 0),'column'=>0}~
+    end
+      in case apply 'callInsertLayout'/3(Tok, NextPos, Stack) of
+      <{'Tuple', NewStack, OutputTokens}> when 'true' ->
+        let <NewToks> = call 'lists':'map'(call 'Data.Tuple':'fst'(), OutputTokens)
+      in apply 'insertLayoutGo'/3(NewStack, Rest, apply 'prependReversed'/2(NewToks, Acc))
+    end
+    end
+
+'makeIdentToken'/3 =
+  fun (Name, StartState, EndState) ->
+    apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name), StartState, EndState)
+
+'makeKeywordToken'/3 =
+  fun (Name, StartState, EndState) ->
+    let <Token> = case Name of
+      <#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokForall'()
+      <_W0> when 'true' ->
+        call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name)
+    end
+      in apply 'makeTokenRange'/3(Token, StartState, EndState)
+
+'makeTokenRange'/3 =
+  fun (Tok, StartState, EndState) ->
+    ~{'range'=>~{'start'=>~{'line'=>call 'maps':'get'('line', StartState),'column'=>call 'maps':'get'('column', StartState)}~,'end'=>~{'line'=>call 'maps':'get'('line', EndState),'column'=>call 'maps':'get'('column', EndState)}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>Tok}~
+
+'advanceNewline'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'initLexState'/1(_A0)
+        apply 'advanceNewline'/1(_A0)
+      in _F0
+
+'advanceTab'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'advanceTab'/1(_A0)
       in _F0
 
 'arrayToList'/0 =
@@ -644,16 +650,314 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         apply 'charsToString'/1(_A0)
       in _F0
 
-'listToArray'/0 =
+'closeLayoutsReversed'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'listToArray'/1(_A0)
+        apply 'closeLayoutsReversed'/1(_A0)
+      in _F0
+
+'initLexState'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'initLexState'/1(_A0)
+      in _F0
+
+'insertLayoutTokens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'insertLayoutTokens'/1(_A0)
+      in _F0
+
+'isAlpha'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlpha'/1(_A0)
+      in _F0
+
+'isAlphaNum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlphaNum'/1(_A0)
+      in _F0
+
+'isDigit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isDigit'/1(_A0)
+      in _F0
+
+'isIdentChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isIdentChar'/1(_A0)
+      in _F0
+
+'isIdentStart'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isIdentStart'/1(_A0)
       in _F0
 
 'isIndented'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'isIndented'/1(_A0)
+      in _F0
+
+'isLower'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLower'/1(_A0)
+      in _F0
+
+'isOperatorChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isOperatorChar'/1(_A0)
+      in _F0
+
+'isUpper'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isUpper'/1(_A0)
+      in _F0
+
+'lexChar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexChar'/1(_A0)
+      in _F0
+
+'lexDelimiter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexDelimiter'/1(_A0)
+      in _F0
+
+'lexIdentOrKeyword'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexIdentOrKeyword'/1(_A0)
+      in _F0
+
+'lexModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexModule'/1(_A0)
+      in _F0
+
+'lexNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexNumber'/1(_A0)
+      in _F0
+
+'lexOperator'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexOperator'/1(_A0)
+      in _F0
+
+'lexRawString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexRawString'/1(_A0)
+      in _F0
+
+'lexString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexString'/1(_A0)
+      in _F0
+
+'lexToken'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexToken'/1(_A0)
+      in _F0
+
+'lexTokens'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexTokens'/1(_A0)
+      in _F0
+
+'lexUnderscore'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexUnderscore'/1(_A0)
+      in _F0
+
+'lexUpperIdentifier'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'lexUpperIdentifier'/1(_A0)
+      in _F0
+
+'listToArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listToArray'/1(_A0)
+      in _F0
+
+'skipLineComment'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'skipLineComment'/1(_A0)
+      in _F0
+
+'advance'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'advance'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'advance'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'advance'/2(_A0, _A1)
+      in _F0
+
+'checkQualifiedChain'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'checkQualifiedChain'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'checkQualifiedChain'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'checkQualifiedChain'/2(_A0, _A1)
+      in _F0
+
+'closeLayoutsGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'closeLayoutsGo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'closeLayoutsGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'closeLayoutsGo'/2(_A0, _A1)
+      in _F0
+
+'consumeIdent'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeIdent'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeIdent'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeIdent'/2(_A0, _A1)
+      in _F0
+
+'consumeNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeNumber'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeNumber'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeNumber'/2(_A0, _A1)
+      in _F0
+
+'consumeOperator'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeOperator'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeOperator'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeOperator'/2(_A0, _A1)
+      in _F0
+
+'consumeRawString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeRawString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeRawString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeRawString'/2(_A0, _A1)
+      in _F0
+
+'consumeString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeString'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeString'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeString'/2(_A0, _A1)
+      in _F0
+
+'consumeUpperIdent'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'consumeUpperIdent'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'consumeUpperIdent'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'consumeUpperIdent'/2(_A0, _A1)
+      in _F0
+
+'dropChars'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropChars'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropChars'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropChars'/2(_A0, _A1)
+      in _F0
+
+'lexTokensGo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lexTokensGo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lexTokensGo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lexTokensGo'/2(_A0, _A1)
       in _F0
 
 'lytToken'/0 =
@@ -670,24 +974,46 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         apply 'lytToken'/2(_A0, _A1)
       in _F0
 
-'closeLayoutsReversed'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'closeLayoutsReversed'/1(_A0)
-      in _F0
-
-'closeLayoutsGo'/0 =
+'makeToken'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'closeLayoutsGo'/2(_A0, _A1)
+        apply 'makeToken'/2(_A0, _A1)
       in _F1
       in _F0
 
-'closeLayoutsGo'/1 =
+'makeToken'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'closeLayoutsGo'/2(_A0, _A1)
+        apply 'makeToken'/2(_A0, _A1)
+      in _F0
+
+'prependReversed'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'prependReversed'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'prependReversed'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'prependReversed'/2(_A0, _A1)
+      in _F0
+
+'skipBlockComment'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'skipBlockComment'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'skipBlockComment'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'skipBlockComment'/2(_A0, _A1)
       in _F0
 
 'callInsertLayout'/0 =
@@ -714,20 +1040,6 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         apply 'callInsertLayout'/3(_A0, _A1, _A2)
       in _F0
 
-'prependReversed'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'prependReversed'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'prependReversed'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'prependReversed'/2(_A0, _A1)
-      in _F0
-
 'insertLayoutGo'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -750,200 +1062,6 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'insertLayoutGo'/3(_A0, _A1, _A2)
-      in _F0
-
-'insertLayoutTokens'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'insertLayoutTokens'/1(_A0)
-      in _F0
-
-'lexModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexModule'/1(_A0)
-      in _F0
-
-'lexTokens'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexTokens'/1(_A0)
-      in _F0
-
-'lexTokensGo'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lexTokensGo'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'lexTokensGo'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lexTokensGo'/2(_A0, _A1)
-      in _F0
-
-'lexToken'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexToken'/1(_A0)
-      in _F0
-
-'isDigit'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isDigit'/1(_A0)
-      in _F0
-
-'isUpper'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isUpper'/1(_A0)
-      in _F0
-
-'isLower'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isLower'/1(_A0)
-      in _F0
-
-'isAlpha'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isAlpha'/1(_A0)
-      in _F0
-
-'isAlphaNum'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isAlphaNum'/1(_A0)
-      in _F0
-
-'isIdentStart'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isIdentStart'/1(_A0)
-      in _F0
-
-'isIdentChar'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isIdentChar'/1(_A0)
-      in _F0
-
-'isOperatorChar'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isOperatorChar'/1(_A0)
-      in _F0
-
-'dropChars'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'dropChars'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'dropChars'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'dropChars'/2(_A0, _A1)
-      in _F0
-
-'advance'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'advance'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'advance'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'advance'/2(_A0, _A1)
-      in _F0
-
-'advanceNewline'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'advanceNewline'/1(_A0)
-      in _F0
-
-'advanceTab'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'advanceTab'/1(_A0)
-      in _F0
-
-'makeToken'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'makeToken'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'makeToken'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'makeToken'/2(_A0, _A1)
-      in _F0
-
-'makeTokenRange'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'makeTokenRange'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'makeTokenRange'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'makeTokenRange'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'makeTokenRange'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'makeTokenRange'/3(_A0, _A1, _A2)
-      in _F0
-
-'lexIdentOrKeyword'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexIdentOrKeyword'/1(_A0)
-      in _F0
-
-'makeKeywordToken'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'makeKeywordToken'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'makeKeywordToken'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
       in _F0
 
 'makeIdentToken'/0 =
@@ -970,170 +1088,52 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
         apply 'makeIdentToken'/3(_A0, _A1, _A2)
       in _F0
 
-'lexUpperIdentifier'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexUpperIdentifier'/1(_A0)
-      in _F0
-
-'checkQualifiedChain'/0 =
+'makeKeywordToken'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'checkQualifiedChain'/2(_A0, _A1)
+        let <_F2> = fun (_A2) ->
+        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
+      in _F2
       in _F1
       in _F0
 
-'checkQualifiedChain'/1 =
+'makeKeywordToken'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'checkQualifiedChain'/2(_A0, _A1)
+        let <_F1> = fun (_A2) ->
+        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
+      in _F1
       in _F0
 
-'consumeIdent'/0 =
+'makeKeywordToken'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'makeKeywordToken'/3(_A0, _A1, _A2)
+      in _F0
+
+'makeTokenRange'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'consumeIdent'/2(_A0, _A1)
+        let <_F2> = fun (_A2) ->
+        apply 'makeTokenRange'/3(_A0, _A1, _A2)
+      in _F2
       in _F1
       in _F0
 
-'consumeIdent'/1 =
+'makeTokenRange'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'consumeIdent'/2(_A0, _A1)
-      in _F0
-
-'consumeUpperIdent'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'consumeUpperIdent'/2(_A0, _A1)
+        let <_F1> = fun (_A2) ->
+        apply 'makeTokenRange'/3(_A0, _A1, _A2)
       in _F1
       in _F0
 
-'consumeUpperIdent'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'consumeUpperIdent'/2(_A0, _A1)
-      in _F0
-
-'lexOperator'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexOperator'/1(_A0)
-      in _F0
-
-'consumeOperator'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'consumeOperator'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'consumeOperator'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'consumeOperator'/2(_A0, _A1)
-      in _F0
-
-'lexDelimiter'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexDelimiter'/1(_A0)
-      in _F0
-
-'lexUnderscore'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexUnderscore'/1(_A0)
-      in _F0
-
-'lexNumber'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexNumber'/1(_A0)
-      in _F0
-
-'consumeNumber'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'consumeNumber'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'consumeNumber'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'consumeNumber'/2(_A0, _A1)
-      in _F0
-
-'lexString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexString'/1(_A0)
-      in _F0
-
-'consumeString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'consumeString'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'consumeString'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'consumeString'/2(_A0, _A1)
-      in _F0
-
-'lexRawString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexRawString'/1(_A0)
-      in _F0
-
-'consumeRawString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'consumeRawString'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'consumeRawString'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'consumeRawString'/2(_A0, _A1)
-      in _F0
-
-'lexChar'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'lexChar'/1(_A0)
-      in _F0
-
-'skipLineComment'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'skipLineComment'/1(_A0)
-      in _F0
-
-'skipBlockComment'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'skipBlockComment'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'skipBlockComment'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'skipBlockComment'/2(_A0, _A1)
+'makeTokenRange'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'makeTokenRange'/3(_A0, _A1, _A2)
       in _F0
 
 'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.CstLexer')

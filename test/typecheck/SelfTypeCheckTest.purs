@@ -13,7 +13,8 @@ import Control.Monad (when)
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile, readdir)
 import Nova.Compiler.CstPipeline (parseModuleCst)
-import Nova.Compiler.Types (emptyEnv, ModuleRegistry, defaultRegistry, registerModule)
+import Nova.Compiler.Types (emptyEnv, ModuleRegistry, ModuleExports, defaultRegistry, registerModule, preludeExports)
+import Data.Map as Map
 import Nova.Compiler.TypeChecker (checkModule, TCError, extractExports, extractExportsWithRegistry, addValuesToExports)
 import Nova.Compiler.Ast (Declaration(..), FunctionDeclaration)
 
@@ -30,8 +31,10 @@ main = do
   log ""
 
   -- All modules in dependency order - lib first, then compiler
+  -- Nova.Prelude MUST be first and registers as "Prelude" for standard imports
   let allModules =
-        [ { path: "lib/Data/Tuple.purs", name: "Data.Tuple" }
+        [ { path: "lib/Nova/Prelude.purs", name: "Prelude" }  -- Standard Prelude
+        , { path: "lib/Data/Tuple.purs", name: "Data.Tuple" }
         , { path: "lib/Data/Maybe.purs", name: "Data.Maybe" }
         , { path: "lib/Data/Either.purs", name: "Data.Either" }
         , { path: "lib/Data/Char.purs", name: "Data.Char" }
@@ -101,9 +104,19 @@ compileModule state modInfo = do
         Right env -> do
           log $ "OK: " <> modInfo.name
           let fullExports = addValuesToExports initialExports env decls
-          let newRegistry = registerModule state.registry modInfo.name fullExports
+          -- When registering as "Prelude", merge with primitive operators from preludeExports
+          let finalExports = if modInfo.name == "Prelude"
+                               then mergeWithPrimitiveOps fullExports
+                               else fullExports
+          let newRegistry = registerModule state.registry modInfo.name finalExports
           pure $ { registry: newRegistry
                  , result: state.result { passed = state.result.passed + 1 } }
+
+-- | Merge dynamically extracted exports with primitive operators from preludeExports
+-- | This ensures primitive operators like *>, <$>, etc. remain available
+mergeWithPrimitiveOps :: ModuleExports -> ModuleExports
+mergeWithPrimitiveOps exports =
+  exports { values = Map.union exports.values preludeExports.values }
 
 -- | List .purs files in a directory
 listPursFiles :: String -> Effect (Array String)

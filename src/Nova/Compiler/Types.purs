@@ -630,7 +630,9 @@ emptyExports =
   }
 
 -- | Prelude module exports
--- | Contains all standard Prelude functions and type class methods
+-- | Contains ONLY primitive types and operators that cannot be derived from source.
+-- | All stdlib functions (map, foldl, fromMaybe, etc.) are loaded dynamically
+-- | from lib/*.purs files via extractExports.
 preludeExports :: ModuleExports
 preludeExports =
   { types: Map.fromFoldable
@@ -650,122 +652,44 @@ preludeExports =
       , Tuple "GT" (mkScheme [] tOrdering)
       ]
   , values: Map.fromFoldable
-      -- Functor
-      [ Tuple "map" (mkScheme [a, b, c, d] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar c) (TyVar d))))
-      , Tuple "<$>" (mkScheme [a, b, c, d] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar c) (TyVar d))))  -- map operator
-      -- Applicative
-      , Tuple "pure" (mkScheme [a, b] (tArrow (TyVar a) (TyVar b)))
-      , Tuple "apply" (mkScheme [a, b, c, d] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar c))))
-      , Tuple "applySecond" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))))
-      , Tuple "*>" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))))
-      , Tuple "applyFirst" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
-      , Tuple "<*" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
-      -- Alternative
-      , Tuple "alt" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
-      -- Monad
-      , Tuple "bind" (mkScheme [a, b, c] (tArrow (TyVar a) (tArrow (tArrow (TyVar b) (TyVar c)) (TyVar c))))
-      -- Function combinators
-      , Tuple "identity" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
-      , Tuple "const" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
-      , Tuple "flip" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar c))) (tArrow (TyVar b) (tArrow (TyVar a) (TyVar c)))))
-      , Tuple "compose" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
-      -- Application operators
-      , Tuple "$" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar b))))
-      , Tuple "#" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (tArrow (TyVar a) (TyVar b)) (TyVar b))))
-      -- Show
-      , Tuple "show" (mkScheme [a] (tArrow (TyVar a) tString))
-      -- Eq
-      , Tuple "eq" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
-      , Tuple "==" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
+      -- Primitive operators (these are built into the runtime, not defined in source)
+      -- Eq operators
+      [ Tuple "==" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
       , Tuple "/=" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
-      -- Ord
-      , Tuple "compare" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tOrdering)))
+      -- Ord operators
       , Tuple "<" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
       , Tuple ">" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
       , Tuple "<=" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
       , Tuple ">=" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) tBool)))
-      -- Semigroup
-      , Tuple "append" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
-      , Tuple "<>" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
-      -- Monoid
-      , Tuple "mempty" (mkScheme [a] (TyVar a))
-      -- Semiring
-      , Tuple "add" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
+      -- Arithmetic operators
       , Tuple "+" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      , Tuple "mul" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      , Tuple "*" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      -- Ring
-      , Tuple "sub" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
       , Tuple "-" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      , Tuple "negate" (mkScheme [a] (tArrow (TyVar a) (TyVar a)))
-      -- EuclideanRing
-      , Tuple "div" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
+      , Tuple "*" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
       , Tuple "/" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
       , Tuple "mod" (mkScheme [] (tArrow tInt (tArrow tInt tInt)))
-      -- HeytingAlgebra (Boolean)
-      , Tuple "not" (mkScheme [] (tArrow tBool tBool))
-      , Tuple "conj" (mkScheme [] (tArrow tBool (tArrow tBool tBool)))
+      -- Boolean operators
       , Tuple "&&" (mkScheme [] (tArrow tBool (tArrow tBool tBool)))
-      , Tuple "disj" (mkScheme [] (tArrow tBool (tArrow tBool tBool)))
       , Tuple "||" (mkScheme [] (tArrow tBool (tArrow tBool tBool)))
-      -- Bounded
-      , Tuple "top" (mkScheme [] tInt)
-      , Tuple "bottom" (mkScheme [] tInt)
-      -- Foldable
-      , Tuple "foldl" (mkScheme [a, b] (tArrow (tArrow (TyVar b) (tArrow (TyVar a) (TyVar b))) (tArrow (TyVar b) (tArrow (tList (TyVar a)) (TyVar b)))))
-      , Tuple "foldr" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))) (tArrow (TyVar b) (tArrow (TyVar c) (TyVar b)))))
-      -- Tuple functions
-      , Tuple "fst" (mkScheme [a, b] (tArrow (tTuple [TyVar a, TyVar b]) (TyVar a)))
-      , Tuple "snd" (mkScheme [a, b] (tArrow (tTuple [TyVar a, TyVar b]) (TyVar b)))
-      -- Maybe functions
-      , Tuple "fromMaybe" (mkScheme [a] (tArrow (TyVar a) (tArrow (tMaybe (TyVar a)) (TyVar a))))
-      , Tuple "maybe" (mkScheme [a, b] (tArrow (TyVar b) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tMaybe (TyVar a)) (TyVar b)))))
-      , Tuple "isJust" (mkScheme [a] (tArrow (tMaybe (TyVar a)) tBool))
-      , Tuple "isNothing" (mkScheme [a] (tArrow (tMaybe (TyVar a)) tBool))
-      -- List/Array functions
-      , Tuple "length" (mkScheme [a] (tArrow (TyVar a) tInt))
-      , Tuple "head" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (TyVar a))))
-      , Tuple "tail" (mkScheme [a] (tArrow (tArray (TyVar a)) (tMaybe (tArray (TyVar a)))))
-      , Tuple "null" (mkScheme [a] (tArrow (TyVar a) tBool))
-      , Tuple "reverse" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
-      , Tuple "concat" (mkScheme [a] (tArrow (tArray (tArray (TyVar a))) (tArray (TyVar a))))
-      , Tuple "filter" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-      , Tuple "take" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-      , Tuple "drop" (mkScheme [a] (tArrow tInt (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-      , Tuple "elem" (mkScheme [a] (tArrow (TyVar a) (tArrow (tArray (TyVar a)) tBool)))
-      , Tuple "find" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tMaybe (TyVar a)))))
-      , Tuple "findIndex" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) (tMaybe tInt))))
-      , Tuple "cons" (mkScheme [a] (tArrow (TyVar a) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-      , Tuple "snoc" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArrow (TyVar a) (tArray (TyVar a)))))
-      , Tuple "singleton" (mkScheme [a] (tArrow (TyVar a) (tArray (TyVar a))))
-      , Tuple "empty" (mkScheme [a] (tArray (TyVar a)))
-      , Tuple "intercalate" (mkScheme [a] (tArrow (TyVar a) (tArrow (tArray (TyVar a)) (TyVar a))))
-      , Tuple "replicate" (mkScheme [a] (tArrow tInt (tArrow (TyVar a) (tArray (TyVar a)))))
-      , Tuple "concatMap" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (tArray (TyVar b))) (tArrow (tArray (TyVar a)) (tArray (TyVar b)))))
-      , Tuple "any" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
-      , Tuple "all" (mkScheme [a] (tArrow (tArrow (TyVar a) tBool) (tArrow (tArray (TyVar a)) tBool)))
-      , Tuple "zipWith" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (tArrow (TyVar b) (TyVar c))) (tArrow (tArray (TyVar a)) (tArrow (tArray (TyVar b)) (tArray (TyVar c))))))
-      , Tuple "zip" (mkScheme [a, b] (tArrow (tArray (TyVar a)) (tArrow (tArray (TyVar b)) (tArray (tTuple [TyVar a, TyVar b])))))
-      , Tuple "unzip" (mkScheme [a, b] (tArrow (tArray (tTuple [TyVar a, TyVar b])) (tTuple [tArray (TyVar a), tArray (TyVar b)])))
-      , Tuple "sortBy" (mkScheme [a] (tArrow (tArrow (TyVar a) (tArrow (TyVar a) tOrdering)) (tArrow (tArray (TyVar a)) (tArray (TyVar a)))))
-      , Tuple "sort" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
-      , Tuple "nub" (mkScheme [a] (tArrow (tArray (TyVar a)) (tArray (TyVar a))))
-      -- String functions
-      , Tuple "split" (mkScheme [] (tArrow tString (tArrow tString (tArray tString))))
-      , Tuple "joinWith" (mkScheme [] (tArrow tString (tArrow (tArray tString) tString)))
-      , Tuple "trim" (mkScheme [] (tArrow tString tString))
-      , Tuple "toLower" (mkScheme [] (tArrow tString tString))
-      , Tuple "toUpper" (mkScheme [] (tArrow tString tString))
-      , Tuple "contains" (mkScheme [] (tArrow tString (tArrow tString tBool)))
-      , Tuple "indexOf" (mkScheme [] (tArrow tString (tArrow tString (tMaybe tInt))))
-      , Tuple "replaceAll" (mkScheme [] (tArrow tString (tArrow tString (tArrow tString tString))))
-      , Tuple "charAt" (mkScheme [] (tArrow tInt (tArrow tString (tMaybe tChar))))
-      , Tuple "toCharArray" (mkScheme [] (tArrow tString (tArray tChar)))
-      , Tuple "fromCharArray" (mkScheme [] (tArrow (tArray tChar) tString))
-      -- Misc
+      -- Semigroup operator
+      , Tuple "<>" (mkScheme [a] (tArrow (TyVar a) (tArrow (TyVar a) (TyVar a))))
+      -- Application operators
+      , Tuple "$" (mkScheme [a, b] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar b))))
+      , Tuple "#" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (tArrow (TyVar a) (TyVar b)) (TyVar b))))
+      -- Composition operators
+      , Tuple "<<<" (mkScheme [a, b, c] (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar a) (TyVar c)))))
+      , Tuple ">>>" (mkScheme [a, b, c] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (tArrow (TyVar b) (TyVar c)) (tArrow (TyVar a) (TyVar c)))))
+      -- Applicative/Functor operators (primitive - implementation varies by type)
+      , Tuple "<$>" (mkScheme [a, b, c, d] (tArrow (tArrow (TyVar a) (TyVar b)) (tArrow (TyVar c) (TyVar d))))
+      , Tuple "*>" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar b))))
+      , Tuple "<*" (mkScheme [a, b] (tArrow (TyVar a) (tArrow (TyVar b) (TyVar a))))
+      -- Bind operator (primitive - monad bind)
+      , Tuple ">>=" (mkScheme [a, b, c] (tArrow (TyVar a) (tArrow (tArrow (TyVar b) (TyVar c)) (TyVar c))))
+      -- Guard sentinel
       , Tuple "otherwise" (mkScheme [] tBool)
-      , Tuple "unit" (mkScheme [] tUnit)
       ]
+      -- NOTE: All stdlib functions (identity, const, map, foldl, fromMaybe, etc.)
+      -- are now loaded dynamically from lib/Nova/Prelude.purs, lib/Data/Array.purs,
+      -- and other lib/*.purs files via extractExports.
   , typeAliases: Map.empty
   , expandedTypeAliases: Map.empty
   }
@@ -776,21 +700,10 @@ preludeExports =
     d = mkTVar (-6) "d"
 
 -- | Effect.Console module exports
+-- | NOTE: All functions (log, logShow, error, etc.) are now loaded dynamically
+-- | from lib/Effect/Console.purs via extractExports.
 effectConsoleExports :: ModuleExports
-effectConsoleExports =
-  { types: Map.empty
-  , constructors: Map.empty
-  , values: Map.fromFoldable
-      [ Tuple "log" (mkScheme [] (tArrow tString tUnit))
-      , Tuple "logShow" (mkScheme [a] (tArrow (TyVar a) tUnit))
-      , Tuple "warn" (mkScheme [] (tArrow tString tUnit))
-      , Tuple "error" (mkScheme [] (tArrow tString tUnit))
-      ]
-  , typeAliases: Map.empty
-  , expandedTypeAliases: Map.empty
-  }
-  where
-    a = mkTVar (-1) "a"
+effectConsoleExports = emptyExports
 
 -- | Default module registry with standard library modules
 -- | Nova.Compiler.* modules are NOT included here - they are dynamically

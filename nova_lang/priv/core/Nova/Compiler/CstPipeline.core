@@ -1,5 +1,9 @@
-module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'lexSource'/0, 'parseModuleCst'/0, 'parseModuleToCst'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.CstPipeline' ['lexSource'/0, 'parseModuleCst'/1, 'parseModuleToCst'/1, 'parseModuleCst'/0, 'parseModuleToCst'/0, 'module_info'/0, 'module_info'/1]
   attributes []
+'lexSource'/0 =
+  fun () ->
+    call 'Nova.Compiler.CstLexer':'lexModule'()
+
 'parseModuleCst'/1 =
   fun (Source) ->
     let <Tokens> = call 'Nova.Compiler.CstLexer':'lexModule'(Source)
@@ -29,10 +33,6 @@ module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'l
       <{'Right', CstResult}> when 'true' ->
         {'Right', call 'Data.Tuple':'fst'(CstResult)}
       end
-
-'lexSource'/0 =
-  fun () ->
-    call 'Nova.Compiler.CstLexer':'lexModule'()
 
 'parseModuleCst'/0 =
   fun () ->

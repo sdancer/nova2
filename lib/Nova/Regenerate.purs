@@ -22,7 +22,7 @@ import Data.String as String
 import Nova.Compiler.CstPipeline (parseModuleCst)
 import Nova.Compiler.CodeGenCoreErlang (genModule)
 import Nova.Compiler.TypeChecker (checkModule, extractExports, addValuesToExports)
-import Nova.Compiler.Types (emptyRegistry, emptyEnv, preludeExports, registerModule, ModuleRegistry)
+import Nova.Compiler.Types (emptyRegistry, emptyEnv, preludeExports, registerModule, ModuleRegistry, ModuleExports)
 
 -- ============================================================================
 -- Configuration
@@ -221,14 +221,19 @@ takeModuleName s =
       cp == 46                     -- .
 
 -- | Convert module name to file path
+-- | Special case: "Prelude" maps to Nova.Prelude
 moduleToPath :: Config -> String -> Maybe String
 moduleToPath config modName =
-  let relPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
-      libPath = config.libBase <> relPath
-      srcPath = config.srcBase <> relPath
-  in if fileExists libPath then Just libPath
-     else if fileExists srcPath then Just srcPath
-     else Nothing
+  -- Special case: "Prelude" maps to Nova.Prelude
+  if modName == "Prelude"
+  then Just (config.libBase <> "Nova/Prelude.purs")
+  else
+    let relPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName <> ".purs"
+        libPath = config.libBase <> relPath
+        srcPath = config.srcBase <> relPath
+    in if fileExists libPath then Just libPath
+       else if fileExists srcPath then Just srcPath
+       else Nothing
 
 -- ============================================================================
 -- Dependency Graph
@@ -349,12 +354,23 @@ compileModule config result filePath =
 
                       exports = extractExports declsArray
                       exportsWithValues = addValuesToExports exports env declsArray
-                      newRegistry = registerModule result.registry modName exportsWithValues
+                      -- When compiling Nova.Prelude, register as "Prelude" with primitive operators merged
+                      newRegistry = if modName == "Nova.Prelude"
+                                    then let preludeWithPrimitives = mergeWithPrimitiveOps exportsWithValues
+                                             reg1 = registerModule result.registry "Prelude" preludeWithPrimitives
+                                         in registerModule reg1 modName exportsWithValues
+                                    else registerModule result.registry modName exportsWithValues
 
                       totalTime = getMonotonicMs - modStart
                       lines = countLines code
                       u5 = log ("OK [parse: " <> formatTime parseTime <> ", tc: " <> formatTime tcTime <> ", codegen: " <> formatTime codegenTime <> ", total: " <> formatTime totalTime <> "] (" <> showInt lines <> " lines)")
                   in result { compiled = result.compiled + 1, registry = newRegistry }
+
+-- | Merge dynamically extracted exports with primitive operators from preludeExports
+-- | This ensures primitive operators like *>, <$>, etc. remain available
+mergeWithPrimitiveOps :: ModuleExports -> ModuleExports
+mergeWithPrimitiveOps exports =
+  exports { values = Map.union exports.values preludeExports.values }
 
 -- | Count lines in a string
 countLines :: String -> Int

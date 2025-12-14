@@ -90,17 +90,21 @@ toUnfoldable m = toUnfoldableImpl m
 
 foreign import toUnfoldableImpl :: forall k v. Map k v -> Array (Tuple k v) = "call 'lists':'map'(fun (_T) -> case _T of <{_K, _V}> when 'true' -> {'Tuple', _K, _V} end, call 'maps':'to_list'($0))"
 
--- Union of two maps (left-biased)
+-- Union of two maps (left-biased, like PureScript)
+-- Values from the first map take precedence on key conflicts
 union :: forall k v. Map k v -> Map k v -> Map k v
 union m1 m2 = unionImpl m1 m2
 
-foreign import unionImpl :: forall k v. Map k v -> Map k v -> Map k v = "call 'maps':'merge'($0, $1)"
+-- Note: Erlang maps:merge is right-biased, so we swap args to get left-biased behavior
+foreign import unionImpl :: forall k v. Map k v -> Map k v -> Map k v = "call 'maps':'merge'($1, $0)"
 
 -- Union with custom combining function
+-- f receives (value-from-m1, value-from-m2) for conflicting keys
 unionWith :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v
 unionWith f m1 m2 = unionWithImpl f m1 m2
 
-foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply $0 (V1) in apply F1 (V2), $1, $2)"
+-- Note: With swapped args, V1 is from m2 and V2 is from m1, so we apply f(V2, V1) to get f(m1-val, m2-val)
+foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply $0 (V2) in apply F1 (V1), $1, $0)"
 
 -- Intersection of two maps
 intersection :: forall k v. Map k v -> Map k v -> Map k v
