@@ -1,4 +1,4 @@
-module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/1, 'dirExists'/1, 'mkdirP'/1, 'listDir'/1, 'deleteFile'/1, 'basename'/1, 'basenameNoExt'/2, 'dirname'/1, 'joinPath'/2, 'cwd'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'appendFileImpl'/2, 'fileExistsImpl'/1, 'dirExistsImpl'/1, 'mkdirPImpl'/1, 'listDirImpl'/1, 'deleteFileImpl'/1, 'basenameImpl'/1, 'basenameNoExtImpl'/2, 'dirnameImpl'/1, 'joinPathImpl'/2, 'cwdImpl'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'appendFile'/0, 'appendFile'/1, 'fileExists'/0, 'dirExists'/0, 'mkdirP'/0, 'listDir'/0, 'deleteFile'/0, 'basename'/0, 'basenameNoExt'/0, 'basenameNoExt'/1, 'dirname'/0, 'joinPath'/0, 'joinPath'/1, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'appendFileImpl'/0, 'appendFileImpl'/1, 'fileExistsImpl'/0, 'dirExistsImpl'/0, 'mkdirPImpl'/0, 'listDirImpl'/0, 'deleteFileImpl'/0, 'basenameImpl'/0, 'basenameNoExtImpl'/0, 'basenameNoExtImpl'/1, 'dirnameImpl'/0, 'joinPathImpl'/0, 'joinPathImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/1, 'dirExists'/1, 'mkdirP'/1, 'listDir'/1, 'deleteFile'/1, 'findFilesRecursive'/2, 'basename'/1, 'basenameNoExt'/2, 'dirname'/1, 'joinPath'/2, 'cwd'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'appendFileImpl'/2, 'fileExistsImpl'/1, 'dirExistsImpl'/1, 'mkdirPImpl'/1, 'listDirImpl'/1, 'deleteFileImpl'/1, 'findFilesRecursiveImpl'/2, 'basenameImpl'/1, 'basenameNoExtImpl'/2, 'dirnameImpl'/1, 'joinPathImpl'/2, 'cwdImpl'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'appendFile'/0, 'appendFile'/1, 'fileExists'/0, 'dirExists'/0, 'mkdirP'/0, 'listDir'/0, 'deleteFile'/0, 'findFilesRecursive'/0, 'findFilesRecursive'/1, 'basename'/0, 'basenameNoExt'/0, 'basenameNoExt'/1, 'dirname'/0, 'joinPath'/0, 'joinPath'/1, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'appendFileImpl'/0, 'appendFileImpl'/1, 'fileExistsImpl'/0, 'dirExistsImpl'/0, 'mkdirPImpl'/0, 'listDirImpl'/0, 'deleteFileImpl'/0, 'findFilesRecursiveImpl'/0, 'findFilesRecursiveImpl'/1, 'basenameImpl'/0, 'basenameNoExtImpl'/0, 'basenameNoExtImpl'/1, 'dirnameImpl'/0, 'joinPathImpl'/0, 'joinPathImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'readFile'/1 =
   fun (Path) ->
@@ -31,6 +31,10 @@ module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/
 'deleteFile'/1 =
   fun (Path) ->
     apply 'deleteFileImpl'/1(Path)
+
+'findFilesRecursive'/2 =
+  fun (Dir, Ext) ->
+    apply 'findFilesRecursiveImpl'/2(Dir, Ext)
 
 'basename'/1 =
   fun (Path) ->
@@ -67,6 +71,8 @@ module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/
 'listDirImpl'/1 = fun (V0) -> case call 'file':'list_dir'(V0) of <{'ok', Files}> when 'true' -> {'Right', call 'lists':'map'(fun (F) -> call 'erlang':'list_to_binary'(F), Files)} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
 
 'deleteFileImpl'/1 = fun (V0) -> case call 'file':'delete'(V0) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'atom_to_binary'(Reason, 'utf8')} end
+
+'findFilesRecursiveImpl'/2 = fun (V0, V1) -> case catch letrec 'doFind'/2 = fun (Dir, Ext) -> case call 'file':'list_dir'(Dir) of <{'ok', Entries}> when 'true' -> call 'lists':'foldl'(fun (Entry, Acc) -> let <Full> = call 'filename':'join'(Dir, Entry) in case call 'filelib':'is_dir'(Full) of <'true'> when 'true' -> call 'lists':'append'(Acc, apply 'doFind'/2 (Full, Ext)) <'false'> when 'true' -> let <BinName> = call 'erlang':'list_to_binary'(Entry) in case call 'binary':'match'(BinName, Ext, [{'scope', {call 'erlang':'-'(call 'erlang':'byte_size'(BinName), call 'erlang':'byte_size'(Ext)), call 'erlang':'byte_size'(Ext)}}]) of <'nomatch'> when 'true' -> Acc <_> when 'true' -> [call 'erlang':'list_to_binary'(Full)|Acc] end end, [], Entries) <{'error', _}> when 'true' -> [] end in apply 'doFind'/2 (V0, V1) of <Result> when call 'erlang':'is_list'(Result) -> {'Right', Result} <{'EXIT', _}> when 'true' -> {'Left', #<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])#} end
 
 'basenameImpl'/1 = fun (V0) -> call 'filename':'basename'(V0)
 
@@ -140,6 +146,20 @@ module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'deleteFile'/1(_A0)
+      in _F0
+
+'findFilesRecursive'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findFilesRecursive'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findFilesRecursive'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findFilesRecursive'/2(_A0, _A1)
       in _F0
 
 'basename'/0 =
@@ -244,6 +264,20 @@ module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'deleteFileImpl'/1(_A0)
+      in _F0
+
+'findFilesRecursiveImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findFilesRecursiveImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findFilesRecursiveImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findFilesRecursiveImpl'/2(_A0, _A1)
       in _F0
 
 'basenameImpl'/0 =

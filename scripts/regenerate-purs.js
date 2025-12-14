@@ -1,102 +1,203 @@
 #!/usr/bin/env node
 /**
- * Regenerate script using PureScript Regenerate module
- *
- * This is a thin wrapper that provides filesystem operations to the
- * PureScript Regenerate module. All the actual compilation logic is
- * in Nova.Compiler.Regenerate.
+ * Regenerate script using PureScript modules with verbose timing
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// ============================================================================
-// Main - using dynamic import for ES modules
-// ============================================================================
+function formatTime(ms) {
+  if (ms >= 1000) return `${(ms / 1000).toFixed(2)}s`;
+  return `${ms.toFixed(1)}ms`;
+}
+
+function findFiles(dir, ext, files = []) {
+  if (!fs.existsSync(dir)) return files;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      findFiles(fullPath, ext, files);
+    } else if (entry.name.endsWith(ext)) {
+      files.push('./' + fullPath.replace(/\\/g, '/'));
+    }
+  }
+  return files;
+}
 
 async function main() {
-  const regenerate = await import('../output/Nova.Compiler.Regenerate/index.js');
-  const Maybe = await import('../output/Data.Maybe/index.js');
+  console.log('=== Nova Compiler Regeneration (Verbose) ===\n');
+  const totalStart = performance.now();
 
-  // Create filesystem operations object matching the FileSystem type
-  const fileSystem = {
-    readFile: (filePath) => {
-      try {
-        if (fs.existsSync(filePath)) {
-          const content = fs.readFileSync(filePath, 'utf8');
-          return new Maybe.Just(content);
-        }
-        return Maybe.Nothing.value;
-      } catch (e) {
-        return Maybe.Nothing.value;
-      }
-    },
+  // Import modules
+  console.log('Loading PureScript modules...');
+  let loadStart = performance.now();
 
-    writeFile: (filePath) => (content) => {
-      // Ensure directory exists
-      const dir = path.dirname(filePath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(filePath, content);
-      return {}; // Unit
-    },
+  const CstPipeline = await import('../output/Nova.Compiler.CstPipeline/index.js');
+  const CodeGen = await import('../output/Nova.Compiler.CodeGenCoreErlang/index.js');
+  const TypeChecker = await import('../output/Nova.Compiler.TypeChecker/index.js');
+  const Types = await import('../output/Nova.Compiler.Types/index.js');
+  const Either = await import('../output/Data.Either/index.js');
+  const DataArray = await import('../output/Data.Array/index.js');
+  const DataListTypes = await import('../output/Data.List.Types/index.js');
 
-    fileExists: (filePath) => {
-      return fs.existsSync(filePath);
-    },
+  console.log(`Modules loaded in ${formatTime(performance.now() - loadStart)}\n`);
 
-    listFiles: (dir) => (extension) => {
-      const files = [];
-
-      function walk(currentDir) {
-        if (!fs.existsSync(currentDir)) return;
-
-        try {
-          const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-          for (const entry of entries) {
-            const fullPath = path.join(currentDir, entry.name);
-            if (entry.isDirectory()) {
-              walk(fullPath);
-            } else if (entry.name.endsWith(extension)) {
-              // Normalize to use ./ prefix like the original script
-              files.push('./' + fullPath.replace(/\\/g, '/'));
-            }
-          }
-        } catch (e) {
-          // Ignore permission errors, etc.
-        }
-      }
-
-      walk(dir);
-      return files;
-    }
+  const config = {
+    srcBase: './src/',
+    libBase: './lib/',
+    outputDir: './output/',
+    targetDir: './nova_lang/priv/core/'
   };
 
-  console.log('=== Nova Compiler Regeneration (PureScript) ===\n');
+  // Find all source files
+  console.log('Finding source files...');
+  const libFiles = findFiles(config.libBase, '.purs');
+  const srcFiles = findFiles(config.srcBase, '.purs');
+  const allFiles = [...libFiles, ...srcFiles];
+  console.log(`Found ${libFiles.length} lib files, ${srcFiles.length} src files\n`);
 
-  // Use default config
-  const config = regenerate.defaultConfig;
+  // Extract imports from a file
+  function extractImports(source) {
+    const imports = [];
+    for (const line of source.split('\n')) {
+      const match = line.match(/^import\s+([A-Z][A-Za-z0-9.]*)/);
+      if (match) imports.push(match[1]);
+    }
+    return imports;
+  }
 
-  console.log('Source dir:', config.srcBase);
-  console.log('Library dir:', config.libBase);
-  console.log('Output dir:', config.outputDir);
-  console.log('Target dir:', config.targetDir);
-  console.log('');
+  // Convert module name to file path
+  function moduleToPath(modName) {
+    const relPath = modName.replace(/\./g, '/') + '.purs';
+    const libPath = config.libBase + relPath;
+    const srcPath = config.srcBase + relPath;
+    if (fs.existsSync(libPath)) return libPath;
+    if (fs.existsSync(srcPath)) return srcPath;
+    return null;
+  }
 
-  // Run regeneration
-  const result = regenerate.regenerate(fileSystem)(config);
+  // Build dependency graph
+  console.log('Building dependency graph...');
+  let graphStart = performance.now();
+  const deps = new Map();
+  for (const filePath of allFiles) {
+    const source = fs.readFileSync(filePath, 'utf8');
+    const imports = extractImports(source);
+    const depPaths = imports.map(moduleToPath).filter(p => p && p !== filePath);
+    deps.set(filePath, depPaths);
+  }
+  console.log(`Dependency graph built in ${formatTime(performance.now() - graphStart)}\n`);
 
-  // Print logs
-  console.log(regenerate.showLogs(result.logs));
+  // Topological sort
+  console.log('Topological sort...');
+  let sortStart = performance.now();
+  const sorted = [];
+  const visited = new Set();
+  const visiting = new Set();
 
-  // Print summary
+  function visit(path) {
+    if (visited.has(path)) return;
+    if (visiting.has(path)) return; // circular
+    visiting.add(path);
+    for (const dep of (deps.get(path) || [])) {
+      if (deps.has(dep)) visit(dep);
+    }
+    visiting.delete(path);
+    visited.add(path);
+    sorted.push(path);
+  }
+
+  for (const path of allFiles) visit(path);
+  console.log(`Sorted ${sorted.length} modules in ${formatTime(performance.now() - sortStart)}\n`);
+
+  // Get module name from path
+  function getModuleName(filePath) {
+    let relative = filePath;
+    if (filePath.startsWith(config.libBase)) {
+      relative = filePath.slice(config.libBase.length);
+    } else if (filePath.startsWith(config.srcBase)) {
+      relative = filePath.slice(config.srcBase.length);
+    }
+    return relative.replace(/\.purs$/, '').replace(/\//g, '.');
+  }
+
+  // Compile modules
+  console.log('=== Compiling Modules ===\n');
+  let registry = Types.registerModule(Types.emptyRegistry)("Prelude")(Types.preludeExports);
+  let compiled = 0;
+  let errors = 0;
+
+  for (const filePath of sorted) {
+    const modName = getModuleName(filePath);
+    const source = fs.readFileSync(filePath, 'utf8');
+    const bytes = Buffer.byteLength(source, 'utf8');
+
+    process.stdout.write(`${modName} (${bytes} bytes)... `);
+    const modStart = performance.now();
+
+    // Phase 1: Parse
+    let parseStart = performance.now();
+    const parseResult = CstPipeline.parseModuleCst(source);
+    const parseTime = performance.now() - parseStart;
+
+    if (parseResult instanceof Either.Left) {
+      console.log(`PARSE ERROR: ${parseResult.value0}`);
+      errors++;
+      continue;
+    }
+    const mod = parseResult.value0;
+
+    // Phase 2: Type check
+    let tcStart = performance.now();
+    const declsArray = DataArray.fromFoldable(DataListTypes.foldableList)(mod.declarations);
+    const tcResult = TypeChecker.checkModule(registry)(Types.emptyEnv)(declsArray);
+    const tcTime = performance.now() - tcStart;
+
+    if (tcResult instanceof Either.Left) {
+      console.log(`TYPE ERROR (parse: ${formatTime(parseTime)}): ${JSON.stringify(tcResult.value0, null, 2)}`);
+      errors++;
+      continue;
+    }
+    const env = tcResult.value0;
+
+    // Phase 3: CodeGen
+    let codegenStart = performance.now();
+    const code = CodeGen.genModule(mod);
+    const codegenTime = performance.now() - codegenStart;
+
+    // Write output
+    const modPath = modName.replace(/\./g, '/');
+    const outputFile = config.outputDir + modPath + '.core';
+    const targetFile = config.targetDir + modPath + '.core';
+
+    const outDir = path.dirname(outputFile);
+    const targetDir = path.dirname(targetFile);
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+
+    fs.writeFileSync(outputFile, code);
+    fs.writeFileSync(targetFile, code);
+
+    // Update registry
+    const exports = TypeChecker.extractExports(declsArray);
+    const exportsWithValues = TypeChecker.addValuesToExports(exports)(env)(declsArray);
+    registry = Types.registerModule(registry)(modName)(exportsWithValues);
+
+    const totalTime = performance.now() - modStart;
+    const lines = code.split('\n').length;
+    console.log(`OK [parse: ${formatTime(parseTime)}, tc: ${formatTime(tcTime)}, codegen: ${formatTime(codegenTime)}, total: ${formatTime(totalTime)}] (${lines} lines)`);
+    compiled++;
+  }
+
+  const totalTime = performance.now() - totalStart;
   console.log('\n=== Summary ===');
-  console.log('Modules compiled:', result.modulesCompiled);
-  console.log('Success:', result.success);
+  console.log(`Compiled: ${compiled}`);
+  console.log(`Errors: ${errors}`);
+  console.log(`Total time: ${formatTime(totalTime)}`);
 }
 
 main().catch(err => {
   console.error('Error:', err);
+  console.error(err.stack);
   process.exit(1);
 });

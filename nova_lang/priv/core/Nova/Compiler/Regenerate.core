@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'moduleToPath'/3, 'discoverDependencies'/4, 'buildDependencyGraph'/4, 'topologicalSort'/1, 'parseAndCheckModule'/2, 'compileModule'/2, 'getModuleName'/2, 'getFileBaseName'/1, 'getShortName'/0, 'compileLibraryModules'/3, 'compileSourceModules'/4, 'regenerate'/2, 'compileAllModules'/3, 'showLogEntry'/1, 'showLogs'/0, 'LogInfo'/1, 'LogWarning'/1, 'LogError'/1, 'extractImports'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'moduleToPath'/2, 'discoverDependencies'/0, 'discoverDependencies'/1, 'discoverDependencies'/2, 'discoverDependencies'/3, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildDependencyGraph'/2, 'buildDependencyGraph'/3, 'topologicalSort'/0, 'parseAndCheckModule'/0, 'parseAndCheckModule'/1, 'compileModule'/0, 'compileModule'/1, 'getModuleName'/0, 'getModuleName'/1, 'getFileBaseName'/0, 'compileLibraryModules'/0, 'compileLibraryModules'/1, 'compileLibraryModules'/2, 'compileSourceModules'/0, 'compileSourceModules'/1, 'compileSourceModules'/2, 'compileSourceModules'/3, 'regenerate'/0, 'regenerate'/1, 'compileAllModules'/0, 'compileAllModules'/1, 'compileAllModules'/2, 'showLogEntry'/0, 'LogInfo'/0, 'LogWarning'/0, 'LogError'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'moduleToPath'/3, 'buildDependencyGraph'/3, 'topologicalSort'/1, 'getModuleName'/2, 'parseAndCheckModule'/2, 'regenerate'/2, 'compileAllModules'/3, 'compileOneModule'/4, 'showLogEntry'/1, 'showLogs'/0, 'LogInfo'/1, 'LogWarning'/1, 'LogError'/1, 'extractImports'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'moduleToPath'/2, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildDependencyGraph'/2, 'topologicalSort'/0, 'getModuleName'/0, 'getModuleName'/1, 'parseAndCheckModule'/0, 'parseAndCheckModule'/1, 'regenerate'/0, 'regenerate'/1, 'compileAllModules'/0, 'compileAllModules'/1, 'compileAllModules'/2, 'compileOneModule'/0, 'compileOneModule'/1, 'compileOneModule'/2, 'compileOneModule'/3, 'showLogEntry'/0, 'LogInfo'/0, 'LogWarning'/0, 'LogError'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: LogEntry
 % Constructors: LogInfo, LogWarning, LogError
@@ -17,7 +17,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
 
 'defaultConfig'/0 =
   fun () ->
-    ~{'srcBase'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'libBase'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'outputDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'targetDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#}~
+    ~{'srcBase'=>#{#<115>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'libBase'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'outputDir'=>#{#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'targetDir'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#}~
 
 'extractImports'/1 =
   fun (Source) ->
@@ -48,10 +48,10 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
       in call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'extractImport'/1(_Mf0), Lines)
 
 'moduleToPath'/3 =
-  fun (Fs, Cfg, ModName) ->
+  fun (Fs, Config, ModName) ->
     let <RelPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <LibPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('libBase', Cfg), RelPath)
-      in let <SrcPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('srcBase', Cfg), RelPath)
+      in let <LibPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('libBase', Config), RelPath)
+      in let <SrcPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('srcBase', Config), RelPath)
       in case apply call 'maps':'get'('fileExists', Fs)(LibPath) of
       <'true'> when 'true' -> {'Just', LibPath}
       <'false'> when 'true' -> case apply call 'maps':'get'('fileExists', Fs)(SrcPath) of
@@ -60,23 +60,19 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     end
     end
 
-'discoverDependencies'/4 =
-  fun (Fs, Cfg, Path, _W0) ->
-    case apply call 'maps':'get'('readFile', Fs)(Path) of
+'buildDependencyGraph'/3 =
+  fun (Fs, Config, Files) ->
+    call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (Path) ->
+      let <Deps> = case apply call 'maps':'get'('readFile', Fs)(Path) of
       <'Nothing'> when 'true' ->
         []
       <{'Just', Source}> when 'true' ->
         let <Imports> = apply 'extractImports'/1(Source)
-      in letrec 'toDep'/1 = fun (ModName) ->
-      apply 'moduleToPath'/3(Fs, Cfg, ModName)
+      in let <DepPaths> = call 'Data.Array':'mapMaybe'(fun (_Pc0) -> apply 'moduleToPath'/3(Fs, Config, _Pc0), Imports)
       in call 'Data.Array':'filter'(fun (P) ->
-      call 'erlang':'=/='(P, Path), call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'toDep'/1(_Mf0), Imports))
+      call 'erlang':'=/='(P, Path), DepPaths)
     end
-
-'buildDependencyGraph'/4 =
-  fun (Fs, Cfg, Paths, IsLibModules) ->
-    call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (Path) ->
-      call 'Data.Tuple':'Tuple'(Path, apply 'discoverDependencies'/4(Fs, Cfg, Path, IsLibModules)), Paths))
+      in call 'Data.Tuple':'Tuple'(Path, Deps), Files))
 
 'topologicalSort'/1 =
   fun (Graph) ->
@@ -114,6 +110,19 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     end
       in apply 'go'/4(call 'Data.Array':'fromFoldable'(call 'Data.Map':'keys'(Graph)), call 'Data.Set':'empty'(), call 'Data.Set':'empty'(), [])
 
+'getModuleName'/2 =
+  fun (Config, Path) ->
+    let <BaseLen> = case call 'erlang':'=:='(call 'Data.String':'take'(call 'Data.String':'length'(call 'maps':'get'('libBase', Config)), Path), call 'maps':'get'('libBase', Config)) of
+      <'true'> when 'true' -> call 'Data.String':'length'(call 'maps':'get'('libBase', Config))
+      <'false'> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'take'(call 'Data.String':'length'(call 'maps':'get'('srcBase', Config)), Path), call 'maps':'get'('srcBase', Config)) of
+      <'true'> when 'true' -> call 'Data.String':'length'(call 'maps':'get'('srcBase', Config))
+      <'false'> when 'true' -> 0
+    end
+    end
+      in let <Relative> = call 'Data.String':'drop'(BaseLen, Path)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
+
 'parseAndCheckModule'/2 =
   fun (Registry, Source) ->
     case call 'Nova.Compiler.CstPipeline':'parseModuleCst'(Source) of
@@ -131,120 +140,31 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     end
     end
 
-'compileModule'/2 =
-  fun (Registry, Source) ->
-    case apply 'parseAndCheckModule'/2(Registry, Source) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', Err}
-      <{'Right', Result}> when 'true' ->
-        let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
-      in {'Right', Code}
-    end
-
-'getModuleName'/2 =
-  fun (Cfg, Path) ->
-    case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('libBase', Cfg)), Path), {'Just', 0}) of
-      <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('libBase', Cfg)), Path)
-      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
-      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
-      <'false'> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(call 'maps':'get'('srcBase', Cfg)), Path), {'Just', 0}) of
-      <'true'> when 'true' -> let <Relative> = call 'Data.String':'drop'(call 'Data.String':'length'(call 'maps':'get'('srcBase', Cfg)), Path)
-      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
-      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
-      <'false'> when 'true' -> let <Match> = apply 'getFileBaseName'/1(Path)
-      in Match
-    end
-    end
-
-'getFileBaseName'/1 =
-  fun (Path) ->
-    let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), Path)
-      in case call 'Data.Array':'last'(Parts) of
-      <'Nothing'> when 'true' ->
-        Path
-      <{'Just', Filename}> when 'true' ->
-        call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Filename), 5), Filename)
-    end
-
-'getShortName'/0 =
-  fun () ->
-    fun (_Mf0) -> apply 'getFileBaseName'/1(_Mf0)
-
-'compileLibraryModules'/3 =
-  fun (Fs, Cfg, SortedPaths) ->
-    letrec 'compileLibModule'/4 = fun (_L0, _L1, _L2, _L3) ->
-      case {_L0, _L1, _L2, _L3} of
-        <{Fs_, Cfg_, {'Tuple', Registry, Logs}, Path}> when 'true' -> case apply call 'maps':'get'('readFile', Fs_)(Path) of
-      <'Nothing'> when 'true' ->
-        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Path))))
-      <{'Just', Source}> when 'true' ->
-        let <ModName> = apply 'getModuleName'/2(Cfg_, Path)
-      in case apply 'parseAndCheckModule'/2(Registry, Source) of
-      <{'Left', Err}> when 'true' ->
-        call 'Data.Tuple':'Tuple'(Registry, call 'Data.Array':'snoc'(Logs, apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(ModName, #{#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Err))))
-      <{'Right', Result}> when 'true' ->
-        let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(Registry, ModName, call 'maps':'get'('exports', Result))
-      in let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
-      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName)
-      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
-      in call 'Data.Tuple':'Tuple'(Registry_, call 'Data.Array':'snoc'(Logs, apply 'LogInfo'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ModName))))
-    end
-    end
-      end
-      in let <Initial> = call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), #{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'Nova.Compiler.Types':'preludeExports'()), [])
-      in call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileLibModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
-
-'compileSourceModules'/4 =
-  fun (Fs, Cfg, LibRegistry, SortedPaths) ->
-    letrec 'compileSrcModule'/4 = fun (Fs_, Cfg_, Acc, Path) ->
-      case apply call 'maps':'get'('readFile', Fs_)(Path) of
-      <'Nothing'> when 'true' ->
-        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Path)))}~)
-      <{'Just', Source}> when 'true' ->
-        let <FullModName> = apply 'getModuleName'/2(Cfg_, Path)
-      in case apply 'parseAndCheckModule'/2(call 'maps':'get'('registry', Acc), Source) of
-      <{'Left', Err}> when 'true' ->
-        call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(FullModName, #{#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Err)))}~)
-      <{'Right', Result}> when 'true' ->
-        let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
-      in let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Acc), FullModName, call 'maps':'get'('exports', Result))
-      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), FullModName)
-      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <LineCount> = call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), Code))
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
-      in let <LogMsg> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FullModName), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(LineCount)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#)
-      in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 1),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
-    end
-    end
-      in let <Initial> = ~{'registry'=>LibRegistry,'count'=>0,'logs'=>[]}~
-      in let <Result> = call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileSrcModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
-      in call 'Data.Tuple':'Tuple'(call 'maps':'get'('count', Result), call 'maps':'get'('logs', Result))
-
 'regenerate'/2 =
-  fun (Fs, Cfg) ->
-    let <LibFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('libBase', Cfg), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <SrcFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('srcBase', Cfg), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+  fun (Fs, Config) ->
+    let <LibFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('libBase', Config), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <SrcFiles> = apply call 'maps':'get'('listFiles', Fs)(call 'maps':'get'('srcBase', Config), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
       in let <AllFiles> = call 'Nova.Prelude':'semigroupAppendImpl'(LibFiles, SrcFiles)
-      in let <CombinedDeps> = apply 'buildDependencyGraph'/4(Fs, Cfg, AllFiles, 'false')
+      in let <CombinedDeps> = apply 'buildDependencyGraph'/3(Fs, Config, AllFiles)
       in let <SortedModules> = apply 'topologicalSort'/1(CombinedDeps)
-      in let <_Let0> = apply 'compileAllModules'/3(Fs, Cfg, SortedModules)
+      in let <_Let0> = apply 'compileAllModules'/3(Fs, Config, SortedModules)
       in case _Let0 of
         <{'Tuple', Count, Logs}> when 'true' -> ~{'success'=>'true','modulesCompiled'=>Count,'logs'=>Logs}~
       end
 
 'compileAllModules'/3 =
-  fun (Fs, Cfg, SortedPaths) ->
-    letrec 'compileOneModule'/4 = fun (Fs_, Cfg_, Acc, Path) ->
-      case apply call 'maps':'get'('readFile', Fs_)(Path) of
+  fun (Fs, Config, SortedPaths) ->
+    let <Initial> = ~{'registry'=>call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), #{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'Nova.Compiler.Types':'preludeExports'()),'count'=>0,'logs'=>[]}~
+      in let <Result> = call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileOneModule'/4(Fs, Config, _Pc0, _Pc1), Initial, SortedPaths)
+      in call 'Data.Tuple':'Tuple'(call 'maps':'get'('count', Result), call 'maps':'get'('logs', Result))
+
+'compileOneModule'/4 =
+  fun (Fs, Config, Acc, Path) ->
+    case apply call 'maps':'get'('readFile', Fs)(Path) of
       <'Nothing'> when 'true' ->
         call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Path)))}~)
       <{'Just', Source}> when 'true' ->
-        let <FullModName> = apply 'getModuleName'/2(Cfg_, Path)
+        let <FullModName> = apply 'getModuleName'/2(Config, Path)
       in case apply 'parseAndCheckModule'/2(call 'maps':'get'('registry', Acc), Source) of
       <{'Left', Err}> when 'true' ->
         call 'maps':'merge'(Acc, ~{'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogError'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(FullModName, #{#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Err)))}~)
@@ -252,18 +172,15 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
         let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(call 'maps':'get'('mod', Result))
       in let <Registry_> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Acc), FullModName, call 'maps':'get'('exports', Result))
       in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), FullModName)
-      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Cfg_), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Config), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Config), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
       in let <LineCount> = call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), Code))
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(OutputFile, Code)
-      in let <_W0> = apply call 'maps':'get'('writeFile', Fs_)(TargetFile, Code)
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs)(OutputFile, Code)
+      in let <_W0> = apply call 'maps':'get'('writeFile', Fs)(TargetFile, Code)
       in let <LogMsg> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FullModName), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(LineCount)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#)
       in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 1),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
     end
     end
-      in let <Initial> = ~{'registry'=>call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'(), #{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'Nova.Compiler.Types':'preludeExports'()),'count'=>0,'logs'=>[]}~
-      in let <Result> = call 'Data.Foldable':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileOneModule'/4(Fs, Cfg, _Pc0, _Pc1), Initial, SortedPaths)
-      in call 'Data.Tuple':'Tuple'(call 'maps':'get'('count', Result), call 'maps':'get'('logs', Result))
 
 'showLogEntry'/1 =
   fun (_P0) ->
@@ -310,50 +227,12 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
         apply 'moduleToPath'/3(_A0, _A1, _A2)
       in _F0
 
-'discoverDependencies'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        let <_F3> = fun (_A3) ->
-        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
-      in _F3
-      in _F2
-      in _F1
-      in _F0
-
-'discoverDependencies'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        let <_F2> = fun (_A3) ->
-        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
-      in _F2
-      in _F1
-      in _F0
-
-'discoverDependencies'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        let <_F1> = fun (_A3) ->
-        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
-      in _F1
-      in _F0
-
-'discoverDependencies'/3 =
-  fun (_A0, _A1, _A2) ->
-    let <_F0> = fun (_A3) ->
-        apply 'discoverDependencies'/4(_A0, _A1, _A2, _A3)
-      in _F0
-
 'buildDependencyGraph'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
         let <_F2> = fun (_A2) ->
-        let <_F3> = fun (_A3) ->
-        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
-      in _F3
+        apply 'buildDependencyGraph'/3(_A0, _A1, _A2)
       in _F2
       in _F1
       in _F0
@@ -362,58 +241,20 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         let <_F1> = fun (_A2) ->
-        let <_F2> = fun (_A3) ->
-        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
-      in _F2
+        apply 'buildDependencyGraph'/3(_A0, _A1, _A2)
       in _F1
       in _F0
 
 'buildDependencyGraph'/2 =
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
-        let <_F1> = fun (_A3) ->
-        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
-      in _F1
-      in _F0
-
-'buildDependencyGraph'/3 =
-  fun (_A0, _A1, _A2) ->
-    let <_F0> = fun (_A3) ->
-        apply 'buildDependencyGraph'/4(_A0, _A1, _A2, _A3)
+        apply 'buildDependencyGraph'/3(_A0, _A1, _A2)
       in _F0
 
 'topologicalSort'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'topologicalSort'/1(_A0)
-      in _F0
-
-'parseAndCheckModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'parseAndCheckModule'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'parseAndCheckModule'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'parseAndCheckModule'/2(_A0, _A1)
-      in _F0
-
-'compileModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'compileModule'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'compileModule'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'compileModule'/2(_A0, _A1)
       in _F0
 
 'getModuleName'/0 =
@@ -430,70 +271,18 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
         apply 'getModuleName'/2(_A0, _A1)
       in _F0
 
-'getFileBaseName'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getFileBaseName'/1(_A0)
-      in _F0
-
-'compileLibraryModules'/0 =
+'parseAndCheckModule'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
-      in _F2
+        apply 'parseAndCheckModule'/2(_A0, _A1)
       in _F1
       in _F0
 
-'compileLibraryModules'/1 =
+'parseAndCheckModule'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'compileLibraryModules'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'compileLibraryModules'/3(_A0, _A1, _A2)
-      in _F0
-
-'compileSourceModules'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        let <_F3> = fun (_A3) ->
-        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
-      in _F3
-      in _F2
-      in _F1
-      in _F0
-
-'compileSourceModules'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        let <_F2> = fun (_A3) ->
-        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
-      in _F2
-      in _F1
-      in _F0
-
-'compileSourceModules'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        let <_F1> = fun (_A3) ->
-        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
-      in _F1
-      in _F0
-
-'compileSourceModules'/3 =
-  fun (_A0, _A1, _A2) ->
-    let <_F0> = fun (_A3) ->
-        apply 'compileSourceModules'/4(_A0, _A1, _A2, _A3)
+        apply 'parseAndCheckModule'/2(_A0, _A1)
       in _F0
 
 'regenerate'/0 =
@@ -532,6 +321,42 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'compileAllModules'/3(_A0, _A1, _A2)
+      in _F0
+
+'compileOneModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        let <_F3> = fun (_A3) ->
+        apply 'compileOneModule'/4(_A0, _A1, _A2, _A3)
+      in _F3
+      in _F2
+      in _F1
+      in _F0
+
+'compileOneModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        let <_F2> = fun (_A3) ->
+        apply 'compileOneModule'/4(_A0, _A1, _A2, _A3)
+      in _F2
+      in _F1
+      in _F0
+
+'compileOneModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        let <_F1> = fun (_A3) ->
+        apply 'compileOneModule'/4(_A0, _A1, _A2, _A3)
+      in _F1
+      in _F0
+
+'compileOneModule'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'compileOneModule'/4(_A0, _A1, _A2, _A3)
       in _F0
 
 'showLogEntry'/0 =

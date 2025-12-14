@@ -1,0 +1,583 @@
+module 'Nova.Regenerate' ['defaultConfig'/0, 'main'/1, 'runRegenerate'/1, 'log'/1, 'logNoNewline'/1, 'unit'/0, 'readFile'/1, 'writeFile'/2, 'fileExists'/1, 'findFiles'/2, 'ensureDir'/1, 'dirname'/1, 'getMonotonicMs'/0, 'formatTime'/1, 'showInt'/1, 'showAny'/1, 'extractImports'/1, 'extractImportFromLine'/1, 'takeModuleName'/1, 'moduleToPath'/2, 'buildDependencyGraph'/2, 'topoSort'/2, 'getModuleName'/2, 'compileModules'/2, 'compileModule'/3, 'countLines'/1, 'logImpl'/1, 'logNoNewlineImpl'/1, 'unitImpl'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'fileExistsImpl'/1, 'findFilesImpl'/2, 'ensureDirImpl'/1, 'dirnameImpl'/1, 'getMonotonicMsImpl'/0, 'formatTimeImpl'/1, 'showIntImpl'/1, 'showAnyImpl'/1, 'main'/0, 'runRegenerate'/0, 'log'/0, 'logNoNewline'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'fileExists'/0, 'findFiles'/0, 'findFiles'/1, 'ensureDir'/0, 'dirname'/0, 'formatTime'/0, 'showInt'/0, 'showAny'/0, 'extractImports'/0, 'extractImportFromLine'/0, 'takeModuleName'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'topoSort'/0, 'topoSort'/1, 'getModuleName'/0, 'getModuleName'/1, 'compileModules'/0, 'compileModules'/1, 'compileModule'/0, 'compileModule'/1, 'compileModule'/2, 'countLines'/0, 'logImpl'/0, 'logNoNewlineImpl'/0, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'fileExistsImpl'/0, 'findFilesImpl'/0, 'findFilesImpl'/1, 'ensureDirImpl'/0, 'dirnameImpl'/0, 'formatTimeImpl'/0, 'showIntImpl'/0, 'showAnyImpl'/0, 'module_info'/0, 'module_info'/1]
+  attributes []
+'defaultConfig'/0 =
+  fun () ->
+    ~{'srcBase'=>#{#<115>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'libBase'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'outputDir'=>#{#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#,'targetDir'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<47>(8,1,'integer',['unsigned'|['big']])}#}~
+
+'main'/1 =
+  fun (U0) ->
+    apply 'runRegenerate'/1(apply 'defaultConfig'/0())
+
+'runRegenerate'/1 =
+  fun (Config) ->
+    let <U1> = apply 'log'/1(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']]),#<66>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <U2> = apply 'log'/1(#{}#)
+      in let <TotalStart> = apply 'getMonotonicMs'/0()
+      in let <U3> = apply 'log'/1(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LibFiles> = apply 'findFiles'/2(call 'maps':'get'('libBase', Config), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <SrcFiles> = apply 'findFiles'/2(call 'maps':'get'('srcBase', Config), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <U5> = apply 'log'/1(#{}#)
+      in let <U6> = apply 'log'/1(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <GraphStart> = apply 'getMonotonicMs'/0()
+      in let <U8> = apply 'log'/1(#{}#)
+      in let <U9> = apply 'log'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <SortStart> = apply 'getMonotonicMs'/0()
+      in let <U11> = apply 'log'/1(#{}#)
+      in let <U12> = apply 'log'/1(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <U13> = apply 'log'/1(#{}#)
+      in let <U14> = apply 'log'/1(#{}#)
+      in let <U15> = apply 'log'/1(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <AllFiles> = call 'Data.Array':'concat'([LibFiles, SrcFiles])
+      in let <U4> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showInt'/1(call 'Data.Array':'length'(LibFiles))), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showInt'/1(call 'Data.Array':'length'(SrcFiles))), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#))
+      in let <GraphTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), GraphStart)
+      in let <SortTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), SortStart)
+      in let <TotalTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), TotalStart)
+      in let <Deps> = apply 'buildDependencyGraph'/2(Config, AllFiles)
+      in let <U7> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(GraphTime)))
+      in let <U18> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(TotalTime)))
+      in let <Sorted> = apply 'topoSort'/2(AllFiles, Deps)
+      in let <U10> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showInt'/1(call 'Data.Array':'length'(Sorted))), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'formatTime'/1(SortTime)))
+      in let <Result> = apply 'compileModules'/2(Config, Sorted)
+      in let <U16> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showInt'/1(call 'maps':'get'('compiled', Result))))
+      in let <U17> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'showInt'/1(call 'maps':'get'('errors', Result))))
+      in 'unit'
+
+'log'/1 =
+  fun (Msg) ->
+    apply 'logImpl'/1(Msg)
+
+'logNoNewline'/1 =
+  fun (Msg) ->
+    apply 'logNoNewlineImpl'/1(Msg)
+
+'unit'/0 =
+  fun () ->
+    apply 'unitImpl'/0()
+
+'readFile'/1 =
+  fun (Path) ->
+    apply 'readFileImpl'/1(Path)
+
+'writeFile'/2 =
+  fun (Path, Content) ->
+    apply 'writeFileImpl'/2(Path, Content)
+
+'fileExists'/1 =
+  fun (Path) ->
+    apply 'fileExistsImpl'/1(Path)
+
+'findFiles'/2 =
+  fun (Dir, Ext) ->
+    apply 'findFilesImpl'/2(Dir, Ext)
+
+'ensureDir'/1 =
+  fun (Dir) ->
+    apply 'ensureDirImpl'/1(Dir)
+
+'dirname'/1 =
+  fun (Path) ->
+    apply 'dirnameImpl'/1(Path)
+
+'getMonotonicMs'/0 =
+  fun () ->
+    apply 'getMonotonicMsImpl'/0()
+
+'formatTime'/1 =
+  fun (Ms) ->
+    apply 'formatTimeImpl'/1(Ms)
+
+'showInt'/1 =
+  fun (N) ->
+    apply 'showIntImpl'/1(N)
+
+'showAny'/1 =
+  fun (X) ->
+    apply 'showAnyImpl'/1(X)
+
+'extractImports'/1 =
+  fun (Source) ->
+    let <Lines> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), Source)
+      in call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'extractImportFromLine'/1(_Mf0), Lines)
+
+'extractImportFromLine'/1 =
+  fun (Line) ->
+    case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Line) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', Idx}> when 'true' ->
+        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
+      in let <ModName> = apply 'takeModuleName'/1(Rest)
+      in case call 'Data.String':'null'(ModName) of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', ModName}
+    end
+    end
+
+'takeModuleName'/1 =
+  fun (S) ->
+    letrec 'countValidChars'/2 = fun (Cps, Idx) ->
+      case call 'Data.Array':'index'(Cps, Idx) of
+      <'Nothing'> when 'true' ->
+        Idx
+      <{'Just', Cp}> when 'true' ->
+        case apply 'isModuleChar'/1(Cp) of
+      <'true'> when 'true' -> apply 'countValidChars'/2(Cps, call 'erlang':'+'(Idx, 1))
+      <'false'> when 'true' -> Idx
+    end
+    end
+       'isModuleChar'/1 = fun (Cp) ->
+      case case case case call 'erlang':'>='(Cp, 65) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 90) <_> when 'true' -> 'false' end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 97) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 122) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 48) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 57) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(Cp, 46) end
+      in let <CodePoints> = call 'Data.String':'toCodePointArray'(S)
+      in let <ValidCount> = apply 'countValidChars'/2(CodePoints, 0)
+      in call 'Data.String':'take'(ValidCount, S)
+
+'moduleToPath'/2 =
+  fun (Config, ModName) ->
+    let <RelPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <LibPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('libBase', Config), RelPath)
+      in let <SrcPath> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('srcBase', Config), RelPath)
+      in case apply 'fileExists'/1(LibPath) of
+      <'true'> when 'true' -> {'Just', LibPath}
+      <'false'> when 'true' -> case apply 'fileExists'/1(SrcPath) of
+      <'true'> when 'true' -> {'Just', SrcPath}
+      <'false'> when 'true' -> 'Nothing'
+    end
+    end
+
+'buildDependencyGraph'/2 =
+  fun (Config, Files) ->
+    call 'Data.Array':'foldl'(fun (Acc, FilePath) ->
+      case apply 'readFile'/1(FilePath) of
+      <'Nothing'> when 'true' ->
+        Acc
+      <{'Just', Source}> when 'true' ->
+        let <Imports> = apply 'extractImports'/1(Source)
+      in let <DepPaths> = call 'Data.Array':'mapMaybe'(fun (_Pc0) -> apply 'moduleToPath'/2(Config, _Pc0), Imports)
+      in let <Filtered> = call 'Data.Array':'filter'(fun (P) ->
+      call 'erlang':'=/='(P, FilePath), DepPaths)
+      in call 'Data.Map':'insert'(FilePath, Filtered, Acc)
+    end, call 'Data.Map':'empty'(), Files)
+
+'topoSort'/2 =
+  fun (Files, Deps) ->
+    letrec 'visitFromRoot'/2 = fun (State, Path) ->
+      case call 'Data.Set':'member'(Path, call 'maps':'get'('visited', State)) of
+      <'true'> when 'true' -> State
+      <'false'> when 'true' -> apply 'visit'/2(Path, State)
+    end
+       'visit'/2 = fun (Path, State) ->
+      case call 'Data.Set':'member'(Path, call 'maps':'get'('visited', State)) of
+      <'true'> when 'true' -> State
+      <'false'> when 'true' -> let <PathDeps> = case call 'Data.Map':'lookup'(Path, Deps) of
+      <{'Just', D}> when 'true' ->
+        D
+      <'Nothing'> when 'true' ->
+        []
+    end
+      in let <State1> = call 'maps':'merge'(State, ~{'visited'=>call 'Data.Set':'insert'(Path, call 'maps':'get'('visited', State))}~)
+      in let <ValidDeps> = call 'Data.Array':'filter'(fun (D) ->
+      call 'Data.Map':'member'(D, Deps), PathDeps)
+      in let <State2> = call 'Data.Array':'foldl'(fun (S, Dep) ->
+      apply 'visit'/2(Dep, S), State1, ValidDeps)
+      in call 'maps':'merge'(State2, ~{'sorted'=>call 'Data.Array':'snoc'(call 'maps':'get'('sorted', State2), Path)}~)
+    end
+      in let <Result> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'visitFromRoot'/2(_Mf0, _Mf1), ~{'visited'=>call 'Data.Set':'empty'(),'sorted'=>[]}~, Files)
+      in call 'Data.Array':'reverse'(call 'maps':'get'('sorted', Result))
+
+'getModuleName'/2 =
+  fun (Config, FilePath) ->
+    let <BaseLen> = case call 'erlang':'=:='(call 'Data.String':'take'(call 'Data.String':'length'(call 'maps':'get'('libBase', Config)), FilePath), call 'maps':'get'('libBase', Config)) of
+      <'true'> when 'true' -> call 'Data.String':'length'(call 'maps':'get'('libBase', Config))
+      <'false'> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'take'(call 'Data.String':'length'(call 'maps':'get'('srcBase', Config)), FilePath), call 'maps':'get'('srcBase', Config)) of
+      <'true'> when 'true' -> call 'Data.String':'length'(call 'maps':'get'('srcBase', Config))
+      <'false'> when 'true' -> 0
+    end
+    end
+      in let <Relative> = call 'Data.String':'drop'(BaseLen, FilePath)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
+      in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
+
+'compileModules'/2 =
+  fun (Config, Sorted) ->
+    let <InitialRegistry> = let <_Oa0> = call 'Nova.Compiler.Types':'registerModule'(call 'Nova.Compiler.Types':'emptyRegistry'())
+      in apply apply _Oa0(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)(call 'Nova.Compiler.Types':'preludeExports'())
+      in call 'Data.Array':'foldl'(fun (_Pc0, _Pc1) -> apply 'compileModule'/3(Config, _Pc0, _Pc1), ~{'compiled'=>0,'errors'=>0,'registry'=>InitialRegistry}~, Sorted)
+
+'compileModule'/3 =
+  fun (Config, Result, FilePath) ->
+    let <ModName> = apply 'getModuleName'/2(Config, FilePath)
+      in case apply 'readFile'/1(FilePath) of
+      <'Nothing'> when 'true' ->
+        let <U0> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(ModName, #{#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<68>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']])}#))
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
+      <{'Just', Source}> when 'true' ->
+        let <Bytes> = call 'Data.String':'length'(Source)
+      in let <ModStart> = apply 'getMonotonicMs'/0()
+      in let <ParseStart> = apply 'getMonotonicMs'/0()
+      in let <U0> = apply 'logNoNewline'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(ModName, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), apply 'showInt'/1(Bytes)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#))
+      in case call 'Nova.Compiler.CstPipeline':'parseModuleCst'(Source) of
+      <{'Left', Err}> when 'true' ->
+        let <U1> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err))
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
+      <{'Right', Mod}> when 'true' ->
+        let <ParseTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), ParseStart)
+      in let <TcStart> = apply 'getMonotonicMs'/0()
+      in let <DeclsArray> = call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', Mod))
+      in case let <_Oa0> = call 'Nova.Compiler.TypeChecker':'checkModule'(call 'maps':'get'('registry', Result))
+      in apply apply _Oa0(call 'Nova.Compiler.Types':'emptyEnv'())(DeclsArray) of
+      <{'Left', Err}> when 'true' ->
+        let <U1> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<89>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(ParseTime)), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showAny'/1(Err)))
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
+      <{'Right', Env}> when 'true' ->
+        let <TcTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), TcStart)
+      in let <CodegenStart> = apply 'getMonotonicMs'/0()
+      in let <Code> = call 'Nova.Compiler.CodeGenCoreErlang':'genModule'(Mod)
+      in let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName)
+      in let <Exports> = call 'Nova.Compiler.TypeChecker':'extractExports'(DeclsArray)
+      in let <TotalTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), ModStart)
+      in let <CodegenTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), CodegenStart)
+      in let <OutputFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('outputDir', Config), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <TargetFile> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('targetDir', Config), ModPath), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <ExportsWithValues> = let <_Oa0> = call 'Nova.Compiler.TypeChecker':'addValuesToExports'(Exports)
+      in apply apply _Oa0(Env)(DeclsArray)
+      in let <Lines> = apply 'countLines'/1(Code)
+      in let <U1> = apply 'ensureDir'/1(apply 'dirname'/1(OutputFile))
+      in let <U2> = apply 'ensureDir'/1(apply 'dirname'/1(TargetFile))
+      in let <U3> = apply 'writeFile'/2(OutputFile, Code)
+      in let <U4> = apply 'writeFile'/2(TargetFile, Code)
+      in let <NewRegistry> = let <_Oa0> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Result))
+      in apply apply _Oa0(ModName)(ExportsWithValues)
+      in let <U5> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<79>(8,1,'integer',['unsigned'|['big']]),#<75>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<91>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(ParseTime)), #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'formatTime'/1(TcTime)), #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'formatTime'/1(CodegenTime)), #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'formatTime'/1(TotalTime)), #{#<93>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), apply 'showInt'/1(Lines)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#))
+      in call 'maps':'merge'(Result, ~{'compiled'=>call 'erlang':'+'(call 'maps':'get'('compiled', Result), 1),'registry'=>NewRegistry}~)
+    end
+    end
+    end
+
+'countLines'/1 =
+  fun (S) ->
+    call 'Data.Array':'length'(call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#), S))
+
+'logImpl'/1 = fun (V0) -> do call 'io':'put_chars'([V0, 10]) 'unit'
+
+'logNoNewlineImpl'/1 = fun (V0) -> do call 'io':'put_chars'(V0) 'unit'
+
+'unitImpl'/0 = fun () -> 'unit'
+
+'readFileImpl'/1 = fun (V0) -> case call 'file':'read_file'(V0) of <{'ok', Content}> when 'true' -> {'Just', Content} <{'error', _Reason}> when 'true' -> 'Nothing' end
+
+'writeFileImpl'/2 = fun (V0, V1) -> do call 'file':'write_file'(V0, V1) 'unit'
+
+'fileExistsImpl'/1 = fun (V0) -> call 'filelib':'is_regular'(V0)
+
+'findFilesImpl'/2 = fun (V0, V1) -> letrec 'doFind'/2 = fun (Dir, Ext) -> let <DirList> = call 'erlang':'binary_to_list'(Dir) in case call 'file':'list_dir'(DirList) of <{'ok', Entries}> when 'true' -> call 'lists':'foldl'(fun (Entry, Acc) -> let <Full> = call 'filename':'join'(DirList, Entry) in let <FullBin> = call 'erlang':'list_to_binary'(Full) in case call 'filelib':'is_dir'(Full) of <'true'> when 'true' -> call 'lists':'append'(Acc, apply 'doFind'/2 (FullBin, Ext)) <'false'> when 'true' -> case call 'lists':'suffix'(call 'erlang':'binary_to_list'(Ext), Entry) of <'true'> when 'true' -> [FullBin|Acc] <'false'> when 'true' -> Acc end end, [], Entries) <{'error', _Reason}> when 'true' -> [] end in apply 'doFind'/2 (V0, V1)
+
+'ensureDirImpl'/1 = fun (V0) -> do call 'filelib':'ensure_dir'(call 'erlang':'++'(V0, "/")) 'unit'
+
+'dirnameImpl'/1 = fun (V0) -> call 'filename':'dirname'(V0)
+
+'getMonotonicMsImpl'/0 = fun () -> call 'erlang':'div'(call 'erlang':'monotonic_time'('nanosecond'), 1000000)
+
+'formatTimeImpl'/1 = fun (V0) -> case call 'erlang':'>='(V0, 1000) of <'true'> when 'true' -> call 'erlang':'iolist_to_binary'([call 'erlang':'float_to_binary'(call 'erlang':'/'(V0, 1000), [{'decimals', 2}]), call 'erlang':'list_to_binary'([115])]) <'false'> when 'true' -> call 'erlang':'iolist_to_binary'([call 'erlang':'integer_to_binary'(V0), call 'erlang':'list_to_binary'([109, 115])]) end
+
+'showIntImpl'/1 = fun (V0) -> call 'erlang':'integer_to_binary'(V0)
+
+'showAnyImpl'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [V0]))
+
+'main'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'main'/1(_A0)
+      in _F0
+
+'runRegenerate'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'runRegenerate'/1(_A0)
+      in _F0
+
+'log'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'log'/1(_A0)
+      in _F0
+
+'logNoNewline'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'logNoNewline'/1(_A0)
+      in _F0
+
+'readFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'readFile'/1(_A0)
+      in _F0
+
+'writeFile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'writeFile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'writeFile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'writeFile'/2(_A0, _A1)
+      in _F0
+
+'fileExists'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fileExists'/1(_A0)
+      in _F0
+
+'findFiles'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findFiles'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findFiles'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findFiles'/2(_A0, _A1)
+      in _F0
+
+'ensureDir'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ensureDir'/1(_A0)
+      in _F0
+
+'dirname'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirname'/1(_A0)
+      in _F0
+
+'formatTime'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'formatTime'/1(_A0)
+      in _F0
+
+'showInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showInt'/1(_A0)
+      in _F0
+
+'showAny'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showAny'/1(_A0)
+      in _F0
+
+'extractImports'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractImports'/1(_A0)
+      in _F0
+
+'extractImportFromLine'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractImportFromLine'/1(_A0)
+      in _F0
+
+'takeModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'takeModuleName'/1(_A0)
+      in _F0
+
+'moduleToPath'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'moduleToPath'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'moduleToPath'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'moduleToPath'/2(_A0, _A1)
+      in _F0
+
+'buildDependencyGraph'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'buildDependencyGraph'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'buildDependencyGraph'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'buildDependencyGraph'/2(_A0, _A1)
+      in _F0
+
+'topoSort'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'topoSort'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'topoSort'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'topoSort'/2(_A0, _A1)
+      in _F0
+
+'getModuleName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getModuleName'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getModuleName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getModuleName'/2(_A0, _A1)
+      in _F0
+
+'compileModules'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'compileModules'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'compileModules'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'compileModules'/2(_A0, _A1)
+      in _F0
+
+'compileModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'compileModule'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'compileModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'compileModule'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'compileModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'compileModule'/3(_A0, _A1, _A2)
+      in _F0
+
+'countLines'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'countLines'/1(_A0)
+      in _F0
+
+'logImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'logImpl'/1(_A0)
+      in _F0
+
+'logNoNewlineImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'logNoNewlineImpl'/1(_A0)
+      in _F0
+
+'readFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'readFileImpl'/1(_A0)
+      in _F0
+
+'writeFileImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'writeFileImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'writeFileImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'writeFileImpl'/2(_A0, _A1)
+      in _F0
+
+'fileExistsImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fileExistsImpl'/1(_A0)
+      in _F0
+
+'findFilesImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'findFilesImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'findFilesImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'findFilesImpl'/2(_A0, _A1)
+      in _F0
+
+'ensureDirImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ensureDirImpl'/1(_A0)
+      in _F0
+
+'dirnameImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'dirnameImpl'/1(_A0)
+      in _F0
+
+'formatTimeImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'formatTimeImpl'/1(_A0)
+      in _F0
+
+'showIntImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showIntImpl'/1(_A0)
+      in _F0
+
+'showAnyImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showAnyImpl'/1(_A0)
+      in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Regenerate')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Regenerate', _0)
+end
