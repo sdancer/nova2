@@ -76,7 +76,18 @@ module 'Data.Foldable' ['foldl'/3, 'foldr'/3, 'foldM'/3, 'traverse_'/2, 'for_'/2
 
 'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
 
-'foldMImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+'foldMImpl'/3 = fun (F, Acc, Xs) ->
+    % Monadic fold for Either - short-circuits on Left
+    letrec 'go'/2 = fun (A, L) ->
+        case L of
+            <[]> when 'true' -> {'Right', A}
+            <[H|T]> when 'true' ->
+                case apply F(A, H) of
+                    <{'Left', Err}> when 'true' -> {'Left', Err}
+                    <{'Right', NewA}> when 'true' -> apply 'go'/2(NewA, T)
+                end
+        end
+    in apply 'go'/2(Acc, Xs)
 
 'traverse_Impl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
 
