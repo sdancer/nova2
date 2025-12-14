@@ -1,4 +1,4 @@
-module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentIndentGo'/1, 'currentIndent'/0, 'isTopDecl'/2, 'lytToken'/2, 'insertLayout'/3, 'LytRoot'/0, 'LytTopDecl'/0, 'LytTopDeclHead'/0, 'LytDeclGuard'/0, 'LytCase'/0, 'LytCaseBinders'/0, 'LytCaseGuard'/0, 'LytLambdaBinders'/0, 'LytParen'/0, 'LytBrace'/0, 'LytSquare'/0, 'LytIf'/0, 'LytThen'/0, 'LytProperty'/0, 'LytForall'/0, 'LytTick'/0, 'LytLet'/0, 'LytLetStmt'/0, 'LytWhere'/0, 'LytOf'/0, 'LytDo'/0, 'LytAdo'/0, 'isIndented'/0, 'currentIndentGo'/0, 'isTopDecl'/0, 'isTopDecl'/1, 'lytToken'/0, 'lytToken'/1, 'insertLayout'/0, 'insertLayout'/1, 'insertLayout'/2]
+module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentIndentGo'/1, 'currentIndent'/0, 'isTopDecl'/2, 'lytToken'/2, 'insertLayout'/3, 'LytRoot'/0, 'LytTopDecl'/0, 'LytTopDeclHead'/0, 'LytDeclGuard'/0, 'LytCase'/0, 'LytCaseBinders'/0, 'LytCaseGuard'/0, 'LytLambdaBinders'/0, 'LytParen'/0, 'LytBrace'/0, 'LytSquare'/0, 'LytIf'/0, 'LytThen'/0, 'LytProperty'/0, 'LytForall'/0, 'LytTick'/0, 'LytLet'/0, 'LytLetStmt'/0, 'LytWhere'/0, 'LytOf'/0, 'LytDo'/0, 'LytAdo'/0, 'isIndented'/0, 'currentIndentGo'/0, 'isTopDecl'/0, 'isTopDecl'/1, 'lytToken'/0, 'lytToken'/1, 'insertLayout'/0, 'insertLayout'/1, 'insertLayout'/2, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: LayoutDelim
 % Constructors: LytRoot, LytTopDecl, LytTopDeclHead, LytDeclGuard, LytCase, LytCaseBinders, LytCaseGuard, LytLambdaBinders, LytParen, LytBrace, LytSquare, LytIf, LytThen, LytProperty, LytForall, LytTick, LytLet, LytLetStmt, LytWhere, LytOf, LytDo, LytAdo
@@ -523,4 +523,8 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
     let <_F0> = fun (_A2) ->
         apply 'insertLayout'/3(_A0, _A1, _A2)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.CstLayout')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.CstLayout', _0)
 end

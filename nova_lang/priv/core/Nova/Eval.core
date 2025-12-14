@@ -1,4 +1,4 @@
-module 'Nova.Eval' ['newContext'/0, 'genModuleName'/1, 'evalExpr'/1, 'evalSnippet'/2, 'evalModule'/2, 'parseSource'/0, 'compileAndLoad'/0, 'callFunction'/2, 'eval'/1, 'evalDecls'/1, 'findLastDeclName'/1, 'ieval'/1, 'compileToCore'/1, 'intToString'/1, 'parseSourceImpl'/1, 'compileAndLoadImpl'/1, 'callFunctionImpl'/2, 'findLastDeclNameImpl'/1, 'genModuleName'/0, 'evalExpr'/0, 'evalSnippet'/0, 'evalSnippet'/1, 'evalModule'/0, 'evalModule'/1, 'callFunction'/0, 'callFunction'/1, 'eval'/0, 'evalDecls'/0, 'findLastDeclName'/0, 'ieval'/0, 'compileToCore'/0, 'intToString'/0, 'parseSourceImpl'/0, 'compileAndLoadImpl'/0, 'callFunctionImpl'/0, 'callFunctionImpl'/1, 'findLastDeclNameImpl'/0]
+module 'Nova.Eval' ['newContext'/0, 'genModuleName'/1, 'evalExpr'/1, 'evalSnippet'/2, 'evalModule'/2, 'parseSource'/0, 'compileAndLoad'/0, 'callFunction'/2, 'eval'/1, 'evalDecls'/1, 'findLastDeclName'/1, 'ieval'/1, 'compileToCore'/1, 'intToString'/1, 'parseSourceImpl'/1, 'compileAndLoadImpl'/1, 'callFunctionImpl'/2, 'findLastDeclNameImpl'/1, 'genModuleName'/0, 'evalExpr'/0, 'evalSnippet'/0, 'evalSnippet'/1, 'evalModule'/0, 'evalModule'/1, 'callFunction'/0, 'callFunction'/1, 'eval'/0, 'evalDecls'/0, 'findLastDeclName'/0, 'ieval'/0, 'compileToCore'/0, 'intToString'/0, 'parseSourceImpl'/0, 'compileAndLoadImpl'/0, 'callFunctionImpl'/0, 'callFunctionImpl'/1, 'findLastDeclNameImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'newContext'/0 =
   fun () ->
@@ -215,4 +215,8 @@ module 'Nova.Eval' ['newContext'/0, 'genModuleName'/1, 'evalExpr'/1, 'evalSnippe
     let <_F0> = fun (_A0) ->
         apply 'findLastDeclNameImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Eval')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Eval', _0)
 end

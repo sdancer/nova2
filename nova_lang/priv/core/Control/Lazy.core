@@ -1,4 +1,4 @@
-module 'Control.Lazy' ['defer'/1, 'deferImpl'/1, 'defer'/0, 'deferImpl'/0]
+module 'Control.Lazy' ['defer'/1, 'deferImpl'/1, 'defer'/0, 'deferImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'defer'/1 =
   fun (F) ->
@@ -17,4 +17,8 @@ module 'Control.Lazy' ['defer'/1, 'deferImpl'/1, 'defer'/0, 'deferImpl'/0]
     let <_F0> = fun (_A0) ->
         apply 'deferImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Control.Lazy')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Control.Lazy', _0)
 end

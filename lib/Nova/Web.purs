@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array as Array
 import Data.Char as Char
-import Data.List (List)
+import Data.List (List(..))
 import Data.List as List
 import Data.String as String
 import Data.Json as Json
@@ -127,7 +127,7 @@ isFuncDecl _ = false
 groupFunctionsByName :: List Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
 groupFunctionsByName funcs =
   let -- Fold to group by name, building list of groups in reverse order
-      grouped = List.foldl (\groups func -> addFuncToGroups groups func) List.Nil funcs
+      grouped = List.foldl (\groups func -> addFuncToGroups groups func) Nil funcs
       -- Reverse to restore original order, and finalize each group
   in Array.map finalizeGroup (Array.reverse (Array.fromFoldable grouped))
 
@@ -137,25 +137,25 @@ addFuncToGroups groups func =
   case findFuncGroup func.name groups of
     Nothing ->
       -- New group
-      List.Cons { name: func.name, clauses: List.Cons func List.Nil, sig: func.typeSignature } groups
+      Cons { name: func.name, clauses: Cons func Nil, sig: func.typeSignature } groups
     Just { before, group, after } ->
       -- Add to existing group (append to end to preserve order)
       let newSig = case group.sig of
             Nothing -> func.typeSignature
             s -> s
           newGroup = { name: group.name, clauses: List.snoc group.clauses func, sig: newSig }
-      in before <> List.Cons newGroup after
+      in before <> Cons newGroup after
 
 -- | Find a group by name, returning the group and surrounding elements
 findFuncGroup :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
-findFuncGroup name groups = findFuncGroupHelper name List.Nil groups
+findFuncGroup name groups = findFuncGroupHelper name Nil groups
 
 findFuncGroupHelper :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
-findFuncGroupHelper _ _ List.Nil = Nothing
-findFuncGroupHelper name before (List.Cons g rest) =
+findFuncGroupHelper _ _ Nil = Nothing
+findFuncGroupHelper name before (Cons g rest) =
   if g.name == name
   then Just { before: List.reverse before, group: g, after: rest }
-  else findFuncGroupHelper name (List.Cons g before) rest
+  else findFuncGroupHelper name (Cons g before) rest
 
 -- | Convert internal group format to output format
 finalizeGroup :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }

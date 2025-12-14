@@ -1,4 +1,4 @@
-module 'Data.Tuple' ['fst'/1, 'snd'/1, 'swap'/1, 'curry'/3, 'uncurry'/2, 'map'/2, 'Tuple'/2, 'fst'/0, 'snd'/0, 'swap'/0, 'curry'/0, 'curry'/1, 'curry'/2, 'uncurry'/0, 'uncurry'/1, 'map'/0, 'map'/1, 'Tuple'/0, 'Tuple'/1]
+module 'Data.Tuple' ['fst'/1, 'snd'/1, 'swap'/1, 'curry'/3, 'uncurry'/2, 'map'/2, 'Tuple'/2, 'fst'/0, 'snd'/0, 'swap'/0, 'curry'/0, 'curry'/1, 'curry'/2, 'uncurry'/0, 'uncurry'/1, 'map'/0, 'map'/1, 'Tuple'/0, 'Tuple'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: Tuple
 % Constructors: Tuple
@@ -129,4 +129,8 @@ module 'Data.Tuple' ['fst'/1, 'snd'/1, 'swap'/1, 'curry'/3, 'uncurry'/2, 'map'/2
     let <_F0> = fun (_A1) ->
         apply 'Tuple'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Tuple')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Tuple', _0)
 end

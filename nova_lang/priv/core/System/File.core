@@ -1,4 +1,4 @@
-module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/1, 'dirExists'/1, 'mkdirP'/1, 'listDir'/1, 'deleteFile'/1, 'basename'/1, 'basenameNoExt'/2, 'dirname'/1, 'joinPath'/2, 'cwd'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'appendFileImpl'/2, 'fileExistsImpl'/1, 'dirExistsImpl'/1, 'mkdirPImpl'/1, 'listDirImpl'/1, 'deleteFileImpl'/1, 'basenameImpl'/1, 'basenameNoExtImpl'/2, 'dirnameImpl'/1, 'joinPathImpl'/2, 'cwdImpl'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'appendFile'/0, 'appendFile'/1, 'fileExists'/0, 'dirExists'/0, 'mkdirP'/0, 'listDir'/0, 'deleteFile'/0, 'basename'/0, 'basenameNoExt'/0, 'basenameNoExt'/1, 'dirname'/0, 'joinPath'/0, 'joinPath'/1, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'appendFileImpl'/0, 'appendFileImpl'/1, 'fileExistsImpl'/0, 'dirExistsImpl'/0, 'mkdirPImpl'/0, 'listDirImpl'/0, 'deleteFileImpl'/0, 'basenameImpl'/0, 'basenameNoExtImpl'/0, 'basenameNoExtImpl'/1, 'dirnameImpl'/0, 'joinPathImpl'/0, 'joinPathImpl'/1]
+module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/1, 'dirExists'/1, 'mkdirP'/1, 'listDir'/1, 'deleteFile'/1, 'basename'/1, 'basenameNoExt'/2, 'dirname'/1, 'joinPath'/2, 'cwd'/0, 'readFileImpl'/1, 'writeFileImpl'/2, 'appendFileImpl'/2, 'fileExistsImpl'/1, 'dirExistsImpl'/1, 'mkdirPImpl'/1, 'listDirImpl'/1, 'deleteFileImpl'/1, 'basenameImpl'/1, 'basenameNoExtImpl'/2, 'dirnameImpl'/1, 'joinPathImpl'/2, 'cwdImpl'/0, 'readFile'/0, 'writeFile'/0, 'writeFile'/1, 'appendFile'/0, 'appendFile'/1, 'fileExists'/0, 'dirExists'/0, 'mkdirP'/0, 'listDir'/0, 'deleteFile'/0, 'basename'/0, 'basenameNoExt'/0, 'basenameNoExt'/1, 'dirname'/0, 'joinPath'/0, 'joinPath'/1, 'readFileImpl'/0, 'writeFileImpl'/0, 'writeFileImpl'/1, 'appendFileImpl'/0, 'appendFileImpl'/1, 'fileExistsImpl'/0, 'dirExistsImpl'/0, 'mkdirPImpl'/0, 'listDirImpl'/0, 'deleteFileImpl'/0, 'basenameImpl'/0, 'basenameNoExtImpl'/0, 'basenameNoExtImpl'/1, 'dirnameImpl'/0, 'joinPathImpl'/0, 'joinPathImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'readFile'/1 =
   fun (Path) ->
@@ -285,4 +285,8 @@ module 'System.File' ['readFile'/1, 'writeFile'/2, 'appendFile'/2, 'fileExists'/
     let <_F0> = fun (_A1) ->
         apply 'joinPathImpl'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('System.File')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('System.File', _0)
 end

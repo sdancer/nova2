@@ -1,4 +1,4 @@
-module 'Nova.Compiler.RefEq' ['refEqExpr'/2, 'refEqLit'/2, 'refEqPattern'/2, 'refEqPatternList'/2, 'refEqExprList'/2, 'refEqLetBindList'/2, 'refEqCaseClauseList'/2, 'refEqMaybeExpr'/2, 'refEqDoStmtList'/2, 'refEqDoStmt'/2, 'refEqRecordFields'/2, 'refEqExpr'/0, 'refEqExpr'/1, 'refEqLit'/0, 'refEqLit'/1, 'refEqPattern'/0, 'refEqPattern'/1, 'refEqPatternList'/0, 'refEqPatternList'/1, 'refEqExprList'/0, 'refEqExprList'/1, 'refEqLetBindList'/0, 'refEqLetBindList'/1, 'refEqCaseClauseList'/0, 'refEqCaseClauseList'/1, 'refEqMaybeExpr'/0, 'refEqMaybeExpr'/1, 'refEqDoStmtList'/0, 'refEqDoStmtList'/1, 'refEqDoStmt'/0, 'refEqDoStmt'/1, 'refEqRecordFields'/0, 'refEqRecordFields'/1]
+module 'Nova.Compiler.RefEq' ['refEqExpr'/2, 'refEqLit'/2, 'refEqPattern'/2, 'refEqPatternList'/2, 'refEqExprList'/2, 'refEqLetBindList'/2, 'refEqCaseClauseList'/2, 'refEqMaybeExpr'/2, 'refEqDoStmtList'/2, 'refEqDoStmt'/2, 'refEqRecordFields'/2, 'refEqExpr'/0, 'refEqExpr'/1, 'refEqLit'/0, 'refEqLit'/1, 'refEqPattern'/0, 'refEqPattern'/1, 'refEqPatternList'/0, 'refEqPatternList'/1, 'refEqExprList'/0, 'refEqExprList'/1, 'refEqLetBindList'/0, 'refEqLetBindList'/1, 'refEqCaseClauseList'/0, 'refEqCaseClauseList'/1, 'refEqMaybeExpr'/0, 'refEqMaybeExpr'/1, 'refEqDoStmtList'/0, 'refEqDoStmtList'/1, 'refEqDoStmt'/0, 'refEqDoStmt'/1, 'refEqRecordFields'/0, 'refEqRecordFields'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'refEqExpr'/2 =
   fun (_P0, _P1) ->
@@ -341,4 +341,8 @@ module 'Nova.Compiler.RefEq' ['refEqExpr'/2, 'refEqLit'/2, 'refEqPattern'/2, 're
     let <_F0> = fun (_A1) ->
         apply 'refEqRecordFields'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.RefEq')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.RefEq', _0)
 end

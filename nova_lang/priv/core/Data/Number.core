@@ -1,4 +1,4 @@
-module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/1, 'isNaNImpl'/1, 'isFiniteImpl'/1, 'fromString'/0, 'isNaN'/0, 'isFinite'/0, 'fromStringImpl'/0, 'isNaNImpl'/0, 'isFiniteImpl'/0]
+module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/1, 'isNaNImpl'/1, 'isFiniteImpl'/1, 'fromString'/0, 'isNaN'/0, 'isFinite'/0, 'fromStringImpl'/0, 'isNaNImpl'/0, 'isFiniteImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'fromString'/1 =
   fun (S) ->
@@ -62,4 +62,8 @@ module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/
     let <_F0> = fun (_A0) ->
         apply 'isFiniteImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Number')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Number', _0)
 end

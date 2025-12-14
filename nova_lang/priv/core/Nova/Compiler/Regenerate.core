@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'moduleToPath'/3, 'discoverDependencies'/4, 'buildDependencyGraph'/4, 'topologicalSort'/1, 'parseAndCheckModule'/2, 'compileModule'/2, 'getModuleName'/2, 'getFileBaseName'/1, 'getShortName'/0, 'compileLibraryModules'/3, 'compileSourceModules'/4, 'regenerate'/2, 'compileAllModules'/3, 'showLogEntry'/1, 'showLogs'/0, 'LogInfo'/1, 'LogWarning'/1, 'LogError'/1, 'extractImports'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'moduleToPath'/2, 'discoverDependencies'/0, 'discoverDependencies'/1, 'discoverDependencies'/2, 'discoverDependencies'/3, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildDependencyGraph'/2, 'buildDependencyGraph'/3, 'topologicalSort'/0, 'parseAndCheckModule'/0, 'parseAndCheckModule'/1, 'compileModule'/0, 'compileModule'/1, 'getModuleName'/0, 'getModuleName'/1, 'getFileBaseName'/0, 'compileLibraryModules'/0, 'compileLibraryModules'/1, 'compileLibraryModules'/2, 'compileSourceModules'/0, 'compileSourceModules'/1, 'compileSourceModules'/2, 'compileSourceModules'/3, 'regenerate'/0, 'regenerate'/1, 'compileAllModules'/0, 'compileAllModules'/1, 'compileAllModules'/2, 'showLogEntry'/0, 'LogInfo'/0, 'LogWarning'/0, 'LogError'/0]
+module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'moduleToPath'/3, 'discoverDependencies'/4, 'buildDependencyGraph'/4, 'topologicalSort'/1, 'parseAndCheckModule'/2, 'compileModule'/2, 'getModuleName'/2, 'getFileBaseName'/1, 'getShortName'/0, 'compileLibraryModules'/3, 'compileSourceModules'/4, 'regenerate'/2, 'compileAllModules'/3, 'showLogEntry'/1, 'showLogs'/0, 'LogInfo'/1, 'LogWarning'/1, 'LogError'/1, 'extractImports'/0, 'moduleToPath'/0, 'moduleToPath'/1, 'moduleToPath'/2, 'discoverDependencies'/0, 'discoverDependencies'/1, 'discoverDependencies'/2, 'discoverDependencies'/3, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildDependencyGraph'/2, 'buildDependencyGraph'/3, 'topologicalSort'/0, 'parseAndCheckModule'/0, 'parseAndCheckModule'/1, 'compileModule'/0, 'compileModule'/1, 'getModuleName'/0, 'getModuleName'/1, 'getFileBaseName'/0, 'compileLibraryModules'/0, 'compileLibraryModules'/1, 'compileLibraryModules'/2, 'compileSourceModules'/0, 'compileSourceModules'/1, 'compileSourceModules'/2, 'compileSourceModules'/3, 'regenerate'/0, 'regenerate'/1, 'compileAllModules'/0, 'compileAllModules'/1, 'compileAllModules'/2, 'showLogEntry'/0, 'LogInfo'/0, 'LogWarning'/0, 'LogError'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: LogEntry
 % Constructors: LogInfo, LogWarning, LogError
@@ -557,4 +557,8 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
     let <_F0> = fun (_A0) ->
         apply 'LogError'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.Regenerate')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.Regenerate', _0)
 end

@@ -16,6 +16,13 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Foldable (foldr, foldl)
 import Nova.Compiler.Ast (Module, Declaration(..), FunctionDeclaration, DataType, DataConstructor, ForeignImport, TypeExpr(..), Expr(..), Pattern(..), Literal(..), LetBind, CaseClause, DoStatement(..), ImportItem(..), GuardedExpr, GuardClause(..), NewtypeDecl)
+
+-- | String builder - concatenates array of strings
+-- | Usage: str ["call ", mod, ":", func, "()"]
+-- | Note: In PureScript/JS this uses fold, but when compiled to Nova/BEAM
+-- | the String.joinWith compiles to iolist_to_binary which is O(n)
+str :: Array String -> String
+str = String.joinWith ""
 -- getUsedVars is defined locally below to avoid cross-module import issues
 
 -- Core Erlang Code Generation
@@ -197,8 +204,8 @@ topoSortBinds binds =
 atom :: String -> String
 atom s = "'" <> escapeAtom s <> "'"
   where
-  escapeAtom str =
-    let s1 = String.replaceAll (String.Pattern "\\") (String.Replacement "\\\\") str
+  escapeAtom input =
+    let s1 = String.replaceAll (String.Pattern "\\") (String.Replacement "\\\\") input
         s2 = String.replaceAll (String.Pattern "'") (String.Replacement "\\'") s1
     in s2
 
@@ -242,7 +249,10 @@ genModule m =
       -- Generate curried wrapper exports for all arities 0 to N-1
       curriedExports = Array.concatMap genCurriedExports allExports
       allExportsWithCurried = allExports <> curriedExports
-      exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) allExportsWithCurried)
+      -- Add module_info/0 and module_info/1 exports (standard BEAM convention)
+      moduleInfoExports = "'module_info'/0, 'module_info'/1"
+      exports = String.joinWith ", " (map (\f -> atom f.name <> "/" <> show f.arity) allExportsWithCurried) <>
+                (if allExportsWithCurried == [] then moduleInfoExports else ", " <> moduleInfoExports)
       ctx = (emptyCtx modName) { moduleFuncs = Set.fromFoldable (map _.name allExports)
                                , funcArities = allExports
                                , imports = importMap
@@ -255,12 +265,15 @@ genModule m =
       dtDefs = String.joinWith "\n\n" (Array.mapMaybe (genDeclNonFunc ctx) (Array.fromFoldable m.declarations))
       -- Generate curried wrapper functions for all lower arities
       curriedWrappers = String.joinWith "\n\n" (Array.concatMap genCurriedWrappers allExports)
+      -- Generate module_info/0 and module_info/1 (standard BEAM convention)
+      moduleInfoDefs = genModuleInfo modName
   in "module " <> atom modName <> " [" <> exports <> "]\n" <>
      "  attributes []\n" <>
      dtDefs <> (if dtDefs == "" then "" else "\n\n") <>
      funcDefs <> (if funcDefs == "" || foreignDefs == "" then "" else "\n\n") <>
      foreignDefs <> (if curriedWrappers == "" then "" else "\n\n") <>
-     curriedWrappers <> "\nend\n"
+     curriedWrappers <> (if curriedWrappers == "" then "" else "\n\n") <>
+     moduleInfoDefs <> "\nend\n"
   where
     getFunc (DeclFunction f) = Just f
     getFunc _ = Nothing
@@ -605,32 +618,30 @@ genExpr ctx (ExprVar name) =
       let modAlias = String.take idx name
           fullModName = resolveModuleName ctx modAlias
           funcName = String.drop (idx + 1) name
-      in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+      in str ["call ", atom (translateModuleName fullModName), ":", atom funcName, "()"]
     Nothing ->
       if Set.member name ctx.locals
       then coreVar name
       else case getPreludeFunc name of
         -- Prelude function as first-class value - wrap in uncurried lambda
         Just info ->
-          let paramNames = map (\i -> "_Pf" <> show i) (Array.range 0 (info.arity - 1))
+          let paramNames = map (\i -> str ["_Pf", show i]) (Array.range 0 (info.arity - 1))
               paramsStr = String.joinWith ", " paramNames
-          in "fun (" <> paramsStr <> ") -> call " <> atom info.mod <> ":" <> atom info.func <>
-             "(" <> paramsStr <> ")"
+          in str ["fun (", paramsStr, ") -> call ", atom info.mod, ":", atom info.func, "(", paramsStr, ")"]
         Nothing ->
           if Set.member name ctx.moduleFuncs
           then -- Module function reference as value - wrap in uncurried lambda
                let arity = lookupArity name ctx
                in if arity == 0
-                  then "apply " <> atom name <> "/0()"
-                  else let paramNames = map (\i -> "_Mf" <> show i) (safeRange 0 (arity - 1))
+                  then str ["apply ", atom name, "/0()"]
+                  else let paramNames = map (\i -> str ["_Mf", show i]) (safeRange 0 (arity - 1))
                            paramsStr = String.joinWith ", " paramNames
-                       in "fun (" <> paramsStr <> ") -> apply " <> atom name <> "/" <> show arity <>
-                          "(" <> paramsStr <> ")"
+                       in str ["fun (", paramsStr, ") -> apply ", atom name, "/", show arity, "(", paramsStr, ")"]
           else case Map.lookup name ctx.imports of
                -- Imported value/function as value - call /0 to get value or curried wrapper
                Just srcMod ->
                  let modName = translateModuleName srcMod
-                 in "call " <> atom modName <> ":" <> atom name <> "()"
+                 in str ["call ", atom modName, ":", atom name, "()"]
                Nothing ->
                  if isConstructorName name
                  -- Nullary data constructor - use as atom
@@ -644,20 +655,23 @@ genExpr ctx (ExprVar name) =
 genExpr ctx (ExprQualified modAlias funcName) =
   -- When used as a value (not applied)
   let fullModName = resolveModuleName ctx modAlias
+      modAtom = atom (translateModuleName fullModName)
+      funcAtom = atom funcName
   in if isConstructorName funcName
      -- Constructor used as a value: generate a curried function wrapper
      -- For binary constructor like TyExprApp: fun(A) -> fun(B) -> {TyExprApp, A, B} end end
      -- For unary like Just: fun(A) -> {Just, A} end
      -- Since we don't know arity, generate curried wrapper via module call
-     then "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+     then str ["call ", modAtom, ":", funcAtom, "()"]
      -- Regular function: call with no arguments
-     else "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <> "()"
+     else str ["call ", modAtom, ":", funcAtom, "()"]
   where
     isConstructorName s = case String.take 1 s of
       c -> c >= "A" && c <= "Z"
 
 genExpr ctx (ExprApp f arg) =
   let { func, args } = collectArgs (ExprApp f arg)
+      argsStr = String.joinWith ", " (map (genExpr ctx) args)
   in case func of
     ExprVar name ->
       -- Check if it's a qualified name (like "Array.elem" from backtick syntax)
@@ -667,8 +681,7 @@ genExpr ctx (ExprApp f arg) =
           let modAlias = String.take idx name
               fullModName = resolveModuleName ctx modAlias
               funcName = String.drop (idx + 1) name
-          in "call " <> atom (translateModuleName fullModName) <> ":" <> atom funcName <>
-             "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
+          in str ["call ", atom (translateModuleName fullModName), ":", atom funcName, "(", argsStr, ")"]
         Nothing ->
           -- Handle special monad functions
           if name == "pure"
@@ -1693,6 +1706,14 @@ genForeignImport _modName fi =
         Just impl -> substituteParams impl params
         Nothing -> "'ffi_not_implemented'"
   in "'" <> funcName <> "'/" <> show arity <> " = fun (" <> paramStr <> ") -> " <> body
+
+-- | Generate module_info/0 and module_info/1 functions (standard BEAM convention)
+-- These are automatically generated by the Erlang compiler for all modules
+genModuleInfo :: String -> String
+genModuleInfo modName =
+  let modAtom = atom modName
+  in "'module_info'/0 = fun () -> call 'erlang':'get_module_info'(" <> modAtom <> ")\n\n" <>
+     "'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'(" <> modAtom <> ", _0)"
 
 -- | Substitute $0, $1, etc. with actual parameter names (V0, V1, etc.)
 substituteParams :: String -> Array String -> String

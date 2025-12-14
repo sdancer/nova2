@@ -1,4 +1,4 @@
-module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'/1, 'parseArgsLoop'/2, 'parseInt'/1, 'startsWith'/2, 'getArgsImpl'/0, 'getProgNameImpl'/0, 'parseIntImpl'/1, 'startsWithImpl'/2, 'parseArgs'/0, 'parseArgsLoop'/0, 'parseArgsLoop'/1, 'parseInt'/0, 'startsWith'/0, 'startsWith'/1, 'parseIntImpl'/0, 'startsWithImpl'/0, 'startsWithImpl'/1]
+module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'/1, 'parseArgsLoop'/2, 'parseInt'/1, 'startsWith'/2, 'getArgsImpl'/0, 'getProgNameImpl'/0, 'parseIntImpl'/1, 'startsWithImpl'/2, 'parseArgs'/0, 'parseArgsLoop'/0, 'parseArgsLoop'/1, 'parseInt'/0, 'startsWith'/0, 'startsWith'/1, 'parseIntImpl'/0, 'startsWithImpl'/0, 'startsWithImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'getArgs'/0 =
   fun () ->
@@ -175,4 +175,8 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
     let <_F0> = fun (_A1) ->
         apply 'startsWithImpl'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('System.Args')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('System.Args', _0)
 end

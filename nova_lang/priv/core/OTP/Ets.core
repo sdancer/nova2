@@ -1,4 +1,4 @@
-module 'OTP.Ets' ['defaultOptions'/0, 'publicSetOptions'/0, 'publicOrderedSetOptions'/0, 'new'/2, 'tableTypeToAtom'/1, 'accessToAtom'/1, 'insert'/3, 'lookup'/2, 'member'/2, 'delete'/2, 'deleteTable'/1, 'allKeys'/1, 'allValues'/1, 'update'/3, 'tab2file'/2, 'file2tab'/1, 'newImpl'/5, 'insertImpl'/3, 'lookupImpl'/2, 'memberImpl'/2, 'deleteImpl'/2, 'deleteTableImpl'/1, 'allKeysImpl'/1, 'allValuesImpl'/1, 'updateImpl'/3, 'tab2fileImpl'/2, 'file2tabImpl'/1, 'Set'/0, 'OrderedSet'/0, 'Bag'/0, 'DuplicateBag'/0, 'Public'/0, 'Protected'/0, 'Private'/0, 'new'/0, 'new'/1, 'tableTypeToAtom'/0, 'accessToAtom'/0, 'insert'/0, 'insert'/1, 'insert'/2, 'lookup'/0, 'lookup'/1, 'member'/0, 'member'/1, 'delete'/0, 'delete'/1, 'deleteTable'/0, 'allKeys'/0, 'allValues'/0, 'update'/0, 'update'/1, 'update'/2, 'tab2file'/0, 'tab2file'/1, 'file2tab'/0, 'newImpl'/0, 'newImpl'/1, 'newImpl'/2, 'newImpl'/3, 'newImpl'/4, 'insertImpl'/0, 'insertImpl'/1, 'insertImpl'/2, 'lookupImpl'/0, 'lookupImpl'/1, 'memberImpl'/0, 'memberImpl'/1, 'deleteImpl'/0, 'deleteImpl'/1, 'deleteTableImpl'/0, 'allKeysImpl'/0, 'allValuesImpl'/0, 'updateImpl'/0, 'updateImpl'/1, 'updateImpl'/2, 'tab2fileImpl'/0, 'tab2fileImpl'/1, 'file2tabImpl'/0]
+module 'OTP.Ets' ['defaultOptions'/0, 'publicSetOptions'/0, 'publicOrderedSetOptions'/0, 'new'/2, 'tableTypeToAtom'/1, 'accessToAtom'/1, 'insert'/3, 'lookup'/2, 'member'/2, 'delete'/2, 'deleteTable'/1, 'allKeys'/1, 'allValues'/1, 'update'/3, 'tab2file'/2, 'file2tab'/1, 'newImpl'/5, 'insertImpl'/3, 'lookupImpl'/2, 'memberImpl'/2, 'deleteImpl'/2, 'deleteTableImpl'/1, 'allKeysImpl'/1, 'allValuesImpl'/1, 'updateImpl'/3, 'tab2fileImpl'/2, 'file2tabImpl'/1, 'Set'/0, 'OrderedSet'/0, 'Bag'/0, 'DuplicateBag'/0, 'Public'/0, 'Protected'/0, 'Private'/0, 'new'/0, 'new'/1, 'tableTypeToAtom'/0, 'accessToAtom'/0, 'insert'/0, 'insert'/1, 'insert'/2, 'lookup'/0, 'lookup'/1, 'member'/0, 'member'/1, 'delete'/0, 'delete'/1, 'deleteTable'/0, 'allKeys'/0, 'allValues'/0, 'update'/0, 'update'/1, 'update'/2, 'tab2file'/0, 'tab2file'/1, 'file2tab'/0, 'newImpl'/0, 'newImpl'/1, 'newImpl'/2, 'newImpl'/3, 'newImpl'/4, 'insertImpl'/0, 'insertImpl'/1, 'insertImpl'/2, 'lookupImpl'/0, 'lookupImpl'/1, 'memberImpl'/0, 'memberImpl'/1, 'deleteImpl'/0, 'deleteImpl'/1, 'deleteTableImpl'/0, 'allKeysImpl'/0, 'allValuesImpl'/0, 'updateImpl'/0, 'updateImpl'/1, 'updateImpl'/2, 'tab2fileImpl'/0, 'tab2fileImpl'/1, 'file2tabImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: TableType
 % Constructors: Set, OrderedSet, Bag, DuplicateBag
@@ -467,4 +467,8 @@ module 'OTP.Ets' ['defaultOptions'/0, 'publicSetOptions'/0, 'publicOrderedSetOpt
     let <_F0> = fun (_A0) ->
         apply 'file2tabImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('OTP.Ets')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('OTP.Ets', _0)
 end

@@ -1,4 +1,4 @@
-module 'OTP.GenServer' ['startLink'/2, 'call'/2, 'callTimeout'/3, 'cast'/2, 'stop'/1, 'isAlive'/1, 'startLinkImpl'/2, 'callImpl'/2, 'callTimeoutImpl'/3, 'castImpl'/2, 'stopImpl'/1, 'isAliveImpl'/1, 'startLink'/0, 'startLink'/1, 'call'/0, 'call'/1, 'callTimeout'/0, 'callTimeout'/1, 'callTimeout'/2, 'cast'/0, 'cast'/1, 'stop'/0, 'isAlive'/0, 'startLinkImpl'/0, 'startLinkImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callTimeoutImpl'/0, 'callTimeoutImpl'/1, 'callTimeoutImpl'/2, 'castImpl'/0, 'castImpl'/1, 'stopImpl'/0, 'isAliveImpl'/0]
+module 'OTP.GenServer' ['startLink'/2, 'call'/2, 'callTimeout'/3, 'cast'/2, 'stop'/1, 'isAlive'/1, 'startLinkImpl'/2, 'callImpl'/2, 'callTimeoutImpl'/3, 'castImpl'/2, 'stopImpl'/1, 'isAliveImpl'/1, 'startLink'/0, 'startLink'/1, 'call'/0, 'call'/1, 'callTimeout'/0, 'callTimeout'/1, 'callTimeout'/2, 'cast'/0, 'cast'/1, 'stop'/0, 'isAlive'/0, 'startLinkImpl'/0, 'startLinkImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callTimeoutImpl'/0, 'callTimeoutImpl'/1, 'callTimeoutImpl'/2, 'castImpl'/0, 'castImpl'/1, 'stopImpl'/0, 'isAliveImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'startLink'/2 =
   fun (InitialState, Callbacks) ->
@@ -191,4 +191,8 @@ module 'OTP.GenServer' ['startLink'/2, 'call'/2, 'callTimeout'/3, 'cast'/2, 'sto
     let <_F0> = fun (_A0) ->
         apply 'isAliveImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('OTP.GenServer')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('OTP.GenServer', _0)
 end

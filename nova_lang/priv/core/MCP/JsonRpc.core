@@ -1,4 +1,4 @@
-module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'invalidParams'/0, 'internalError'/0, 'parseRequest'/1, 'parseId'/1, 'isNotification'/1, 'encodeSuccess'/2, 'encodeError'/4, 'encodeId'/1, 'mkParseError'/1, 'mkMethodNotFound'/2, 'mkInternalError'/2, 'IdString'/1, 'IdInt'/1, 'IdNull'/0, 'parseRequest'/0, 'parseId'/0, 'isNotification'/0, 'encodeSuccess'/0, 'encodeSuccess'/1, 'encodeError'/0, 'encodeError'/1, 'encodeError'/2, 'encodeError'/3, 'encodeId'/0, 'mkParseError'/0, 'mkMethodNotFound'/0, 'mkMethodNotFound'/1, 'mkInternalError'/0, 'mkInternalError'/1, 'IdString'/0, 'IdInt'/0]
+module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'invalidParams'/0, 'internalError'/0, 'parseRequest'/1, 'parseId'/1, 'isNotification'/1, 'encodeSuccess'/2, 'encodeError'/4, 'encodeId'/1, 'mkParseError'/1, 'mkMethodNotFound'/2, 'mkInternalError'/2, 'IdString'/1, 'IdInt'/1, 'IdNull'/0, 'parseRequest'/0, 'parseId'/0, 'isNotification'/0, 'encodeSuccess'/0, 'encodeSuccess'/1, 'encodeError'/0, 'encodeError'/1, 'encodeError'/2, 'encodeError'/3, 'encodeId'/0, 'mkParseError'/0, 'mkMethodNotFound'/0, 'mkMethodNotFound'/1, 'mkInternalError'/0, 'mkInternalError'/1, 'IdString'/0, 'IdInt'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: RequestId
 % Constructors: IdString, IdInt, IdNull
@@ -268,4 +268,8 @@ module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'i
     let <_F0> = fun (_A0) ->
         apply 'IdInt'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('MCP.JsonRpc')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('MCP.JsonRpc', _0)
 end

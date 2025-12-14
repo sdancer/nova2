@@ -1,4 +1,4 @@
-module 'Data.Int' ['fromString'/1, 'toNumber'/1, 'round'/1, 'floor'/1, 'ceil'/1, 'fromStringImpl'/1, 'toNumberImpl'/1, 'roundImpl'/1, 'floorImpl'/1, 'ceilImpl'/1, 'fromString'/0, 'toNumber'/0, 'round'/0, 'floor'/0, 'ceil'/0, 'fromStringImpl'/0, 'toNumberImpl'/0, 'roundImpl'/0, 'floorImpl'/0, 'ceilImpl'/0]
+module 'Data.Int' ['fromString'/1, 'toNumber'/1, 'round'/1, 'floor'/1, 'ceil'/1, 'fromStringImpl'/1, 'toNumberImpl'/1, 'roundImpl'/1, 'floorImpl'/1, 'ceilImpl'/1, 'fromString'/0, 'toNumber'/0, 'round'/0, 'floor'/0, 'ceil'/0, 'fromStringImpl'/0, 'toNumberImpl'/0, 'roundImpl'/0, 'floorImpl'/0, 'ceilImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'fromString'/1 =
   fun (S) ->
@@ -92,4 +92,8 @@ module 'Data.Int' ['fromString'/1, 'toNumber'/1, 'round'/1, 'floor'/1, 'ceil'/1,
     let <_F0> = fun (_A0) ->
         apply 'ceilImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Int')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Int', _0)
 end

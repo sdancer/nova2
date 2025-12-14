@@ -1,4 +1,4 @@
-module 'Data.Either' ['either'/3, 'isLeft'/1, 'isRight'/1, 'fromLeft'/2, 'fromRight'/2, 'map'/2, 'pure'/1, 'bind'/2, 'Left'/1, 'Right'/1, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'fromLeft'/0, 'fromLeft'/1, 'fromRight'/0, 'fromRight'/1, 'map'/0, 'map'/1, 'pure'/0, 'bind'/0, 'bind'/1, 'Left'/0, 'Right'/0]
+module 'Data.Either' ['either'/3, 'isLeft'/1, 'isRight'/1, 'fromLeft'/2, 'fromRight'/2, 'map'/2, 'pure'/1, 'bind'/2, 'Left'/1, 'Right'/1, 'either'/0, 'either'/1, 'either'/2, 'isLeft'/0, 'isRight'/0, 'fromLeft'/0, 'fromLeft'/1, 'fromRight'/0, 'fromRight'/1, 'map'/0, 'map'/1, 'pure'/0, 'bind'/0, 'bind'/1, 'Left'/0, 'Right'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: Either
 % Constructors: Left, Right
@@ -187,4 +187,8 @@ module 'Data.Either' ['either'/3, 'isLeft'/1, 'isRight'/1, 'fromLeft'/2, 'fromRi
     let <_F0> = fun (_A0) ->
         apply 'Right'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Either')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Either', _0)
 end

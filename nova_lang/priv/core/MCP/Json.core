@@ -1,4 +1,4 @@
-module 'MCP.Json' ['encode'/1, 'decode'/1, 'isNull'/1, 'isString'/1, 'isNumber'/1, 'isMap'/1, 'getField'/2, 'jsonStringToString'/1, 'jsonNumberToInt'/1, 'object'/1, 'toJsonString'/1, 'toJsonInt'/1, 'toJsonBool'/1, 'jsonNull'/0, 'toJsonArray'/1, 'kv'/2, 'encodeImpl'/1, 'decodeImpl'/1, 'isNullImpl'/1, 'isStringImpl'/1, 'isNumberImpl'/1, 'isMapImpl'/1, 'getFieldImpl'/2, 'jsonStringToStringImpl'/1, 'jsonNumberToIntImpl'/1, 'objectImpl'/1, 'toJsonStringImpl'/1, 'toJsonIntImpl'/1, 'toJsonBoolImpl'/1, 'jsonNullImpl'/0, 'toJsonArrayImpl'/1, 'encode'/0, 'decode'/0, 'isNull'/0, 'isString'/0, 'isNumber'/0, 'isMap'/0, 'getField'/0, 'getField'/1, 'jsonStringToString'/0, 'jsonNumberToInt'/0, 'object'/0, 'toJsonString'/0, 'toJsonInt'/0, 'toJsonBool'/0, 'toJsonArray'/0, 'kv'/0, 'kv'/1, 'encodeImpl'/0, 'decodeImpl'/0, 'isNullImpl'/0, 'isStringImpl'/0, 'isNumberImpl'/0, 'isMapImpl'/0, 'getFieldImpl'/0, 'getFieldImpl'/1, 'jsonStringToStringImpl'/0, 'jsonNumberToIntImpl'/0, 'objectImpl'/0, 'toJsonStringImpl'/0, 'toJsonIntImpl'/0, 'toJsonBoolImpl'/0, 'toJsonArrayImpl'/0]
+module 'MCP.Json' ['encode'/1, 'decode'/1, 'isNull'/1, 'isString'/1, 'isNumber'/1, 'isMap'/1, 'getField'/2, 'jsonStringToString'/1, 'jsonNumberToInt'/1, 'object'/1, 'toJsonString'/1, 'toJsonInt'/1, 'toJsonBool'/1, 'jsonNull'/0, 'toJsonArray'/1, 'kv'/2, 'encodeImpl'/1, 'decodeImpl'/1, 'isNullImpl'/1, 'isStringImpl'/1, 'isNumberImpl'/1, 'isMapImpl'/1, 'getFieldImpl'/2, 'jsonStringToStringImpl'/1, 'jsonNumberToIntImpl'/1, 'objectImpl'/1, 'toJsonStringImpl'/1, 'toJsonIntImpl'/1, 'toJsonBoolImpl'/1, 'jsonNullImpl'/0, 'toJsonArrayImpl'/1, 'encode'/0, 'decode'/0, 'isNull'/0, 'isString'/0, 'isNumber'/0, 'isMap'/0, 'getField'/0, 'getField'/1, 'jsonStringToString'/0, 'jsonNumberToInt'/0, 'object'/0, 'toJsonString'/0, 'toJsonInt'/0, 'toJsonBool'/0, 'toJsonArray'/0, 'kv'/0, 'kv'/1, 'encodeImpl'/0, 'decodeImpl'/0, 'isNullImpl'/0, 'isStringImpl'/0, 'isNumberImpl'/0, 'isMapImpl'/0, 'getFieldImpl'/0, 'getFieldImpl'/1, 'jsonStringToStringImpl'/0, 'jsonNumberToIntImpl'/0, 'objectImpl'/0, 'toJsonStringImpl'/0, 'toJsonIntImpl'/0, 'toJsonBoolImpl'/0, 'toJsonArrayImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'encode'/1 =
   fun (X) ->
@@ -291,4 +291,8 @@ module 'MCP.Json' ['encode'/1, 'decode'/1, 'isNull'/1, 'isString'/1, 'isNumber'/
     let <_F0> = fun (_A0) ->
         apply 'toJsonArrayImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('MCP.Json')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('MCP.Json', _0)
 end

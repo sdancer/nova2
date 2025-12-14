@@ -1,4 +1,4 @@
-module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUpper'/1, 'isLower'/1, 'toUpper'/1, 'toLower'/1, 'toCharCode'/1, 'fromCharCode'/1, 'isControl'/1, 'isPrint'/1, 'isHexDigit'/1, 'isOctDigit'/1, 'isAscii'/1, 'isLatin1'/1, 'isAlphaImpl'/1, 'isDigitImpl'/1, 'isAlphaNumImpl'/1, 'isSpaceImpl'/1, 'isUpperImpl'/1, 'isLowerImpl'/1, 'toUpperImpl'/1, 'toLowerImpl'/1, 'toCharCodeImpl'/1, 'fromCharCodeImpl'/1, 'isControlImpl'/1, 'isPrintImpl'/1, 'isHexDigitImpl'/1, 'isOctDigitImpl'/1, 'isAsciiImpl'/1, 'isLatin1Impl'/1, 'isAlpha'/0, 'isDigit'/0, 'isAlphaNum'/0, 'isSpace'/0, 'isUpper'/0, 'isLower'/0, 'toUpper'/0, 'toLower'/0, 'toCharCode'/0, 'fromCharCode'/0, 'isControl'/0, 'isPrint'/0, 'isHexDigit'/0, 'isOctDigit'/0, 'isAscii'/0, 'isLatin1'/0, 'isAlphaImpl'/0, 'isDigitImpl'/0, 'isAlphaNumImpl'/0, 'isSpaceImpl'/0, 'isUpperImpl'/0, 'isLowerImpl'/0, 'toUpperImpl'/0, 'toLowerImpl'/0, 'toCharCodeImpl'/0, 'fromCharCodeImpl'/0, 'isControlImpl'/0, 'isPrintImpl'/0, 'isHexDigitImpl'/0, 'isOctDigitImpl'/0, 'isAsciiImpl'/0, 'isLatin1Impl'/0]
+module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUpper'/1, 'isLower'/1, 'toUpper'/1, 'toLower'/1, 'toCharCode'/1, 'fromCharCode'/1, 'isControl'/1, 'isPrint'/1, 'isHexDigit'/1, 'isOctDigit'/1, 'isAscii'/1, 'isLatin1'/1, 'isAlphaImpl'/1, 'isDigitImpl'/1, 'isAlphaNumImpl'/1, 'isSpaceImpl'/1, 'isUpperImpl'/1, 'isLowerImpl'/1, 'toUpperImpl'/1, 'toLowerImpl'/1, 'toCharCodeImpl'/1, 'fromCharCodeImpl'/1, 'isControlImpl'/1, 'isPrintImpl'/1, 'isHexDigitImpl'/1, 'isOctDigitImpl'/1, 'isAsciiImpl'/1, 'isLatin1Impl'/1, 'isAlpha'/0, 'isDigit'/0, 'isAlphaNum'/0, 'isSpace'/0, 'isUpper'/0, 'isLower'/0, 'toUpper'/0, 'toLower'/0, 'toCharCode'/0, 'fromCharCode'/0, 'isControl'/0, 'isPrint'/0, 'isHexDigit'/0, 'isOctDigit'/0, 'isAscii'/0, 'isLatin1'/0, 'isAlphaImpl'/0, 'isDigitImpl'/0, 'isAlphaNumImpl'/0, 'isSpaceImpl'/0, 'isUpperImpl'/0, 'isLowerImpl'/0, 'toUpperImpl'/0, 'toLowerImpl'/0, 'toCharCodeImpl'/0, 'fromCharCodeImpl'/0, 'isControlImpl'/0, 'isPrintImpl'/0, 'isHexDigitImpl'/0, 'isOctDigitImpl'/0, 'isAsciiImpl'/0, 'isLatin1Impl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'isAlpha'/1 =
   fun (C) ->
@@ -293,4 +293,8 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
     let <_F0> = fun (_A0) ->
         apply 'isLatin1Impl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Char')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Char', _0)
 end

@@ -1,4 +1,4 @@
-module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeout'/2, 'recv'/1, 'recvTimeout'/2, 'send'/2, 'close'/1, 'closeListen'/1, 'setOpts'/2, 'controlling_process'/2, 'listenImpl'/1, 'acceptImpl'/1, 'acceptTimeoutImpl'/2, 'recvImpl'/1, 'recvTimeoutImpl'/2, 'sendImpl'/2, 'closeImpl'/1, 'closeListenImpl'/1, 'setOptsImpl'/2, 'controllingProcessImpl'/2, 'listen'/0, 'accept'/0, 'acceptTimeout'/0, 'acceptTimeout'/1, 'recv'/0, 'recvTimeout'/0, 'recvTimeout'/1, 'send'/0, 'send'/1, 'close'/0, 'closeListen'/0, 'setOpts'/0, 'setOpts'/1, 'controlling_process'/0, 'controlling_process'/1, 'listenImpl'/0, 'acceptImpl'/0, 'acceptTimeoutImpl'/0, 'acceptTimeoutImpl'/1, 'recvImpl'/0, 'recvTimeoutImpl'/0, 'recvTimeoutImpl'/1, 'sendImpl'/0, 'sendImpl'/1, 'closeImpl'/0, 'closeListenImpl'/0, 'setOptsImpl'/0, 'setOptsImpl'/1, 'controllingProcessImpl'/0, 'controllingProcessImpl'/1]
+module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeout'/2, 'recv'/1, 'recvTimeout'/2, 'send'/2, 'close'/1, 'closeListen'/1, 'setOpts'/2, 'controlling_process'/2, 'listenImpl'/1, 'acceptImpl'/1, 'acceptTimeoutImpl'/2, 'recvImpl'/1, 'recvTimeoutImpl'/2, 'sendImpl'/2, 'closeImpl'/1, 'closeListenImpl'/1, 'setOptsImpl'/2, 'controllingProcessImpl'/2, 'listen'/0, 'accept'/0, 'acceptTimeout'/0, 'acceptTimeout'/1, 'recv'/0, 'recvTimeout'/0, 'recvTimeout'/1, 'send'/0, 'send'/1, 'close'/0, 'closeListen'/0, 'setOpts'/0, 'setOpts'/1, 'controlling_process'/0, 'controlling_process'/1, 'listenImpl'/0, 'acceptImpl'/0, 'acceptTimeoutImpl'/0, 'acceptTimeoutImpl'/1, 'recvImpl'/0, 'recvTimeoutImpl'/0, 'recvTimeoutImpl'/1, 'sendImpl'/0, 'sendImpl'/1, 'closeImpl'/0, 'closeListenImpl'/0, 'setOptsImpl'/0, 'setOptsImpl'/1, 'controllingProcessImpl'/0, 'controllingProcessImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'defaultListenOptions'/0 =
   fun () ->
@@ -263,4 +263,8 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
     let <_F0> = fun (_A1) ->
         apply 'controllingProcessImpl'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('OTP.TCP')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('OTP.TCP', _0)
 end

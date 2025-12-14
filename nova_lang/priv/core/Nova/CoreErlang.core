@@ -1,4 +1,4 @@
-module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'compileAndLoad'/1, 'call'/3, 'callSafe'/3, 'isLoaded'/1, 'moduleToString'/1, 'stringToModule'/1, 'scanImpl'/1, 'parseImpl'/1, 'compileImpl'/1, 'loadBinaryImpl'/2, 'callImpl'/3, 'callSafeImpl'/3, 'isLoadedImpl'/1, 'moduleToStringImpl'/1, 'stringToModuleImpl'/1, 'scan'/0, 'parse'/0, 'compile'/0, 'loadBinary'/0, 'loadBinary'/1, 'compileAndLoad'/0, 'call'/0, 'call'/1, 'call'/2, 'callSafe'/0, 'callSafe'/1, 'callSafe'/2, 'isLoaded'/0, 'moduleToString'/0, 'stringToModule'/0, 'scanImpl'/0, 'parseImpl'/0, 'compileImpl'/0, 'loadBinaryImpl'/0, 'loadBinaryImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callImpl'/2, 'callSafeImpl'/0, 'callSafeImpl'/1, 'callSafeImpl'/2, 'isLoadedImpl'/0, 'moduleToStringImpl'/0, 'stringToModuleImpl'/0]
+module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'compileAndLoad'/1, 'call'/3, 'callSafe'/3, 'isLoaded'/1, 'moduleToString'/1, 'stringToModule'/1, 'scanImpl'/1, 'parseImpl'/1, 'compileImpl'/1, 'loadBinaryImpl'/2, 'callImpl'/3, 'callSafeImpl'/3, 'isLoadedImpl'/1, 'moduleToStringImpl'/1, 'stringToModuleImpl'/1, 'scan'/0, 'parse'/0, 'compile'/0, 'loadBinary'/0, 'loadBinary'/1, 'compileAndLoad'/0, 'call'/0, 'call'/1, 'call'/2, 'callSafe'/0, 'callSafe'/1, 'callSafe'/2, 'isLoaded'/0, 'moduleToString'/0, 'stringToModule'/0, 'scanImpl'/0, 'parseImpl'/0, 'compileImpl'/0, 'loadBinaryImpl'/0, 'loadBinaryImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callImpl'/2, 'callSafeImpl'/0, 'callSafeImpl'/1, 'callSafeImpl'/2, 'isLoadedImpl'/0, 'moduleToStringImpl'/0, 'stringToModuleImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'scan'/1 =
   fun (Source) ->
@@ -274,4 +274,8 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
     let <_F0> = fun (_A0) ->
         apply 'stringToModuleImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.CoreErlang')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.CoreErlang', _0)
 end

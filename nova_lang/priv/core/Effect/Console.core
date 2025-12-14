@@ -1,4 +1,4 @@
-module 'Effect.Console' ['log'/1, 'logShow'/1, 'error'/1, 'unsafePerformEffect'/1, 'pure'/1, 'bind'/2, 'applySecond'/2, 'void'/1, 'logImpl'/1, 'logShowImpl'/1, 'errorImpl'/1, 'unsafePerformEffectImpl'/1, 'pureImpl'/1, 'bindImpl'/2, 'applySecondImpl'/2, 'voidImpl'/1, 'log'/0, 'logShow'/0, 'error'/0, 'unsafePerformEffect'/0, 'pure'/0, 'bind'/0, 'bind'/1, 'applySecond'/0, 'applySecond'/1, 'void'/0, 'logImpl'/0, 'logShowImpl'/0, 'errorImpl'/0, 'unsafePerformEffectImpl'/0, 'pureImpl'/0, 'bindImpl'/0, 'bindImpl'/1, 'applySecondImpl'/0, 'applySecondImpl'/1, 'voidImpl'/0]
+module 'Effect.Console' ['log'/1, 'logShow'/1, 'error'/1, 'unsafePerformEffect'/1, 'pure'/1, 'bind'/2, 'applySecond'/2, 'void'/1, 'logImpl'/1, 'logShowImpl'/1, 'errorImpl'/1, 'unsafePerformEffectImpl'/1, 'pureImpl'/1, 'bindImpl'/2, 'applySecondImpl'/2, 'voidImpl'/1, 'log'/0, 'logShow'/0, 'error'/0, 'unsafePerformEffect'/0, 'pure'/0, 'bind'/0, 'bind'/1, 'applySecond'/0, 'applySecond'/1, 'void'/0, 'logImpl'/0, 'logShowImpl'/0, 'errorImpl'/0, 'unsafePerformEffectImpl'/0, 'pureImpl'/0, 'bindImpl'/0, 'bindImpl'/1, 'applySecondImpl'/0, 'applySecondImpl'/1, 'voidImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'log'/1 =
   fun (Msg) ->
@@ -175,4 +175,8 @@ module 'Effect.Console' ['log'/1, 'logShow'/1, 'error'/1, 'unsafePerformEffect'/
     let <_F0> = fun (_A0) ->
         apply 'voidImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Effect.Console')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Effect.Console', _0)
 end

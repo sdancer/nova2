@@ -1,4 +1,4 @@
-module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'lexSource'/0, 'parseModuleCst'/0, 'parseModuleToCst'/0]
+module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'lexSource'/0, 'parseModuleCst'/0, 'parseModuleToCst'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'parseModuleCst'/1 =
   fun (Source) ->
@@ -45,4 +45,8 @@ module 'Nova.Compiler.CstPipeline' ['parseModuleCst'/1, 'parseModuleToCst'/1, 'l
     let <_F0> = fun (_A0) ->
         apply 'parseModuleToCst'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.CstPipeline')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.CstPipeline', _0)
 end

@@ -1,4 +1,4 @@
-module 'MCP.Tools' ['listToolsJson'/1, 'toolToJson'/1, 'allTools'/0, 'objectSchema'/2, 'propToKv'/1, 'prop'/3, 'callTool'/3, 'formatResult'/1, 'doCallTool'/3, 'getStringArg'/2, 'listToolsJson'/0, 'toolToJson'/0, 'objectSchema'/0, 'objectSchema'/1, 'propToKv'/0, 'prop'/0, 'prop'/1, 'prop'/2, 'callTool'/0, 'callTool'/1, 'callTool'/2, 'formatResult'/0, 'doCallTool'/0, 'doCallTool'/1, 'doCallTool'/2, 'getStringArg'/0, 'getStringArg'/1]
+module 'MCP.Tools' ['listToolsJson'/1, 'toolToJson'/1, 'allTools'/0, 'objectSchema'/2, 'propToKv'/1, 'prop'/3, 'callTool'/3, 'formatResult'/1, 'doCallTool'/3, 'getStringArg'/2, 'listToolsJson'/0, 'toolToJson'/0, 'objectSchema'/0, 'objectSchema'/1, 'propToKv'/0, 'prop'/0, 'prop'/1, 'prop'/2, 'callTool'/0, 'callTool'/1, 'callTool'/2, 'formatResult'/0, 'doCallTool'/0, 'doCallTool'/1, 'doCallTool'/2, 'getStringArg'/0, 'getStringArg'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'listToolsJson'/1 =
   fun (_W0) ->
@@ -229,4 +229,8 @@ module 'MCP.Tools' ['listToolsJson'/1, 'toolToJson'/1, 'allTools'/0, 'objectSche
     let <_F0> = fun (_A1) ->
         apply 'getStringArg'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('MCP.Tools')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('MCP.Tools', _0)
 end

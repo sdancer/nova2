@@ -1,4 +1,4 @@
-module 'Data.Json' ['decode'/1, 'getString'/2, 'encode'/1, 'decodeImpl'/1, 'getStringImpl'/2, 'encodeImpl'/1, 'decode'/0, 'getString'/0, 'getString'/1, 'encode'/0, 'decodeImpl'/0, 'getStringImpl'/0, 'getStringImpl'/1, 'encodeImpl'/0]
+module 'Data.Json' ['decode'/1, 'getString'/2, 'encode'/1, 'decodeImpl'/1, 'getStringImpl'/2, 'encodeImpl'/1, 'decode'/0, 'getString'/0, 'getString'/1, 'encode'/0, 'decodeImpl'/0, 'getStringImpl'/0, 'getStringImpl'/1, 'encodeImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'decode'/1 =
   fun (Str) ->
@@ -69,4 +69,8 @@ module 'Data.Json' ['decode'/1, 'getString'/2, 'encode'/1, 'decodeImpl'/1, 'getS
     let <_F0> = fun (_A0) ->
         apply 'encodeImpl'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Json')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Json', _0)
 end

@@ -1,4 +1,4 @@
-module 'Data.Maybe' ['fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'map'/2, 'pure'/1, 'bind'/2, 'Nothing'/0, 'Just'/1, 'fromMaybe'/0, 'fromMaybe'/1, 'isJust'/0, 'isNothing'/0, 'maybe'/0, 'maybe'/1, 'maybe'/2, 'map'/0, 'map'/1, 'pure'/0, 'bind'/0, 'bind'/1, 'Just'/0]
+module 'Data.Maybe' ['fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'map'/2, 'pure'/1, 'bind'/2, 'Nothing'/0, 'Just'/1, 'fromMaybe'/0, 'fromMaybe'/1, 'isJust'/0, 'isNothing'/0, 'maybe'/0, 'maybe'/1, 'maybe'/2, 'map'/0, 'map'/1, 'pure'/0, 'bind'/0, 'bind'/1, 'Just'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: Maybe
 % Constructors: Nothing, Just
@@ -158,4 +158,8 @@ module 'Data.Maybe' ['fromMaybe'/2, 'isJust'/1, 'isNothing'/1, 'maybe'/3, 'map'/
     let <_F0> = fun (_A0) ->
         apply 'Just'/1(_A0)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Data.Maybe')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Data.Maybe', _0)
 end

@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies'/1, 'getConstructorDeps'/1, 'getTypeExprDeps'/1, 'getExprDeps'/1, 'getLetBindsDeps'/1, 'getCaseClauseDeps'/1, 'getDoStatementsDeps'/1, 'getGuardedExprDeps'/1, 'getGuardClauseDeps'/1, 'getBoundNames'/1, 'emptyGraph'/0, 'buildDependencyGraph'/2, 'buildReverseEdges'/1, 'addToGraph'/3, 'removeFromGraph'/2, 'getDependents'/2, 'getDependenciesOf'/2, 'getAffected'/2, 'topologicalSort'/2, 'getDependencies'/0, 'getModuleDependencies'/0, 'getConstructorDeps'/0, 'getTypeExprDeps'/0, 'getExprDeps'/0, 'getLetBindsDeps'/0, 'getCaseClauseDeps'/0, 'getDoStatementsDeps'/0, 'getGuardedExprDeps'/0, 'getGuardClauseDeps'/0, 'getBoundNames'/0, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildReverseEdges'/0, 'addToGraph'/0, 'addToGraph'/1, 'addToGraph'/2, 'removeFromGraph'/0, 'removeFromGraph'/1, 'getDependents'/0, 'getDependents'/1, 'getDependenciesOf'/0, 'getDependenciesOf'/1, 'getAffected'/0, 'getAffected'/1, 'topologicalSort'/0, 'topologicalSort'/1]
+module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies'/1, 'getConstructorDeps'/1, 'getTypeExprDeps'/1, 'getExprDeps'/1, 'getLetBindsDeps'/1, 'getCaseClauseDeps'/1, 'getDoStatementsDeps'/1, 'getGuardedExprDeps'/1, 'getGuardClauseDeps'/1, 'getBoundNames'/1, 'emptyGraph'/0, 'buildDependencyGraph'/2, 'buildReverseEdges'/1, 'addToGraph'/3, 'removeFromGraph'/2, 'getDependents'/2, 'getDependenciesOf'/2, 'getAffected'/2, 'topologicalSort'/2, 'getDependencies'/0, 'getModuleDependencies'/0, 'getConstructorDeps'/0, 'getTypeExprDeps'/0, 'getExprDeps'/0, 'getLetBindsDeps'/0, 'getCaseClauseDeps'/0, 'getDoStatementsDeps'/0, 'getGuardedExprDeps'/0, 'getGuardClauseDeps'/0, 'getBoundNames'/0, 'buildDependencyGraph'/0, 'buildDependencyGraph'/1, 'buildReverseEdges'/0, 'addToGraph'/0, 'addToGraph'/1, 'addToGraph'/2, 'removeFromGraph'/0, 'removeFromGraph'/1, 'getDependents'/0, 'getDependents'/1, 'getDependenciesOf'/0, 'getDependenciesOf'/1, 'getAffected'/0, 'getAffected'/1, 'topologicalSort'/0, 'topologicalSort'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'getDependencies'/1 =
   fun (Decl) ->
@@ -549,4 +549,8 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
     let <_F0> = fun (_A1) ->
         apply 'topologicalSort'/2(_A0, _A1)
       in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.Dependencies')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.Dependencies', _0)
 end
