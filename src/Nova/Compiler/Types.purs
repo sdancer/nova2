@@ -216,10 +216,16 @@ lookupEnv env name = Map.lookup name env.bindings
 -- | Apply a substitution to all type schemes in an environment
 applySubstToEnv :: Subst -> Env -> Env
 applySubstToEnv sub env =
-  env { bindings = map applyToScheme env.bindings }
+  env { bindings = mapBindings applyToScheme env.bindings }
   where
     applyToScheme :: Scheme -> Scheme
     applyToScheme s = s { ty = applySubst sub s.ty }
+    -- Helper to map over bindings using Array conversion
+    mapBindings :: (Scheme -> Scheme) -> Map String Scheme -> Map String Scheme
+    mapBindings f m =
+      let arr :: Array (Tuple String Scheme)
+          arr = Map.toUnfoldable m
+      in Array.foldl (\acc (Tuple k v) -> Map.insert k (f v) acc) Map.empty arr
 
 -- | Generate a fresh type variable
 freshVar :: Env -> String -> Tuple TVar Env

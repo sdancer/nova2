@@ -217,7 +217,13 @@ module 'Nova.Compiler.Types' ['mkTVar'/2, 'normalizeTypeName'/1, 'mkTCon'/2, 'mk
   fun (Sub, Env) ->
     letrec 'applyToScheme'/1 = fun (S) ->
       call 'maps':'merge'(S, ~{'ty'=>apply 'applySubst'/2(Sub, call 'maps':'get'('ty', S))}~)
-      in call 'maps':'merge'(Env, ~{'bindings'=>call 'lists':'map'(fun (_Mf0) -> apply 'applyToScheme'/1(_Mf0), call 'maps':'get'('bindings', Env))}~)
+       'mapBindings'/2 = fun (F, M) ->
+      let <Arr> = call 'Data.Map':'toUnfoldable'(M)
+      in call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', K, V}}> when 'true' -> call 'Data.Map':'insert'(K, apply F(V), Acc)
+      end, call 'Data.Map':'empty'(), Arr)
+      in call 'maps':'merge'(Env, ~{'bindings'=>apply 'mapBindings'/2(fun (_Mf0) -> apply 'applyToScheme'/1(_Mf0), call 'maps':'get'('bindings', Env))}~)
 
 'freshVar'/2 =
   fun (Env, Hint) ->
