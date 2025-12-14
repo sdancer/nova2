@@ -1049,6 +1049,10 @@ genLetBindsWithBody ctx binds body =
       funcNames = Set.fromFoldable (map _.name letrecFuncs)
       usedByFuncs = Set.fromFoldable (Array.concatMap (\b -> getUsedVars b.value) funcBinds)
 
+      -- OPTIMIZATION: Precompute used variables for each value binding once
+      -- This avoids recomputing getUsedVars in every iteration of the fixpoint loop
+      valueBindsWithUsed = map (\b -> { bind: b, used: Set.fromFoldable (getUsedVars b.value) }) valueBinds
+
       -- Compute transitive dependencies on letrec functions
       -- A value transitively depends on funcs if it directly uses a func name,
       -- OR if it uses another value that transitively depends on funcs.
@@ -1056,12 +1060,11 @@ genLetBindsWithBody ctx binds body =
       computeTransitiveFuncDeps :: Set String -> Set String
       computeTransitiveFuncDeps currentDeps =
         let depsOrFuncs = Set.union funcNames currentDeps
-            newDeps = Set.fromFoldable $ Array.mapMaybe (\b ->
-              let used = Set.fromFoldable (getUsedVars b.value)
-              in if not (Set.isEmpty (Set.intersection used depsOrFuncs))
-                 then getPatternVarName b.pattern
-                 else Nothing
-            ) valueBinds
+            newDeps = Set.fromFoldable $ Array.mapMaybe (\bu ->
+              if not (Set.isEmpty (Set.intersection bu.used depsOrFuncs))
+              then getPatternVarName bu.bind.pattern
+              else Nothing
+            ) valueBindsWithUsed
         in if newDeps == currentDeps
            then newDeps
            else computeTransitiveFuncDeps newDeps
@@ -1075,6 +1078,7 @@ genLetBindsWithBody ctx binds body =
         Just n -> Set.member n valuesThatDependOnFuncs
         Nothing ->
           -- For pattern bindings without a simple name, check directly
+          -- (This is O(n) since dependsOnFuncs is called once per binding, not in a loop)
           let used = Set.fromFoldable (getUsedVars b.value)
           in not (Set.isEmpty (Set.intersection used (Set.union funcNames valuesThatDependOnFuncs)))
 
@@ -1097,14 +1101,16 @@ genLetBindsWithBody ctx binds body =
       directlyCyclicNames = Set.fromFoldable $ Array.mapMaybe (\b -> getPatternVarName b.pattern) directlyCyclic
 
       -- Propagate cyclicity: if a cyclic value uses another value, that value must also be cyclic
+      -- OPTIMIZATION: Use precomputed used variables instead of calling getUsedVars in loop
+      valueNames = Set.fromFoldable $ Array.mapMaybe (\bu -> getPatternVarName bu.bind.pattern) valueBindsWithUsed
+
       computeCyclicClosure :: Set String -> Set String
       computeCyclicClosure currentCyclic =
-        let cyclicBinds = Array.filter (\b -> case getPatternVarName b.pattern of
-              Just n -> Set.member n currentCyclic
-              Nothing -> false) valueBinds
-            usedByCyclic = Set.fromFoldable $ Array.concatMap (\b -> getUsedVars b.value) cyclicBinds
-            -- Value names that are used by cyclic values and are themselves values (not funcs)
-            valueNames = Set.fromFoldable $ Array.mapMaybe (\b -> getPatternVarName b.pattern) valueBinds
+        let -- Get used vars for cyclic bindings from precomputed map
+            cyclicUsedSets = Array.mapMaybe (\bu -> case getPatternVarName bu.bind.pattern of
+              Just n | Set.member n currentCyclic -> Just bu.used
+              _ -> Nothing) valueBindsWithUsed
+            usedByCyclic = Array.foldl (\acc s -> Set.union acc s) Set.empty cyclicUsedSets
             newCyclic = Set.union currentCyclic (Set.intersection usedByCyclic valueNames)
         in if newCyclic == currentCyclic
            then newCyclic
@@ -1645,40 +1651,41 @@ lookupArity name ctx =
     Nothing -> 0
 
 -- | Extract all variable names used in an expression (for dependency analysis)
+-- OPTIMIZATION: Use Set accumulator to avoid O(n²) array concatenation
 getUsedVars :: Expr -> Array String
-getUsedVars (ExprVar n) = [n]
-getUsedVars (ExprApp f a) = getUsedVars f <> getUsedVars a
-getUsedVars (ExprLambda _ body) = getUsedVars body
-getUsedVars (ExprLet binds body) = listConcatMap (\b -> getUsedVars b.value) binds <> getUsedVars body
-getUsedVars (ExprIf c t e) = getUsedVars c <> getUsedVars t <> getUsedVars e
-getUsedVars (ExprCase scrut clauses) = getUsedVars scrut <> listConcatMap (\cl -> getUsedVars cl.body) clauses
-getUsedVars (ExprBinOp _ l r) = getUsedVars l <> getUsedVars r
-getUsedVars (ExprList elems) = listConcatMap getUsedVars elems
-getUsedVars (ExprRecord fields) = listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
-getUsedVars (ExprRecordAccess rec _) = getUsedVars rec
-getUsedVars (ExprRecordUpdate rec fields) = getUsedVars rec <> listConcatMap (\(Tuple _ v) -> getUsedVars v) fields
-getUsedVars (ExprDo stmts) = listConcatMapArray getUsedVarsStmt stmts
+getUsedVars expr = Array.fromFoldable (Set.toUnfoldable (getUsedVarsSet expr) :: List String)
+
+-- | Internal: collect used vars into a Set (O(n log n) instead of O(n²))
+getUsedVarsSet :: Expr -> Set String
+getUsedVarsSet (ExprVar n) = Set.singleton n
+getUsedVarsSet (ExprApp f a) = Set.union (getUsedVarsSet f) (getUsedVarsSet a)
+getUsedVarsSet (ExprLambda _ body) = getUsedVarsSet body
+getUsedVarsSet (ExprLet binds body) = Set.union (listFoldUnion (\b -> getUsedVarsSet b.value) binds) (getUsedVarsSet body)
+getUsedVarsSet (ExprIf c t e) = Set.union (getUsedVarsSet c) (Set.union (getUsedVarsSet t) (getUsedVarsSet e))
+getUsedVarsSet (ExprCase scrut clauses) = Set.union (getUsedVarsSet scrut) (listFoldUnion (\cl -> getUsedVarsSet cl.body) clauses)
+getUsedVarsSet (ExprBinOp _ l r) = Set.union (getUsedVarsSet l) (getUsedVarsSet r)
+getUsedVarsSet (ExprList elems) = listFoldUnion getUsedVarsSet elems
+getUsedVarsSet (ExprRecord fields) = listFoldUnion (\(Tuple _ v) -> getUsedVarsSet v) fields
+getUsedVarsSet (ExprRecordAccess rec _) = getUsedVarsSet rec
+getUsedVarsSet (ExprRecordUpdate rec fields) = Set.union (getUsedVarsSet rec) (listFoldUnion (\(Tuple _ v) -> getUsedVarsSet v) fields)
+getUsedVarsSet (ExprDo stmts) = listFoldUnion getUsedVarsSetStmt stmts
   where
-    getUsedVarsStmt (DoLet binds) = listConcatMap (\b -> getUsedVars b.value) binds
-    getUsedVarsStmt (DoBind _ e) = getUsedVars e
-    getUsedVarsStmt (DoExpr e) = getUsedVars e
-getUsedVars (ExprTuple elems) = listConcatMap getUsedVars elems
-getUsedVars (ExprTyped e _) = getUsedVars e
-getUsedVars (ExprParens e) = getUsedVars e
-getUsedVars (ExprSection _) = []
-getUsedVars (ExprSectionLeft e _) = getUsedVars e
-getUsedVars (ExprSectionRight _ e) = getUsedVars e
-getUsedVars (ExprQualified _ _) = []
-getUsedVars (ExprUnaryOp _ e) = getUsedVars e
-getUsedVars _ = []
+    getUsedVarsSetStmt (DoLet binds) = listFoldUnion (\b -> getUsedVarsSet b.value) binds
+    getUsedVarsSetStmt (DoBind _ e) = getUsedVarsSet e
+    getUsedVarsSetStmt (DoExpr e) = getUsedVarsSet e
+getUsedVarsSet (ExprTuple elems) = listFoldUnion getUsedVarsSet elems
+getUsedVarsSet (ExprTyped e _) = getUsedVarsSet e
+getUsedVarsSet (ExprParens e) = getUsedVarsSet e
+getUsedVarsSet (ExprSection _) = Set.empty
+getUsedVarsSet (ExprSectionLeft e _) = getUsedVarsSet e
+getUsedVarsSet (ExprSectionRight _ e) = getUsedVarsSet e
+getUsedVarsSet (ExprQualified _ _) = Set.empty
+getUsedVarsSet (ExprUnaryOp _ e) = getUsedVarsSet e
+getUsedVarsSet _ = Set.empty
 
--- | Helper: concatMap for List returning Array
-listConcatMap :: forall a b. (a -> Array b) -> List a -> Array b
-listConcatMap f lst = foldl (\acc x -> acc <> f x) [] lst
-
--- | Helper: concatMap for Array containing DoStatement
-listConcatMapArray :: forall a b. (a -> Array b) -> List a -> Array b
-listConcatMapArray f lst = foldl (\acc x -> acc <> f x) [] lst
+-- | Helper: fold over a List, collecting Sets with union (O(n log n) total)
+listFoldUnion :: forall a. (a -> Set String) -> List a -> Set String
+listFoldUnion f lst = foldl (\acc x -> Set.union acc (f x)) Set.empty lst
 
 -- =====================================================
 -- FFI Support for BEAM

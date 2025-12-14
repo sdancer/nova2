@@ -23,21 +23,36 @@ import Nova.Compiler.CstLayout (LayoutDelim(..), LayoutStack)
 -- ============================================================================
 
 type LexState =
-  { input :: String
-  , chars :: Array Char
-  , pos :: Int
+  { chars :: List Char  -- Use List for O(1) pattern matching on BEAM
   , line :: Int
   , column :: Int
   }
 
 initLexState :: String -> LexState
 initLexState input =
-  { input
-  , chars: CU.toCharArray input
-  , pos: 0
+  { chars: arrayToList (CU.toCharArray input)
   , line: 1
   , column: 1
   }
+
+-- | Convert Array to List (for BEAM efficiency)
+arrayToList :: forall a. Array a -> List a
+arrayToList arr = Array.foldr (:) Nil arr
+
+-- | Convert char list to string (reverse first since we build backwards)
+charsToString :: List Char -> String
+charsToString chars = CU.fromCharArray (listToArray (reverseList chars))
+
+-- | Reverse a list
+reverseList :: forall a. List a -> List a
+reverseList = go Nil
+  where
+  go acc Nil = acc
+  go acc (x : xs) = go (x : acc) xs
+
+-- | Convert List to Array
+listToArray :: forall a. List a -> Array a
+listToArray lst = Array.fromFoldable lst
 
 -- | All keywords
 keywords :: Array String
@@ -145,65 +160,59 @@ lexTokensGo state acc =
 -- ============================================================================
 
 lexToken :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
-lexToken state = do
-  c <- peek state
-  case c of
-    -- Skip whitespace
-    ' ' -> lexToken (advance state 1)
-    '\t' -> lexToken (advanceTab state)
+lexToken state = case state.chars of
+  Nil -> Nothing
 
-    -- Newlines - just skip them, layout handles the semantics
-    '\n' -> lexToken (advanceNewline (advance state 1))
-    '\r' -> case peekAt state 1 of
-      Just '\n' -> lexToken (advanceNewline (advance state 2))
-      _ -> lexToken (advanceNewline (advance state 1))
+  -- Skip whitespace
+  (' ' : _) -> lexToken (advance state 1)
+  ('\t' : _) -> lexToken (advanceTab state)
 
-    -- Comments
-    '-' -> case peekAt state 1 of
-      Just '-' ->
-        let state' = skipLineComment (advance state 2)
-        in lexToken state'
-      _ -> lexOperator state
+  -- Newlines - just skip them, layout handles the semantics
+  ('\n' : _) -> lexToken (advanceNewline (advance state 1))
+  ('\r' : '\n' : _) -> lexToken (advanceNewline (advance state 2))
+  ('\r' : _) -> lexToken (advanceNewline (advance state 1))
 
-    '{' -> case peekAt state 1 of
-      Just '-' ->
-        let state' = skipBlockComment (advance state 2) 1
-        in lexToken state'
-      _ -> lexDelimiter state
+  -- Line comments: --
+  ('-' : '-' : _) ->
+    let state' = skipLineComment (advance state 2)
+    in lexToken state'
 
-    -- String literal
-    '"' -> case peekAt state 1 of
-      Just '"' -> case peekAt state 2 of
-        Just '"' -> lexRawString state
-        _ -> lexString state
-      _ -> lexString state
+  -- Block comments: {-
+  ('{' : '-' : _) ->
+    let state' = skipBlockComment (advance state 2) 1
+    in lexToken state'
 
-    -- Char literal
-    '\'' -> lexChar state
+  -- Raw string: """
+  ('"' : '"' : '"' : _) -> lexRawString state
 
-    -- Delimiters
-    '(' -> lexDelimiter state
-    ')' -> lexDelimiter state
-    '[' -> lexDelimiter state
-    ']' -> lexDelimiter state
-    '}' -> lexDelimiter state
-    ',' -> lexDelimiter state
-    '`' -> lexDelimiter state
-    ';' -> lexDelimiter state
+  -- String literal: "
+  ('"' : _) -> lexString state
 
-    -- Underscore (wildcard or hole)
-    '_' -> lexUnderscore state
+  -- Char literal: '
+  ('\'' : _) -> lexChar state
 
-    -- At symbol
-    '@' -> Just (Tuple (makeToken Cst.TokAt state) (advance state 1))
+  -- Delimiters (single char)
+  ('(' : _) -> lexDelimiter state
+  (')' : _) -> lexDelimiter state
+  ('[' : _) -> lexDelimiter state
+  (']' : _) -> lexDelimiter state
+  ('{' : _) -> lexDelimiter state
+  ('}' : _) -> lexDelimiter state
+  (',' : _) -> lexDelimiter state
+  ('`' : _) -> lexDelimiter state
+  (';' : _) -> lexDelimiter state
 
-    -- Catch-all: check character classes without pattern guards
-    _ ->
-      if isDigit c then lexNumber state
-      else if isIdentStart c then lexIdentOrKeyword state
-      else if isUpper c then lexUpperIdentifier state
-      else if isOperatorChar c then lexOperator state
-      else lexToken (advance state 1)  -- Unknown character - skip it
+  -- At symbol
+  ('@' : _) -> Just (Tuple (makeToken Cst.TokAt state) (advance state 1))
+
+  -- Catch-all: check character classes
+  (c : _) ->
+    if isDigit c then lexNumber state
+    else if c == '_' then lexUnderscore state
+    else if isIdentStart c then lexIdentOrKeyword state
+    else if isUpper c then lexUpperIdentifier state
+    else if isOperatorChar c then lexOperator state
+    else lexToken (advance state 1)  -- Unknown character - skip it
 
 -- ============================================================================
 -- Character Classification
@@ -241,26 +250,28 @@ isOperatorChar c =
 -- Position Helpers
 -- ============================================================================
 
-peek :: LexState -> Maybe Char
-peek state = Array.index state.chars state.pos
+-- | Drop n characters from the front of the char list
+dropChars :: Int -> List Char -> List Char
+dropChars 0 xs = xs
+dropChars _ Nil = Nil
+dropChars n (_ : xs) = dropChars (n - 1) xs
 
-peekAt :: LexState -> Int -> Maybe Char
-peekAt state offset = Array.index state.chars (state.pos + offset)
-
+-- | Advance state by n characters
 advance :: LexState -> Int -> LexState
 advance state n =
-  state { pos = state.pos + n, column = state.column + n }
+  state { chars = dropChars n state.chars, column = state.column + n }
 
+-- | Advance to next line
 advanceNewline :: LexState -> LexState
 advanceNewline state =
   state { line = state.line + 1, column = 1 }
 
+-- | Advance past a tab (drop 1 char, advance column to next tab stop)
 advanceTab :: LexState -> LexState
 advanceTab state =
-  -- Tab stops at every 8 columns
   let col = state.column
       nextTab = ((col - 1) / 8 + 1) * 8 + 1
-  in state { pos = state.pos + 1, column = nextTab }
+  in state { chars = dropChars 1 state.chars, column = nextTab }
 
 -- ============================================================================
 -- Token Construction
@@ -291,7 +302,7 @@ makeTokenRange tok startState endState =
 lexIdentOrKeyword :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexIdentOrKeyword state =
   let startState = state
-      Tuple name state' = consumeIdent state ""
+      Tuple name state' = consumeIdent state Nil
       tok = if Array.elem name keywords
             then makeKeywordToken name startState state'
             else makeIdentToken name startState state'
@@ -311,60 +322,49 @@ makeIdentToken name startState endState =
 lexUpperIdentifier :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexUpperIdentifier state =
   let startState = state
-      Tuple name state' = consumeUpperIdent state ""
+      Tuple name state' = consumeUpperIdent state Nil
       -- Check for qualified name (handles chains like Nova.Compiler.Ast)
-      result = case peek state' of
-        Just '.' ->
-          let state'' = advance state' 1
-          in checkQualifiedChain name state''
+      result = case state'.chars of
+        ('.' : _) -> checkQualifiedChain name (advance state' 1)
         _ -> Tuple (Cst.TokUpperName Nothing name) state'
       Tuple tok finalState = result
   in Just (Tuple (makeTokenRange tok startState finalState) finalState)
 
 -- Handle chains like Data.Maybe.fromMaybe
 checkQualifiedChain :: String -> LexState -> Tuple Cst.Token LexState
-checkQualifiedChain prefix state = case peek state of
-  Just c ->
-    if isUpper c
-    then
-      let Tuple name state' = consumeUpperIdent state ""
-          fullPrefix = prefix <> "." <> name
-      in case peek state' of
-        Just '.' -> checkQualifiedChain fullPrefix (advance state' 1)
-        _ -> Tuple (Cst.TokUpperName (Just prefix) name) state'
-    else if isLower c
-    then
-      let Tuple name state' = consumeIdent state ""
-      in Tuple (Cst.TokLowerName (Just prefix) name) state'
-    else if isOperatorChar c
-    then
-      let Tuple op state' = consumeOperator state ""
-      in Tuple (Cst.TokOperator (Just prefix) op) state'
-    else Tuple (Cst.TokUpperName Nothing prefix) state
+checkQualifiedChain prefix state = case state.chars of
+  (c : _) | isUpper c ->
+    let Tuple name state' = consumeUpperIdent state Nil
+        fullPrefix = prefix <> "." <> name
+    in case state'.chars of
+      ('.' : _) -> checkQualifiedChain fullPrefix (advance state' 1)
+      _ -> Tuple (Cst.TokUpperName (Just prefix) name) state'
+  (c : _) | isLower c ->
+    let Tuple name state' = consumeIdent state Nil
+    in Tuple (Cst.TokLowerName (Just prefix) name) state'
+  (c : _) | isOperatorChar c ->
+    let Tuple op state' = consumeOperator state Nil
+    in Tuple (Cst.TokOperator (Just prefix) op) state'
   _ ->
     -- Backtrack - the dot is separate
     Tuple (Cst.TokUpperName Nothing prefix) state
 
-consumeIdent :: LexState -> String -> Tuple String LexState
-consumeIdent state acc = case peek state of
-  Just c ->
-    if isIdentChar c
-    then consumeIdent (advance state 1) (acc <> CU.singleton c)
-    else Tuple acc state
-  _ -> Tuple acc state
+consumeIdent :: LexState -> List Char -> Tuple String LexState
+consumeIdent state acc = case state.chars of
+  (c : _) | isIdentChar c ->
+    consumeIdent (advance state 1) (c : acc)
+  _ -> Tuple (charsToString acc) state
 
-consumeUpperIdent :: LexState -> String -> Tuple String LexState
-consumeUpperIdent state acc = case peek state of
-  Just c ->
-    if isAlphaNum c || (c == '_')
-    then consumeUpperIdent (advance state 1) (acc <> CU.singleton c)
-    else Tuple acc state
-  _ -> Tuple acc state
+consumeUpperIdent :: LexState -> List Char -> Tuple String LexState
+consumeUpperIdent state acc = case state.chars of
+  (c : _) | isAlphaNum c || (c == '_') ->
+    consumeUpperIdent (advance state 1) (c : acc)
+  _ -> Tuple (charsToString acc) state
 
 lexOperator :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexOperator state =
   let startState = state
-      Tuple op state' = consumeOperator state ""
+      Tuple op state' = consumeOperator state Nil
       tok = case op of
         "::" -> Cst.TokDoubleColon
         "=" -> Cst.TokEquals
@@ -378,44 +378,38 @@ lexOperator state =
         _ -> Cst.TokOperator Nothing op
   in Just (Tuple (makeTokenRange tok startState state') state')
 
-consumeOperator :: LexState -> String -> Tuple String LexState
-consumeOperator state acc = case peek state of
-  Just c ->
-    if isOperatorChar c
-    then consumeOperator (advance state 1) (acc <> CU.singleton c)
-    else Tuple acc state
-  _ -> Tuple acc state
+consumeOperator :: LexState -> List Char -> Tuple String LexState
+consumeOperator state acc = case state.chars of
+  (c : _) | isOperatorChar c ->
+    consumeOperator (advance state 1) (c : acc)
+  _ -> Tuple (charsToString acc) state
 
 lexDelimiter :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
-lexDelimiter state = do
-  c <- peek state
-  let tok = case c of
-        '(' -> Cst.TokLeftParen
-        ')' -> Cst.TokRightParen
-        '[' -> Cst.TokLeftSquare
-        ']' -> Cst.TokRightSquare
-        '{' -> Cst.TokLeftBrace
-        '}' -> Cst.TokRightBrace
-        ',' -> Cst.TokComma
-        '`' -> Cst.TokTick
-        ';' -> Cst.TokComma  -- Treat ; like comma for now
-        _ -> Cst.TokComma  -- Shouldn't happen
-  Just (Tuple (makeToken tok state) (advance state 1))
+lexDelimiter state = case state.chars of
+  (c : _) ->
+    let tok = case c of
+          '(' -> Cst.TokLeftParen
+          ')' -> Cst.TokRightParen
+          '[' -> Cst.TokLeftSquare
+          ']' -> Cst.TokRightSquare
+          '{' -> Cst.TokLeftBrace
+          '}' -> Cst.TokRightBrace
+          ',' -> Cst.TokComma
+          '`' -> Cst.TokTick
+          ';' -> Cst.TokComma  -- Treat ; like comma for now
+          _ -> Cst.TokComma  -- Shouldn't happen
+    in Just (Tuple (makeToken tok state) (advance state 1))
+  Nil -> Nothing
 
 lexUnderscore :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexUnderscore state =
   let startState = state
       state' = advance state 1
-  in case peek state' of
-    Just c ->
-      if isIdentChar c
-      then
-        -- It's a hole like _foo
-        let Tuple name state'' = consumeIdent state' ""
-        in Just (Tuple (makeTokenRange (Cst.TokHole name) startState state'') state'')
-      else
-        -- It's just underscore (wildcard)
-        Just (Tuple (makeToken Cst.TokUnderscore state) state')
+  in case state'.chars of
+    (c : _) | isIdentChar c ->
+      -- It's a hole like _foo
+      let Tuple name state'' = consumeIdent state' Nil
+      in Just (Tuple (makeTokenRange (Cst.TokHole name) startState state'') state'')
     _ ->
       -- It's just underscore (wildcard)
       Just (Tuple (makeToken Cst.TokUnderscore state) state')
@@ -423,84 +417,72 @@ lexUnderscore state =
 lexNumber :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexNumber state =
   let startState = state
-  in case consumeNumber state "" of
+  in case consumeNumber state Nil of
     Tuple intPart afterInt ->
-      -- Check for decimal point
-      case peek afterInt of
-        Just '.' -> case peekAt afterInt 1 of
-          Just c ->
-            if isDigit c
-            then
-              let afterDot = advance afterInt 1
-              in case consumeNumber afterDot "" of
-                Tuple fracPart afterFrac ->
-                  let numStr = intPart <> "." <> fracPart
-                  in case Number.fromString numStr of
-                    Just n -> Just (Tuple (makeTokenRange (Cst.TokNumber numStr n) startState afterFrac) afterFrac)
-                    Nothing -> makeIntResult intPart startState afterInt
-            else makeIntResult intPart startState afterInt
-          _ -> makeIntResult intPart startState afterInt
+      -- Check for decimal point followed by digit
+      case afterInt.chars of
+        ('.' : c : _) | isDigit c ->
+          let afterDot = advance afterInt 1
+          in case consumeNumber afterDot Nil of
+            Tuple fracPart afterFrac ->
+              let numStr = intPart <> "." <> fracPart
+              in case Number.fromString numStr of
+                Just n -> Just (Tuple (makeTokenRange (Cst.TokNumber numStr n) startState afterFrac) afterFrac)
+                Nothing -> makeIntResult intPart startState afterInt
         _ -> makeIntResult intPart startState afterInt
   where
   makeIntResult intPart startState endState =
     let intVal = Cst.SmallInt (fromMaybe 0 (Int.fromString intPart))
     in Just (Tuple (makeTokenRange (Cst.TokInt intPart intVal) startState endState) endState)
 
-consumeNumber :: LexState -> String -> Tuple String LexState
-consumeNumber state acc = case peek state of
-  Just c ->
-    if isDigit c
-    then consumeNumber (advance state 1) (acc <> CU.singleton c)
-    else if c == '_'
-    then consumeNumber (advance state 1) acc  -- Skip underscores in numbers
-    else Tuple acc state
-  _ -> Tuple acc state
+consumeNumber :: LexState -> List Char -> Tuple String LexState
+consumeNumber state acc = case state.chars of
+  (c : _) | isDigit c ->
+    consumeNumber (advance state 1) (c : acc)
+  ('_' : _) ->
+    consumeNumber (advance state 1) acc  -- Skip underscores in numbers
+  _ -> Tuple (charsToString acc) state
 
 lexString :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexString state =
   let startState = state
       afterOpen = advance state 1  -- Skip opening quote
-  in case consumeString afterOpen "" of
+  in case consumeString afterOpen Nil of
     Tuple content afterContent ->
       let afterClose = advance afterContent 1  -- Skip closing quote
       in Just (Tuple (makeTokenRange (Cst.TokString content content) startState afterClose) afterClose)
 
-consumeString :: LexState -> String -> Tuple String LexState
-consumeString state acc = case peek state of
-  Nothing -> Tuple acc state
-  Just '"' -> Tuple acc state
-  Just '\\' -> case peekAt state 1 of
-    Just 'n' -> consumeString (advance state 2) (acc <> "\n")
-    Just 't' -> consumeString (advance state 2) (acc <> "\t")
-    Just 'r' -> consumeString (advance state 2) (acc <> "\r")
-    Just '"' -> consumeString (advance state 2) (acc <> "\"")
-    Just '\\' -> consumeString (advance state 2) (acc <> "\\")
-    Just c -> consumeString (advance state 2) (acc <> CU.singleton c)
-    Nothing -> Tuple acc state
-  Just '\n' -> Tuple acc state  -- Unclosed string
-  Just c -> consumeString (advance state 1) (acc <> CU.singleton c)
+consumeString :: LexState -> List Char -> Tuple String LexState
+consumeString state acc = case state.chars of
+  Nil -> Tuple (charsToString acc) state
+  ('"' : _) -> Tuple (charsToString acc) state
+  ('\\' : 'n' : _) -> consumeString (advance state 2) ('\n' : acc)
+  ('\\' : 't' : _) -> consumeString (advance state 2) ('\t' : acc)
+  ('\\' : 'r' : _) -> consumeString (advance state 2) ('\r' : acc)
+  ('\\' : '"' : _) -> consumeString (advance state 2) ('"' : acc)
+  ('\\' : '\\' : _) -> consumeString (advance state 2) ('\\' : acc)
+  ('\\' : c : _) -> consumeString (advance state 2) (c : acc)
+  ('\n' : _) -> Tuple (charsToString acc) state  -- Unclosed string
+  (c : _) -> consumeString (advance state 1) (c : acc)
 
 lexRawString :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexRawString state =
   let startState = state
       afterOpen = advance state 3  -- Skip """
-  in case consumeRawString afterOpen "" of
+  in case consumeRawString afterOpen Nil of
     Tuple content afterContent ->
       let afterClose = advance afterContent 3  -- Skip closing """
       in Just (Tuple (makeTokenRange (Cst.TokRawString content) startState afterClose) afterClose)
 
-consumeRawString :: LexState -> String -> Tuple String LexState
-consumeRawString state acc = case peek state of
-  Nothing -> Tuple acc state
-  Just '"' -> case peekAt state 1 of
-    Just '"' -> case peekAt state 2 of
-      Just '"' -> Tuple acc state  -- Found closing """
-      _ -> consumeRawString (advance state 1) (acc <> "\"")
-    _ -> consumeRawString (advance state 1) (acc <> "\"")
-  Just '\n' ->
+consumeRawString :: LexState -> List Char -> Tuple String LexState
+consumeRawString state acc = case state.chars of
+  Nil -> Tuple (charsToString acc) state
+  ('"' : '"' : '"' : _) -> Tuple (charsToString acc) state  -- Found closing """
+  ('"' : _) -> consumeRawString (advance state 1) ('"' : acc)
+  ('\n' : _) ->
     let state' = advanceNewline (advance state 1)
-    in consumeRawString state' (acc <> "\n")
-  Just c -> consumeRawString (advance state 1) (acc <> CU.singleton c)
+    in consumeRawString state' ('\n' : acc)
+  (c : _) -> consumeRawString (advance state 1) (c : acc)
 
 lexChar :: LexState -> Maybe (Tuple Cst.SourceToken LexState)
 lexChar state =
@@ -511,38 +493,34 @@ lexChar state =
       let afterClose = advance afterChar 1  -- Skip closing quote
       in Just (Tuple (makeTokenRange (Cst.TokChar (CU.singleton ch) ch) startState afterClose) afterClose)
   where
-  parseCharContent s = case peek s of
-    Just '\\' -> case peekAt s 1 of
-      Just 'n' -> Tuple '\n' (advance s 2)
-      Just 't' -> Tuple '\t' (advance s 2)
-      Just 'r' -> Tuple '\r' (advance s 2)
-      Just '\'' -> Tuple '\'' (advance s 2)
-      Just '\\' -> Tuple '\\' (advance s 2)
-      Just c -> Tuple c (advance s 2)
-      Nothing -> Tuple '?' s
-    Just c -> Tuple c (advance s 1)
-    Nothing -> Tuple '?' s
+  parseCharContent s = case s.chars of
+    ('\\' : 'n' : _) -> Tuple '\n' (advance s 2)
+    ('\\' : 't' : _) -> Tuple '\t' (advance s 2)
+    ('\\' : 'r' : _) -> Tuple '\r' (advance s 2)
+    ('\\' : '\'' : _) -> Tuple '\'' (advance s 2)
+    ('\\' : '\\' : _) -> Tuple '\\' (advance s 2)
+    ('\\' : c : _) -> Tuple c (advance s 2)
+    (c : _) -> Tuple c (advance s 1)
+    Nil -> Tuple '?' s
 
 -- ============================================================================
 -- Comment Handling
 -- ============================================================================
 
 skipLineComment :: LexState -> LexState
-skipLineComment state = case peek state of
-  Nothing -> state
-  Just '\n' -> state  -- Don't consume the newline here, let main loop handle it
-  Just '\r' -> state
-  Just _ -> skipLineComment (advance state 1)
+skipLineComment state = case state.chars of
+  Nil -> state
+  ('\n' : _) -> state  -- Don't consume the newline here, let main loop handle it
+  ('\r' : _) -> state
+  (_ : _) -> skipLineComment (advance state 1)
 
 skipBlockComment :: LexState -> Int -> LexState
 skipBlockComment state 0 = state
-skipBlockComment state depth = case peek state of
-  Nothing -> state
-  Just '{' -> case peekAt state 1 of
-    Just '-' -> skipBlockComment (advance state 2) (depth + 1)
-    _ -> skipBlockComment (advance state 1) depth
-  Just '-' -> case peekAt state 1 of
-    Just '}' -> skipBlockComment (advance state 2) (depth - 1)
-    _ -> skipBlockComment (advance state 1) depth
-  Just '\n' -> skipBlockComment (advanceNewline (advance state 1)) depth
-  Just _ -> skipBlockComment (advance state 1) depth
+skipBlockComment state depth = case state.chars of
+  Nil -> state
+  ('{' : '-' : _) -> skipBlockComment (advance state 2) (depth + 1)
+  ('-' : '}' : _) -> skipBlockComment (advance state 2) (depth - 1)
+  ('{' : _) -> skipBlockComment (advance state 1) depth
+  ('-' : _) -> skipBlockComment (advance state 1) depth
+  ('\n' : _) -> skipBlockComment (advanceNewline (advance state 1)) depth
+  (_ : _) -> skipBlockComment (advance state 1) depth
