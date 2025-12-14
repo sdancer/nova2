@@ -242,19 +242,19 @@ module 'Nova.Prelude' ['fst'/1, 'snd'/1, 'identity'/1, 'const'/2, 'compose'/3, '
 
 'showNumberImpl'/1 = fun (V0) -> call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [V0]))
 
-'negate'/1 = fun (V0) -> 'ffi_not_implemented'
+'negate'/1 = fun (V0) -> call 'erlang':'-'(V0)
 
-'mapImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'mapImpl'/2 = fun (V0, V1) -> call 'lists':'map'(fun (X) -> apply V0 (X), V1)
 
-'filterImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'filterImpl'/2 = fun (V0, V1) -> call 'lists':'filter'(fun (X) -> apply V0 (X), V1)
 
-'lengthImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
 
-'appendImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'appendImpl'/2 = fun (V0, V1) -> call 'erlang':'++'(V0, V1)
 
-'foldlImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldl'(fun (E, A) -> apply V0 (A, E), V1, V2)
 
-'foldrImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
 
 'unsafeCrashWithImpl'/1 = fun (V0) -> call 'erlang':'error'(V0)
 

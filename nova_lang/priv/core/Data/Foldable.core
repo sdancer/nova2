@@ -76,37 +76,37 @@ module 'Data.Foldable' ['foldl'/3, 'foldr'/3, 'foldM'/3, 'traverse_'/2, 'for_'/2
 
 'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
 
-'foldMImpl'/3 = fun (V0, V1, V2) -> 'ffi_not_implemented'
+'foldMImpl'/3 = fun (V0, V1, V2) -> letrec 'go'/2 = fun (A, L) -> case L of <[]> when 'true' -> {'Right', A} <[H|T]> when 'true' -> case apply V0 (A, H) of <{'Left', Err}> when 'true' -> {'Left', Err} <{'Right', NewA}> when 'true' -> apply 'go'/2 (NewA, T) end end in apply 'go'/2 (V1, V2)
 
-'traverse_Impl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'traverse_Impl'/2 = fun (V0, V1) -> let <_Ignored> = call 'lists':'foreach'(fun (X) -> apply V0 (X), V1) in 'unit'
 
-'for_Impl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'for_Impl'/2 = fun (V0, V1) -> let <_Ignored> = call 'lists':'foreach'(fun (X) -> apply V1 (X), V0) in 'unit'
 
-'anyImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'anyImpl'/2 = fun (V0, V1) -> call 'lists':'any'(fun (X) -> apply V0 (X), V1)
 
-'allImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'allImpl'/2 = fun (V0, V1) -> call 'lists':'all'(fun (X) -> apply V0 (X), V1)
 
-'elemImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'elemImpl'/2 = fun (V0, V1) -> call 'lists':'member'(V0, V1)
 
-'notElemImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'notElemImpl'/2 = fun (V0, V1) -> call 'erlang':'not'(call 'lists':'member'(V0, V1))
 
-'findImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'findImpl'/2 = fun (V0, V1) -> case call 'lists':'search'(fun (X) -> apply V0 (X), V1) of <{'value', V}> when 'true' -> {'Just', V} <'false'> when 'true' -> 'Nothing' end
 
-'lengthImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'lengthImpl'/1 = fun (V0) -> call 'erlang':'length'(V0)
 
-'nullImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'nullImpl'/1 = fun (V0) -> call 'erlang':'=:='(V0, [])
 
-'sumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'sumImpl'/1 = fun (V0) -> call 'lists':'sum'(V0)
 
-'productImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'productImpl'/1 = fun (V0) -> call 'lists':'foldl'(fun (X, Acc) -> call 'erlang':'*'(X, Acc), 1, V0)
 
-'maximumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'maximumImpl'/1 = fun (V0) -> case V0 of <[]> when 'true' -> 'Nothing' <_> when 'true' -> {'Just', call 'lists':'max'(V0)} end
 
-'minimumImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'minimumImpl'/1 = fun (V0) -> case V0 of <[]> when 'true' -> 'Nothing' <_> when 'true' -> {'Just', call 'lists':'min'(V0)} end
 
-'intercalateImpl'/2 = fun (V0, V1) -> 'ffi_not_implemented'
+'intercalateImpl'/2 = fun (V0, V1) -> call 'lists':'join'(V0, V1)
 
-'toArrayImpl'/1 = fun (V0) -> 'ffi_not_implemented'
+'toArrayImpl'/1 = fun (V0) -> V0
 
 'foldl'/0 =
   fun () ->

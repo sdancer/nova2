@@ -94,40 +94,40 @@ foreign import showNumberImpl :: Number -> String
   = "call 'erlang':'iolist_to_binary'(call 'io_lib':'format'([126,112], [$0]))"
 
 -- Basic numeric operations (these map to runtime)
-foreign import negate :: Int -> Int
+foreign import negate :: Int -> Int = "call 'erlang':'-'($0)"
 
 -- List operations (convenience re-exports)
 map :: forall a b. (a -> b) -> Array a -> Array b
 map f xs = mapImpl f xs
 
-foreign import mapImpl :: forall a b. (a -> b) -> Array a -> Array b
+foreign import mapImpl :: forall a b. (a -> b) -> Array a -> Array b = "call 'lists':'map'(fun (X) -> apply $0 (X), $1)"
 
 filter :: forall a. (a -> Boolean) -> Array a -> Array a
 filter f xs = filterImpl f xs
 
-foreign import filterImpl :: forall a. (a -> Boolean) -> Array a -> Array a
+foreign import filterImpl :: forall a. (a -> Boolean) -> Array a -> Array a = "call 'lists':'filter'(fun (X) -> apply $0 (X), $1)"
 
 length :: forall a. Array a -> Int
 length xs = lengthImpl xs
 
-foreign import lengthImpl :: forall a. Array a -> Int
+foreign import lengthImpl :: forall a. Array a -> Int = "call 'erlang':'length'($0)"
 
 -- Append for arrays and strings (semigroup)
 append :: forall a. Array a -> Array a -> Array a
 append xs ys = appendImpl xs ys
 
-foreign import appendImpl :: forall a. Array a -> Array a -> Array a
+foreign import appendImpl :: forall a. Array a -> Array a -> Array a = "call 'erlang':'++'($0, $1)"
 
 -- Fold operations
 foldl :: forall a b. (b -> a -> b) -> b -> Array a -> b
 foldl f acc xs = foldlImpl f acc xs
 
-foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Array a -> b
+foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Array a -> b = "call 'lists':'foldl'(fun (E, A) -> apply $0 (A, E), $1, $2)"
 
 foldr :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foldr f acc xs = foldrImpl f acc xs
 
-foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b
+foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b = "call 'lists':'foldr'(fun (E, A) -> apply $0 (E, A), $1, $2)"
 
 -- | Unit value
 unit :: Unit

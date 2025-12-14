@@ -329,26 +329,30 @@ compileModule config result filePath =
             Right env ->
               let tcTime = getMonotonicMs - tcStart
                   codegenStart = getMonotonicMs
-                  code = genModule mod
+                  codegenResult = genModule mod
                   codegenTime = getMonotonicMs - codegenStart
+              in case codegenResult of
+                Left codegenErr ->
+                  let u1 = log ("CODEGEN ERROR (parse: " <> formatTime parseTime <> ", tc: " <> formatTime tcTime <> "): " <> codegenErr)
+                  in result { errors = result.errors + 1 }
+                Right code ->
+                  let modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName
+                      outputFile = config.outputDir <> modPath <> ".core"
+                      targetFile = config.targetDir <> modPath <> ".core"
 
-                  modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") modName
-                  outputFile = config.outputDir <> modPath <> ".core"
-                  targetFile = config.targetDir <> modPath <> ".core"
+                      u1 = ensureDir (dirname outputFile)
+                      u2 = ensureDir (dirname targetFile)
+                      u3 = writeFile outputFile code
+                      u4 = writeFile targetFile code
 
-                  u1 = ensureDir (dirname outputFile)
-                  u2 = ensureDir (dirname targetFile)
-                  u3 = writeFile outputFile code
-                  u4 = writeFile targetFile code
+                      exports = extractExports declsArray
+                      exportsWithValues = addValuesToExports exports env declsArray
+                      newRegistry = registerModule result.registry modName exportsWithValues
 
-                  exports = extractExports declsArray
-                  exportsWithValues = addValuesToExports exports env declsArray
-                  newRegistry = registerModule result.registry modName exportsWithValues
-
-                  totalTime = getMonotonicMs - modStart
-                  lines = countLines code
-                  u5 = log ("OK [parse: " <> formatTime parseTime <> ", tc: " <> formatTime tcTime <> ", codegen: " <> formatTime codegenTime <> ", total: " <> formatTime totalTime <> "] (" <> showInt lines <> " lines)")
-              in result { compiled = result.compiled + 1, registry = newRegistry }
+                      totalTime = getMonotonicMs - modStart
+                      lines = countLines code
+                      u5 = log ("OK [parse: " <> formatTime parseTime <> ", tc: " <> formatTime tcTime <> ", codegen: " <> formatTime codegenTime <> ", total: " <> formatTime totalTime <> "] (" <> showInt lines <> " lines)")
+                  in result { compiled = result.compiled + 1, registry = newRegistry }
 
 -- | Count lines in a string
 countLines :: String -> Int
