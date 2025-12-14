@@ -245,7 +245,7 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
       in call 'Data.Map':'insert'(Id, ResolvedDeps, Acc)
     end, call 'Data.Map':'empty'(), Ids)
       in let <Reverse> = apply 'buildReverseEdges'/1(Forward)
-      in ~{'forward'=>Forward,'reverse'=>Reverse}~
+      in ~{'forward'=>Forward,'reverse'=>fun (_Pf0) -> call 'lists':'reverse'(_Pf0)}~
 
 'buildReverseEdges'/1 =
   fun (Forward) ->
@@ -275,7 +275,7 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
         S
     end
       in call 'Data.Map':'insert'(DepId, call 'Data.Set':'insert'(DeclId, Existing), Acc), call 'maps':'get'('reverse', Graph), DepsArray)
-      in ~{'forward'=>Forward,'reverse'=>Reverse}~
+      in ~{'forward'=>Forward,'reverse'=>fun (_Pf0) -> call 'lists':'reverse'(_Pf0)}~
 
 'removeFromGraph'/2 =
   fun (DeclId, Graph) ->
@@ -294,7 +294,7 @@ module 'Nova.Compiler.Dependencies' ['getDependencies'/1, 'getModuleDependencies
       <{'Just', Dependents}> when 'true' ->
         call 'Data.Map':'insert'(DepId, call 'Data.Set':'delete'(DeclId, Dependents), Acc)
     end, call 'maps':'get'('reverse', Graph), DepsArray)
-      in let <Reverse_> = call 'Data.Map':'delete'(DeclId, Reverse)
+      in let <Reverse_> = call 'Data.Map':'delete'(DeclId, fun (_Pf0) -> call 'lists':'reverse'(_Pf0))
       in ~{'forward'=>Forward,'reverse'=>Reverse_}~
 
 'getDependents'/2 =

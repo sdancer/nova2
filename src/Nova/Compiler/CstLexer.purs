@@ -89,8 +89,9 @@ lytToken pos value =
   }
 
 -- | Close remaining layout blocks at EOF - helper for insertLayoutTokens
-closeLayouts :: LayoutStack -> List Cst.SourceToken
-closeLayouts stack = closeLayoutsGo Nil stack
+-- Returns tokens in REVERSE order (for O(n) building)
+closeLayoutsReversed :: LayoutStack -> List Cst.SourceToken
+closeLayoutsReversed stack = closeLayoutsGo Nil stack
 
 closeLayoutsGo :: List Cst.SourceToken -> LayoutStack -> List Cst.SourceToken
 closeLayoutsGo acc Nil = acc
@@ -98,19 +99,25 @@ closeLayoutsGo acc (Tuple pos lyt : rest) =
   if isIndented lyt
   then
     let endTok = lytToken pos (Cst.TokLayoutEnd pos.column)
-    in closeLayoutsGo (acc <> (endTok : Nil)) rest
+    in closeLayoutsGo (endTok : acc) rest
   else closeLayoutsGo acc rest
 
 -- | Local wrapper for insertLayout to work around code gen import issues
 callInsertLayout :: Cst.SourceToken -> Cst.SourcePos -> LayoutStack -> Tuple LayoutStack (List (Tuple Cst.SourceToken LayoutStack))
 callInsertLayout tok pos stk = CstLayout.insertLayout tok pos stk
 
+-- | Prepend a list to an accumulator in reverse order (O(n) in list length)
+prependReversed :: forall a. List a -> List a -> List a
+prependReversed Nil acc = acc
+prependReversed (x : xs) acc = prependReversed xs (x : acc)
+
 -- | Helper for insertLayoutTokens - recursive layout insertion
+-- Builds tokens in REVERSE order for O(n) performance
 insertLayoutGo :: LayoutStack -> List Cst.SourceToken -> List Cst.SourceToken -> List Cst.SourceToken
 insertLayoutGo stack toks acc = case toks of
   Nil ->
-    -- At EOF, close all open layout blocks
-    acc <> closeLayouts stack
+    -- At EOF, close all open layout blocks (closeLayoutsReversed returns in order we need)
+    prependReversed (closeLayoutsReversed stack) acc
   (tok : rest) ->
     -- Get next token position for layout start determination
     let nextPos = case rest of
@@ -120,9 +127,9 @@ insertLayoutGo stack toks acc = case toks of
       -- Insert layout based on this token
       case callInsertLayout tok nextPos stack of
         Tuple newStack outputTokens ->
-          -- Extract just the tokens from the output
+          -- Extract just the tokens from the output and prepend in reverse
           let newToks = map fst outputTokens
-          in insertLayoutGo newStack rest (acc <> newToks)
+          in insertLayoutGo newStack rest (prependReversed newToks acc)
 
 -- | Insert layout tokens into a raw token stream
 insertLayoutTokens :: List Cst.SourceToken -> List Cst.SourceToken
@@ -130,7 +137,7 @@ insertLayoutTokens tokens =
   let initPos = { line: 1, column: 1 }
       -- Use rootLayoutDelim helper to get LytRoot (avoids code gen issues with imported constructors)
       initStack = Tuple initPos (getRootLayout {}) : Nil
-  in insertLayoutGo initStack tokens Nil
+  in reverseList (insertLayoutGo initStack tokens Nil)
   where
   getRootLayout _ = CstLayout.rootLayoutDelim
 
@@ -146,14 +153,14 @@ lexModule source =
 
 -- | Tokenize source WITHOUT layout tokens (raw tokens only)
 lexTokens :: String -> List Cst.SourceToken
-lexTokens source = lexTokensGo (initLexState source) Nil
+lexTokens source = reverseList (lexTokensGo (initLexState source) Nil)
 
--- Helper for lexTokens
+-- Helper for lexTokens - builds list in reverse, caller reverses at end
 lexTokensGo :: LexState -> List Cst.SourceToken -> List Cst.SourceToken
 lexTokensGo state acc =
   case lexToken state of
     Nothing -> acc
-    Just (Tuple tok state') -> lexTokensGo state' (acc <> (tok : Nil))
+    Just (Tuple tok state') -> lexTokensGo state' (tok : acc)
 
 -- ============================================================================
 -- Raw Token Lexing

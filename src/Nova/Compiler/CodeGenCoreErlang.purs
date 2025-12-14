@@ -640,8 +640,12 @@ genExpr ctx (ExprVar name) =
           else case Map.lookup name ctx.imports of
                -- Imported value/function as value - call /0 to get value or curried wrapper
                Just srcMod ->
-                 let modName = translateModuleName srcMod
-                 in str ["call ", atom modName, ":", atom name, "()"]
+                 -- Special case: cons operator from Data.List - generate native cons lambda
+                 -- Note: Generate uncurried (arity 2) to match how foldr calls it
+                 if (srcMod == "Data.List" || srcMod == "Data.List.Types") && name == ":"
+                 then "fun (X, Xs) -> [X|Xs]"
+                 else let modName = translateModuleName srcMod
+                      in str ["call ", atom modName, ":", atom name, "()"]
                Nothing ->
                  if isConstructorName name
                  -- Nullary data constructor - use as atom
@@ -657,7 +661,11 @@ genExpr ctx (ExprQualified modAlias funcName) =
   let fullModName = resolveModuleName ctx modAlias
       modAtom = atom (translateModuleName fullModName)
       funcAtom = atom funcName
-  in if isConstructorName funcName
+  in -- Special case: Data.List.(:) or Data.List.Types.(:) - generate native cons lambda
+     -- Note: Generate uncurried (arity 2) to match how foldr calls it
+     if (fullModName == "Data.List" || fullModName == "Data.List.Types") && funcName == ":"
+     then "fun (X, Xs) -> [X|Xs]"
+     else if isConstructorName funcName
      -- Constructor used as a value: generate a curried function wrapper
      -- For binary constructor like TyExprApp: fun(A) -> fun(B) -> {TyExprApp, A, B} end end
      -- For unary like Just: fun(A) -> {Just, A} end
@@ -766,10 +774,16 @@ genExpr ctx (ExprApp f arg) =
       -- Resolve module alias to full name
       let fullModName = resolveModuleName ctx modAlias
           modName = translateModuleName fullModName
-          -- All modules use uncurried calls in Core Erlang generation
-          -- since we generate uncurried function definitions
-      in "call " <> atom modName <> ":" <> atom funcName <>
-         "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
+      in -- Special case: Data.List.(:) or Data.List.Types.(:) - generate native cons
+         if (fullModName == "Data.List" || fullModName == "Data.List.Types") && funcName == ":"
+         then case args of
+           [h, t] -> "[" <> genExpr ctx h <> " | " <> genExpr ctx t <> "]"
+           [h] -> "fun (Xs) -> [" <> genExpr ctx h <> " | Xs]"  -- Partial application
+           _ -> "fun (X) -> fun (Xs) -> [X|Xs]"  -- No args
+         -- All modules use uncurried calls in Core Erlang generation
+         -- since we generate uncurried function definitions
+         else "call " <> atom modName <> ":" <> atom funcName <>
+              "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
     _ ->
       "apply " <> genExpr ctx func <>
       "(" <> String.joinWith ", " (map (genExpr ctx) args) <> ")"
@@ -1037,8 +1051,17 @@ genLetBindsWithBody ctx binds body =
       isLambdaBind b = getLambdaArity b.value > 0
       funcBinds = Array.filter isLambdaBind binds
       valueBinds = Array.filter (not <<< isLambdaBind) binds
+  in
+  -- FAST PATH: If there are no function bindings, skip all the complex letrec analysis
+  -- Just generate simple let bindings with topological sort
+  if Array.null funcBinds
+  then genValueBindsWithBody ctx valueBinds body
+  else genLetBindsWithBodyComplex ctx funcBinds valueBinds body
 
-      -- For letrec functions, add them to moduleFuncs with their arities
+-- Complex path when there are function bindings that may need letrec
+genLetBindsWithBodyComplex :: CoreCtx -> Array LetBind -> Array LetBind -> Expr -> String
+genLetBindsWithBodyComplex ctx funcBinds valueBinds body =
+  let -- For letrec functions, add them to moduleFuncs with their arities
       -- This makes genExpr generate proper 'apply funcname/arity(...)' calls
       letrecFuncs = Array.mapMaybe (\b ->
         case getPatternVarName b.pattern of
@@ -1255,6 +1278,7 @@ genValueBindsWithBodyStr ctx binds bodyStr =
   in genValueBindsWithBodyStrSorted ctx sortedBinds bodyStr
 
 -- | Generate sorted value bindings (internal, assumes already sorted)
+-- IMPORTANT: Recursive calls must be in branches, not in let, to avoid exponential evaluation
 genValueBindsWithBodyStrSorted :: CoreCtx -> Array LetBind -> String -> String
 genValueBindsWithBodyStrSorted ctx binds bodyStr =
   case Array.uncons binds of
@@ -1262,14 +1286,12 @@ genValueBindsWithBodyStrSorted ctx binds bodyStr =
     Just { head: bind, tail: rest } ->
       let pat = genPattern bind.pattern
           val = genExpr ctx bind.value
-          tmpVar = "_Let" <> show ctx.varCounter
-          nextCtx = ctx { varCounter = ctx.varCounter + 1 }
-          continuation = genValueBindsWithBodyStrSorted ctx rest bodyStr
-          continuationComplex = genValueBindsWithBodyStrSorted nextCtx rest bodyStr
       in if isSimplePattern bind.pattern
-         then "let <" <> pat <> "> = " <> val <> "\n      in " <> continuation
+         then "let <" <> pat <> "> = " <> val <> "\n      in " <> genValueBindsWithBodyStrSorted ctx rest bodyStr
          else -- Complex patterns: use temp var and case wrapping the continuation
-              "let <" <> tmpVar <> "> = " <> val <> "\n      in case " <> tmpVar <> " of\n        <" <> pat <> "> when 'true' -> " <> continuationComplex <> "\n      end"
+              let tmpVar = "_Let" <> show ctx.varCounter
+                  nextCtx = ctx { varCounter = ctx.varCounter + 1 }
+              in "let <" <> tmpVar <> "> = " <> val <> "\n      in case " <> tmpVar <> " of\n        <" <> pat <> "> when 'true' -> " <> genValueBindsWithBodyStrSorted nextCtx rest bodyStr <> "\n      end"
 
 -- | Legacy genLetBinds for do-notation (returns prefix + context)
 genLetBinds :: CoreCtx -> Array LetBind -> { fst :: String, snd :: CoreCtx }

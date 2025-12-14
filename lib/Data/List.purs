@@ -60,6 +60,9 @@ cons x xs = consImpl x xs
 
 foreign import consImpl :: forall a. a -> List a -> List a = "[$0|$1]"
 
+-- Infix cons operator
+infixr 6 cons as :
+
 -- Create singleton list
 singleton :: forall a. a -> List a
 singleton x = singletonImpl x

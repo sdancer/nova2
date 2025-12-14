@@ -1,5 +1,6 @@
 module Data.Set where
 
+import Prelude
 import Data.Maybe (Maybe(..))
 
 -- Set type (collection of unique values)
@@ -142,3 +143,10 @@ mapMaybe :: forall a b. (a -> Maybe b) -> Set a -> Set b
 mapMaybe f s = foldl (\acc x -> case f x of
   Just y -> insert y acc
   Nothing -> acc) empty s
+
+-- Eq instance for Set - compare two sets for equality
+-- Two sets are equal if they contain the same elements
+instance eqSet :: Eq a => Eq (Set a) where
+  eq s1 s2 = eqSetImpl s1 s2
+
+foreign import eqSetImpl :: forall a. Set a -> Set a -> Boolean = "call 'erlang':'=='($0, $1)"
