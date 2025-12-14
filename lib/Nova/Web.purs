@@ -645,11 +645,16 @@ renderDeclItem decl =
         NS.DatatypeDecl -> "kind-data"
         NS.TypeAliasDecl -> "kind-type"
         NS.ForeignDecl -> "kind-foreign"
-      -- Show signature prominently
+      -- Show signature
       sigHtml = case decl.inferredType of
         Nothing -> ""
         Just t -> "<div class=\"decl-sig\"><code>" <> escapeHtml t <> "</code></div>"
-  in "<div class=\"decl-item " <> kindClass <> "\"><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> "<pre class=\"decl-source\">" <> escapeHtml decl.sourceText <> "</pre></div>"
+      -- Only show source for non-functions (data types, type aliases, foreign)
+      sourceHtml = case decl.kind of
+        NS.FunctionDecl -> ""
+        NS.ForeignDecl -> ""
+        _ -> "<pre class=\"decl-source\">" <> escapeHtml decl.sourceText <> "</pre>"
+  in "<div class=\"decl-item " <> kindClass <> "\"><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> sourceHtml <> "</div>"
 
 -- | Escape HTML entities
 foreign import escapeHtml :: String -> String
