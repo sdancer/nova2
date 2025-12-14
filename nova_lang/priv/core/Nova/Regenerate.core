@@ -103,12 +103,12 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'main'/1, 'runRegenerate'/1, 'log'/
   fun (Line) ->
     case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Line) of
       <'Nothing'> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{'Just', Idx}> when 'true' ->
         let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
       in let <ModName> = apply 'takeModuleName'/1(Rest)
       in case call 'Data.String':'null'(ModName) of
-      <'true'> when 'true' -> call 'Data.Maybe':'Nothing'()
+      <'true'> when 'true' -> 'Nothing'
       <'false'> when 'true' -> {'Just', ModName}
     end
     end
@@ -140,7 +140,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'main'/1, 'runRegenerate'/1, 'log'/
       <'true'> when 'true' -> {'Just', LibPath}
       <'false'> when 'true' -> case apply 'fileExists'/1(SrcPath) of
       <'true'> when 'true' -> {'Just', SrcPath}
-      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
+      <'false'> when 'true' -> 'Nothing'
     end
     end
 

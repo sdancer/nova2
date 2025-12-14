@@ -54,7 +54,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
       <{{'DeclFunction', F}}> when 'true' ->
         {'Just', F}
       <{_W0}> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
 
 'isFuncDecl'/1 =
@@ -96,7 +96,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
   fun (_P0, _P1, _P2) ->
     case {_P0, _P1, _P2} of
       <{_W0, _W1, []}> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{Name, Before, [G|Rest]}> when 'true' ->
         case call 'erlang':'=:='(call 'maps':'get'('name', G), Name) of
       <'true'> when 'true' -> {'Just', ~{'before'=>call 'Data.List':'reverse'(Before),'group'=>G,'after'=>Rest}~}
@@ -108,7 +108,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
   fun (G) ->
     ~{'name'=>call 'maps':'get'('name', G),'clauses'=>call 'Data.Array':'fromFoldable'(call 'maps':'get'('clauses', G)),'typeSig'=>case call 'maps':'get'('sig', G) of
       <'Nothing'> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{'Just', Sig}> when 'true' ->
         {'Just', apply 'renderTypeExpr'/1(call 'maps':'get'('ty', Sig))}
     end}~
@@ -143,7 +143,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'importAllFromDir'/1, 
       in let <TypeSig> = {'Just', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('name', C))}
       in {'Just', apply 'addDeclWithType'/5(Namespace, call 'maps':'get'('name', C), Src, call 'Nova.NamespaceService':'DatatypeDecl'(), TypeSig)}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
 
 'countSuccesses'/1 =

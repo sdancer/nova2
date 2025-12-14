@@ -162,8 +162,15 @@ async function main() {
 
     // Phase 3: CodeGen
     let codegenStart = performance.now();
-    const code = CodeGen.genModule(mod);
+    const codegenResult = CodeGen.genModule(mod);
     const codegenTime = performance.now() - codegenStart;
+
+    if (codegenResult instanceof Either.Left) {
+      console.log(`CODEGEN ERROR (parse: ${formatTime(parseTime)}, tc: ${formatTime(tcTime)}): ${codegenResult.value0}`);
+      errors++;
+      continue;
+    }
+    const code = codegenResult.value0;
 
     // Write output
     const modPath = modName.replace(/\./g, '/');

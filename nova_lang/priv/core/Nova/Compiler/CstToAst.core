@@ -234,7 +234,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
     let <ModuleName> = apply 'unwrapModuleName'/1(call 'maps':'get'('name', call 'maps':'get'('module', Imp)))
       in let <Alias> = case call 'maps':'get'('qualified', Imp) of
       <'Nothing'> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{'Just', {'Tuple', _W0, QualName}}> when 'true' ->
         {'Just', apply 'unwrapModuleName'/1(call 'maps':'get'('name', QualName))}
     end
@@ -454,9 +454,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Methods}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>call 'Data.Maybe':'Nothing'()}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>'Nothing'}~)}
       <{'Right', Methods}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>call 'Data.Maybe':'Nothing'()}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclTypeClass'(~{'name'=>Name,'typeVars'=>TypeVars,'methods'=>Methods,'kind'=>'Nothing'}~)}
       end
 
 'convertMethodSig'/1 =
@@ -579,9 +579,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
       end
       <{'Guarded', GuardedExprs}> when 'true' ->
         case apply 'traverse'/2(fun (_Mf0) -> apply 'convertGuardedExpr'/1(_Mf0), GuardedExprs) of
@@ -592,14 +592,14 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Just', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
         {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
         {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
@@ -614,9 +614,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>Body,'guards'=>[],'typeSignature'=>'Nothing'}~}
       end
       <{'Guarded', GuardedExprs}> when 'true' ->
         case apply 'traverse'/2(fun (_Mf0) -> apply 'convertGuardedExpr'/1(_Mf0), GuardedExprs) of
@@ -627,14 +627,14 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Just', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
         {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <{'Right', Guards}> when 'true' ->
         case Guards of
       <[G | _W0]> when 'true' ->
-        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'name'=>Name,'parameters'=>Params,'body'=>call 'maps':'get'('body', G),'guards'=>Guards,'typeSignature'=>'Nothing'}~}
       <[]> when 'true' ->
         {'Left', #{#<69>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#}
     end
@@ -698,7 +698,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
        'lookupLetSig'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
-        <{_W0, []}> when 'true' -> call 'Data.Maybe':'Nothing'()
+        <{_W0, []}> when 'true' -> 'Nothing'
         <{Name, [{'Tuple', N, Ty} | Rest]}> when 'true' -> case call 'erlang':'=:='(Name, N) of
       <'true'> when 'true' -> {'Just', Ty}
       <'false'> when 'true' -> apply 'lookupLetSig'/2(Name, Rest)
@@ -708,7 +708,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       case {_L0} of
         <{{'LetBindingName', Vbf}}> when 'true' -> {'Just', {'Left', Vbf}}
         <{{'LetBindingPattern', Binder, Sep, Wh}}> when 'true' -> {'Just', {'Right', ~{'binder'=>Binder,'sep'=>Sep,'wh'=>Wh}~}}
-        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
+        <{_W0}> when 'true' -> 'Nothing'
       end
        'convertLetBindingWithSig'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
@@ -721,7 +721,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Just', Params}> when 'true' ->
         case case apply 'lookupLetSig'/2(Name, SigMap) of
       <'Nothing'> when 'true' ->
-        {'Right', call 'Data.Maybe':'Nothing'()}
+        {'Right', 'Nothing'}
       <{'Just', CstTy}> when 'true' ->
         case apply 'convertType'/1(CstTy) of
       <'Nothing'> when 'true' ->
@@ -800,7 +800,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Right', Params}> when 'true' ->
         case case apply 'lookupLetSig'/2(Name, SigMap) of
       <'Nothing'> when 'true' ->
-        {'Right', call 'Data.Maybe':'Nothing'()}
+        {'Right', 'Nothing'}
       <{'Just', CstTy}> when 'true' ->
         case apply 'convertType'/1(CstTy) of
       <'Nothing'> when 'true' ->
@@ -889,9 +889,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       <{'Right', Pat}> when 'true' ->
         case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
@@ -900,9 +900,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       end
       end
@@ -925,7 +925,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       end
        'lookupSig'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
-        <{_W0, []}> when 'true' -> call 'Data.Maybe':'Nothing'()
+        <{_W0, []}> when 'true' -> 'Nothing'
         <{Name, [{'Tuple', N, Ty} | Rest]}> when 'true' -> case call 'erlang':'=:='(Name, N) of
       <'true'> when 'true' -> {'Just', Ty}
       <'false'> when 'true' -> apply 'lookupSig'/2(Name, Rest)
@@ -934,7 +934,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
        'getValueBinding'/1 = fun (_L0) ->
       case {_L0} of
         <{{'LetBindingName', Vbf}}> when 'true' -> {'Just', Vbf}
-        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
+        <{_W0}> when 'true' -> 'Nothing'
       end
        'convertLetBindWithSig'/2 = fun (SigMap, Vbf) ->
       let <BindName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('name', Vbf)))
@@ -946,7 +946,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Just', BindParams}> when 'true' ->
         case case apply 'lookupSig'/2(BindName, SigMap) of
       <'Nothing'> when 'true' ->
-        {'Right', call 'Data.Maybe':'Nothing'()}
+        {'Right', 'Nothing'}
       <{'Just', CstTy}> when 'true' ->
         case apply 'convertType'/1(CstTy) of
       <'Nothing'> when 'true' ->
@@ -1023,7 +1023,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Right', BindParams}> when 'true' ->
         case case apply 'lookupSig'/2(BindName, SigMap) of
       <'Nothing'> when 'true' ->
-        {'Right', call 'Data.Maybe':'Nothing'()}
+        {'Right', 'Nothing'}
       <{'Just', CstTy}> when 'true' ->
         case apply 'convertType'/1(CstTy) of
       <'Nothing'> when 'true' ->
@@ -1314,9 +1314,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>call 'Data.Maybe':'Nothing'(),'typeSignature'=>Ty,'inlineImpl'=>call 'Data.Maybe':'Nothing'()}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
       <{'Right', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>call 'Data.Maybe':'Nothing'(),'typeSignature'=>Ty,'inlineImpl'=>call 'Data.Maybe':'Nothing'()}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>'Nothing'}~)}
       end
       <{'ForeignValueInline', Labeled, _W0, Impl}> when 'true' ->
         let <FunctionName> = apply 'unwrapIdent'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
@@ -1326,9 +1326,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>call 'Data.Maybe':'Nothing'(),'typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
       <{'Right', Ty}> when 'true' ->
-        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>call 'Data.Maybe':'Nothing'(),'typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
+        {'Right', call 'Nova.Compiler.Ast':'DeclForeignImport'(~{'moduleName'=>#{}#,'functionName'=>FunctionName,'alias'=>'Nothing','typeSignature'=>Ty,'inlineImpl'=>{'Just', Impl}}~)}
       end
       <{'ForeignData', _W0, Labeled}> when 'true' ->
         let <Name> = apply 'unwrapProper'/1(call 'maps':'get'('name', call 'maps':'get'('label', Labeled)))
@@ -1544,26 +1544,26 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Just', Fields}> when 'true' ->
         let <Tail> = case call 'maps':'get'('tail', Row) of
       <'Nothing'> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{'Just', {'Tuple', _W0, Ty}}> when 'true' ->
         case Ty of
       <{'TypeVar', Name}> when 'true' ->
         {'Just', apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
     end
       in {'Right', ~{'fields'=>Fields,'tail'=>Tail}~}
       <{'Right', Fields}> when 'true' ->
         let <Tail> = case call 'maps':'get'('tail', Row) of
       <'Nothing'> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
       <{'Just', {'Tuple', _W0, Ty}}> when 'true' ->
         case Ty of
       <{'TypeVar', Name}> when 'true' ->
         {'Just', apply 'unwrapIdent'/1(call 'maps':'get'('name', Name))}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
     end
       in {'Right', ~{'fields'=>Fields,'tail'=>Tail}~}
@@ -2345,9 +2345,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'guard'=>call 'Data.Maybe':'Nothing'(),'body'=>Body}~}
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'guard'=>call 'Data.Maybe':'Nothing'(),'body'=>Body}~}
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
       end
       <{'Guarded', Guards}> when 'true' ->
         case Guards of
@@ -2368,7 +2368,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       <{'Right', Body}> when 'true' ->
@@ -2376,7 +2376,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       end
@@ -2391,7 +2391,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       <{'Right', Body}> when 'true' ->
@@ -2399,7 +2399,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       end
@@ -2417,9 +2417,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'guard'=>call 'Data.Maybe':'Nothing'(),'body'=>Body}~}
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'guard'=>call 'Data.Maybe':'Nothing'(),'body'=>Body}~}
+        {'Right', ~{'pattern'=>Pat,'guard'=>'Nothing','body'=>Body}~}
       end
       <{'Guarded', Guards}> when 'true' ->
         case Guards of
@@ -2440,7 +2440,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       <{'Right', Body}> when 'true' ->
@@ -2448,7 +2448,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       end
@@ -2463,7 +2463,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       <{'Right', Body}> when 'true' ->
@@ -2471,7 +2471,7 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <[{'GuardExpr', E} | _W0]> when 'true' ->
         {'Just', E}
       <_W0> when 'true' ->
-        call 'Data.Maybe':'Nothing'()
+        'Nothing'
     end
       in {'Right', ~{'pattern'=>Pat,'guard'=>Guard,'body'=>Body}~}
       end
@@ -2526,13 +2526,13 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <'true'> when 'true' -> BodyExpr
       <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
     end
-      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', BodyExpr}> when 'true' ->
         let <Body> = case call 'Data.List':'null'(Params) of
       <'true'> when 'true' -> BodyExpr
       <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
     end
-      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       <{'Right', Params}> when 'true' ->
         case case call 'maps':'get'('guarded', Vbf) of
@@ -2555,13 +2555,13 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <'true'> when 'true' -> BodyExpr
       <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
     end
-      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', BodyExpr}> when 'true' ->
         let <Body> = case call 'Data.List':'null'(Params) of
       <'true'> when 'true' -> BodyExpr
       <'false'> when 'true' -> call 'Nova.Compiler.Ast':'ExprLambda'(Params, BodyExpr)
     end
-      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+      in {'Right', ~{'pattern'=>call 'Nova.Compiler.Ast':'PatVar'(Name),'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       end
       <{'LetBindingPattern', Binder, _W0, Wh}> when 'true' ->
@@ -2577,9 +2577,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       <{'Right', Pat}> when 'true' ->
         case apply 'convertExpr'/1(call 'maps':'get'('expr', Wh)) of
@@ -2588,9 +2588,9 @@ module 'Nova.Compiler.CstToAst' ['unwrapIdent'/1, 'unwrapProper'/1, 'unwrapLabel
       <{'Left', _Err}> when 'true' ->
         {'Left', _Err}
       <{'Just', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       <{'Right', Body}> when 'true' ->
-        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>call 'Data.Maybe':'Nothing'()}~}
+        {'Right', ~{'pattern'=>Pat,'value'=>Body,'typeAnn'=>'Nothing'}~}
       end
       end
       <{'LetBindingError', _W0}> when 'true' ->

@@ -164,12 +164,19 @@ compile_file = fn {path, expected_name} ->
             {:Right, mod} ->
               # Phase 4: Generate Core Erlang
               try do
-                {codegen_time, code} = :timer.tc(fn ->
+                {codegen_time, codegen_result} = :timer.tc(fn ->
                   apply(:"Nova.Compiler.CodeGenCoreErlang", :genModule, [mod])
                 end)
-                code_str = if is_binary(code), do: code, else: List.to_string(code)
-                IO.puts("OK [lex: #{format_time.(lex_time)}, cst: #{format_time.(cst_time)}, ast: #{format_time.(ast_time)}, codegen: #{format_time.(codegen_time)}]")
-                {:ok, expected_name, code_str, lex_time, cst_time, ast_time, codegen_time}
+                case codegen_result do
+                  {:Left, error} ->
+                    error_str = if is_binary(error), do: error, else: inspect(error)
+                    IO.puts("CODEGEN ERROR [lex: #{format_time.(lex_time)}, cst: #{format_time.(cst_time)}, ast: #{format_time.(ast_time)}]: #{error_str}")
+                    {:error, expected_name, {:codegen, error_str}, lex_time, cst_time, ast_time, 0}
+                  {:Right, code} ->
+                    code_str = if is_binary(code), do: code, else: List.to_string(code)
+                    IO.puts("OK [lex: #{format_time.(lex_time)}, cst: #{format_time.(cst_time)}, ast: #{format_time.(ast_time)}, codegen: #{format_time.(codegen_time)}]")
+                    {:ok, expected_name, code_str, lex_time, cst_time, ast_time, codegen_time}
+                end
               rescue
                 e ->
                   IO.puts("CODEGEN ERROR: #{Exception.message(e)}")

@@ -222,16 +222,18 @@ compileOneModule fs config acc path =
       in case parseAndCheckModule acc.registry source of
         Left err -> acc { logs = Array.snoc acc.logs (LogError (fullModName <> ": " <> err)) }
         Right result ->
-          let code = CodeGen.genModule result.mod
-              registry' = Types.registerModule acc.registry fullModName result.exports
-              modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") fullModName
-              outputFile = config.outputDir <> modPath <> ".core"
-              targetFile = config.targetDir <> modPath <> ".core"
-              _written1 = fs.writeFile outputFile code
-              _written2 = fs.writeFile targetFile code
-              lineCount = Array.length (String.split (String.Pattern "\n") code)
-              logMsg = "Compiled " <> fullModName <> " (" <> show lineCount <> " lines)"
-          in { registry: registry', count: acc.count + 1, logs: Array.snoc acc.logs (LogInfo logMsg) }
+          case CodeGen.genModule result.mod of
+            Left codegenErr -> acc { logs = Array.snoc acc.logs (LogError (fullModName <> ": " <> codegenErr)) }
+            Right code ->
+              let registry' = Types.registerModule acc.registry fullModName result.exports
+                  modPath = String.replaceAll (String.Pattern ".") (String.Replacement "/") fullModName
+                  outputFile = config.outputDir <> modPath <> ".core"
+                  targetFile = config.targetDir <> modPath <> ".core"
+                  _written1 = fs.writeFile outputFile code
+                  _written2 = fs.writeFile targetFile code
+                  lineCount = Array.length (String.split (String.Pattern "\n") code)
+                  logMsg = "Compiled " <> fullModName <> " (" <> show lineCount <> " lines)"
+              in { registry: registry', count: acc.count + 1, logs: Array.snoc acc.logs (LogInfo logMsg) }
 
 -- ============================================================================
 -- Logging Helpers
