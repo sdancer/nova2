@@ -615,7 +615,8 @@ convertType ty = case ty of
   Cst.TypeApp head args -> do
     headTy <- convertType head
     argTys <- traverse convertType args
-    Right $ List.foldl Ast.TyExprApp headTy argTys
+    -- Use explicit lambda to ensure uncurried calling convention on BEAM
+    Right $ List.foldl (\acc arg -> Ast.TyExprApp acc arg) headTy argTys
 
   Cst.TypeOp head ops -> do
     -- Convert infix type operators to applications
@@ -763,7 +764,8 @@ convertExpr expr = case expr of
     let labels = map (\l -> unwrapLabel l.name) path
     case labels of
       (firstLabel : rest) -> do
-        Right $ List.foldl Ast.ExprRecordAccess (Ast.ExprRecordAccess base firstLabel) rest
+        -- Use explicit lambda to ensure uncurried calling convention on BEAM
+        Right $ List.foldl (\e lbl -> Ast.ExprRecordAccess e lbl) (Ast.ExprRecordAccess base firstLabel) rest
       Nil -> Left "Empty record accessor path"
 
   Cst.ExprRecordUpdate base updates -> do
@@ -775,7 +777,8 @@ convertExpr expr = case expr of
   Cst.ExprApp head args -> do
     headE <- convertExpr head
     argEs <- traverse convertExpr args
-    Right $ List.foldl Ast.ExprApp headE argEs
+    -- Use explicit lambda to ensure uncurried calling convention on BEAM
+    Right $ List.foldl (\f a -> Ast.ExprApp f a) headE argEs
 
   Cst.ExprLambda lam -> do
     params <- traverse convertBinder lam.binders

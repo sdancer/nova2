@@ -1,102 +1,96 @@
-module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'head'/1, 'tail'/1, 'reverse'/1, 'length'/1, 'cons'/2, 'singleton'/1, 'append'/2, 'map'/2, 'filter'/2, 'foldr'/3, 'foldl'/3, 'take'/2, 'drop'/2, 'any'/2, 'mapMaybe'/2, 'takeWhile'/2, 'dropWhile'/2, 'range'/2, 'elem'/2, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'nullImpl'/1, 'unconsImpl'/1, 'headImpl'/1, 'tailImpl'/1, 'reverseImpl'/1, 'lengthImpl'/1, 'consImpl'/2, 'singletonImpl'/1, 'appendImpl'/2, 'mapImpl'/2, 'filterImpl'/2, 'foldrImpl'/3, 'takeImpl'/2, 'dropImpl'/2, 'anyImpl'/2, 'mapMaybeImpl'/2, 'takeWhileImpl'/2, 'dropWhileImpl'/2, 'rangeImpl'/2, 'elemImpl'/2, 'fromFoldable'/0, 'toUnfoldable'/0, 'null'/0, 'uncons'/0, 'head'/0, 'tail'/0, 'reverse'/0, 'length'/0, 'cons'/0, 'cons'/1, 'singleton'/0, 'append'/0, 'append'/1, 'map'/0, 'map'/1, 'filter'/0, 'filter'/1, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'any'/0, 'any'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'takeWhile'/0, 'takeWhile'/1, 'dropWhile'/0, 'dropWhile'/1, 'range'/0, 'range'/1, 'elem'/0, 'elem'/1, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'nullImpl'/0, 'unconsImpl'/0, 'headImpl'/0, 'tailImpl'/0, 'reverseImpl'/0, 'lengthImpl'/0, 'consImpl'/0, 'consImpl'/1, 'singletonImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'anyImpl'/0, 'anyImpl'/1, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'takeWhileImpl'/0, 'takeWhileImpl'/1, 'dropWhileImpl'/0, 'dropWhileImpl'/1, 'rangeImpl'/0, 'rangeImpl'/1, 'elemImpl'/0, 'elemImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/1, 'singleton'/1, 'tail'/1, 'toUnfoldable'/1, 'uncons'/1, 'any'/2, 'append'/2, 'cons'/2, 'drop'/2, 'dropWhile'/2, 'elem'/2, 'filter'/2, 'map'/2, 'mapMaybe'/2, 'range'/2, 'take'/2, 'takeWhile'/2, 'foldl'/3, 'foldr'/3, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'nullImpl'/1, 'unconsImpl'/1, 'headImpl'/1, 'tailImpl'/1, 'reverseImpl'/1, 'lengthImpl'/1, 'consImpl'/2, 'singletonImpl'/1, 'appendImpl'/2, 'mapImpl'/2, 'filterImpl'/2, 'foldrImpl'/3, 'foldlImpl'/3, 'takeImpl'/2, 'dropImpl'/2, 'anyImpl'/2, 'mapMaybeImpl'/2, 'takeWhileImpl'/2, 'dropWhileImpl'/2, 'rangeImpl'/2, 'elemImpl'/2, 'fromFoldable'/0, 'head'/0, 'length'/0, 'null'/0, 'reverse'/0, 'singleton'/0, 'tail'/0, 'toUnfoldable'/0, 'uncons'/0, 'any'/0, 'any'/1, 'append'/0, 'append'/1, 'cons'/0, 'cons'/1, 'drop'/0, 'drop'/1, 'dropWhile'/0, 'dropWhile'/1, 'elem'/0, 'elem'/1, 'filter'/0, 'filter'/1, 'map'/0, 'map'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'range'/0, 'range'/1, 'take'/0, 'take'/1, 'takeWhile'/0, 'takeWhile'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'nullImpl'/0, 'unconsImpl'/0, 'headImpl'/0, 'tailImpl'/0, 'reverseImpl'/0, 'lengthImpl'/0, 'consImpl'/0, 'consImpl'/1, 'singletonImpl'/0, 'appendImpl'/0, 'appendImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'anyImpl'/0, 'anyImpl'/1, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'takeWhileImpl'/0, 'takeWhileImpl'/1, 'dropWhileImpl'/0, 'dropWhileImpl'/1, 'rangeImpl'/0, 'rangeImpl'/1, 'elemImpl'/0, 'elemImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'fromFoldable'/1 =
   fun (Xs) ->
     apply 'fromFoldableImpl'/1(Xs)
 
-'toUnfoldable'/1 =
-  fun (Xs) ->
-    apply 'toUnfoldableImpl'/1(Xs)
-
-'null'/1 =
-  fun (Xs) ->
-    apply 'nullImpl'/1(Xs)
-
-'uncons'/1 =
-  fun (Xs) ->
-    apply 'unconsImpl'/1(Xs)
-
 'head'/1 =
   fun (Xs) ->
     apply 'headImpl'/1(Xs)
-
-'tail'/1 =
-  fun (Xs) ->
-    apply 'tailImpl'/1(Xs)
-
-'reverse'/1 =
-  fun (Xs) ->
-    apply 'reverseImpl'/1(Xs)
 
 'length'/1 =
   fun (Xs) ->
     apply 'lengthImpl'/1(Xs)
 
-'cons'/2 =
-  fun (X, Xs) ->
-    apply 'consImpl'/2(X, Xs)
+'null'/1 =
+  fun (Xs) ->
+    apply 'nullImpl'/1(Xs)
+
+'reverse'/1 =
+  fun (Xs) ->
+    apply 'reverseImpl'/1(Xs)
 
 'singleton'/1 =
   fun (X) ->
     apply 'singletonImpl'/1(X)
 
-'append'/2 =
-  fun (Xs, Ys) ->
-    apply 'appendImpl'/2(Xs, Ys)
+'tail'/1 =
+  fun (Xs) ->
+    apply 'tailImpl'/1(Xs)
 
-'map'/2 =
-  fun (F, Xs) ->
-    apply 'mapImpl'/2(F, Xs)
+'toUnfoldable'/1 =
+  fun (Xs) ->
+    apply 'toUnfoldableImpl'/1(Xs)
 
-'filter'/2 =
-  fun (F, Xs) ->
-    apply 'filterImpl'/2(F, Xs)
-
-'foldr'/3 =
-  fun (F, Acc, Xs) ->
-    apply 'foldrImpl'/3(F, Acc, Xs)
-
-'foldl'/3 =
-  fun (F, Acc, Xs) ->
-    case Xs of
-      <[]> when 'true' ->
-        Acc
-      <[X|Rest]> when 'true' ->
-        let <Applied> = apply F(Acc)
-      in apply 'foldl'/3(F, apply Applied(X), Rest)
-    end
-
-'take'/2 =
-  fun (N, Xs) ->
-    apply 'takeImpl'/2(N, Xs)
-
-'drop'/2 =
-  fun (N, Xs) ->
-    apply 'dropImpl'/2(N, Xs)
+'uncons'/1 =
+  fun (Xs) ->
+    apply 'unconsImpl'/1(Xs)
 
 'any'/2 =
   fun (F, Xs) ->
     apply 'anyImpl'/2(F, Xs)
 
-'mapMaybe'/2 =
-  fun (F, Xs) ->
-    apply 'mapMaybeImpl'/2(F, Xs)
+'append'/2 =
+  fun (Xs, Ys) ->
+    apply 'appendImpl'/2(Xs, Ys)
 
-'takeWhile'/2 =
-  fun (F, Xs) ->
-    apply 'takeWhileImpl'/2(F, Xs)
+'cons'/2 =
+  fun (X, Xs) ->
+    apply 'consImpl'/2(X, Xs)
+
+'drop'/2 =
+  fun (N, Xs) ->
+    apply 'dropImpl'/2(N, Xs)
 
 'dropWhile'/2 =
   fun (F, Xs) ->
     apply 'dropWhileImpl'/2(F, Xs)
 
+'elem'/2 =
+  fun (X, Xs) ->
+    apply 'elemImpl'/2(X, Xs)
+
+'filter'/2 =
+  fun (F, Xs) ->
+    apply 'filterImpl'/2(F, Xs)
+
+'map'/2 =
+  fun (F, Xs) ->
+    apply 'mapImpl'/2(F, Xs)
+
+'mapMaybe'/2 =
+  fun (F, Xs) ->
+    apply 'mapMaybeImpl'/2(F, Xs)
+
 'range'/2 =
   fun (Start, End) ->
     apply 'rangeImpl'/2(Start, End)
 
-'elem'/2 =
-  fun (X, Xs) ->
-    apply 'elemImpl'/2(X, Xs)
+'take'/2 =
+  fun (N, Xs) ->
+    apply 'takeImpl'/2(N, Xs)
+
+'takeWhile'/2 =
+  fun (F, Xs) ->
+    apply 'takeWhileImpl'/2(F, Xs)
+
+'foldl'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldlImpl'/3(F, Acc, Xs)
+
+'foldr'/3 =
+  fun (F, Acc, Xs) ->
+    apply 'foldrImpl'/3(F, Acc, Xs)
 
 'fromFoldableImpl'/1 = fun (V0) -> V0
 
@@ -138,6 +132,8 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
 
 'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> let <F1> = apply V0 (E) in apply F1 (A), V1, V2)
 
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldl'(fun (E, A) -> apply V0 (A, E), V1, V2)
+
 'takeImpl'/2 = fun (V0, V1) -> call 'lists':'sublist'(V1, V0)
 
 'dropImpl'/2 = fun (V0, V1) -> call 'lists':'nthtail'(V0, V1)
@@ -163,40 +159,10 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
         apply 'fromFoldable'/1(_A0)
       in _F0
 
-'toUnfoldable'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toUnfoldable'/1(_A0)
-      in _F0
-
-'null'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'null'/1(_A0)
-      in _F0
-
-'uncons'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'uncons'/1(_A0)
-      in _F0
-
 'head'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'head'/1(_A0)
-      in _F0
-
-'tail'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tail'/1(_A0)
-      in _F0
-
-'reverse'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'reverse'/1(_A0)
       in _F0
 
 'length'/0 =
@@ -205,24 +171,54 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
         apply 'length'/1(_A0)
       in _F0
 
-'cons'/0 =
+'null'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'cons'/2(_A0, _A1)
-      in _F1
+        apply 'null'/1(_A0)
       in _F0
 
-'cons'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'cons'/2(_A0, _A1)
+'reverse'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'reverse'/1(_A0)
       in _F0
 
 'singleton'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'singleton'/1(_A0)
+      in _F0
+
+'tail'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tail'/1(_A0)
+      in _F0
+
+'toUnfoldable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUnfoldable'/1(_A0)
+      in _F0
+
+'uncons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'uncons'/1(_A0)
+      in _F0
+
+'any'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'any'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'any'/2(_A0, _A1)
       in _F0
 
 'append'/0 =
@@ -239,18 +235,60 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
         apply 'append'/2(_A0, _A1)
       in _F0
 
-'map'/0 =
+'cons'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'map'/2(_A0, _A1)
+        apply 'cons'/2(_A0, _A1)
       in _F1
       in _F0
 
-'map'/1 =
+'cons'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'map'/2(_A0, _A1)
+        apply 'cons'/2(_A0, _A1)
+      in _F0
+
+'drop'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'drop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F0
+
+'dropWhile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'dropWhile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'dropWhile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'dropWhile'/2(_A0, _A1)
+      in _F0
+
+'elem'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'elem'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'elem'/2(_A0, _A1)
       in _F0
 
 'filter'/0 =
@@ -267,28 +305,74 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
         apply 'filter'/2(_A0, _A1)
       in _F0
 
-'foldr'/0 =
+'map'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'foldr'/3(_A0, _A1, _A2)
-      in _F2
+        apply 'map'/2(_A0, _A1)
       in _F1
       in _F0
 
-'foldr'/1 =
+'map'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'foldr'/3(_A0, _A1, _A2)
+        apply 'map'/2(_A0, _A1)
+      in _F0
+
+'mapMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
       in _F1
       in _F0
 
-'foldr'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'foldr'/3(_A0, _A1, _A2)
+'mapMaybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
+      in _F0
+
+'range'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'range'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'range'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'range'/2(_A0, _A1)
+      in _F0
+
+'take'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'take'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F0
+
+'takeWhile'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'takeWhile'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'takeWhile'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'takeWhile'/2(_A0, _A1)
       in _F0
 
 'foldl'/0 =
@@ -315,116 +399,28 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
         apply 'foldl'/3(_A0, _A1, _A2)
       in _F0
 
-'take'/0 =
+'foldr'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'take'/2(_A0, _A1)
+        let <_F2> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
+      in _F2
       in _F1
       in _F0
 
-'take'/1 =
+'foldr'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'take'/2(_A0, _A1)
-      in _F0
-
-'drop'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'drop'/2(_A0, _A1)
+        let <_F1> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
       in _F1
       in _F0
 
-'drop'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'drop'/2(_A0, _A1)
-      in _F0
-
-'any'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'any'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'any'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'any'/2(_A0, _A1)
-      in _F0
-
-'mapMaybe'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mapMaybe'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mapMaybe'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mapMaybe'/2(_A0, _A1)
-      in _F0
-
-'takeWhile'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'takeWhile'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'takeWhile'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'takeWhile'/2(_A0, _A1)
-      in _F0
-
-'dropWhile'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'dropWhile'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'dropWhile'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'dropWhile'/2(_A0, _A1)
-      in _F0
-
-'range'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'range'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'range'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'range'/2(_A0, _A1)
-      in _F0
-
-'elem'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'elem'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'elem'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'elem'/2(_A0, _A1)
+'foldr'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldr'/3(_A0, _A1, _A2)
       in _F0
 
 'fromFoldableImpl'/0 =
@@ -559,6 +555,30 @@ module 'Data.List' ['fromFoldable'/1, 'toUnfoldable'/1, 'null'/1, 'uncons'/1, 'h
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'foldrImpl'/3(_A0, _A1, _A2)
+      in _F0
+
+'foldlImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'foldlImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'foldlImpl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'foldlImpl'/3(_A0, _A1, _A2)
       in _F0
 
 'takeImpl'/0 =

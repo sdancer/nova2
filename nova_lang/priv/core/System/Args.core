@@ -1,5 +1,9 @@
-module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'/1, 'parseArgsLoop'/2, 'parseInt'/1, 'startsWith'/2, 'getArgsImpl'/0, 'getProgNameImpl'/0, 'parseIntImpl'/1, 'startsWithImpl'/2, 'parseArgs'/0, 'parseArgsLoop'/0, 'parseArgsLoop'/1, 'parseInt'/0, 'startsWith'/0, 'startsWith'/1, 'parseIntImpl'/0, 'startsWithImpl'/0, 'startsWithImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'System.Args' ['defaultArgs'/0, 'getArgs'/0, 'getProgName'/0, 'parseArgs'/1, 'parseInt'/1, 'parseArgsLoop'/2, 'startsWith'/2, 'getArgsImpl'/0, 'getProgNameImpl'/0, 'parseIntImpl'/1, 'startsWithImpl'/2, 'parseArgs'/0, 'parseInt'/0, 'parseArgsLoop'/0, 'parseArgsLoop'/1, 'startsWith'/0, 'startsWith'/1, 'parseIntImpl'/0, 'startsWithImpl'/0, 'startsWithImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
+'defaultArgs'/0 =
+  fun () ->
+    ~{'command'=>#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'files'=>[],'outputDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']])}#,'deps'=>[],'port'=>0,'shared'=>'false','help'=>'false','version'=>'false'}~
+
 'getArgs'/0 =
   fun () ->
     apply 'getArgsImpl'/0()
@@ -8,13 +12,13 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
   fun () ->
     apply 'getProgNameImpl'/0()
 
-'defaultArgs'/0 =
-  fun () ->
-    ~{'command'=>#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'files'=>[],'outputDir'=>#{#<46>(8,1,'integer',['unsigned'|['big']])}#,'deps'=>[],'port'=>9999,'shared'=>'false','help'=>'false','version'=>'false'}~
-
 'parseArgs'/1 =
   fun (Args) ->
     apply 'parseArgsLoop'/2(Args, apply 'defaultArgs'/0())
+
+'parseInt'/1 =
+  fun (S) ->
+    apply 'parseIntImpl'/1(S)
 
 'parseArgsLoop'/2 =
   fun (Args, Acc) ->
@@ -39,28 +43,28 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
       <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dir}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
       <'Nothing'> when 'true' ->
         {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dir}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'outputDir'=>Dir}~))
       <'Nothing'> when 'true' ->
         {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dep}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
       <'Nothing'> when 'true' ->
         {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}
     end
       <#{#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         case call 'Data.Array':'head'(Rest) of
       <{'Just', Dep}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'deps'=>call 'Data.Array':'snoc'(call 'maps':'get'('deps', Acc), Dep)}~))
       <'Nothing'> when 'true' ->
         {'Left', #{#<77>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
     end
@@ -69,7 +73,7 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
       <{'Just', PortStr}> when 'true' ->
         case apply 'parseInt'/1(PortStr) of
       <{'Just', Port}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
       <'Nothing'> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, PortStr)}
     end
@@ -81,7 +85,7 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
       <{'Just', PortStr}> when 'true' ->
         case apply 'parseInt'/1(PortStr) of
       <{'Just', Port}> when 'true' ->
-        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(1, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
+        apply 'parseArgsLoop'/2(call 'Data.Array':'drop'(0, Rest), call 'maps':'merge'(Acc, ~{'port'=>Port}~))
       <'Nothing'> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, PortStr)}
     end
@@ -99,10 +103,6 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
     end
     end
     end
-
-'parseInt'/1 =
-  fun (S) ->
-    apply 'parseIntImpl'/1(S)
 
 'startsWith'/2 =
   fun (Prefix, Str) ->
@@ -122,6 +122,12 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
         apply 'parseArgs'/1(_A0)
       in _F0
 
+'parseInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseInt'/1(_A0)
+      in _F0
+
 'parseArgsLoop'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -134,12 +140,6 @@ module 'System.Args' ['getArgs'/0, 'getProgName'/0, 'defaultArgs'/0, 'parseArgs'
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'parseArgsLoop'/2(_A0, _A1)
-      in _F0
-
-'parseInt'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'parseInt'/1(_A0)
       in _F0
 
 'startsWith'/0 =

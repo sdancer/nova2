@@ -248,10 +248,12 @@ buildDependencyGraph config files =
   ) Map.empty files
 
 -- | Topological sort using DFS
+-- Note: We visit dependencies first, then add self to sorted.
+-- This naturally produces the correct order (dependencies before dependents).
 topoSort :: Array String -> Map.Map String (Array String) -> Array String
 topoSort files deps =
   let result = Array.foldl visitFromRoot { visited: Set.empty, sorted: [] } files
-  in Array.reverse result.sorted
+  in result.sorted
   where
     visitFromRoot :: { visited :: Set.Set String, sorted :: Array String } -> String -> { visited :: Set.Set String, sorted :: Array String }
     visitFromRoot state path =

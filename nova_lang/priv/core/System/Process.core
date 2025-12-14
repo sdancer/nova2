@@ -1,16 +1,16 @@
-module 'System.Process' ['self'/0, 'spawn'/1, 'send'/2, 'isProcessAlive'/1, 'sleep'/1, 'getEnv'/1, 'exit'/1, 'apply'/3, 'applyAtom'/3, 'selfImpl'/0, 'spawnImpl'/1, 'sendImpl'/2, 'isProcessAliveImpl'/1, 'sleepImpl'/1, 'getEnvImpl'/1, 'exitImpl'/1, 'applyImpl'/3, 'applyAtomImpl'/3, 'spawn'/0, 'send'/0, 'send'/1, 'isProcessAlive'/0, 'sleep'/0, 'getEnv'/0, 'exit'/0, 'apply'/0, 'apply'/1, 'apply'/2, 'applyAtom'/0, 'applyAtom'/1, 'applyAtom'/2, 'spawnImpl'/0, 'sendImpl'/0, 'sendImpl'/1, 'isProcessAliveImpl'/0, 'sleepImpl'/0, 'getEnvImpl'/0, 'exitImpl'/0, 'applyImpl'/0, 'applyImpl'/1, 'applyImpl'/2, 'applyAtomImpl'/0, 'applyAtomImpl'/1, 'applyAtomImpl'/2, 'module_info'/0, 'module_info'/1]
+module 'System.Process' ['self'/0, 'exit'/1, 'getEnv'/1, 'isProcessAlive'/1, 'sleep'/1, 'spawn'/1, 'send'/2, 'apply'/3, 'applyAtom'/3, 'selfImpl'/0, 'spawnImpl'/1, 'sendImpl'/2, 'isProcessAliveImpl'/1, 'sleepImpl'/1, 'getEnvImpl'/1, 'exitImpl'/1, 'applyImpl'/3, 'applyAtomImpl'/3, 'exit'/0, 'getEnv'/0, 'isProcessAlive'/0, 'sleep'/0, 'spawn'/0, 'send'/0, 'send'/1, 'apply'/0, 'apply'/1, 'apply'/2, 'applyAtom'/0, 'applyAtom'/1, 'applyAtom'/2, 'spawnImpl'/0, 'sendImpl'/0, 'sendImpl'/1, 'isProcessAliveImpl'/0, 'sleepImpl'/0, 'getEnvImpl'/0, 'exitImpl'/0, 'applyImpl'/0, 'applyImpl'/1, 'applyImpl'/2, 'applyAtomImpl'/0, 'applyAtomImpl'/1, 'applyAtomImpl'/2, 'module_info'/0, 'module_info'/1]
   attributes []
 'self'/0 =
   fun () ->
     apply 'selfImpl'/0()
 
-'spawn'/1 =
-  fun (F) ->
-    apply 'spawnImpl'/1(F)
+'exit'/1 =
+  fun (Code) ->
+    apply 'exitImpl'/1(Code)
 
-'send'/2 =
-  fun (Pid, Msg) ->
-    apply 'sendImpl'/2(Pid, Msg)
+'getEnv'/1 =
+  fun (Name) ->
+    apply 'getEnvImpl'/1(Name)
 
 'isProcessAlive'/1 =
   fun (Pid) ->
@@ -20,13 +20,13 @@ module 'System.Process' ['self'/0, 'spawn'/1, 'send'/2, 'isProcessAlive'/1, 'sle
   fun (Ms) ->
     apply 'sleepImpl'/1(Ms)
 
-'getEnv'/1 =
-  fun (Name) ->
-    apply 'getEnvImpl'/1(Name)
+'spawn'/1 =
+  fun (F) ->
+    apply 'spawnImpl'/1(F)
 
-'exit'/1 =
-  fun (Code) ->
-    apply 'exitImpl'/1(Code)
+'send'/2 =
+  fun (Pid, Msg) ->
+    apply 'sendImpl'/2(Pid, Msg)
 
 'apply'/3 =
   fun (Mod, Func, Args) ->
@@ -54,6 +54,30 @@ module 'System.Process' ['self'/0, 'spawn'/1, 'send'/2, 'isProcessAlive'/1, 'sle
 
 'applyAtomImpl'/3 = fun (V0, V1, V2) -> call 'erlang':'apply'(V0, call 'erlang':'binary_to_atom'(V1, 'utf8'), V2)
 
+'exit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'exit'/1(_A0)
+      in _F0
+
+'getEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getEnv'/1(_A0)
+      in _F0
+
+'isProcessAlive'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isProcessAlive'/1(_A0)
+      in _F0
+
+'sleep'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'sleep'/1(_A0)
+      in _F0
+
 'spawn'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -72,30 +96,6 @@ module 'System.Process' ['self'/0, 'spawn'/1, 'send'/2, 'isProcessAlive'/1, 'sle
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'send'/2(_A0, _A1)
-      in _F0
-
-'isProcessAlive'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isProcessAlive'/1(_A0)
-      in _F0
-
-'sleep'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'sleep'/1(_A0)
-      in _F0
-
-'getEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getEnv'/1(_A0)
-      in _F0
-
-'exit'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'exit'/1(_A0)
       in _F0
 
 'apply'/0 =

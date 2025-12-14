@@ -1,32 +1,12 @@
-module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeout'/2, 'recv'/1, 'recvTimeout'/2, 'send'/2, 'close'/1, 'closeListen'/1, 'setOpts'/2, 'controlling_process'/2, 'listenImpl'/1, 'acceptImpl'/1, 'acceptTimeoutImpl'/2, 'recvImpl'/1, 'recvTimeoutImpl'/2, 'sendImpl'/2, 'closeImpl'/1, 'closeListenImpl'/1, 'setOptsImpl'/2, 'controllingProcessImpl'/2, 'listen'/0, 'accept'/0, 'acceptTimeout'/0, 'acceptTimeout'/1, 'recv'/0, 'recvTimeout'/0, 'recvTimeout'/1, 'send'/0, 'send'/1, 'close'/0, 'closeListen'/0, 'setOpts'/0, 'setOpts'/1, 'controlling_process'/0, 'controlling_process'/1, 'listenImpl'/0, 'acceptImpl'/0, 'acceptTimeoutImpl'/0, 'acceptTimeoutImpl'/1, 'recvImpl'/0, 'recvTimeoutImpl'/0, 'recvTimeoutImpl'/1, 'sendImpl'/0, 'sendImpl'/1, 'closeImpl'/0, 'closeListenImpl'/0, 'setOptsImpl'/0, 'setOptsImpl'/1, 'controllingProcessImpl'/0, 'controllingProcessImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'OTP.TCP' ['defaultListenOptions'/0, 'accept'/1, 'close'/1, 'closeListen'/1, 'listen'/1, 'recv'/1, 'acceptTimeout'/2, 'controlling_process'/2, 'recvTimeout'/2, 'send'/2, 'setOpts'/2, 'listenImpl'/1, 'acceptImpl'/1, 'acceptTimeoutImpl'/2, 'recvImpl'/1, 'recvTimeoutImpl'/2, 'sendImpl'/2, 'closeImpl'/1, 'closeListenImpl'/1, 'setOptsImpl'/2, 'controllingProcessImpl'/2, 'accept'/0, 'close'/0, 'closeListen'/0, 'listen'/0, 'recv'/0, 'acceptTimeout'/0, 'acceptTimeout'/1, 'controlling_process'/0, 'controlling_process'/1, 'recvTimeout'/0, 'recvTimeout'/1, 'send'/0, 'send'/1, 'setOpts'/0, 'setOpts'/1, 'listenImpl'/0, 'acceptImpl'/0, 'acceptTimeoutImpl'/0, 'acceptTimeoutImpl'/1, 'recvImpl'/0, 'recvTimeoutImpl'/0, 'recvTimeoutImpl'/1, 'sendImpl'/0, 'sendImpl'/1, 'closeImpl'/0, 'closeListenImpl'/0, 'setOptsImpl'/0, 'setOptsImpl'/1, 'controllingProcessImpl'/0, 'controllingProcessImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'defaultListenOptions'/0 =
   fun () ->
-    ~{'port'=>9999,'reuseaddr'=>'true','active'=>'false','packet'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}~
-
-'listen'/1 =
-  fun (Port) ->
-    apply 'listenImpl'/1(Port)
+    ~{'port'=>0,'reuseaddr'=>'true','active'=>'false','packet'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}~
 
 'accept'/1 =
   fun (ListenSocket) ->
     apply 'acceptImpl'/1(ListenSocket)
-
-'acceptTimeout'/2 =
-  fun (ListenSocket, Timeout) ->
-    apply 'acceptTimeoutImpl'/2(ListenSocket, Timeout)
-
-'recv'/1 =
-  fun (Socket) ->
-    apply 'recvImpl'/1(Socket)
-
-'recvTimeout'/2 =
-  fun (Socket, Timeout) ->
-    apply 'recvTimeoutImpl'/2(Socket, Timeout)
-
-'send'/2 =
-  fun (Socket, Data_) ->
-    apply 'sendImpl'/2(Socket, Data_)
 
 'close'/1 =
   fun (Socket) ->
@@ -36,13 +16,33 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
   fun (Socket) ->
     apply 'closeListenImpl'/1(Socket)
 
-'setOpts'/2 =
-  fun (Socket, Active) ->
-    apply 'setOptsImpl'/2(Socket, Active)
+'listen'/1 =
+  fun (Port) ->
+    apply 'listenImpl'/1(Port)
+
+'recv'/1 =
+  fun (Socket) ->
+    apply 'recvImpl'/1(Socket)
+
+'acceptTimeout'/2 =
+  fun (ListenSocket, Timeout) ->
+    apply 'acceptTimeoutImpl'/2(ListenSocket, Timeout)
 
 'controlling_process'/2 =
   fun (Socket, Pid) ->
     apply 'controllingProcessImpl'/2(Socket, Pid)
+
+'recvTimeout'/2 =
+  fun (Socket, Timeout) ->
+    apply 'recvTimeoutImpl'/2(Socket, Timeout)
+
+'send'/2 =
+  fun (Socket, Data_) ->
+    apply 'sendImpl'/2(Socket, Data_)
+
+'setOpts'/2 =
+  fun (Socket, Active) ->
+    apply 'setOptsImpl'/2(Socket, Active)
 
 'listenImpl'/1 = fun (V0) -> case call 'gen_tcp':'listen'(V0, ['binary', {'packet', 'line'}, {'active', 'false'}, {'reuseaddr', 'true'}]) of <{'ok', Socket}> when 'true' -> {'Right', Socket} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
 
@@ -64,16 +64,34 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
 
 'controllingProcessImpl'/2 = fun (V0, V1) -> case call 'gen_tcp':'controlling_process'(V0, V1) of <'ok'> when 'true' -> {'Right', 'unit'} <{'error', Reason}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
 
+'accept'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'accept'/1(_A0)
+      in _F0
+
+'close'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'close'/1(_A0)
+      in _F0
+
+'closeListen'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'closeListen'/1(_A0)
+      in _F0
+
 'listen'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'listen'/1(_A0)
       in _F0
 
-'accept'/0 =
+'recv'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'accept'/1(_A0)
+        apply 'recv'/1(_A0)
       in _F0
 
 'acceptTimeout'/0 =
@@ -90,10 +108,18 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
         apply 'acceptTimeout'/2(_A0, _A1)
       in _F0
 
-'recv'/0 =
+'controlling_process'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'recv'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        apply 'controlling_process'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'controlling_process'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'controlling_process'/2(_A0, _A1)
       in _F0
 
 'recvTimeout'/0 =
@@ -124,18 +150,6 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
         apply 'send'/2(_A0, _A1)
       in _F0
 
-'close'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'close'/1(_A0)
-      in _F0
-
-'closeListen'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'closeListen'/1(_A0)
-      in _F0
-
 'setOpts'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -148,20 +162,6 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'listen'/1, 'accept'/1, 'acceptTimeo
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'setOpts'/2(_A0, _A1)
-      in _F0
-
-'controlling_process'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'controlling_process'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'controlling_process'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'controlling_process'/2(_A0, _A1)
       in _F0
 
 'listenImpl'/0 =

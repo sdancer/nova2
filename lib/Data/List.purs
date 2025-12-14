@@ -93,14 +93,14 @@ foldr f acc xs = foldrImpl f acc xs
 
 foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> List a -> b = "call 'lists':'foldr'(fun (E, A) -> let <F1> = apply $0 (E) in apply F1 (A), $1, $2)"
 
--- Fold left - native implementation (not foreign) to ensure correct argument order
--- Note: we use explicit let binding to ensure curried application is generated correctly
+-- Fold left - uses Erlang lists:foldl with uncurried function application
+-- Note: We use uncurried apply (A, E) to match how partial applications are generated
+-- IMPORTANT: When passing constructors to foldl, wrap them in a lambda to ensure
+-- uncurried calling convention: foldl (\a b -> Con a b) instead of foldl Con
 foldl :: forall a b. (b -> a -> b) -> b -> List a -> b
-foldl f acc xs = case xs of
-  Nil -> acc
-  Cons x rest ->
-    let applied = f acc
-    in foldl f (applied x) rest
+foldl f acc xs = foldlImpl f acc xs
+
+foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> List a -> b = "call 'lists':'foldl'(fun (E, A) -> apply $0 (A, E), $1, $2)"
 
 -- Take first n elements
 take :: forall a. Int -> List a -> List a

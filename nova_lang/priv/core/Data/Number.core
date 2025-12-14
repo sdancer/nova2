@@ -1,16 +1,16 @@
-module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/1, 'isNaNImpl'/1, 'isFiniteImpl'/1, 'fromString'/0, 'isNaN'/0, 'isFinite'/0, 'fromStringImpl'/0, 'isNaNImpl'/0, 'isFiniteImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.Number' ['fromString'/1, 'isFinite'/1, 'isNaN'/1, 'fromStringImpl'/1, 'isNaNImpl'/1, 'isFiniteImpl'/1, 'fromString'/0, 'isFinite'/0, 'isNaN'/0, 'fromStringImpl'/0, 'isNaNImpl'/0, 'isFiniteImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'fromString'/1 =
   fun (S) ->
     apply 'fromStringImpl'/1(S)
 
-'isNaN'/1 =
-  fun (N) ->
-    apply 'isNaNImpl'/1(N)
-
 'isFinite'/1 =
   fun (N) ->
     apply 'isFiniteImpl'/1(N)
+
+'isNaN'/1 =
+  fun (N) ->
+    apply 'isNaNImpl'/1(N)
 
 'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_float'(V0) of
         <{F, []}> when 'true' -> {'Just', F}
@@ -33,16 +33,16 @@ module 'Data.Number' ['fromString'/1, 'isNaN'/1, 'isFinite'/1, 'fromStringImpl'/
         apply 'fromString'/1(_A0)
       in _F0
 
-'isNaN'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isNaN'/1(_A0)
-      in _F0
-
 'isFinite'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'isFinite'/1(_A0)
+      in _F0
+
+'isNaN'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isNaN'/1(_A0)
       in _F0
 
 'fromStringImpl'/0 =

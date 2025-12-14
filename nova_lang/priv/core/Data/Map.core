@@ -1,84 +1,48 @@
-module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3, 'delete'/2, 'update'/3, 'alter'/3, 'keys'/1, 'values'/1, 'size'/1, 'isEmpty'/1, 'fromFoldable'/1, 'toUnfoldable'/1, 'union'/2, 'unionWith'/3, 'intersection'/2, 'difference'/2, 'map'/2, 'mapWithKey'/2, 'filter'/2, 'filterWithKey'/2, 'foldl'/3, 'foldlWithKey'/3, 'foldr'/3, 'findMin'/1, 'findMax'/1, 'lookupDefault'/3, 'mapMaybe'/2, 'emptyImpl'/0, 'singletonImpl'/2, 'lookupImpl'/2, 'memberImpl'/2, 'insertImpl'/3, 'deleteImpl'/2, 'updateImpl'/3, 'alterImpl'/3, 'keysImpl'/1, 'valuesImpl'/1, 'sizeImpl'/1, 'isEmptyImpl'/1, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'unionImpl'/2, 'unionWithImpl'/3, 'intersectionImpl'/2, 'differenceImpl'/2, 'mapImpl'/2, 'mapWithKeyImpl'/2, 'filterImpl'/2, 'filterWithKeyImpl'/2, 'foldlImpl'/3, 'foldlWithKeyImpl'/3, 'foldrImpl'/3, 'findMinImpl'/1, 'findMaxImpl'/1, 'lookupDefaultImpl'/3, 'mapMaybeImpl'/2, 'singleton'/0, 'singleton'/1, 'lookup'/0, 'lookup'/1, 'member'/0, 'member'/1, 'insert'/0, 'insert'/1, 'insert'/2, 'delete'/0, 'delete'/1, 'update'/0, 'update'/1, 'update'/2, 'alter'/0, 'alter'/1, 'alter'/2, 'keys'/0, 'values'/0, 'size'/0, 'isEmpty'/0, 'fromFoldable'/0, 'toUnfoldable'/0, 'union'/0, 'union'/1, 'unionWith'/0, 'unionWith'/1, 'unionWith'/2, 'intersection'/0, 'intersection'/1, 'difference'/0, 'difference'/1, 'map'/0, 'map'/1, 'mapWithKey'/0, 'mapWithKey'/1, 'filter'/0, 'filter'/1, 'filterWithKey'/0, 'filterWithKey'/1, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldlWithKey'/0, 'foldlWithKey'/1, 'foldlWithKey'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'findMin'/0, 'findMax'/0, 'lookupDefault'/0, 'lookupDefault'/1, 'lookupDefault'/2, 'mapMaybe'/0, 'mapMaybe'/1, 'singletonImpl'/0, 'singletonImpl'/1, 'lookupImpl'/0, 'lookupImpl'/1, 'memberImpl'/0, 'memberImpl'/1, 'insertImpl'/0, 'insertImpl'/1, 'insertImpl'/2, 'deleteImpl'/0, 'deleteImpl'/1, 'updateImpl'/0, 'updateImpl'/1, 'updateImpl'/2, 'alterImpl'/0, 'alterImpl'/1, 'alterImpl'/2, 'keysImpl'/0, 'valuesImpl'/0, 'sizeImpl'/0, 'isEmptyImpl'/0, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'unionImpl'/0, 'unionImpl'/1, 'unionWithImpl'/0, 'unionWithImpl'/1, 'unionWithImpl'/2, 'intersectionImpl'/0, 'intersectionImpl'/1, 'differenceImpl'/0, 'differenceImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'mapWithKeyImpl'/0, 'mapWithKeyImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'filterWithKeyImpl'/0, 'filterWithKeyImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldlWithKeyImpl'/0, 'foldlWithKeyImpl'/1, 'foldlWithKeyImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'findMinImpl'/0, 'findMaxImpl'/0, 'lookupDefaultImpl'/0, 'lookupDefaultImpl'/1, 'lookupDefaultImpl'/2, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'module_info'/0, 'module_info'/1]
+module 'Data.Map' ['empty'/0, 'findMax'/1, 'findMin'/1, 'fromFoldable'/1, 'isEmpty'/1, 'keys'/1, 'size'/1, 'toUnfoldable'/1, 'values'/1, 'delete'/2, 'difference'/2, 'filter'/2, 'filterWithKey'/2, 'intersection'/2, 'lookup'/2, 'map'/2, 'mapMaybe'/2, 'mapWithKey'/2, 'member'/2, 'singleton'/2, 'union'/2, 'alter'/3, 'foldl'/3, 'foldlWithKey'/3, 'foldr'/3, 'insert'/3, 'lookupDefault'/3, 'unionWith'/3, 'update'/3, 'emptyImpl'/0, 'singletonImpl'/2, 'lookupImpl'/2, 'memberImpl'/2, 'insertImpl'/3, 'deleteImpl'/2, 'updateImpl'/3, 'alterImpl'/3, 'keysImpl'/1, 'valuesImpl'/1, 'sizeImpl'/1, 'isEmptyImpl'/1, 'fromFoldableImpl'/1, 'toUnfoldableImpl'/1, 'unionImpl'/2, 'unionWithImpl'/3, 'intersectionImpl'/2, 'differenceImpl'/2, 'mapImpl'/2, 'mapWithKeyImpl'/2, 'filterImpl'/2, 'filterWithKeyImpl'/2, 'foldlImpl'/3, 'foldlWithKeyImpl'/3, 'foldrImpl'/3, 'findMinImpl'/1, 'findMaxImpl'/1, 'lookupDefaultImpl'/3, 'mapMaybeImpl'/2, 'findMax'/0, 'findMin'/0, 'fromFoldable'/0, 'isEmpty'/0, 'keys'/0, 'size'/0, 'toUnfoldable'/0, 'values'/0, 'delete'/0, 'delete'/1, 'difference'/0, 'difference'/1, 'filter'/0, 'filter'/1, 'filterWithKey'/0, 'filterWithKey'/1, 'intersection'/0, 'intersection'/1, 'lookup'/0, 'lookup'/1, 'map'/0, 'map'/1, 'mapMaybe'/0, 'mapMaybe'/1, 'mapWithKey'/0, 'mapWithKey'/1, 'member'/0, 'member'/1, 'singleton'/0, 'singleton'/1, 'union'/0, 'union'/1, 'alter'/0, 'alter'/1, 'alter'/2, 'foldl'/0, 'foldl'/1, 'foldl'/2, 'foldlWithKey'/0, 'foldlWithKey'/1, 'foldlWithKey'/2, 'foldr'/0, 'foldr'/1, 'foldr'/2, 'insert'/0, 'insert'/1, 'insert'/2, 'lookupDefault'/0, 'lookupDefault'/1, 'lookupDefault'/2, 'unionWith'/0, 'unionWith'/1, 'unionWith'/2, 'update'/0, 'update'/1, 'update'/2, 'singletonImpl'/0, 'singletonImpl'/1, 'lookupImpl'/0, 'lookupImpl'/1, 'memberImpl'/0, 'memberImpl'/1, 'insertImpl'/0, 'insertImpl'/1, 'insertImpl'/2, 'deleteImpl'/0, 'deleteImpl'/1, 'updateImpl'/0, 'updateImpl'/1, 'updateImpl'/2, 'alterImpl'/0, 'alterImpl'/1, 'alterImpl'/2, 'keysImpl'/0, 'valuesImpl'/0, 'sizeImpl'/0, 'isEmptyImpl'/0, 'fromFoldableImpl'/0, 'toUnfoldableImpl'/0, 'unionImpl'/0, 'unionImpl'/1, 'unionWithImpl'/0, 'unionWithImpl'/1, 'unionWithImpl'/2, 'intersectionImpl'/0, 'intersectionImpl'/1, 'differenceImpl'/0, 'differenceImpl'/1, 'mapImpl'/0, 'mapImpl'/1, 'mapWithKeyImpl'/0, 'mapWithKeyImpl'/1, 'filterImpl'/0, 'filterImpl'/1, 'filterWithKeyImpl'/0, 'filterWithKeyImpl'/1, 'foldlImpl'/0, 'foldlImpl'/1, 'foldlImpl'/2, 'foldlWithKeyImpl'/0, 'foldlWithKeyImpl'/1, 'foldlWithKeyImpl'/2, 'foldrImpl'/0, 'foldrImpl'/1, 'foldrImpl'/2, 'findMinImpl'/0, 'findMaxImpl'/0, 'lookupDefaultImpl'/0, 'lookupDefaultImpl'/1, 'lookupDefaultImpl'/2, 'mapMaybeImpl'/0, 'mapMaybeImpl'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 'empty'/0 =
   fun () ->
     apply 'emptyImpl'/0()
 
-'singleton'/2 =
-  fun (K, V) ->
-    apply 'singletonImpl'/2(K, V)
-
-'lookup'/2 =
-  fun (K, M) ->
-    apply 'lookupImpl'/2(K, M)
-
-'member'/2 =
-  fun (K, M) ->
-    apply 'memberImpl'/2(K, M)
-
-'insert'/3 =
-  fun (K, V, M) ->
-    apply 'insertImpl'/3(K, V, M)
-
-'delete'/2 =
-  fun (K, M) ->
-    apply 'deleteImpl'/2(K, M)
-
-'update'/3 =
-  fun (F, K, M) ->
-    apply 'updateImpl'/3(F, K, M)
-
-'alter'/3 =
-  fun (F, K, M) ->
-    apply 'alterImpl'/3(F, K, M)
-
-'keys'/1 =
+'findMax'/1 =
   fun (M) ->
-    apply 'keysImpl'/1(M)
+    apply 'findMaxImpl'/1(M)
 
-'values'/1 =
+'findMin'/1 =
   fun (M) ->
-    apply 'valuesImpl'/1(M)
-
-'size'/1 =
-  fun (M) ->
-    apply 'sizeImpl'/1(M)
-
-'isEmpty'/1 =
-  fun (M) ->
-    apply 'isEmptyImpl'/1(M)
+    apply 'findMinImpl'/1(M)
 
 'fromFoldable'/1 =
   fun (Xs) ->
     apply 'fromFoldableImpl'/1(Xs)
 
+'isEmpty'/1 =
+  fun (M) ->
+    apply 'isEmptyImpl'/1(M)
+
+'keys'/1 =
+  fun (M) ->
+    apply 'keysImpl'/1(M)
+
+'size'/1 =
+  fun (M) ->
+    apply 'sizeImpl'/1(M)
+
 'toUnfoldable'/1 =
   fun (M) ->
     apply 'toUnfoldableImpl'/1(M)
 
-'union'/2 =
-  fun (M1, M2) ->
-    apply 'unionImpl'/2(M1, M2)
+'values'/1 =
+  fun (M) ->
+    apply 'valuesImpl'/1(M)
 
-'unionWith'/3 =
-  fun (F, M1, M2) ->
-    apply 'unionWithImpl'/3(F, M1, M2)
-
-'intersection'/2 =
-  fun (M1, M2) ->
-    apply 'intersectionImpl'/2(M1, M2)
+'delete'/2 =
+  fun (K, M) ->
+    apply 'deleteImpl'/2(K, M)
 
 'difference'/2 =
   fun (M1, M2) ->
     apply 'differenceImpl'/2(M1, M2)
-
-'map'/2 =
-  fun (F, M) ->
-    apply 'mapImpl'/2(F, M)
-
-'mapWithKey'/2 =
-  fun (F, M) ->
-    apply 'mapWithKeyImpl'/2(F, M)
 
 'filter'/2 =
   fun (F, M) ->
@@ -87,6 +51,42 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
 'filterWithKey'/2 =
   fun (F, M) ->
     apply 'filterWithKeyImpl'/2(F, M)
+
+'intersection'/2 =
+  fun (M1, M2) ->
+    apply 'intersectionImpl'/2(M1, M2)
+
+'lookup'/2 =
+  fun (K, M) ->
+    apply 'lookupImpl'/2(K, M)
+
+'map'/2 =
+  fun (F, M) ->
+    apply 'mapImpl'/2(F, M)
+
+'mapMaybe'/2 =
+  fun (F, M) ->
+    apply 'mapMaybeImpl'/2(F, M)
+
+'mapWithKey'/2 =
+  fun (F, M) ->
+    apply 'mapWithKeyImpl'/2(F, M)
+
+'member'/2 =
+  fun (K, M) ->
+    apply 'memberImpl'/2(K, M)
+
+'singleton'/2 =
+  fun (K, V) ->
+    apply 'singletonImpl'/2(K, V)
+
+'union'/2 =
+  fun (M1, M2) ->
+    apply 'unionImpl'/2(M1, M2)
+
+'alter'/3 =
+  fun (F, K, M) ->
+    apply 'alterImpl'/3(F, K, M)
 
 'foldl'/3 =
   fun (F, Acc, M) ->
@@ -100,21 +100,21 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
   fun (F, Acc, M) ->
     apply 'foldrImpl'/3(F, Acc, M)
 
-'findMin'/1 =
-  fun (M) ->
-    apply 'findMinImpl'/1(M)
-
-'findMax'/1 =
-  fun (M) ->
-    apply 'findMaxImpl'/1(M)
+'insert'/3 =
+  fun (K, V, M) ->
+    apply 'insertImpl'/3(K, V, M)
 
 'lookupDefault'/3 =
   fun (Def, K, M) ->
     apply 'lookupDefaultImpl'/3(Def, K, M)
 
-'mapMaybe'/2 =
-  fun (F, M) ->
-    apply 'mapMaybeImpl'/2(F, M)
+'unionWith'/3 =
+  fun (F, M1, M2) ->
+    apply 'unionWithImpl'/3(F, M1, M2)
+
+'update'/3 =
+  fun (F, K, M) ->
+    apply 'updateImpl'/3(F, K, M)
 
 'emptyImpl'/0 = fun () -> call 'maps':'new'()
 
@@ -205,70 +205,52 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
         <{'Just', NewV}> when 'true' -> call 'maps':'put'(K, NewV, Acc)
       end, call 'maps':'new'(), V1)
 
-'singleton'/0 =
+'findMax'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'singleton'/2(_A0, _A1)
-      in _F1
+        apply 'findMax'/1(_A0)
       in _F0
 
-'singleton'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'singleton'/2(_A0, _A1)
-      in _F0
-
-'lookup'/0 =
+'findMin'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lookup'/2(_A0, _A1)
-      in _F1
+        apply 'findMin'/1(_A0)
       in _F0
 
-'lookup'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lookup'/2(_A0, _A1)
-      in _F0
-
-'member'/0 =
+'fromFoldable'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'member'/2(_A0, _A1)
-      in _F1
+        apply 'fromFoldable'/1(_A0)
       in _F0
 
-'member'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'member'/2(_A0, _A1)
-      in _F0
-
-'insert'/0 =
+'isEmpty'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'insert'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
+        apply 'isEmpty'/1(_A0)
       in _F0
 
-'insert'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'insert'/3(_A0, _A1, _A2)
-      in _F1
+'keys'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'keys'/1(_A0)
       in _F0
 
-'insert'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'insert'/3(_A0, _A1, _A2)
+'size'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'size'/1(_A0)
+      in _F0
+
+'toUnfoldable'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toUnfoldable'/1(_A0)
+      in _F0
+
+'values'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'values'/1(_A0)
       in _F0
 
 'delete'/0 =
@@ -285,142 +267,6 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
         apply 'delete'/2(_A0, _A1)
       in _F0
 
-'update'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'update'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'update'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'update'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'update'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'update'/3(_A0, _A1, _A2)
-      in _F0
-
-'alter'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'alter'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'alter'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'alter'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'alter'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'alter'/3(_A0, _A1, _A2)
-      in _F0
-
-'keys'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'keys'/1(_A0)
-      in _F0
-
-'values'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'values'/1(_A0)
-      in _F0
-
-'size'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'size'/1(_A0)
-      in _F0
-
-'isEmpty'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isEmpty'/1(_A0)
-      in _F0
-
-'fromFoldable'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'fromFoldable'/1(_A0)
-      in _F0
-
-'toUnfoldable'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toUnfoldable'/1(_A0)
-      in _F0
-
-'union'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'union'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'union'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'union'/2(_A0, _A1)
-      in _F0
-
-'unionWith'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'unionWith'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'unionWith'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'unionWith'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'unionWith'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'unionWith'/3(_A0, _A1, _A2)
-      in _F0
-
-'intersection'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'intersection'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'intersection'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'intersection'/2(_A0, _A1)
-      in _F0
-
 'difference'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -433,34 +279,6 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'difference'/2(_A0, _A1)
-      in _F0
-
-'map'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'map'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'map'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'map'/2(_A0, _A1)
-      in _F0
-
-'mapWithKey'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mapWithKey'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mapWithKey'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mapWithKey'/2(_A0, _A1)
       in _F0
 
 'filter'/0 =
@@ -489,6 +307,142 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'filterWithKey'/2(_A0, _A1)
+      in _F0
+
+'intersection'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'intersection'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'intersection'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'intersection'/2(_A0, _A1)
+      in _F0
+
+'lookup'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookup'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookup'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookup'/2(_A0, _A1)
+      in _F0
+
+'map'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'map'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'map'/2(_A0, _A1)
+      in _F0
+
+'mapMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapMaybe'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapMaybe'/2(_A0, _A1)
+      in _F0
+
+'mapWithKey'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mapWithKey'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mapWithKey'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mapWithKey'/2(_A0, _A1)
+      in _F0
+
+'member'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'member'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'member'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'member'/2(_A0, _A1)
+      in _F0
+
+'singleton'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'singleton'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'singleton'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'singleton'/2(_A0, _A1)
+      in _F0
+
+'union'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'union'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'union'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'union'/2(_A0, _A1)
+      in _F0
+
+'alter'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'alter'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'alter'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'alter'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'alter'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'alter'/3(_A0, _A1, _A2)
       in _F0
 
 'foldl'/0 =
@@ -563,16 +517,28 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
         apply 'foldr'/3(_A0, _A1, _A2)
       in _F0
 
-'findMin'/0 =
+'insert'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'findMin'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
       in _F0
 
-'findMax'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'findMax'/1(_A0)
+'insert'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'insert'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'insert'/3(_A0, _A1, _A2)
       in _F0
 
 'lookupDefault'/0 =
@@ -599,18 +565,52 @@ module 'Data.Map' ['empty'/0, 'singleton'/2, 'lookup'/2, 'member'/2, 'insert'/3,
         apply 'lookupDefault'/3(_A0, _A1, _A2)
       in _F0
 
-'mapMaybe'/0 =
+'unionWith'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'mapMaybe'/2(_A0, _A1)
+        let <_F2> = fun (_A2) ->
+        apply 'unionWith'/3(_A0, _A1, _A2)
+      in _F2
       in _F1
       in _F0
 
-'mapMaybe'/1 =
+'unionWith'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'mapMaybe'/2(_A0, _A1)
+        let <_F1> = fun (_A2) ->
+        apply 'unionWith'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unionWith'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unionWith'/3(_A0, _A1, _A2)
+      in _F0
+
+'update'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'update'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'update'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'update'/3(_A0, _A1, _A2)
       in _F0
 
 'singletonImpl'/0 =

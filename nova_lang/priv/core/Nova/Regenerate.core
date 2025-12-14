@@ -182,7 +182,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'main'/1, 'runRegenerate'/1, 'log'/
       in call 'maps':'merge'(State2, ~{'sorted'=>call 'Data.Array':'snoc'(call 'maps':'get'('sorted', State2), Path)}~)
     end
       in let <Result> = call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'visitFromRoot'/2(_Mf0, _Mf1), ~{'visited'=>call 'Data.Set':'empty'(),'sorted'=>[]}~, Files)
-      in call 'Data.Array':'reverse'(call 'maps':'get'('sorted', Result))
+      in call 'maps':'get'('sorted', Result)
 
 'getModuleName'/2 =
   fun (Config, FilePath) ->

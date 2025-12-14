@@ -1,4 +1,4 @@
-module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'addDeclWithType'/6, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'setRefs'/3, 'getRefs'/2, 'clearRefs'/2, 'getReferencedBy'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'addDeclWithType'/5, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'getRefs'/0, 'getRefs'/1, 'clearRefs'/0, 'clearRefs'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.NamespaceService' ['emptyArray'/0, 'genDeclId'/1, 'init'/1, 'listNamespaces'/1, 'load'/1, 'shutdown'/1, 'clearRefs'/2, 'createNamespace'/2, 'deleteNamespace'/2, 'getDecl'/2, 'getDeclsByStatus'/2, 'getNamespaceDecls'/2, 'getReferencedBy'/2, 'getRefs'/2, 'namespaceExists'/2, 'removeDecl'/2, 'save'/2, 'statusEq'/2, 'getDeclByName'/3, 'setDeclErrors'/3, 'setDeclStatus'/3, 'setDeclType'/3, 'setRefs'/3, 'updateDecl'/3, 'addDecl'/5, 'addDeclWithType'/6, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'genDeclId'/0, 'init'/0, 'listNamespaces'/0, 'load'/0, 'shutdown'/0, 'clearRefs'/0, 'clearRefs'/1, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'getRefs'/0, 'getRefs'/1, 'namespaceExists'/0, 'namespaceExists'/1, 'removeDecl'/0, 'removeDecl'/1, 'save'/0, 'save'/1, 'statusEq'/0, 'statusEq'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'addDeclWithType'/5, 'intToString'/0, 'emptyArrayImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: DeclStatus
 % Constructors: Fresh, Valid, Invalid, Stale
@@ -38,6 +38,21 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun () ->
     'ForeignDecl'
 
+'emptyArray'/0 =
+  fun () ->
+    apply 'emptyArrayImpl'/1('unit')
+
+'genDeclId'/1 =
+  fun (St) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('counter', St), #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#) of
+      <'Nothing'> when 'true' ->
+        #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#
+      <{'Just', N}> when 'true' ->
+        let <Next> = call 'erlang':'+'(N, 0)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('counter', St), #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, Next)
+      in call 'Nova.Prelude':'semigroupAppendImpl'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'intToString'/1(Next))
+    end
+
 'init'/1 =
   fun (_W0) ->
     case call 'OTP.Ets':'new'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, call 'OTP.Ets':'publicSetOptions'()) of
@@ -68,223 +83,9 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
     end
     end
 
-'createNamespace'/2 =
-  fun (St, Name) ->
-    case call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name) of
-      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#}
-      <'false'> when 'true' -> let <NsInfo> = ~{'name'=>Name,'imports'=>apply 'emptyArray'/0()}~
-      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('namespaces', St), Name, NsInfo)
-      in {'Right', 'unit'}
-    end
-
-'deleteNamespace'/2 =
-  fun (St, Name) ->
-    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)) of
-      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <'false'> when 'true' -> let <Decls> = apply 'getNamespaceDecls'/2(St, Name)
-      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('namespaces', St), Name)
-      in let <_W0> = call 'Data.Array':'foldl'(fun (Acc, D) ->
-      let <_W0> = apply 'removeDecl'/2(St, call 'maps':'get'('declId', D))
-      in Acc, 'unit', Decls)
-      in {'Right', 'unit'}
-    end
-
-'genDeclId'/1 =
-  fun (St) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('counter', St), #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#) of
-      <'Nothing'> when 'true' ->
-        #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#
-      <{'Just', N}> when 'true' ->
-        let <Next> = call 'erlang':'+'(N, 1)
-      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('counter', St), #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, Next)
-      in call 'Nova.Prelude':'semigroupAppendImpl'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'intToString'/1(Next))
-    end
-
-'addDecl'/5 =
-  fun (St, Namespace, Name, SourceText, Kind) ->
-    apply 'addDeclWithType'/6(St, Namespace, Name, SourceText, Kind, 'Nothing')
-
-'addDeclWithType'/6 =
-  fun (St, Namespace, Name, SourceText, Kind, TypeStr) ->
-    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Namespace)) of
-      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <'false'> when 'true' -> let <DeclId> = apply 'genDeclId'/1(St)
-      in let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
-      in let <Decl> = ~{'declId'=>DeclId,'namespace'=>Namespace,'name'=>Name,'kind'=>Kind,'sourceText'=>SourceText,'status'=>apply 'Fresh'/0(),'inferredType'=>TypeStr,'errors'=>apply 'emptyArray'/0()}~
-      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('nameIndex', St), IdxKey, DeclId)
-      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('declarations', St), DeclId, Decl)
-      in {'Right', DeclId}
-    end
-
-'updateDecl'/3 =
-  fun (St, DeclId, NewSourceText) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
-      <'Nothing'> when 'true' ->
-        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <{'Just', Decl}> when 'true' ->
-        let <Updated> = call 'maps':'merge'(Decl, ~{'sourceText'=>NewSourceText,'status'=>apply 'Stale'/0()}~)
-      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
-      in {'Right', 'unit'}
-    end
-
-'removeDecl'/2 =
-  fun (St, DeclId) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
-      <'Nothing'> when 'true' ->
-        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <{'Just', Decl}> when 'true' ->
-        let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('namespace', Decl), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('name', Decl))
-      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('declarations', St), DeclId)
-      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('nameIndex', St), IdxKey)
-      in {'Right', 'unit'}
-    end
-
-'getDecl'/2 =
-  fun (St, DeclId) ->
-    call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
-
-'getDeclByName'/3 =
-  fun (St, Namespace, Name) ->
-    let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
-      in case call 'OTP.Ets':'lookup'(call 'maps':'get'('nameIndex', St), IdxKey) of
-      <'Nothing'> when 'true' ->
-        'Nothing'
-      <{'Just', DeclId}> when 'true' ->
-        call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
-    end
-
-'getNamespaceDecls'/2 =
-  fun (St, Namespace) ->
-    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
-      in call 'Data.Array':'filter'(fun (D) ->
-      call 'erlang':'=:='(call 'maps':'get'('namespace', D), Namespace), AllDecls)
-
 'listNamespaces'/1 =
   fun (St) ->
     call 'OTP.Ets':'allKeys'(call 'maps':'get'('namespaces', St))
-
-'namespaceExists'/2 =
-  fun (St, Name) ->
-    call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)
-
-'setDeclStatus'/3 =
-  fun (St, DeclId, Status) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
-      <'Nothing'> when 'true' ->
-        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <{'Just', Decl}> when 'true' ->
-        let <Updated> = call 'maps':'merge'(Decl, ~{'status'=>Status}~)
-      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
-      in {'Right', 'unit'}
-    end
-
-'setDeclErrors'/3 =
-  fun (St, DeclId, Errors) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
-      <'Nothing'> when 'true' ->
-        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <{'Just', Decl}> when 'true' ->
-        let <Updated> = call 'maps':'merge'(Decl, ~{'errors'=>Errors,'status'=>apply 'Invalid'/0()}~)
-      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
-      in {'Right', 'unit'}
-    end
-
-'setDeclType'/3 =
-  fun (St, DeclId, TypeStr) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
-      <'Nothing'> when 'true' ->
-        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
-      <{'Just', Decl}> when 'true' ->
-        let <Updated> = call 'maps':'merge'(Decl, ~{'inferredType'=>{'Just', TypeStr},'status'=>apply 'Valid'/0()}~)
-      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
-      in {'Right', 'unit'}
-    end
-
-'getDeclsByStatus'/2 =
-  fun (St, Status) ->
-    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
-      in call 'Data.Array':'filter'(fun (D) ->
-      apply 'statusEq'/2(call 'maps':'get'('status', D), Status), AllDecls)
-
-'statusEq'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{'Fresh', 'Fresh'}> when 'true' ->
-        'true'
-      <{'Valid', 'Valid'}> when 'true' ->
-        'true'
-      <{'Invalid', 'Invalid'}> when 'true' ->
-        'true'
-      <{'Stale', 'Stale'}> when 'true' ->
-        'true'
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
-'emptyArray'/0 =
-  fun () ->
-    apply 'emptyArrayImpl'/1('unit')
-
-'setRefs'/3 =
-  fun (St, Qname, Refs) ->
-    call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), Qname, Refs)
-
-'getRefs'/2 =
-  fun (St, Qname) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), Qname) of
-      <'Nothing'> when 'true' ->
-        apply 'emptyArray'/0()
-      <{'Just', Refs}> when 'true' ->
-        Refs
-    end
-
-'clearRefs'/2 =
-  fun (St, Qname) ->
-    call 'OTP.Ets':'delete'(call 'maps':'get'('refTo', St), Qname)
-
-'getReferencedBy'/2 =
-  fun (St, Symbol) ->
-    let <AllRefs> = call 'OTP.Ets':'allKeys'(call 'maps':'get'('refTo', St))
-      in call 'Data.Array':'filter'(fun (Qname) ->
-      call 'Data.Array':'elem'(Symbol, apply 'getRefs'/2(St, Qname)), AllRefs)
-
-'shutdown'/1 =
-  fun (St) ->
-    let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('namespaces', St))
-      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('declarations', St))
-      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('nameIndex', St))
-      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('counter', St))
-      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('refTo', St))
-      in 'unit'
-
-'save'/2 =
-  fun (St, Dir) ->
-    case call 'OTP.Ets':'tab2file'(call 'maps':'get'('namespaces', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', _W0}> when 'true' ->
-        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('declarations', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', _W0}> when 'true' ->
-        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('nameIndex', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', _W0}> when 'true' ->
-        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('counter', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', _W0}> when 'true' ->
-        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('refTo', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', _W0}> when 'true' ->
-        {'Right', 'unit'}
-    end
-    end
-    end
-    end
-    end
 
 'load'/1 =
   fun (Dir) ->
@@ -315,14 +116,251 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
     end
     end
 
+'shutdown'/1 =
+  fun (St) ->
+    let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('namespaces', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('declarations', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('nameIndex', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('counter', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('refTo', St))
+      in 'unit'
+
+'clearRefs'/2 =
+  fun (St, Qname) ->
+    call 'OTP.Ets':'delete'(call 'maps':'get'('refTo', St), Qname)
+
+'createNamespace'/2 =
+  fun (St, Name) ->
+    case call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name) of
+      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#}
+      <'false'> when 'true' -> let <NsInfo> = ~{'name'=>Name,'imports'=>apply 'emptyArray'/0()}~
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('namespaces', St), Name, NsInfo)
+      in {'Right', 'unit'}
+    end
+
+'deleteNamespace'/2 =
+  fun (St, Name) ->
+    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)) of
+      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <'false'> when 'true' -> let <Decls> = apply 'getNamespaceDecls'/2(St, Name)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('namespaces', St), Name)
+      in let <_W0> = call 'Data.Array':'foldl'(fun (Acc, D) ->
+      let <_W0> = apply 'removeDecl'/2(St, call 'maps':'get'('declId', D))
+      in Acc, 'unit', Decls)
+      in {'Right', 'unit'}
+    end
+
+'getDecl'/2 =
+  fun (St, DeclId) ->
+    call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
+
+'getDeclsByStatus'/2 =
+  fun (St, Status) ->
+    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
+      in call 'Data.Array':'filter'(fun (D) ->
+      apply 'statusEq'/2(call 'maps':'get'('status', D), Status), AllDecls)
+
+'getNamespaceDecls'/2 =
+  fun (St, Namespace) ->
+    let <AllDecls> = call 'OTP.Ets':'allValues'(call 'maps':'get'('declarations', St))
+      in call 'Data.Array':'filter'(fun (D) ->
+      call 'erlang':'=:='(call 'maps':'get'('namespace', D), Namespace), AllDecls)
+
+'getReferencedBy'/2 =
+  fun (St, Symbol) ->
+    let <AllRefs> = call 'OTP.Ets':'allKeys'(call 'maps':'get'('refTo', St))
+      in call 'Data.Array':'filter'(fun (Qname) ->
+      call 'Data.Array':'elem'(Symbol, apply 'getRefs'/2(St, Qname)), AllRefs)
+
+'getRefs'/2 =
+  fun (St, Qname) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), Qname) of
+      <'Nothing'> when 'true' ->
+        apply 'emptyArray'/0()
+      <{'Just', Refs}> when 'true' ->
+        Refs
+    end
+
+'namespaceExists'/2 =
+  fun (St, Name) ->
+    call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Name)
+
+'removeDecl'/2 =
+  fun (St, DeclId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <{'Just', Decl}> when 'true' ->
+        let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'maps':'get'('namespace', Decl), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('name', Decl))
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('declarations', St), DeclId)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('nameIndex', St), IdxKey)
+      in {'Right', 'unit'}
+    end
+
+'save'/2 =
+  fun (St, Dir) ->
+    case call 'OTP.Ets':'tab2file'(call 'maps':'get'('namespaces', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('declarations', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('nameIndex', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('counter', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('refTo', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
+        {'Right', 'unit'}
+    end
+    end
+    end
+    end
+    end
+
+'statusEq'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'Fresh', 'Fresh'}> when 'true' ->
+        'true'
+      <{'Valid', 'Valid'}> when 'true' ->
+        'true'
+      <{'Invalid', 'Invalid'}> when 'true' ->
+        'true'
+      <{'Stale', 'Stale'}> when 'true' ->
+        'true'
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'getDeclByName'/3 =
+  fun (St, Namespace, Name) ->
+    let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
+      in case call 'OTP.Ets':'lookup'(call 'maps':'get'('nameIndex', St), IdxKey) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', DeclId}> when 'true' ->
+        call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
+    end
+
+'setDeclErrors'/3 =
+  fun (St, DeclId, Errors) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'errors'=>Errors,'status'=>apply 'Invalid'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'setDeclStatus'/3 =
+  fun (St, DeclId, Status) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'status'=>Status}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'setDeclType'/3 =
+  fun (St, DeclId, TypeStr) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'inferredType'=>{'Just', TypeStr},'status'=>apply 'Valid'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'setRefs'/3 =
+  fun (St, Qname, Refs) ->
+    call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), Qname, Refs)
+
+'updateDecl'/3 =
+  fun (St, DeclId, NewSourceText) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId) of
+      <'Nothing'> when 'true' ->
+        {'Left', #{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <{'Just', Decl}> when 'true' ->
+        let <Updated> = call 'maps':'merge'(Decl, ~{'sourceText'=>NewSourceText,'status'=>apply 'Stale'/0()}~)
+      in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('declarations', St), DeclId, Updated)
+      in {'Right', 'unit'}
+    end
+
+'addDecl'/5 =
+  fun (St, Namespace, Name, SourceText, Kind) ->
+    apply 'addDeclWithType'/6(St, Namespace, Name, SourceText, Kind, 'Nothing')
+
+'addDeclWithType'/6 =
+  fun (St, Namespace, Name, SourceText, Kind, TypeStr) ->
+    case call 'erlang':'not'(call 'OTP.Ets':'member'(call 'maps':'get'('namespaces', St), Namespace)) of
+      <'true'> when 'true' -> {'Left', #{#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}
+      <'false'> when 'true' -> let <DeclId> = apply 'genDeclId'/1(St)
+      in let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
+      in let <Decl> = ~{'declId'=>DeclId,'namespace'=>Namespace,'name'=>Name,'kind'=>Kind,'sourceText'=>SourceText,'status'=>apply 'Fresh'/0(),'inferredType'=>TypeStr,'errors'=>apply 'emptyArray'/0()}~
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('nameIndex', St), IdxKey, DeclId)
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('declarations', St), DeclId, Decl)
+      in {'Right', DeclId}
+    end
+
 'intToString'/1 = fun (V0) -> call 'erlang':'integer_to_list'(V0)
 
 'emptyArrayImpl'/1 = fun (V0) -> []
+
+'genDeclId'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'genDeclId'/1(_A0)
+      in _F0
 
 'init'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'init'/1(_A0)
+      in _F0
+
+'listNamespaces'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'listNamespaces'/1(_A0)
+      in _F0
+
+'load'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'load'/1(_A0)
+      in _F0
+
+'shutdown'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'shutdown'/1(_A0)
+      in _F0
+
+'clearRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'clearRefs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'clearRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'clearRefs'/2(_A0, _A1)
       in _F0
 
 'createNamespace'/0 =
@@ -353,10 +391,274 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
         apply 'deleteNamespace'/2(_A0, _A1)
       in _F0
 
-'genDeclId'/0 =
+'getDecl'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'genDeclId'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        apply 'getDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDecl'/2(_A0, _A1)
+      in _F0
+
+'getDeclsByStatus'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getDeclsByStatus'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getDeclsByStatus'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getDeclsByStatus'/2(_A0, _A1)
+      in _F0
+
+'getNamespaceDecls'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getNamespaceDecls'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getNamespaceDecls'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getNamespaceDecls'/2(_A0, _A1)
+      in _F0
+
+'getReferencedBy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getReferencedBy'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getReferencedBy'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getReferencedBy'/2(_A0, _A1)
+      in _F0
+
+'getRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefs'/2(_A0, _A1)
+      in _F0
+
+'namespaceExists'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'namespaceExists'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'namespaceExists'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'namespaceExists'/2(_A0, _A1)
+      in _F0
+
+'removeDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'removeDecl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'removeDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'removeDecl'/2(_A0, _A1)
+      in _F0
+
+'save'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'save'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'save'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'save'/2(_A0, _A1)
+      in _F0
+
+'statusEq'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'statusEq'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'statusEq'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'statusEq'/2(_A0, _A1)
+      in _F0
+
+'getDeclByName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'getDeclByName'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'getDeclByName'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'getDeclByName'/3(_A0, _A1, _A2)
+      in _F0
+
+'setDeclErrors'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclErrors'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclErrors'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclErrors'/3(_A0, _A1, _A2)
+      in _F0
+
+'setDeclStatus'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclStatus'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclStatus'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclStatus'/3(_A0, _A1, _A2)
+      in _F0
+
+'setDeclType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setDeclType'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setDeclType'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setDeclType'/3(_A0, _A1, _A2)
+      in _F0
+
+'setRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'setRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'setRefs'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'setRefs'/3(_A0, _A1, _A2)
+      in _F0
+
+'updateDecl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'updateDecl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'updateDecl'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'updateDecl'/3(_A0, _A1, _A2)
       in _F0
 
 'addDecl'/0 =
@@ -473,308 +775,6 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun (_A0, _A1, _A2, _A3, _A4) ->
     let <_F0> = fun (_A5) ->
         apply 'addDeclWithType'/6(_A0, _A1, _A2, _A3, _A4, _A5)
-      in _F0
-
-'updateDecl'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'updateDecl'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'updateDecl'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'updateDecl'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'updateDecl'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'updateDecl'/3(_A0, _A1, _A2)
-      in _F0
-
-'removeDecl'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'removeDecl'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'removeDecl'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'removeDecl'/2(_A0, _A1)
-      in _F0
-
-'getDecl'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getDecl'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'getDecl'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getDecl'/2(_A0, _A1)
-      in _F0
-
-'getDeclByName'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'getDeclByName'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'getDeclByName'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'getDeclByName'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'getDeclByName'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'getDeclByName'/3(_A0, _A1, _A2)
-      in _F0
-
-'getNamespaceDecls'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getNamespaceDecls'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'getNamespaceDecls'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getNamespaceDecls'/2(_A0, _A1)
-      in _F0
-
-'listNamespaces'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'listNamespaces'/1(_A0)
-      in _F0
-
-'namespaceExists'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'namespaceExists'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'namespaceExists'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'namespaceExists'/2(_A0, _A1)
-      in _F0
-
-'setDeclStatus'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'setDeclStatus'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'setDeclStatus'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'setDeclStatus'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'setDeclStatus'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'setDeclStatus'/3(_A0, _A1, _A2)
-      in _F0
-
-'setDeclErrors'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'setDeclErrors'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'setDeclErrors'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'setDeclErrors'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'setDeclErrors'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'setDeclErrors'/3(_A0, _A1, _A2)
-      in _F0
-
-'setDeclType'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'setDeclType'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'setDeclType'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'setDeclType'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'setDeclType'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'setDeclType'/3(_A0, _A1, _A2)
-      in _F0
-
-'getDeclsByStatus'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getDeclsByStatus'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'getDeclsByStatus'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getDeclsByStatus'/2(_A0, _A1)
-      in _F0
-
-'statusEq'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'statusEq'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'statusEq'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'statusEq'/2(_A0, _A1)
-      in _F0
-
-'setRefs'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'setRefs'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'setRefs'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
-      in _F0
-
-'getRefs'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getRefs'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'getRefs'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getRefs'/2(_A0, _A1)
-      in _F0
-
-'clearRefs'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'clearRefs'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'clearRefs'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'clearRefs'/2(_A0, _A1)
-      in _F0
-
-'getReferencedBy'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getReferencedBy'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'getReferencedBy'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getReferencedBy'/2(_A0, _A1)
-      in _F0
-
-'shutdown'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'shutdown'/1(_A0)
-      in _F0
-
-'save'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'save'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'save'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'save'/2(_A0, _A1)
-      in _F0
-
-'load'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'load'/1(_A0)
       in _F0
 
 'intToString'/0 =

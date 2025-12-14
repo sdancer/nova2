@@ -1,16 +1,48 @@
-module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUpper'/1, 'isLower'/1, 'toUpper'/1, 'toLower'/1, 'toCharCode'/1, 'fromCharCode'/1, 'isControl'/1, 'isPrint'/1, 'isHexDigit'/1, 'isOctDigit'/1, 'isAscii'/1, 'isLatin1'/1, 'isAlphaImpl'/1, 'isDigitImpl'/1, 'isAlphaNumImpl'/1, 'isSpaceImpl'/1, 'isUpperImpl'/1, 'isLowerImpl'/1, 'toUpperImpl'/1, 'toLowerImpl'/1, 'toCharCodeImpl'/1, 'fromCharCodeImpl'/1, 'isControlImpl'/1, 'isPrintImpl'/1, 'isHexDigitImpl'/1, 'isOctDigitImpl'/1, 'isAsciiImpl'/1, 'isLatin1Impl'/1, 'isAlpha'/0, 'isDigit'/0, 'isAlphaNum'/0, 'isSpace'/0, 'isUpper'/0, 'isLower'/0, 'toUpper'/0, 'toLower'/0, 'toCharCode'/0, 'fromCharCode'/0, 'isControl'/0, 'isPrint'/0, 'isHexDigit'/0, 'isOctDigit'/0, 'isAscii'/0, 'isLatin1'/0, 'isAlphaImpl'/0, 'isDigitImpl'/0, 'isAlphaNumImpl'/0, 'isSpaceImpl'/0, 'isUpperImpl'/0, 'isLowerImpl'/0, 'toUpperImpl'/0, 'toLowerImpl'/0, 'toCharCodeImpl'/0, 'fromCharCodeImpl'/0, 'isControlImpl'/0, 'isPrintImpl'/0, 'isHexDigitImpl'/0, 'isOctDigitImpl'/0, 'isAsciiImpl'/0, 'isLatin1Impl'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.Char' ['fromCharCode'/1, 'isAlpha'/1, 'isAlphaNum'/1, 'isAscii'/1, 'isControl'/1, 'isDigit'/1, 'isHexDigit'/1, 'isLatin1'/1, 'isLower'/1, 'isOctDigit'/1, 'isPrint'/1, 'isSpace'/1, 'isUpper'/1, 'toCharCode'/1, 'toLower'/1, 'toUpper'/1, 'isAlphaImpl'/1, 'isDigitImpl'/1, 'isAlphaNumImpl'/1, 'isSpaceImpl'/1, 'isUpperImpl'/1, 'isLowerImpl'/1, 'toUpperImpl'/1, 'toLowerImpl'/1, 'toCharCodeImpl'/1, 'fromCharCodeImpl'/1, 'isControlImpl'/1, 'isPrintImpl'/1, 'isHexDigitImpl'/1, 'isOctDigitImpl'/1, 'isAsciiImpl'/1, 'isLatin1Impl'/1, 'fromCharCode'/0, 'isAlpha'/0, 'isAlphaNum'/0, 'isAscii'/0, 'isControl'/0, 'isDigit'/0, 'isHexDigit'/0, 'isLatin1'/0, 'isLower'/0, 'isOctDigit'/0, 'isPrint'/0, 'isSpace'/0, 'isUpper'/0, 'toCharCode'/0, 'toLower'/0, 'toUpper'/0, 'isAlphaImpl'/0, 'isDigitImpl'/0, 'isAlphaNumImpl'/0, 'isSpaceImpl'/0, 'isUpperImpl'/0, 'isLowerImpl'/0, 'toUpperImpl'/0, 'toLowerImpl'/0, 'toCharCodeImpl'/0, 'fromCharCodeImpl'/0, 'isControlImpl'/0, 'isPrintImpl'/0, 'isHexDigitImpl'/0, 'isOctDigitImpl'/0, 'isAsciiImpl'/0, 'isLatin1Impl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
+'fromCharCode'/1 =
+  fun (N) ->
+    apply 'fromCharCodeImpl'/1(N)
+
 'isAlpha'/1 =
   fun (C) ->
     apply 'isAlphaImpl'/1(C)
+
+'isAlphaNum'/1 =
+  fun (C) ->
+    apply 'isAlphaNumImpl'/1(C)
+
+'isAscii'/1 =
+  fun (C) ->
+    apply 'isAsciiImpl'/1(C)
+
+'isControl'/1 =
+  fun (C) ->
+    apply 'isControlImpl'/1(C)
 
 'isDigit'/1 =
   fun (C) ->
     apply 'isDigitImpl'/1(C)
 
-'isAlphaNum'/1 =
+'isHexDigit'/1 =
   fun (C) ->
-    apply 'isAlphaNumImpl'/1(C)
+    apply 'isHexDigitImpl'/1(C)
+
+'isLatin1'/1 =
+  fun (C) ->
+    apply 'isLatin1Impl'/1(C)
+
+'isLower'/1 =
+  fun (C) ->
+    apply 'isLowerImpl'/1(C)
+
+'isOctDigit'/1 =
+  fun (C) ->
+    apply 'isOctDigitImpl'/1(C)
+
+'isPrint'/1 =
+  fun (C) ->
+    apply 'isPrintImpl'/1(C)
 
 'isSpace'/1 =
   fun (C) ->
@@ -20,49 +52,17 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
   fun (C) ->
     apply 'isUpperImpl'/1(C)
 
-'isLower'/1 =
+'toCharCode'/1 =
   fun (C) ->
-    apply 'isLowerImpl'/1(C)
-
-'toUpper'/1 =
-  fun (C) ->
-    apply 'toUpperImpl'/1(C)
+    apply 'toCharCodeImpl'/1(C)
 
 'toLower'/1 =
   fun (C) ->
     apply 'toLowerImpl'/1(C)
 
-'toCharCode'/1 =
+'toUpper'/1 =
   fun (C) ->
-    apply 'toCharCodeImpl'/1(C)
-
-'fromCharCode'/1 =
-  fun (N) ->
-    apply 'fromCharCodeImpl'/1(N)
-
-'isControl'/1 =
-  fun (C) ->
-    apply 'isControlImpl'/1(C)
-
-'isPrint'/1 =
-  fun (C) ->
-    apply 'isPrintImpl'/1(C)
-
-'isHexDigit'/1 =
-  fun (C) ->
-    apply 'isHexDigitImpl'/1(C)
-
-'isOctDigit'/1 =
-  fun (C) ->
-    apply 'isOctDigitImpl'/1(C)
-
-'isAscii'/1 =
-  fun (C) ->
-    apply 'isAsciiImpl'/1(C)
-
-'isLatin1'/1 =
-  fun (C) ->
-    apply 'isLatin1Impl'/1(C)
+    apply 'toUpperImpl'/1(C)
 
 'isAlphaImpl'/1 = fun (V0) -> call 'erlang':'or'(call 'erlang':'and'(call 'erlang':'>='(V0, 65), call 'erlang':'=<'(V0, 90)), call 'erlang':'and'(call 'erlang':'>='(V0, 97), call 'erlang':'=<'(V0, 122)))
 
@@ -102,10 +102,34 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
 
 'isLatin1Impl'/1 = fun (V0) -> call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'=<'(V0, 255))
 
+'fromCharCode'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fromCharCode'/1(_A0)
+      in _F0
+
 'isAlpha'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'isAlpha'/1(_A0)
+      in _F0
+
+'isAlphaNum'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAlphaNum'/1(_A0)
+      in _F0
+
+'isAscii'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isAscii'/1(_A0)
+      in _F0
+
+'isControl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isControl'/1(_A0)
       in _F0
 
 'isDigit'/0 =
@@ -114,10 +138,34 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
         apply 'isDigit'/1(_A0)
       in _F0
 
-'isAlphaNum'/0 =
+'isHexDigit'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'isAlphaNum'/1(_A0)
+        apply 'isHexDigit'/1(_A0)
+      in _F0
+
+'isLatin1'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLatin1'/1(_A0)
+      in _F0
+
+'isLower'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLower'/1(_A0)
+      in _F0
+
+'isOctDigit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isOctDigit'/1(_A0)
+      in _F0
+
+'isPrint'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isPrint'/1(_A0)
       in _F0
 
 'isSpace'/0 =
@@ -132,16 +180,10 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
         apply 'isUpper'/1(_A0)
       in _F0
 
-'isLower'/0 =
+'toCharCode'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'isLower'/1(_A0)
-      in _F0
-
-'toUpper'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toUpper'/1(_A0)
+        apply 'toCharCode'/1(_A0)
       in _F0
 
 'toLower'/0 =
@@ -150,52 +192,10 @@ module 'Data.Char' ['isAlpha'/1, 'isDigit'/1, 'isAlphaNum'/1, 'isSpace'/1, 'isUp
         apply 'toLower'/1(_A0)
       in _F0
 
-'toCharCode'/0 =
+'toUpper'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'toCharCode'/1(_A0)
-      in _F0
-
-'fromCharCode'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'fromCharCode'/1(_A0)
-      in _F0
-
-'isControl'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isControl'/1(_A0)
-      in _F0
-
-'isPrint'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isPrint'/1(_A0)
-      in _F0
-
-'isHexDigit'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isHexDigit'/1(_A0)
-      in _F0
-
-'isOctDigit'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isOctDigit'/1(_A0)
-      in _F0
-
-'isAscii'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isAscii'/1(_A0)
-      in _F0
-
-'isLatin1'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isLatin1'/1(_A0)
+        apply 'toUpper'/1(_A0)
       in _F0
 
 'isAlphaImpl'/0 =

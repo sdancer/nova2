@@ -1,36 +1,36 @@
-module 'Data.String.CodeUnits' ['singleton'/1, 'take'/2, 'drop'/2, 'length'/1, 'charAt'/2, 'uncons'/1, 'toCharArray'/1, 'fromCharArray'/1, 'singletonImpl'/1, 'takeImpl'/2, 'dropImpl'/2, 'lengthImpl'/1, 'charAtImpl'/2, 'unconsImpl'/1, 'toCharArrayImpl'/1, 'fromCharArrayImpl'/1, 'singleton'/0, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'length'/0, 'charAt'/0, 'charAt'/1, 'uncons'/0, 'toCharArray'/0, 'fromCharArray'/0, 'singletonImpl'/0, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'lengthImpl'/0, 'charAtImpl'/0, 'charAtImpl'/1, 'unconsImpl'/0, 'toCharArrayImpl'/0, 'fromCharArrayImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.String.CodeUnits' ['fromCharArray'/1, 'length'/1, 'singleton'/1, 'toCharArray'/1, 'uncons'/1, 'charAt'/2, 'drop'/2, 'take'/2, 'singletonImpl'/1, 'takeImpl'/2, 'dropImpl'/2, 'lengthImpl'/1, 'charAtImpl'/2, 'unconsImpl'/1, 'toCharArrayImpl'/1, 'fromCharArrayImpl'/1, 'fromCharArray'/0, 'length'/0, 'singleton'/0, 'toCharArray'/0, 'uncons'/0, 'charAt'/0, 'charAt'/1, 'drop'/0, 'drop'/1, 'take'/0, 'take'/1, 'singletonImpl'/0, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'lengthImpl'/0, 'charAtImpl'/0, 'charAtImpl'/1, 'unconsImpl'/0, 'toCharArrayImpl'/0, 'fromCharArrayImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'singleton'/1 =
-  fun (C) ->
-    apply 'singletonImpl'/1(C)
-
-'take'/2 =
-  fun (N, S) ->
-    apply 'takeImpl'/2(N, S)
-
-'drop'/2 =
-  fun (N, S) ->
-    apply 'dropImpl'/2(N, S)
+'fromCharArray'/1 =
+  fun (Cs) ->
+    apply 'fromCharArrayImpl'/1(Cs)
 
 'length'/1 =
   fun (S) ->
     apply 'lengthImpl'/1(S)
 
-'charAt'/2 =
-  fun (I, S) ->
-    apply 'charAtImpl'/2(I, S)
-
-'uncons'/1 =
-  fun (S) ->
-    apply 'unconsImpl'/1(S)
+'singleton'/1 =
+  fun (C) ->
+    apply 'singletonImpl'/1(C)
 
 'toCharArray'/1 =
   fun (S) ->
     apply 'toCharArrayImpl'/1(S)
 
-'fromCharArray'/1 =
-  fun (Cs) ->
-    apply 'fromCharArrayImpl'/1(Cs)
+'uncons'/1 =
+  fun (S) ->
+    apply 'unconsImpl'/1(S)
+
+'charAt'/2 =
+  fun (I, S) ->
+    apply 'charAtImpl'/2(I, S)
+
+'drop'/2 =
+  fun (N, S) ->
+    apply 'dropImpl'/2(N, S)
+
+'take'/2 =
+  fun (N, S) ->
+    apply 'takeImpl'/2(N, S)
 
 'singletonImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'([V0])
 
@@ -48,44 +48,34 @@ module 'Data.String.CodeUnits' ['singleton'/1, 'take'/2, 'drop'/2, 'length'/1, '
 
 'fromCharArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'(V0)
 
-'singleton'/0 =
+'fromCharArray'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'singleton'/1(_A0)
-      in _F0
-
-'take'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'take'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'take'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'take'/2(_A0, _A1)
-      in _F0
-
-'drop'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'drop'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'drop'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'drop'/2(_A0, _A1)
+        apply 'fromCharArray'/1(_A0)
       in _F0
 
 'length'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'length'/1(_A0)
+      in _F0
+
+'singleton'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'singleton'/1(_A0)
+      in _F0
+
+'toCharArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toCharArray'/1(_A0)
+      in _F0
+
+'uncons'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'uncons'/1(_A0)
       in _F0
 
 'charAt'/0 =
@@ -102,22 +92,32 @@ module 'Data.String.CodeUnits' ['singleton'/1, 'take'/2, 'drop'/2, 'length'/1, '
         apply 'charAt'/2(_A0, _A1)
       in _F0
 
-'uncons'/0 =
+'drop'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'uncons'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
+      in _F1
       in _F0
 
-'toCharArray'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toCharArray'/1(_A0)
+'drop'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'drop'/2(_A0, _A1)
       in _F0
 
-'fromCharArray'/0 =
+'take'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'fromCharArray'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'take'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'take'/2(_A0, _A1)
       in _F0
 
 'singletonImpl'/0 =

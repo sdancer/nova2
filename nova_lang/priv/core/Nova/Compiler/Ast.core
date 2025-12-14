@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, 'getDeclName'/1, 'typeExprToString'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'KindFunction'/0, 'KindDataType'/0, 'KindTypeAlias'/0, 'KindTypeClass'/0, 'KindInstance'/0, 'KindForeignImport'/0, 'DeclModule'/1, 'DeclFunction'/1, 'DeclType'/1, 'DeclTypeAlias'/1, 'DeclDataType'/1, 'DeclNewtype'/1, 'DeclTypeClass'/1, 'DeclTypeClassInstance'/1, 'DeclImport'/1, 'DeclForeignImport'/1, 'DeclTypeSig'/1, 'DeclInfix'/1, 'GuardExpr'/1, 'GuardPat'/2, 'ImportValue'/1, 'ImportType'/2, 'ImportAll'/0, 'ImportSome'/1, 'ImportNone'/0, 'AssocLeft'/0, 'AssocRight'/0, 'AssocNone'/0, 'TyExprCon'/1, 'TyExprVar'/1, 'TyExprApp'/2, 'TyExprArrow'/2, 'TyExprRecord'/2, 'TyExprForAll'/2, 'TyExprConstrained'/2, 'TyExprParens'/1, 'TyExprTuple'/1, 'PatVar'/1, 'PatWildcard'/0, 'PatLit'/1, 'PatCon'/2, 'PatRecord'/1, 'PatList'/1, 'PatCons'/2, 'PatAs'/2, 'PatParens'/1, 'ExprVar'/1, 'ExprQualified'/2, 'ExprLit'/1, 'ExprApp'/2, 'ExprLambda'/2, 'ExprLet'/2, 'ExprIf'/3, 'ExprCase'/2, 'ExprDo'/1, 'ExprBinOp'/3, 'ExprUnaryOp'/2, 'ExprList'/1, 'ExprTuple'/1, 'ExprRecord'/1, 'ExprRecordAccess'/2, 'ExprRecordUpdate'/2, 'ExprTyped'/2, 'ExprParens'/1, 'ExprSection'/1, 'ExprSectionLeft'/2, 'ExprSectionRight'/2, 'LitInt'/1, 'LitNumber'/1, 'LitString'/1, 'LitChar'/1, 'LitBool'/1, 'DoLet'/1, 'DoBind'/2, 'DoExpr'/1, 'makeDeclId'/0, 'makeDeclId'/1, 'makeDeclId'/2, 'makeDeclId'/3, 'kindToString'/0, 'getDeclKind'/0, 'getDeclName'/0, 'typeExprToString'/0, 'DeclModule'/0, 'DeclFunction'/0, 'DeclType'/0, 'DeclTypeAlias'/0, 'DeclDataType'/0, 'DeclNewtype'/0, 'DeclTypeClass'/0, 'DeclTypeClassInstance'/0, 'DeclImport'/0, 'DeclForeignImport'/0, 'DeclTypeSig'/0, 'DeclInfix'/0, 'GuardExpr'/0, 'GuardPat'/0, 'GuardPat'/1, 'ImportValue'/0, 'ImportType'/0, 'ImportType'/1, 'ImportSome'/0, 'TyExprCon'/0, 'TyExprVar'/0, 'TyExprApp'/0, 'TyExprApp'/1, 'TyExprArrow'/0, 'TyExprArrow'/1, 'TyExprRecord'/0, 'TyExprRecord'/1, 'TyExprForAll'/0, 'TyExprForAll'/1, 'TyExprConstrained'/0, 'TyExprConstrained'/1, 'TyExprParens'/0, 'TyExprTuple'/0, 'PatVar'/0, 'PatLit'/0, 'PatCon'/0, 'PatCon'/1, 'PatRecord'/0, 'PatList'/0, 'PatCons'/0, 'PatCons'/1, 'PatAs'/0, 'PatAs'/1, 'PatParens'/0, 'ExprVar'/0, 'ExprQualified'/0, 'ExprQualified'/1, 'ExprLit'/0, 'ExprApp'/0, 'ExprApp'/1, 'ExprLambda'/0, 'ExprLambda'/1, 'ExprLet'/0, 'ExprLet'/1, 'ExprIf'/0, 'ExprIf'/1, 'ExprIf'/2, 'ExprCase'/0, 'ExprCase'/1, 'ExprDo'/0, 'ExprBinOp'/0, 'ExprBinOp'/1, 'ExprBinOp'/2, 'ExprUnaryOp'/0, 'ExprUnaryOp'/1, 'ExprList'/0, 'ExprTuple'/0, 'ExprRecord'/0, 'ExprRecordAccess'/0, 'ExprRecordAccess'/1, 'ExprRecordUpdate'/0, 'ExprRecordUpdate'/1, 'ExprTyped'/0, 'ExprTyped'/1, 'ExprParens'/0, 'ExprSection'/0, 'ExprSectionLeft'/0, 'ExprSectionLeft'/1, 'ExprSectionRight'/0, 'ExprSectionRight'/1, 'LitInt'/0, 'LitNumber'/0, 'LitString'/0, 'LitChar'/0, 'LitBool'/0, 'DoLet'/0, 'DoBind'/0, 'DoBind'/1, 'DoExpr'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.Ast' ['getDeclKind'/1, 'getDeclName'/1, 'kindToString'/1, 'typeExprToString'/1, 'makeDeclId'/4, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'KindFunction'/0, 'KindDataType'/0, 'KindTypeAlias'/0, 'KindTypeClass'/0, 'KindInstance'/0, 'KindForeignImport'/0, 'DeclModule'/1, 'DeclFunction'/1, 'DeclType'/1, 'DeclTypeAlias'/1, 'DeclDataType'/1, 'DeclNewtype'/1, 'DeclTypeClass'/1, 'DeclTypeClassInstance'/1, 'DeclImport'/1, 'DeclForeignImport'/1, 'DeclTypeSig'/1, 'DeclInfix'/1, 'GuardExpr'/1, 'GuardPat'/2, 'ImportValue'/1, 'ImportType'/2, 'ImportAll'/0, 'ImportSome'/1, 'ImportNone'/0, 'AssocLeft'/0, 'AssocRight'/0, 'AssocNone'/0, 'TyExprCon'/1, 'TyExprVar'/1, 'TyExprApp'/2, 'TyExprArrow'/2, 'TyExprRecord'/2, 'TyExprForAll'/2, 'TyExprConstrained'/2, 'TyExprParens'/1, 'TyExprTuple'/1, 'PatVar'/1, 'PatWildcard'/0, 'PatLit'/1, 'PatCon'/2, 'PatRecord'/1, 'PatList'/1, 'PatCons'/2, 'PatAs'/2, 'PatParens'/1, 'ExprVar'/1, 'ExprQualified'/2, 'ExprLit'/1, 'ExprApp'/2, 'ExprLambda'/2, 'ExprLet'/2, 'ExprIf'/3, 'ExprCase'/2, 'ExprDo'/1, 'ExprBinOp'/3, 'ExprUnaryOp'/2, 'ExprList'/1, 'ExprTuple'/1, 'ExprRecord'/1, 'ExprRecordAccess'/2, 'ExprRecordUpdate'/2, 'ExprTyped'/2, 'ExprParens'/1, 'ExprSection'/1, 'ExprSectionLeft'/2, 'ExprSectionRight'/2, 'LitInt'/1, 'LitNumber'/1, 'LitString'/1, 'LitChar'/1, 'LitBool'/1, 'DoLet'/1, 'DoBind'/2, 'DoExpr'/1, 'getDeclKind'/0, 'getDeclName'/0, 'kindToString'/0, 'typeExprToString'/0, 'makeDeclId'/0, 'makeDeclId'/1, 'makeDeclId'/2, 'makeDeclId'/3, 'DeclModule'/0, 'DeclFunction'/0, 'DeclType'/0, 'DeclTypeAlias'/0, 'DeclDataType'/0, 'DeclNewtype'/0, 'DeclTypeClass'/0, 'DeclTypeClassInstance'/0, 'DeclImport'/0, 'DeclForeignImport'/0, 'DeclTypeSig'/0, 'DeclInfix'/0, 'GuardExpr'/0, 'GuardPat'/0, 'GuardPat'/1, 'ImportValue'/0, 'ImportType'/0, 'ImportType'/1, 'ImportSome'/0, 'TyExprCon'/0, 'TyExprVar'/0, 'TyExprApp'/0, 'TyExprApp'/1, 'TyExprArrow'/0, 'TyExprArrow'/1, 'TyExprRecord'/0, 'TyExprRecord'/1, 'TyExprForAll'/0, 'TyExprForAll'/1, 'TyExprConstrained'/0, 'TyExprConstrained'/1, 'TyExprParens'/0, 'TyExprTuple'/0, 'PatVar'/0, 'PatLit'/0, 'PatCon'/0, 'PatCon'/1, 'PatRecord'/0, 'PatList'/0, 'PatCons'/0, 'PatCons'/1, 'PatAs'/0, 'PatAs'/1, 'PatParens'/0, 'ExprVar'/0, 'ExprQualified'/0, 'ExprQualified'/1, 'ExprLit'/0, 'ExprApp'/0, 'ExprApp'/1, 'ExprLambda'/0, 'ExprLambda'/1, 'ExprLet'/0, 'ExprLet'/1, 'ExprIf'/0, 'ExprIf'/1, 'ExprIf'/2, 'ExprCase'/0, 'ExprCase'/1, 'ExprDo'/0, 'ExprBinOp'/0, 'ExprBinOp'/1, 'ExprBinOp'/2, 'ExprUnaryOp'/0, 'ExprUnaryOp'/1, 'ExprList'/0, 'ExprTuple'/0, 'ExprRecord'/0, 'ExprRecordAccess'/0, 'ExprRecordAccess'/1, 'ExprRecordUpdate'/0, 'ExprRecordUpdate'/1, 'ExprTyped'/0, 'ExprTyped'/1, 'ExprParens'/0, 'ExprSection'/0, 'ExprSectionLeft'/0, 'ExprSectionLeft'/1, 'ExprSectionRight'/0, 'ExprSectionRight'/1, 'LitInt'/0, 'LitNumber'/0, 'LitString'/0, 'LitChar'/0, 'LitBool'/0, 'DoLet'/0, 'DoBind'/0, 'DoBind'/1, 'DoExpr'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: DeclStatus
 % Constructors: Fresh, Valid, Invalid, Stale
@@ -352,27 +352,6 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
   fun (V0) ->
     {'DoExpr', V0}
 
-'makeDeclId'/4 =
-  fun (Namespace, Kind, Name, _W0) ->
-    call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), apply 'kindToString'/1(Kind)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name), #{#<58>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#)
-
-'kindToString'/1 =
-  fun (_P0) ->
-    case {_P0} of
-      <{'KindFunction'}> when 'true' ->
-        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
-      <{'KindDataType'}> when 'true' ->
-        #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
-      <{'KindTypeAlias'}> when 'true' ->
-        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
-      <{'KindTypeClass'}> when 'true' ->
-        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
-      <{'KindInstance'}> when 'true' ->
-        #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
-      <{'KindForeignImport'}> when 'true' ->
-        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
-    end
-
 'getDeclKind'/1 =
   fun (_P0) ->
     case {_P0} of
@@ -431,6 +410,23 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
         call 'maps':'get'('operator', Inf)
     end
 
+'kindToString'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'KindFunction'}> when 'true' ->
+        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
+      <{'KindDataType'}> when 'true' ->
+        #{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <{'KindTypeAlias'}> when 'true' ->
+        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
+      <{'KindTypeClass'}> when 'true' ->
+        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#
+      <{'KindInstance'}> when 'true' ->
+        #{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <{'KindForeignImport'}> when 'true' ->
+        #{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
+    end
+
 'typeExprToString'/1 =
   fun (_P0) ->
     case {_P0} of
@@ -443,6 +439,34 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
       <{_W0}> when 'true' ->
         #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#
     end
+
+'makeDeclId'/4 =
+  fun (Namespace, Kind, Name, _W0) ->
+    call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), apply 'kindToString'/1(Kind)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name), #{#<58>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#)
+
+'getDeclKind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDeclKind'/1(_A0)
+      in _F0
+
+'getDeclName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getDeclName'/1(_A0)
+      in _F0
+
+'kindToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'kindToString'/1(_A0)
+      in _F0
+
+'typeExprToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typeExprToString'/1(_A0)
+      in _F0
 
 'makeDeclId'/0 =
   fun () ->
@@ -478,30 +502,6 @@ module 'Nova.Compiler.Ast' ['makeDeclId'/4, 'kindToString'/1, 'getDeclKind'/1, '
   fun (_A0, _A1, _A2) ->
     let <_F0> = fun (_A3) ->
         apply 'makeDeclId'/4(_A0, _A1, _A2, _A3)
-      in _F0
-
-'kindToString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'kindToString'/1(_A0)
-      in _F0
-
-'getDeclKind'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getDeclKind'/1(_A0)
-      in _F0
-
-'getDeclName'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getDeclName'/1(_A0)
-      in _F0
-
-'typeExprToString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'typeExprToString'/1(_A0)
       in _F0
 
 'DeclModule'/0 =

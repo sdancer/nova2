@@ -1,20 +1,8 @@
-module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'compileAndLoad'/1, 'call'/3, 'callSafe'/3, 'isLoaded'/1, 'moduleToString'/1, 'stringToModule'/1, 'scanImpl'/1, 'parseImpl'/1, 'compileImpl'/1, 'loadBinaryImpl'/2, 'callImpl'/3, 'callSafeImpl'/3, 'isLoadedImpl'/1, 'moduleToStringImpl'/1, 'stringToModuleImpl'/1, 'scan'/0, 'parse'/0, 'compile'/0, 'loadBinary'/0, 'loadBinary'/1, 'compileAndLoad'/0, 'call'/0, 'call'/1, 'call'/2, 'callSafe'/0, 'callSafe'/1, 'callSafe'/2, 'isLoaded'/0, 'moduleToString'/0, 'stringToModule'/0, 'scanImpl'/0, 'parseImpl'/0, 'compileImpl'/0, 'loadBinaryImpl'/0, 'loadBinaryImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callImpl'/2, 'callSafeImpl'/0, 'callSafeImpl'/1, 'callSafeImpl'/2, 'isLoadedImpl'/0, 'moduleToStringImpl'/0, 'stringToModuleImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.CoreErlang' ['compile'/1, 'compileAndLoad'/1, 'isLoaded'/1, 'moduleToString'/1, 'parse'/1, 'scan'/1, 'stringToModule'/1, 'loadBinary'/2, 'call'/3, 'callSafe'/3, 'scanImpl'/1, 'parseImpl'/1, 'compileImpl'/1, 'loadBinaryImpl'/2, 'callImpl'/3, 'callSafeImpl'/3, 'isLoadedImpl'/1, 'moduleToStringImpl'/1, 'stringToModuleImpl'/1, 'compile'/0, 'compileAndLoad'/0, 'isLoaded'/0, 'moduleToString'/0, 'parse'/0, 'scan'/0, 'stringToModule'/0, 'loadBinary'/0, 'loadBinary'/1, 'call'/0, 'call'/1, 'call'/2, 'callSafe'/0, 'callSafe'/1, 'callSafe'/2, 'scanImpl'/0, 'parseImpl'/0, 'compileImpl'/0, 'loadBinaryImpl'/0, 'loadBinaryImpl'/1, 'callImpl'/0, 'callImpl'/1, 'callImpl'/2, 'callSafeImpl'/0, 'callSafeImpl'/1, 'callSafeImpl'/2, 'isLoadedImpl'/0, 'moduleToStringImpl'/0, 'stringToModuleImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'scan'/1 =
-  fun (Source) ->
-    apply 'scanImpl'/1(Source)
-
-'parse'/1 =
-  fun (Tokens) ->
-    apply 'parseImpl'/1(Tokens)
-
 'compile'/1 =
   fun (Ast) ->
     apply 'compileImpl'/1(Ast)
-
-'loadBinary'/2 =
-  fun (ModName, Binary) ->
-    apply 'loadBinaryImpl'/2(ModName, Binary)
 
 'compileAndLoad'/1 =
   fun (Source) ->
@@ -35,14 +23,6 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
     end
     end
 
-'call'/3 =
-  fun (ModName, FuncName, Args) ->
-    apply 'callImpl'/3(ModName, FuncName, Args)
-
-'callSafe'/3 =
-  fun (ModName, FuncName, Args) ->
-    apply 'callSafeImpl'/3(ModName, FuncName, Args)
-
 'isLoaded'/1 =
   fun (ModName) ->
     apply 'isLoadedImpl'/1(ModName)
@@ -51,9 +31,29 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
   fun (ModName) ->
     apply 'moduleToStringImpl'/1(ModName)
 
+'parse'/1 =
+  fun (Tokens) ->
+    apply 'parseImpl'/1(Tokens)
+
+'scan'/1 =
+  fun (Source) ->
+    apply 'scanImpl'/1(Source)
+
 'stringToModule'/1 =
   fun (Name) ->
     apply 'stringToModuleImpl'/1(Name)
+
+'loadBinary'/2 =
+  fun (ModName, Binary) ->
+    apply 'loadBinaryImpl'/2(ModName, Binary)
+
+'call'/3 =
+  fun (ModName, FuncName, Args) ->
+    apply 'callImpl'/3(ModName, FuncName, Args)
+
+'callSafe'/3 =
+  fun (ModName, FuncName, Args) ->
+    apply 'callSafeImpl'/3(ModName, FuncName, Args)
 
 'scanImpl'/1 = fun (V0) -> case call 'core_scan':'string'(call 'erlang':'binary_to_list'(V0)) of <{'ok', Tokens, _}> when 'true' -> {'Right', Tokens} <{'error', Reason, _}> when 'true' -> {'Left', call 'erlang':'iolist_to_binary'(call 'io_lib':'format'("~p", [Reason]))} end
 
@@ -73,10 +73,28 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
 
 'stringToModuleImpl'/1 = fun (V0) -> call 'erlang':'binary_to_atom'(V0, 'utf8')
 
-'scan'/0 =
+'compile'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'scan'/1(_A0)
+        apply 'compile'/1(_A0)
+      in _F0
+
+'compileAndLoad'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'compileAndLoad'/1(_A0)
+      in _F0
+
+'isLoaded'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'isLoaded'/1(_A0)
+      in _F0
+
+'moduleToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'moduleToString'/1(_A0)
       in _F0
 
 'parse'/0 =
@@ -85,10 +103,16 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
         apply 'parse'/1(_A0)
       in _F0
 
-'compile'/0 =
+'scan'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'compile'/1(_A0)
+        apply 'scan'/1(_A0)
+      in _F0
+
+'stringToModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'stringToModule'/1(_A0)
       in _F0
 
 'loadBinary'/0 =
@@ -103,12 +127,6 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'loadBinary'/2(_A0, _A1)
-      in _F0
-
-'compileAndLoad'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'compileAndLoad'/1(_A0)
       in _F0
 
 'call'/0 =
@@ -157,24 +175,6 @@ module 'Nova.CoreErlang' ['scan'/1, 'parse'/1, 'compile'/1, 'loadBinary'/2, 'com
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'callSafe'/3(_A0, _A1, _A2)
-      in _F0
-
-'isLoaded'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isLoaded'/1(_A0)
-      in _F0
-
-'moduleToString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'moduleToString'/1(_A0)
-      in _F0
-
-'stringToModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'stringToModule'/1(_A0)
       in _F0
 
 'scanImpl'/0 =
