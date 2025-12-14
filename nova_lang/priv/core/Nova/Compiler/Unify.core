@@ -152,7 +152,7 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', {'TyRecord', R}}> when 'true' ->
         {'Just', R}
       <{'Just', _W0}> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <'Nothing'> when 'true' ->
         let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
@@ -165,9 +165,9 @@ module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bin
       <{'Just', {'TyRecord', R}}> when 'true' ->
         {'Just', R}
       <_W0> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end
     end
 

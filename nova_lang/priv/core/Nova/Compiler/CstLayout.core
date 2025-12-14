@@ -123,7 +123,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       <'false'> when 'true' -> apply 'currentIndentGo'/1(Rest)
     end
       <_W0> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
 
 'currentIndent'/0 =
@@ -324,7 +324,7 @@ module 'Nova.Compiler.CstLayout' ['rootLayoutDelim'/0, 'isIndented'/1, 'currentI
       end
        'findIndented'/1 = fun (_L0) ->
       case {_L0} of
-        <{[]}> when 'true' -> 'Nothing'
+        <{[]}> when 'true' -> call 'Data.Maybe':'Nothing'()
         <{[Item = {'Tuple', _W0, Lyt} | Rest]}> when 'true' -> case apply 'isIndented'/1(Lyt) of
       <'true'> when 'true' -> {'Just', Item}
       <'false'> when 'true' -> apply 'findIndented'/1(Rest)

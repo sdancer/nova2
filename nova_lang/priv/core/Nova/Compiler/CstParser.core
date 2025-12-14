@@ -221,10 +221,10 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       in letrec 'extractLower'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
+      <'true'> when 'true' -> call 'Data.Maybe':'Nothing'()
       <'false'> when 'true' -> {'Just', Name}
     end
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
        'isKeyword'/1 = fun (S) ->
       call 'Data.List':'elem'(S, ReservedKeywords)
@@ -239,11 +239,11 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       in letrec 'extractLowerOrHole'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
+      <'true'> when 'true' -> call 'Data.Maybe':'Nothing'()
       <'false'> when 'true' -> {'Just', Name}
     end
         <{{'TokHole', Name}}> when 'true' -> {'Just', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, Name)}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
        'isKeyword'/1 = fun (S) ->
       call 'Data.List':'elem'(S, ReservedKeywords)
@@ -261,13 +261,13 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       <{'Just', M}> when 'true' ->
         {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
+      <'true'> when 'true' -> call 'Data.Maybe':'Nothing'()
       <'false'> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
     end
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
        'isKeyword'/1 = fun (S) ->
       call 'Data.List':'elem'(S, ReservedKeywords)
@@ -281,7 +281,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
     letrec 'extractUpper'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokUpperName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractUpper'/1(_Mf0)), fun (_cor0) ->
       case _cor0 of
@@ -296,10 +296,10 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       <{'Just', M}> when 'true' ->
         {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractQualUpper'/1(_Mf0)), fun (_cor0) ->
       case _cor0 of
@@ -314,10 +314,10 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       <{'Just', M}> when 'true' ->
         {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Op)}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractOp'/1(_Mf0)), fun (_cor0) ->
       case _cor0 of
@@ -339,7 +339,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       case {_L0} of
         <{{'TokString', _W0, S}}> when 'true' -> {'Just', S}
         <{{'TokRawString', S}}> when 'true' -> {'Just', S}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractStr'/1(_Mf0))
 
@@ -348,7 +348,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
     letrec 'extractHole'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokHole', Name}}> when 'true' -> {'Just', Name}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractHole'/1(_Mf0))
 
@@ -357,7 +357,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
     letrec 'extractInt'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokInt', _W0, N}}> when 'true' -> {'Just', N}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractInt'/1(_Mf0))
 
@@ -366,7 +366,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
     letrec 'extractNum'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokNumber', _W0, N}}> when 'true' -> {'Just', N}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractNum'/1(_Mf0))
 
@@ -375,14 +375,14 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
     letrec 'extractChar'/1 = fun (_L0) ->
       case {_L0} of
         <{{'TokChar', _W0, C}}> when 'true' -> {'Just', C}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractChar'/1(_Mf0))
 
 'optional'/1 =
   fun (P) ->
     apply 'alt'/2(apply 'bindP'/2(P, fun (X) ->
-      apply 'pureP'/1({'Just', X})), apply 'pureP'/1('Nothing'))
+      apply 'pureP'/1({'Just', X})), apply 'pureP'/1(call 'Data.Maybe':'Nothing'()))
 
 'many'/1 =
   fun (P) ->
@@ -545,7 +545,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
         <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
         <{{'TokString', _W0, S}}> when 'true' -> {'Just', S}
         <{{'TokRawString', S}}> when 'true' -> {'Just', S}
-        <{_W0}> when 'true' -> 'Nothing'
+        <{_W0}> when 'true' -> call 'Data.Maybe':'Nothing'()
       end
       in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLabel'/1(_Mf0)), fun (_cor0) ->
       case _cor0 of
@@ -1218,7 +1218,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       <{'TokUpperName', 'Nothing', Proper}> when 'true' ->
         {'Just', call 'Nova.Compiler.Cst':'ModuleName'(Proper)}
       <_W0> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractModuleName'/1(_Mf0)), fun (_L0) ->
       case {_L0} of
@@ -1370,7 +1370,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
       apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseClassMember'/0()), fun (Ms) ->
       apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Ms))))), fun (Methods) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclClass'(~{'keyword'=>Kw,'super'=>'Nothing','name'=>Name,'vars'=>Vars,'fundeps'=>'Nothing'}~, Methods))))))
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclClass'(~{'keyword'=>Kw,'super'=>call 'Data.Maybe':'Nothing'(),'name'=>Name,'vars'=>Vars,'fundeps'=>call 'Data.Maybe':'Nothing'()}~, Methods))))))
 
 'parseClassMember'/0 =
   fun () ->
@@ -1390,7 +1390,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
       apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseInstanceBinding'/0()), fun (Bindings) ->
       apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Bindings))))), fun (Body) ->
-      let <InstanceHead> = ~{'keyword'=>Kw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
+      let <InstanceHead> = ~{'keyword'=>Kw,'name'=>Name,'constraints'=>call 'Data.Maybe':'Nothing'(),'className'=>ClassName,'types'=>Types}~
       in let <Inst> = ~{'head'=>InstanceHead,'body'=>Body}~
       in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclInstanceChain'(~{'head'=>Inst,'tail'=>[]}~)))))))
 
@@ -1422,7 +1422,7 @@ module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1
       apply 'pureP'/1(call 'Data.Tuple':'Tuple'(N, Dc))))), fun (Name) ->
       apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (ClassName) ->
       apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Types) ->
-      let <InstanceHead> = ~{'keyword'=>InstanceKw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
+      let <InstanceHead> = ~{'keyword'=>InstanceKw,'name'=>Name,'constraints'=>call 'Data.Maybe':'Nothing'(),'className'=>ClassName,'types'=>Types}~
       in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclDerive'(DeriveKw, NewtypeKw, InstanceHead))))))))
 
 'parseDeclForeign'/0 =

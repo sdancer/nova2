@@ -25,13 +25,13 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
       in letrec 'extractImport'/1 = fun (Line) ->
       case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Line) of
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <{'Just', Idx}> when 'true' ->
         let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
       in let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#), Rest)
       in case call 'Data.Array':'head'(Parts) of
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <{'Just', ModName}> when 'true' ->
         let <CleanName> = case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#), ModName) of
       <'Nothing'> when 'true' ->
@@ -40,7 +40,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
         call 'Data.String':'take'(ParenIdx, ModName)
     end
       in case call 'Data.String':'null'(CleanName) of
-      <'true'> when 'true' -> 'Nothing'
+      <'true'> when 'true' -> call 'Data.Maybe':'Nothing'()
       <'false'> when 'true' -> {'Just', CleanName}
     end
     end
@@ -56,7 +56,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'extractImports'/1, 'modul
       <'true'> when 'true' -> {'Just', LibPath}
       <'false'> when 'true' -> case apply call 'maps':'get'('fileExists', Fs)(SrcPath) of
       <'true'> when 'true' -> {'Just', SrcPath}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end
     end
 

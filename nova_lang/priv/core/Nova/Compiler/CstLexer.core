@@ -134,7 +134,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
   fun (State) ->
     case call 'maps':'get'('chars', State) of
       <[]> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <[$  | _W0]> when 'true' ->
         apply 'lexToken'/1(apply 'advance'/2(State, 1))
       <[$\t | _W0]> when 'true' ->
@@ -279,13 +279,13 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       <#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokForall'()
       <_W0> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name)
+        call 'Nova.Compiler.Cst':'TokLowerName'(call 'Data.Maybe':'Nothing'(), Name)
     end
       in apply 'makeTokenRange'/3(Token, StartState, EndState)
 
 'makeIdentToken'/3 =
   fun (Name, StartState, EndState) ->
-    apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokLowerName'('Nothing', Name), StartState, EndState)
+    apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokLowerName'(call 'Data.Maybe':'Nothing'(), Name), StartState, EndState)
 
 'lexUpperIdentifier'/1 =
   fun (State) ->
@@ -296,7 +296,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       <[$. | _W0]> when 'true' ->
         apply 'checkQualifiedChain'/2(Name, apply 'advance'/2(State_, 1))
       <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Name), State_)
+        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'(call 'Data.Maybe':'Nothing'(), Name), State_)
     end
       in let <_Let1> = Result
       in case _Let1 of
@@ -329,12 +329,12 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       in case _Let0 of
         <{'Tuple', Op, State_}> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokOperator'({'Just', Prefix}, Op), State_)
       end
-            <_> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
+            <_> when 'true' -> call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'(call 'Data.Maybe':'Nothing'(), Prefix), State)
           end
           end
         end
       <_W0> when 'true' ->
-        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Prefix), State)
+        call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'(call 'Data.Maybe':'Nothing'(), Prefix), State)
     end
 
 'consumeIdent'/2 =
@@ -386,7 +386,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
       <#{#<64>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Cst':'TokAt'()
       <_W0> when 'true' ->
-        call 'Nova.Compiler.Cst':'TokOperator'('Nothing', Op)
+        call 'Nova.Compiler.Cst':'TokOperator'(call 'Data.Maybe':'Nothing'(), Op)
     end
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(Tok, StartState, State_), State_)}
       end
@@ -431,7 +431,7 @@ module 'Nova.Compiler.CstLexer' ['initLexState'/1, 'arrayToList'/1, 'charsToStri
     end
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(Tok, State), apply 'advance'/2(State, 1))}
       <[]> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
 
 'lexUnderscore'/1 =

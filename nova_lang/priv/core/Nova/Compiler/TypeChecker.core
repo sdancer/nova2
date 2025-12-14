@@ -437,7 +437,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Left', E}> when 'true' ->
         {'Left', E}
       <{'Right', Res}> when 'true' ->
-        {'Right', ~{'ty'=>{'TyRecord', ~{'fields'=>call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', Res)),'row'=>'Nothing'}~},'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
+        {'Right', ~{'ty'=>{'TyRecord', ~{'fields'=>call 'Data.Map':'fromFoldable'(call 'maps':'get'('tys', Res)),'row'=>call 'Data.Maybe':'Nothing'()}~},'sub'=>call 'maps':'get'('sub', Res),'env'=>call 'maps':'get'('env', Res)}~}
     end
       <{Env, {'ExprRecordAccess', Rec, Field}}> when 'true' ->
         case apply 'infer'/2(Env, Rec) of
@@ -1234,8 +1234,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{ResultTy, E, Ty, [P|Rest], Sub}> when 'true' ->
         case Ty of
       <{'TyCon', C}> when 'true' ->
-        case call 'erlang':'=:='(call 'maps':'get'('name', C), #{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#) of
-          <'true'> when 'true' -> case ~{'a'=>call 'Data.Array':'head'(call 'maps':'get'('args', C)),'b'=>call 'Data.Array':'last'(call 'maps':'get'('args', C))}~ of
+        case case call 'erlang':'=:='(call 'maps':'get'('name', C), #{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', C)), 2) <_> when 'true' -> 'false' end of
+      <'true'> when 'true' -> case ~{'a'=>call 'Data.Array':'head'(call 'maps':'get'('args', C)),'b'=>call 'Data.Array':'last'(call 'maps':'get'('args', C))}~ of
       <~{'a':={'Just', ArgTy},'b':={'Just', ResTy}}~> when 'true' ->
         case apply 'inferPat'/3(E, P, ArgTy) of
       <{'Left', Err}> when 'true' ->
@@ -1247,8 +1247,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <_W0> when 'true' ->
         {'Left', apply 'NotImplemented'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)}
     end
-          <_> when 'true' -> {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)}
-        end
+      <'false'> when 'true' -> {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)}
+    end
       <_W0> when 'true' ->
         {'Left', apply 'NotImplemented'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#)}
     end
@@ -1331,7 +1331,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{{'ExprParens', E}}> when 'true' ->
         apply 'exprToPattern'/1(E)
       <{_W0}> when 'true' ->
-        'PatWildcard'
+        call 'Nova.Compiler.Ast':'PatWildcard'()
     end
 
 'inferGuardExpr'/2 =
@@ -1481,7 +1481,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{[], Body}> when 'true' ->
         Body
       <{[{'GuardPat', Pat, Scrutinee}|Rest], Body}> when 'true' ->
-        {'ExprCase', Scrutinee, [~{'pattern'=>Pat,'body'=>apply 'buildPatternGuardCases'/2(Rest, Body),'guard'=>'Nothing'}~|[]]}
+        {'ExprCase', Scrutinee, [~{'pattern'=>Pat,'body'=>apply 'buildPatternGuardCases'/2(Rest, Body),'guard'=>call 'Data.Maybe':'Nothing'()}~|[]]}
       <{[_W0|Rest], Body}> when 'true' ->
         apply 'buildPatternGuardCases'/2(Rest, Body)
     end
@@ -1723,10 +1723,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <BodyExpr> = call 'Nova.Compiler.Types':'getAliasInfoBody'(Info)
       in case call 'Data.Array':'null'(Ps) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, VarMap, BodyExpr)}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
     end
       in case apply 'tryLookup'/1(Name) of
@@ -1779,10 +1779,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', Tv}> when 'true' ->
         {'Just', Tv}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
@@ -1828,10 +1828,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <BodyExpr> = call 'Nova.Compiler.Types':'getAliasInfoBody'(Info)
       in case call 'Data.Array':'null'(Ps) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, VarMap, BodyExpr)}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end
       <_W0> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
     end
        'tryEnvLookup'/1 = fun (Nm) ->
@@ -1897,10 +1897,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', Tv}> when 'true' ->
         {'Just', Tv}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
@@ -1982,7 +1982,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       case {_L0} of
         <{{'Tuple', L, T}}> when 'true' -> call 'Data.Tuple':'Tuple'(L, apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, T))
       end, Fields))
-      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>'Nothing'}~}
+      in {'TyRecord', ~{'fields'=>FieldMap,'row'=>call 'Data.Maybe':'Nothing'()}~}
       <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprTuple', Ts}}> when 'true' ->
         call 'Nova.Compiler.Types':'tTuple'(call 'Data.Array':'fromFoldable'(call 'lists':'map'(fun (_Pc0) -> apply 'substituteTypeExpr'/4(AliasMap, ParamAliasMap, ParamSubst, _Pc0), Ts)))
       <{AliasMap, ParamAliasMap, ParamSubst, {'TyExprParens', T}}> when 'true' ->
@@ -2037,10 +2037,10 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       <{'Just', Tv}> when 'true' ->
         {'Just', Tv}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
@@ -2221,17 +2221,17 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
     let <Initial> = call 'Data.Map':'mapMaybe'(fun (Info) ->
       case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in let <Pass2> = call 'Data.Map':'mapMaybe'(fun (Info) ->
       case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Initial, AliasInfos, call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in let <Pass3> = call 'Data.Map':'mapMaybe'(fun (Info) ->
       case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Pass2, AliasInfos, call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in Pass3
 
@@ -2574,7 +2574,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ImportedSimpleAliases> = call 'Data.Map':'mapMaybe'(fun (Info) ->
       case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, ImportedAliases)
       in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
       in let <EnvWithImportedAliases> = call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'union'(ImportedSimpleAliases, call 'maps':'get'('typeAliases', Env))}~)
@@ -2634,7 +2634,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ImportedSimpleAliases> = call 'Data.Map':'mapMaybe'(fun (Info) ->
       case call 'Data.Array':'null'(call 'Nova.Compiler.Types':'getAliasInfoParams'(Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'Nova.Compiler.Types':'getAliasInfoBody'(Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, ImportedAliases)
       in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
       in let <LocalAliasMap> = apply 'collectTypeAliasesWithBase'/3(ImportedSimpleAliases, ParamAliasMap, Decls)
@@ -2760,7 +2760,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
        'mergeClausesIntoOne'/1 = fun (Clauses) ->
       case call 'Data.Array':'head'(Clauses) of
       <'Nothing'> when 'true' ->
-        ~{'name'=>#{}#,'parameters'=>[],'body'=>{'ExprVar', #{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#},'guards'=>[],'typeSignature'=>'Nothing'}~
+        ~{'name'=>#{}#,'parameters'=>[],'body'=>{'ExprVar', #{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#},'guards'=>[],'typeSignature'=>call 'Data.Maybe':'Nothing'()}~
       <{'Just', First}> when 'true' ->
         let <Name> = call 'maps':'get'('name', First)
       in let <NumParams> = call 'Data.List':'length'(call 'maps':'get'('parameters', First))
@@ -2768,8 +2768,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
       call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 1)))
-      in let <ParamPats> = call 'lists':'map'('PatVar', ParamNames)
-      in let <ParamVars> = call 'lists':'map'('ExprVar', ParamNames)
+      in let <ParamPats> = call 'lists':'map'(call 'Nova.Compiler.Ast':'PatVar'(), ParamNames)
+      in let <ParamVars> = call 'lists':'map'(call 'Nova.Compiler.Ast':'ExprVar'(), ParamNames)
       in let <CaseClauses> = call 'Data.List':'mapMaybe'(fun (_Pc0) -> apply 'clauseToCaseClause'/2(ParamVars, _Pc0), ClausesList)
       in let <CaseExpr> = case NumParams of
       <0> when 'true' ->
@@ -2789,9 +2789,9 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
        'clauseToCaseClause'/2 = fun (_W0, Func) ->
       case call 'Data.List':'head'(call 'maps':'get'('parameters', Func)) of
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <{'Just', Pat}> when 'true' ->
-        {'Just', ~{'pattern'=>Pat,'body'=>call 'maps':'get'('body', Func),'guard'=>'Nothing'}~}
+        {'Just', ~{'pattern'=>Pat,'body'=>call 'maps':'get'('body', Func),'guard'=>call 'Data.Maybe':'Nothing'()}~}
     end
        'clauseToTupleCase'/2 = fun (_W0, Func) ->
       let <N> = call 'Data.List':'length'(call 'maps':'get'('parameters', Func))
@@ -2801,7 +2801,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'addErrorContext'/2, 'withC
       in apply _Fn0(N))
     end
       in case call 'erlang':'>'(N, 1) of
-      <'true'> when 'true' -> {'Just', ~{'pattern'=>{'PatCon', TupName, call 'maps':'get'('parameters', Func)},'body'=>call 'maps':'get'('body', Func),'guard'=>'Nothing'}~}
+      <'true'> when 'true' -> {'Just', ~{'pattern'=>{'PatCon', TupName, call 'maps':'get'('parameters', Func)},'body'=>call 'maps':'get'('body', Func),'guard'=>call 'Data.Maybe':'Nothing'()}~}
       <'false'> when 'true' -> apply 'clauseToCaseClause'/2([], Func)
     end
       in apply 'goMerge'/2(Decls, [])

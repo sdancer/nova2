@@ -102,7 +102,7 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
 
 'addDecl'/5 =
   fun (St, Namespace, Name, SourceText, Kind) ->
-    apply 'addDeclWithType'/6(St, Namespace, Name, SourceText, Kind, 'Nothing')
+    apply 'addDeclWithType'/6(St, Namespace, Name, SourceText, Kind, call 'Data.Maybe':'Nothing'())
 
 'addDeclWithType'/6 =
   fun (St, Namespace, Name, SourceText, Kind, TypeStr) ->
@@ -148,7 +148,7 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
     let <IdxKey> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Namespace, #{#<58>(8,1,'integer',['unsigned'|['big']])}#), Name)
       in case call 'OTP.Ets':'lookup'(call 'maps':'get'('nameIndex', St), IdxKey) of
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <{'Just', DeclId}> when 'true' ->
         call 'OTP.Ets':'lookup'(call 'maps':'get'('declarations', St), DeclId)
     end

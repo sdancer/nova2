@@ -17,7 +17,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'Just', W}> when 'true' ->
         {'Just', call 'Data.Tuple':'Tuple'(K, W)}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       end, Pairs)
       in call 'Data.Map':'fromFoldable'(Filtered)
@@ -129,17 +129,17 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
     let <Initial> = apply 'mapMapMaybe'/2(fun (Info) ->
       case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in let <Pass2> = apply 'mapMapMaybe'/2(fun (Info) ->
       case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Initial, AliasInfos, call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in let <Pass3> = apply 'mapMapMaybe'/2(fun (Info) ->
       case call 'Data.Array':'null'(call 'maps':'get'('params', Info)) of
       <'true'> when 'true' -> {'Just', apply 'typeExprToTypeWithAllAliases'/4(Pass2, AliasInfos, call 'Data.Map':'empty'(), call 'maps':'get'('body', Info))}
-      <'false'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> call 'Data.Maybe':'Nothing'()
     end, AliasInfos)
       in Pass3
 
@@ -318,7 +318,7 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'Just', RowName}> when 'true' ->
         {'Just', ~{'id'=>0,'name'=>RowName}~}
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in let <FieldMap> = call 'Data.Map':'fromFoldable'(apply 'arrayMap'/2(fun (_L0) ->
       case {_L0} of
@@ -380,12 +380,12 @@ module 'Nova.Compiler.ImportProcessor' ['arrayMap'/2, 'listMap'/2, 'mapMapMaybe'
       <{'Just', {'TyVar', V}}> when 'true' ->
         {'Just', V}
       <{'Just', _W0}> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
       <'Nothing'> when 'true' ->
         {'Just', ~{'id'=>0,'name'=>RowName}~}
     end
       <'Nothing'> when 'true' ->
-        'Nothing'
+        call 'Data.Maybe':'Nothing'()
     end
       in let <FieldMap> = call 'Data.Map':'fromFoldable'(apply 'arrayMap'/2(fun (_L0) ->
       case {_L0} of

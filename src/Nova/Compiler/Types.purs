@@ -7,6 +7,7 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
+import Data.List (List)
 import Data.Foldable (foldl)
 import Data.Array as Array
 import Data.String as String
@@ -123,12 +124,20 @@ singleSubst v t = Map.singleton v.id t
 applySubst :: Subst -> Type -> Type
 applySubst sub (TyVar v) = lookupSubst sub v
 applySubst sub (TyCon c) = TyCon (c { args = map (applySubst sub) c.args })
-applySubst sub (TyRecord r) = TyRecord (r { fields = map (applySubst sub) r.fields })
+applySubst sub (TyRecord r) =
+  let fieldsList :: List (Tuple String Type)
+      fieldsList = Map.toUnfoldable r.fields
+      mappedFields = map (\(Tuple k v) -> Tuple k (applySubst sub v)) fieldsList
+  in TyRecord (r { fields = Map.fromFoldable mappedFields })
 applySubst sub (TyApp f arg) = mkTyApp (applySubst sub f) (applySubst sub arg)
 
 -- | Compose two substitutions: s1 `compose` s2 applies s2 then s1
 composeSubst :: Subst -> Subst -> Subst
-composeSubst s1 s2 = Map.union s1 (map (applySubst s1) s2)
+composeSubst s1 s2 =
+  let s2List :: List (Tuple Int Type)
+      s2List = Map.toUnfoldable s2
+      mapped = map (\(Tuple k v) -> Tuple k (applySubst s1 v)) s2List
+  in Map.union s1 (Map.fromFoldable mapped)
 
 -- | Type scheme: quantified polymorphic type (forall vars . type)
 type Scheme = { vars :: Array TVar, ty :: Type }

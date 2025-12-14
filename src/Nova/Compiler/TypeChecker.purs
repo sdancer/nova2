@@ -653,13 +653,16 @@ inferConPatsGo resultTy e ty Nil sub =
     Right s -> Right { env: e, sub: composeSubst s sub }
 inferConPatsGo resultTy e ty (Cons p rest) sub =
   case ty of
-    TyCon c | c.name == "Fun", Array.length c.args == 2 ->
-      case { a: Array.head c.args, b: Array.last c.args } of
+    TyCon c ->
+      -- Check both conditions explicitly to avoid pattern guard comma issue
+      if c.name == "Fun" && Array.length c.args == 2
+      then case { a: Array.head c.args, b: Array.last c.args } of
         { a: Just argTy, b: Just resTy } ->
           case inferPat e p argTy of
             Left err -> Left err
             Right patRes -> inferConPatsGo resultTy patRes.env resTy rest (composeSubst patRes.sub sub)
         _ -> Left (NotImplemented "malformed function type")
+      else Left (NotImplemented "expected function type in constructor")
     _ -> Left (NotImplemented "expected function type in constructor")
 
 inferConPats :: Env -> Type -> List Pattern -> Type -> Either TCError PatResult
