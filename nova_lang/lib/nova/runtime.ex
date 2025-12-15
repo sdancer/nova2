@@ -16,15 +16,15 @@ defmodule Nova.Runtime do
   def length(list) when is_list(list), do: Kernel.length(list)
 
   # Either constructors
-  def left(x), do: {:left, x}
-  def right(x), do: {:right, x}
+  def left(x), do: {:Left, x}
+  def right(x), do: {:Right, x}
 
   # Either bind (for do-notation desugaring)
-  def bind({:left, err}, _f), do: {:left, err}
-  def bind({:right, x}, f), do: f.(x)
+  def bind({:Left, err}, _f), do: {:Left, err}
+  def bind({:Right, x}, f), do: f.(x)
   # Maybe bind
-  def bind(:nothing, _f), do: :nothing
-  def bind({:just, x}, f), do: f.(x)
+  def bind(:Nothing, _f), do: :Nothing
+  def bind({:Just, x}, f), do: f.(x)
   # Effect bind (for IO/Effect monad - thunks)
   # Effect is represented as a 0-arity function (thunk)
   def bind(effect, f) when is_function(effect, 0) do
@@ -50,14 +50,14 @@ defmodule Nova.Runtime do
   def bind({:parser, pa}, f) do
     {:parser, fn ts ->
       case pa.(ts) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, a, rest}} ->
-          # f might return {:parser, _} or {:right, _} from generic pure
+        {:Left, err} -> {:Left, err}
+        {:Right, {:Tuple, a, rest}} ->
+          # f might return {:parser, _} or {:Right, _} from generic pure
           # Handle both cases
           case f.(a) do
             {:parser, pb} -> pb.(rest)
-            {:right, result} -> {:right, {:tuple, result, rest}}
-            {:left, err} -> {:left, err}
+            {:Right, result} -> {:Right, {:Tuple, result, rest}}
+            {:Left, err} -> {:Left, err}
           end
       end
     end}
@@ -67,17 +67,17 @@ defmodule Nova.Runtime do
   def alt({:parser, p1}, {:parser, p2}) do
     {:parser, fn ts ->
       case p1.(ts) do
-        {:right, result} -> {:right, result}
-        {:left, _} -> p2.(ts)
+        {:Right, result} -> {:Right, result}
+        {:Left, _} -> p2.(ts)
       end
     end}
   end
   # Handle case where second arg is pure result (Either) - wrap it as Parser
-  def alt({:parser, p1}, {:right, value}) do
+  def alt({:parser, p1}, {:Right, value}) do
     {:parser, fn ts ->
       case p1.(ts) do
-        {:right, result} -> {:right, result}
-        {:left, _} -> {:right, {:tuple, value, ts}}  # pure value preserves tokens
+        {:Right, result} -> {:Right, result}
+        {:Left, _} -> {:Right, {:Tuple, value, ts}}  # pure value preserves tokens
       end
     end}
   end
@@ -88,19 +88,19 @@ defmodule Nova.Runtime do
   def append(a, b), do: a <> b  # Default to string concat
 
   # Maybe constructors
-  def just(x), do: {:just, x}
-  def nothing(), do: :nothing
+  def just(x), do: {:Just, x}
+  def nothing(), do: :Nothing
 
   # from_maybe - get value from Maybe or use default
-  def from_maybe(default, :nothing), do: default
-  def from_maybe(_default, {:just, x}), do: x
+  def from_maybe(default, :Nothing), do: default
+  def from_maybe(_default, {:Just, x}), do: x
 
   # Tuple constructor
-  def tuple(a, b), do: {:tuple, a, b}
+  def tuple(a, b), do: {:Tuple, a, b}
 
   # Tuple accessors
-  def fst({:tuple, a, _}), do: a
-  def snd({:tuple, _, b}), do: b
+  def fst({:Tuple, a, _}), do: a
+  def snd({:Tuple, _, b}), do: b
 
   # Identity
   def identity(x), do: x
@@ -111,16 +111,16 @@ defmodule Nova.Runtime do
   def const_(a, _b), do: a
 
   # Maybe predicates
-  def is_just({:just, _}), do: true
-  def is_just(:nothing), do: false
-  def is_nothing(:nothing), do: true
-  def is_nothing({:just, _}), do: false
+  def is_just({:Just, _}), do: true
+  def is_just(:Nothing), do: false
+  def is_nothing(:Nothing), do: true
+  def is_nothing({:Just, _}), do: false
 
   # 1-arity from_maybe (curried version) - for use in code like `from_maybe(default).(maybe_val)`
-  def from_maybe(default) when not is_tuple(default) or elem(default, 0) != :just do
+  def from_maybe(default) when not is_tuple(default) or elem(default, 0) != :Just do
     fn
-      :nothing -> default
-      {:just, x} -> x
+      :Nothing -> default
+      {:Just, x} -> x
     end
   end
 
@@ -129,7 +129,7 @@ defmodule Nova.Runtime do
 
   # Foldable - support both curried (f.(a).(b)) and uncurried (f.(a, b)) styles
   def foldr(_f, acc, []), do: acc
-  def foldr(_f, acc, :nil), do: acc
+  def foldr(_f, acc, :Nil), do: acc
   def foldr(_f, acc, :nil_), do: acc
   def foldr(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
@@ -137,7 +137,7 @@ defmodule Nova.Runtime do
       {:arity, 1} -> f.(h).(foldr(f, acc, t))
     end
   end
-  def foldr(f, acc, {:cons, h, t}) do
+  def foldr(f, acc, {:Cons, h, t}) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> f.(h, foldr(f, acc, t))
       {:arity, 1} -> f.(h).(foldr(f, acc, t))
@@ -145,7 +145,7 @@ defmodule Nova.Runtime do
   end
 
   def foldl(_f, acc, []), do: acc
-  def foldl(_f, acc, :nil), do: acc
+  def foldl(_f, acc, :Nil), do: acc
   def foldl(_f, acc, :nil_), do: acc
   def foldl(f, acc, [h | t]) do
     case :erlang.fun_info(f, :arity) do
@@ -153,7 +153,7 @@ defmodule Nova.Runtime do
       {:arity, 1} -> foldl(f, f.(acc).(h), t)
     end
   end
-  def foldl(f, acc, {:cons, h, t}) do
+  def foldl(f, acc, {:Cons, h, t}) do
     case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> foldl(f, f.(acc, h), t)
       {:arity, 1} -> foldl(f, f.(acc).(h), t)
@@ -169,15 +169,15 @@ defmodule Nova.Runtime do
 
   # 1-arity fold_m (curried version) - for use like fold_m(f).(acc).(list)
   def fold_m(f) when is_function(f), do: fn acc -> fn list -> fold_m(f, acc, list) end end
-  def fold_m(f, acc, []), do: {:right, acc}
+  def fold_m(f, acc, []), do: {:Right, acc}
   def fold_m(f, acc, [h | t]) do
     result = case :erlang.fun_info(f, :arity) do
       {:arity, 2} -> f.(acc, h)
       {:arity, 1} -> f.(acc).(h)
     end
     case result do
-      {:right, new_acc} -> fold_m(f, new_acc, t)
-      {:left, err} -> {:left, err}
+      {:Right, new_acc} -> fold_m(f, new_acc, t)
+      {:Left, err} -> {:Left, err}
     end
   end
 
@@ -187,18 +187,18 @@ defmodule Nova.Runtime do
   def map(_f, []), do: []
   def map(f, [h | t]), do: [f.(h) | map(f, t)]
   # Map over PureScript-style linked lists
-  def map(_f, :nil), do: :nil
+  def map(_f, :Nil), do: :Nil
   def map(_f, :nil_), do: :nil_
-  def map(f, {:cons, h, t}), do: {:cons, f.(h), map(f, t)}
+  def map(f, {:Cons, h, t}), do: {:Cons, f.(h), map(f, t)}
   # Map over Maybe
-  def map(_f, :nothing), do: :nothing
-  def map(f, {:just, x}), do: {:just, f.(x)}
+  def map(_f, :Nothing), do: :Nothing
+  def map(f, {:Just, x}), do: {:Just, f.(x)}
   # Map over Parser
   def map(f, {:parser, pa}) do
     {:parser, fn ts ->
       case pa.(ts) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, a, rest}} -> {:right, {:tuple, f.(a), rest}}
+        {:Left, err} -> {:Left, err}
+        {:Right, {:Tuple, a, rest}} -> {:Right, {:Tuple, f.(a), rest}}
       end
     end}
   end
@@ -219,8 +219,8 @@ defmodule Nova.Runtime do
   def seq({:parser, p1}, {:parser, p2}) do
     {:parser, fn ts ->
       case p1.(ts) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, _, rest}} -> p2.(rest)
+        {:Left, err} -> {:Left, err}
+        {:Right, {:Tuple, _, rest}} -> p2.(rest)
       end
     end}
   end
@@ -229,11 +229,11 @@ defmodule Nova.Runtime do
   def seq_l({:parser, p1}, {:parser, p2}) do
     {:parser, fn ts ->
       case p1.(ts) do
-        {:left, err} -> {:left, err}
-        {:right, {:tuple, a, rest1}} ->
+        {:Left, err} -> {:Left, err}
+        {:Right, {:Tuple, a, rest1}} ->
           case p2.(rest1) do
-            {:left, err} -> {:left, err}
-            {:right, {:tuple, _, rest2}} -> {:right, {:tuple, a, rest2}}
+            {:Left, err} -> {:Left, err}
+            {:Right, {:Tuple, _, rest2}} -> {:Right, {:Tuple, a, rest2}}
           end
       end
     end}
@@ -256,7 +256,7 @@ defmodule Nova.Runtime do
   def zip(_, []), do: []
   def zip([h1 | t1], [h2 | t2]), do: [{:Tuple, h1, h2} | zip(t1, t2)]
 
-  def pure(x), do: {:right, x}
+  def pure(x), do: {:Right, x}
 
   # Effect.Console functions
   def log(msg), do: IO.puts(msg)
@@ -313,7 +313,7 @@ defmodule Nova.Runtime do
   # Parser-specific pure - wraps value in Parser that preserves token stream
   # pure a = Parser \ts -> Right (Tuple a ts)
   def pure_parser(x) do
-    {:parser, fn ts -> {:right, {:tuple, x, ts}} end}
+    {:parser, fn ts -> {:Right, {:Tuple, x, ts}} end}
   end
 
   def otherwise(), do: true
@@ -363,12 +363,12 @@ end
 
 defmodule Nova.Array do
   def reverse(list), do: Enum.reverse(list)
-  def head([h | _]), do: {:just, h}
-  def head([]), do: :nothing
-  def tail([_ | t]), do: {:just, t}
-  def tail([]), do: :nothing
-  def uncons([]), do: :nothing
-  def uncons([h | t]), do: {:just, %{head: h, tail: t}}
+  def head([h | _]), do: {:Just, h}
+  def head([]), do: :Nothing
+  def tail([_ | t]), do: {:Just, t}
+  def tail([]), do: :Nothing
+  def uncons([]), do: :Nothing
+  def uncons([h | t]), do: {:Just, %{head: h, tail: t}}
   def take(n, list), do: Enum.take(list, n)
   def drop(n, list), do: Enum.drop(list, n)
   def drop_while(f, list), do: Enum.drop_while(list, f)
@@ -382,27 +382,27 @@ defmodule Nova.Array do
   end
   def length(list), do: Kernel.length(list)
   def null(list), do: list == []
-  def last([x]), do: {:just, x}
+  def last([x]), do: {:Just, x}
   def last([_ | t]), do: last(t)
-  def last([]), do: :nothing
+  def last([]), do: :Nothing
   def find(f, list) do
     case Enum.find(list, f) do
-      nil -> :nothing
-      x -> {:just, x}
+      nil -> :Nothing
+      x -> {:Just, x}
     end
   end
   # elem_index - find index of element in list (previously named index)
   def elem_index(x, list) do
     case Enum.find_index(list, fn el -> el == x end) do
-      nil -> :nothing
-      idx -> {:just, idx}
+      nil -> :Nothing
+      idx -> {:Just, idx}
     end
   end
   # index - get element at index (PureScript Array.index)
   def index(list, idx) when is_list(list) and is_integer(idx) do
     case Enum.at(list, idx) do
-      nil -> :nothing
-      x -> {:just, x}
+      nil -> :Nothing
+      x -> {:Just, x}
     end
   end
   def filter(f, list), do: Enum.filter(list, f)
@@ -410,8 +410,8 @@ defmodule Nova.Array do
   def map_maybe(f, list) do
     Enum.flat_map(list, fn x ->
       case f.(x) do
-        {:just, v} -> [v]
-        :nothing -> []
+        {:Just, v} -> [v]
+        :Nothing -> []
       end
     end)
   end
@@ -454,21 +454,21 @@ defmodule Nova.Array do
   # any
   def any(f, list), do: Enum.any?(list, f)
   # init (all but last)
-  def init([]), do: :nothing
-  def init([_]), do: {:just, []}
+  def init([]), do: :Nothing
+  def init([_]), do: {:Just, []}
   def init([h | t]) do
     case init(t) do
-      {:just, rest} -> {:just, [h | rest]}
-      :nothing -> {:just, []}
+      {:Just, rest} -> {:Just, [h | rest]}
+      :Nothing -> {:Just, []}
     end
   end
   # Convert array to PureScript List (Cons/Nil)
-  def to_unfoldable([]), do: :nil
-  def to_unfoldable([h | t]), do: {:cons, h, to_unfoldable(t)}
+  def to_unfoldable([]), do: :Nil
+  def to_unfoldable([h | t]), do: {:Cons, h, to_unfoldable(t)}
   # Convert PureScript List to array
-  def from_foldable(:nil), do: []
+  def from_foldable(:Nil), do: []
   def from_foldable(:nil_), do: []
-  def from_foldable({:cons, h, t}), do: [h | from_foldable(t)]
+  def from_foldable({:Cons, h, t}), do: [h | from_foldable(t)]
   def from_foldable(list) when is_list(list), do: list  # Already an Elixir list
 
   # nub - remove duplicates (using Ord)
@@ -488,8 +488,8 @@ defmodule Nova.Array do
   # find_index - find index of first element matching predicate
   def find_index(f, list) do
     case Enum.find_index(list, f) do
-      nil -> :nothing
-      idx -> {:just, idx}
+      nil -> :Nothing
+      idx -> {:Just, idx}
     end
   end
 
@@ -498,8 +498,8 @@ defmodule Nova.Array do
 
   # unzip - convert list of tuples to tuple of lists
   def unzip(list) do
-    {as, bs} = Enum.unzip(Enum.map(list, fn {:tuple, a, b} -> {a, b} end))
-    {:tuple, as, bs}
+    {as, bs} = Enum.unzip(Enum.map(list, fn {:Tuple, a, b} -> {a, b} end))
+    {:Tuple, as, bs}
   end
 
   # intercalate - join list with separator
@@ -507,16 +507,16 @@ defmodule Nova.Array do
 
   # lookup - look up key in list of pairs
   def lookup(k, list) do
-    case Enum.find(list, fn {:tuple, key, _} -> key == k end) do
-      nil -> :nothing
-      {:tuple, _, v} -> {:just, v}
+    case Enum.find(list, fn {:Tuple, key, _} -> key == k end) do
+      nil -> :Nothing
+      {:Tuple, _, v} -> {:Just, v}
     end
   end
 
   # insert/delete/member - map-like operations for association lists
-  def insert(k, v, list), do: [{:tuple, k, v} | Enum.reject(list, fn {:tuple, key, _} -> key == k end)]
-  def delete(k, list), do: Enum.reject(list, fn {:tuple, key, _} -> key == k end)
-  def member(k, list), do: Enum.any?(list, fn {:tuple, key, _} -> key == k end)
+  def insert(k, v, list), do: [{:Tuple, k, v} | Enum.reject(list, fn {:Tuple, key, _} -> key == k end)]
+  def delete(k, list), do: Enum.reject(list, fn {:Tuple, key, _} -> key == k end)
+  def member(k, list), do: Enum.any?(list, fn {:Tuple, key, _} -> key == k end)
 
   # singleton - create a single-element list
   def singleton(x), do: [x]
@@ -533,8 +533,8 @@ defmodule Nova.Map do
   def map(f, map), do: Map.new(map, fn {k, v} -> {k, f.(v)} end)
   def lookup(k, map) do
     case Map.fetch(map, k) do
-      {:ok, v} -> {:just, v}
-      :error -> :nothing
+      {:ok, v} -> {:Just, v}
+      :error -> :Nothing
     end
   end
   def member(k, map), do: Map.has_key?(map, k)
@@ -542,17 +542,17 @@ defmodule Nova.Map do
   def values(map), do: Map.values(map)
   def union(m1, m2), do: Map.merge(m1, m2)
   def from_foldable(list) do
-    Enum.reduce(list, %{}, fn {:tuple, k, v}, acc -> Map.put(acc, k, v) end)
+    Enum.reduce(list, %{}, fn {:Tuple, k, v}, acc -> Map.put(acc, k, v) end)
   end
   def to_unfoldable(map) do
-    Enum.map(map, fn {k, v} -> {:tuple, k, v} end)
+    Enum.map(map, fn {k, v} -> {:Tuple, k, v} end)
   end
   # Map.mapMaybe - filter and transform values
   def map_maybe(f, map) do
     Enum.reduce(map, %{}, fn {k, v}, acc ->
       case f.(v) do
-        {:just, v2} -> Map.put(acc, k, v2)
-        :nothing -> acc
+        {:Just, v2} -> Map.put(acc, k, v2)
+        :Nothing -> acc
       end
     end)
   end
@@ -573,8 +573,8 @@ defmodule Nova.Set do
   def is_empty(set), do: MapSet.size(set) == 0
   def find_min(set) do
     case MapSet.to_list(set) do
-      [] -> :nothing
-      list -> {:just, Enum.min(list)}
+      [] -> :Nothing
+      list -> {:Just, Enum.min(list)}
     end
   end
   def map_maybe(f, set) do
@@ -582,8 +582,8 @@ defmodule Nova.Set do
     |> MapSet.to_list()
     |> Enum.flat_map(fn x ->
       case f.(x) do
-        {:just, v} -> [v]
-        :nothing -> []
+        {:Just, v} -> [v]
+        :Nothing -> []
       end
     end)
     |> MapSet.new()
@@ -679,8 +679,8 @@ defmodule Nova.String do
   def null(s), do: s == ""
   def char_at(n, s) do
     case String.at(s, n) do
-      nil -> :nothing
-      <<cp::utf8>> -> {:just, cp}
+      nil -> :Nothing
+      <<cp::utf8>> -> {:Just, cp}
     end
   end
   def contains({:pattern, p}, s), do: String.contains?(s, p)
@@ -699,8 +699,8 @@ defmodule Nova.String do
   # index_of - find index of pattern in string
   def index_of({:pattern, p}, s) do
     case :binary.match(s, p) do
-      {idx, _} -> {:just, idx}
-      :nomatch -> :nothing
+      {idx, _} -> {:Just, idx}
+      :nomatch -> :Nothing
     end
   end
 
@@ -710,8 +710,8 @@ defmodule Nova.String do
   def replacement(r), do: {:replacement, r}
   def last_index_of({:pattern, p}, s) do
     case :binary.matches(s, p) do
-      [] -> :nothing
-      matches -> {:just, elem(List.last(matches), 0)}
+      [] -> :Nothing
+      matches -> {:Just, elem(List.last(matches), 0)}
     end
   end
   def trim(s), do: String.trim(s)
@@ -722,24 +722,24 @@ defmodule Nova.String do
   def to_lower(s), do: String.downcase(s)
   def strip_prefix({:pattern, prefix}, s) do
     case String.split(s, prefix, parts: 2) do
-      ["", rest] -> {:just, rest}
-      _ -> :nothing
+      ["", rest] -> {:Just, rest}
+      _ -> :Nothing
     end
   end
   def to_int(s) do
     case Integer.parse(s) do
-      {n, ""} -> {:just, n}
-      _ -> :nothing
+      {n, ""} -> {:Just, n}
+      _ -> :Nothing
     end
   end
   def to_float(s) do
     case Float.parse(s) do
-      {n, ""} -> {:just, n}
+      {n, ""} -> {:Just, n}
       # Also handle integers (e.g., "42" should parse as 42.0)
       _ ->
         case Integer.parse(s) do
-          {n, ""} -> {:just, n * 1.0}
-          _ -> :nothing
+          {n, ""} -> {:Just, n * 1.0}
+          _ -> :Nothing
         end
     end
   end
