@@ -1,4 +1,4 @@
-module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'addDeclWithType'/6, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'setRefs'/3, 'getRefs'/2, 'clearRefs'/2, 'getReferencedBy'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'addDeclWithType'/5, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'setRefs'/0, 'setRefs'/1, 'setRefs'/2, 'getRefs'/0, 'getRefs'/1, 'clearRefs'/0, 'clearRefs'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.NamespaceService' ['showRefType'/1, 'init'/1, 'createNamespace'/2, 'deleteNamespace'/2, 'genDeclId'/1, 'addDecl'/5, 'addDeclWithType'/6, 'updateDecl'/3, 'removeDecl'/2, 'getDecl'/2, 'getDeclByName'/3, 'getNamespaceDecls'/2, 'listNamespaces'/1, 'namespaceExists'/2, 'setDeclStatus'/3, 'setDeclErrors'/3, 'setDeclType'/3, 'getDeclsByStatus'/2, 'statusEq'/2, 'emptyArray'/0, 'addRef'/4, 'getRefsFrom'/2, 'getRefsTo'/2, 'clearRefsFrom'/2, 'clearRefsTo'/2, 'getReferencedBy'/2, 'addRefs'/3, 'getRefFromCount'/2, 'getRefToCount'/2, 'getRefTypes'/2, 'shutdown'/1, 'save'/2, 'load'/1, 'intToString'/1, 'emptyArrayImpl'/1, 'Fresh'/0, 'Valid'/0, 'Invalid'/0, 'Stale'/0, 'FunctionDecl'/0, 'DatatypeDecl'/0, 'TypeAliasDecl'/0, 'ForeignDecl'/0, 'CallRef'/0, 'TypeRef'/0, 'ImportRef'/0, 'PatternRef'/0, 'ConstructorRef'/0, 'showRefType'/0, 'init'/0, 'createNamespace'/0, 'createNamespace'/1, 'deleteNamespace'/0, 'deleteNamespace'/1, 'genDeclId'/0, 'addDecl'/0, 'addDecl'/1, 'addDecl'/2, 'addDecl'/3, 'addDecl'/4, 'addDeclWithType'/0, 'addDeclWithType'/1, 'addDeclWithType'/2, 'addDeclWithType'/3, 'addDeclWithType'/4, 'addDeclWithType'/5, 'updateDecl'/0, 'updateDecl'/1, 'updateDecl'/2, 'removeDecl'/0, 'removeDecl'/1, 'getDecl'/0, 'getDecl'/1, 'getDeclByName'/0, 'getDeclByName'/1, 'getDeclByName'/2, 'getNamespaceDecls'/0, 'getNamespaceDecls'/1, 'listNamespaces'/0, 'namespaceExists'/0, 'namespaceExists'/1, 'setDeclStatus'/0, 'setDeclStatus'/1, 'setDeclStatus'/2, 'setDeclErrors'/0, 'setDeclErrors'/1, 'setDeclErrors'/2, 'setDeclType'/0, 'setDeclType'/1, 'setDeclType'/2, 'getDeclsByStatus'/0, 'getDeclsByStatus'/1, 'statusEq'/0, 'statusEq'/1, 'addRef'/0, 'addRef'/1, 'addRef'/2, 'addRef'/3, 'getRefsFrom'/0, 'getRefsFrom'/1, 'getRefsTo'/0, 'getRefsTo'/1, 'clearRefsFrom'/0, 'clearRefsFrom'/1, 'clearRefsTo'/0, 'clearRefsTo'/1, 'getReferencedBy'/0, 'getReferencedBy'/1, 'addRefs'/0, 'addRefs'/1, 'addRefs'/2, 'getRefFromCount'/0, 'getRefFromCount'/1, 'getRefToCount'/0, 'getRefToCount'/1, 'getRefTypes'/0, 'getRefTypes'/1, 'shutdown'/0, 'save'/0, 'save'/1, 'load'/0, 'intToString'/0, 'emptyArrayImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: DeclStatus
 % Constructors: Fresh, Valid, Invalid, Stale
@@ -38,6 +38,44 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun () ->
     'ForeignDecl'
 
+% Data type: RefType
+% Constructors: CallRef, TypeRef, ImportRef, PatternRef, ConstructorRef
+
+'CallRef'/0 =
+  fun () ->
+    'CallRef'
+
+'TypeRef'/0 =
+  fun () ->
+    'TypeRef'
+
+'ImportRef'/0 =
+  fun () ->
+    'ImportRef'
+
+'PatternRef'/0 =
+  fun () ->
+    'PatternRef'
+
+'ConstructorRef'/0 =
+  fun () ->
+    'ConstructorRef'
+
+'showRefType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'CallRef'}> when 'true' ->
+        #{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#
+      <{'TypeRef'}> when 'true' ->
+        #{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <{'ImportRef'}> when 'true' ->
+        #{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#
+      <{'PatternRef'}> when 'true' ->
+        #{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#
+      <{'ConstructorRef'}> when 'true' ->
+        #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#
+    end
+
 'init'/1 =
   fun (_W0) ->
     case call 'OTP.Ets':'new'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, call 'OTP.Ets':'publicSetOptions'()) of
@@ -56,12 +94,17 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', Err}
       <{'Right', CntTab}> when 'true' ->
+        case call 'OTP.Ets':'new'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#, call 'OTP.Ets':'publicSetOptions'()) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', RefFromTab}> when 'true' ->
         case call 'OTP.Ets':'new'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#, call 'OTP.Ets':'publicSetOptions'()) of
       <{'Left', Err}> when 'true' ->
         {'Left', Err}
-      <{'Right', RefTab}> when 'true' ->
+      <{'Right', RefToTab}> when 'true' ->
         let <_W0> = call 'OTP.Ets':'insert'(CntTab, #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, 0)
-      in {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refTo'=>RefTab}~}
+      in {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refFrom'=>RefFromTab,'refTo'=>RefToTab}~}
+    end
     end
     end
     end
@@ -225,28 +268,107 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun () ->
     apply 'emptyArrayImpl'/1('unit')
 
-'setRefs'/3 =
-  fun (St, Qname, Refs) ->
-    call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), Qname, Refs)
+'addRef'/4 =
+  fun (St, SourceId, DestId, RefType) ->
+    let <Ref> = ~{'sourceId'=>SourceId,'destId'=>DestId,'refType'=>RefType}~
+      in let <FromRefs> = case call 'OTP.Ets':'lookup'(call 'maps':'get'('refFrom', St), SourceId) of
+      <'Nothing'> when 'true' ->
+        [Ref]
+      <{'Just', Existing}> when 'true' ->
+        call 'Data.Array':'snoc'(Existing, Ref)
+    end
+      in let <ToRefs> = case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), DestId) of
+      <'Nothing'> when 'true' ->
+        [Ref]
+      <{'Just', Existing}> when 'true' ->
+        call 'Data.Array':'snoc'(Existing, Ref)
+    end
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('refFrom', St), SourceId, FromRefs)
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), DestId, ToRefs)
+      in 'unit'
 
-'getRefs'/2 =
-  fun (St, Qname) ->
-    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), Qname) of
+'getRefsFrom'/2 =
+  fun (St, SourceId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refFrom', St), SourceId) of
       <'Nothing'> when 'true' ->
         apply 'emptyArray'/0()
       <{'Just', Refs}> when 'true' ->
         Refs
     end
 
-'clearRefs'/2 =
-  fun (St, Qname) ->
-    call 'OTP.Ets':'delete'(call 'maps':'get'('refTo', St), Qname)
+'getRefsTo'/2 =
+  fun (St, DestId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), DestId) of
+      <'Nothing'> when 'true' ->
+        apply 'emptyArray'/0()
+      <{'Just', Refs}> when 'true' ->
+        Refs
+    end
+
+'clearRefsFrom'/2 =
+  fun (St, SourceId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refFrom', St), SourceId) of
+      <'Nothing'> when 'true' ->
+        'unit'
+      <{'Just', Refs}> when 'true' ->
+        let <_W0> = call 'Data.Array':'foldl'(fun (Acc, Ref) ->
+      let <DestRefs> = case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), call 'maps':'get'('destId', Ref)) of
+      <'Nothing'> when 'true' ->
+        apply 'emptyArray'/0()
+      <{'Just', Existing}> when 'true' ->
+        call 'Data.Array':'filter'(fun (R) ->
+      call 'erlang':'=/='(call 'maps':'get'('sourceId', R), SourceId), Existing)
+    end
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('refTo', St), call 'maps':'get'('destId', Ref), DestRefs)
+      in Acc, 'unit', Refs)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('refFrom', St), SourceId)
+      in 'unit'
+    end
+
+'clearRefsTo'/2 =
+  fun (St, DestId) ->
+    case call 'OTP.Ets':'lookup'(call 'maps':'get'('refTo', St), DestId) of
+      <'Nothing'> when 'true' ->
+        'unit'
+      <{'Just', Refs}> when 'true' ->
+        let <_W0> = call 'Data.Array':'foldl'(fun (Acc, Ref) ->
+      let <SrcRefs> = case call 'OTP.Ets':'lookup'(call 'maps':'get'('refFrom', St), call 'maps':'get'('sourceId', Ref)) of
+      <'Nothing'> when 'true' ->
+        apply 'emptyArray'/0()
+      <{'Just', Existing}> when 'true' ->
+        call 'Data.Array':'filter'(fun (R) ->
+      call 'erlang':'=/='(call 'maps':'get'('destId', R), DestId), Existing)
+    end
+      in let <_W0> = call 'OTP.Ets':'insert'(call 'maps':'get'('refFrom', St), call 'maps':'get'('sourceId', Ref), SrcRefs)
+      in Acc, 'unit', Refs)
+      in let <_W0> = call 'OTP.Ets':'delete'(call 'maps':'get'('refTo', St), DestId)
+      in 'unit'
+    end
 
 'getReferencedBy'/2 =
-  fun (St, Symbol) ->
-    let <AllRefs> = call 'OTP.Ets':'allKeys'(call 'maps':'get'('refTo', St))
-      in call 'Data.Array':'filter'(fun (Qname) ->
-      call 'Data.Array':'elem'(Symbol, apply 'getRefs'/2(St, Qname)), AllRefs)
+  fun (St, DestId) ->
+    call 'Data.Array':'map'(fun (Ref) ->
+      call 'maps':'get'('sourceId', Ref), apply 'getRefsTo'/2(St, DestId))
+
+'addRefs'/3 =
+  fun (St, SourceId, Refs) ->
+    call 'Data.Array':'foldl'(fun (Acc, R) ->
+      let <_W0> = apply 'addRef'/4(St, SourceId, call 'maps':'get'('destId', R), call 'maps':'get'('refType', R))
+      in Acc, 'unit', Refs)
+
+'getRefFromCount'/2 =
+  fun (St, SourceId) ->
+    call 'Data.Array':'length'(apply 'getRefsFrom'/2(St, SourceId))
+
+'getRefToCount'/2 =
+  fun (St, DestId) ->
+    call 'Data.Array':'length'(apply 'getRefsTo'/2(St, DestId))
+
+'getRefTypes'/2 =
+  fun (St, SourceId) ->
+    let <Refs> = apply 'getRefsFrom'/2(St, SourceId)
+      in call 'Data.Array':'nub'(call 'Data.Array':'map'(fun (R) ->
+      call 'maps':'get'('refType', R), Refs))
 
 'shutdown'/1 =
   fun (St) ->
@@ -254,6 +376,7 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('declarations', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('nameIndex', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('counter', St))
+      in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('refFrom', St))
       in let <_W0> = call 'OTP.Ets':'deleteTable'(call 'maps':'get'('refTo', St))
       in 'unit'
 
@@ -275,11 +398,16 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
       <{'Right', _W0}> when 'true' ->
+        case call 'OTP.Ets':'tab2file'(call 'maps':'get'('refFrom', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', _W0}> when 'true' ->
         case call 'OTP.Ets':'tab2file'(call 'maps':'get'('refTo', St), call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
       <{'Left', Err}> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
       <{'Right', _W0}> when 'true' ->
         {'Right', 'unit'}
+    end
     end
     end
     end
@@ -304,11 +432,16 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
       <{'Left', Err}> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
       <{'Right', CntTab}> when 'true' ->
+        case call 'OTP.Ets':'file2tab'(call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
+      <{'Right', RefFromTab}> when 'true' ->
         case call 'OTP.Ets':'file2tab'(call 'Nova.Prelude':'semigroupAppendImpl'(Dir, #{#<47>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#)) of
       <{'Left', Err}> when 'true' ->
         {'Left', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err)}
-      <{'Right', RefTab}> when 'true' ->
-        {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refTo'=>RefTab}~}
+      <{'Right', RefToTab}> when 'true' ->
+        {'Right', ~{'namespaces'=>NsTab,'declarations'=>DeclTab,'nameIndex'=>IdxTab,'counter'=>CntTab,'refFrom'=>RefFromTab,'refTo'=>RefToTab}~}
+    end
     end
     end
     end
@@ -318,6 +451,12 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
 'intToString'/1 = fun (V0) -> call 'erlang':'integer_to_list'(V0)
 
 'emptyArrayImpl'/1 = fun (V0) -> []
+
+'showRefType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showRefType'/1(_A0)
+      in _F0
 
 'init'/0 =
   fun () ->
@@ -685,56 +824,96 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
         apply 'statusEq'/2(_A0, _A1)
       in _F0
 
-'setRefs'/0 =
+'addRef'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
         let <_F2> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
+        let <_F3> = fun (_A3) ->
+        apply 'addRef'/4(_A0, _A1, _A2, _A3)
+      in _F3
       in _F2
       in _F1
       in _F0
 
-'setRefs'/1 =
+'addRef'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         let <_F1> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
+        let <_F2> = fun (_A3) ->
+        apply 'addRef'/4(_A0, _A1, _A2, _A3)
+      in _F2
       in _F1
       in _F0
 
-'setRefs'/2 =
+'addRef'/2 =
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
-        apply 'setRefs'/3(_A0, _A1, _A2)
-      in _F0
-
-'getRefs'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'getRefs'/2(_A0, _A1)
+        let <_F1> = fun (_A3) ->
+        apply 'addRef'/4(_A0, _A1, _A2, _A3)
       in _F1
       in _F0
 
-'getRefs'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'getRefs'/2(_A0, _A1)
+'addRef'/3 =
+  fun (_A0, _A1, _A2) ->
+    let <_F0> = fun (_A3) ->
+        apply 'addRef'/4(_A0, _A1, _A2, _A3)
       in _F0
 
-'clearRefs'/0 =
+'getRefsFrom'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'clearRefs'/2(_A0, _A1)
+        apply 'getRefsFrom'/2(_A0, _A1)
       in _F1
       in _F0
 
-'clearRefs'/1 =
+'getRefsFrom'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'clearRefs'/2(_A0, _A1)
+        apply 'getRefsFrom'/2(_A0, _A1)
+      in _F0
+
+'getRefsTo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefsTo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefsTo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefsTo'/2(_A0, _A1)
+      in _F0
+
+'clearRefsFrom'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'clearRefsFrom'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'clearRefsFrom'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'clearRefsFrom'/2(_A0, _A1)
+      in _F0
+
+'clearRefsTo'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'clearRefsTo'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'clearRefsTo'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'clearRefsTo'/2(_A0, _A1)
       in _F0
 
 'getReferencedBy'/0 =
@@ -749,6 +928,72 @@ module 'Nova.NamespaceService' ['init'/1, 'createNamespace'/2, 'deleteNamespace'
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'getReferencedBy'/2(_A0, _A1)
+      in _F0
+
+'addRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'addRefs'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'addRefs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'addRefs'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'addRefs'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'addRefs'/3(_A0, _A1, _A2)
+      in _F0
+
+'getRefFromCount'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefFromCount'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefFromCount'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefFromCount'/2(_A0, _A1)
+      in _F0
+
+'getRefToCount'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefToCount'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefToCount'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefToCount'/2(_A0, _A1)
+      in _F0
+
+'getRefTypes'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'getRefTypes'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'getRefTypes'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'getRefTypes'/2(_A0, _A1)
       in _F0
 
 'shutdown'/0 =
