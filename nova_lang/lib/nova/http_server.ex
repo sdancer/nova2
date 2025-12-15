@@ -87,22 +87,35 @@ defmodule Nova.HTTPServer do
   end
 
   defp call_handler(handler_module, request) do
+    method = request.method
+    path = request.path
+    body = request.body
+
     try do
       # Call Nova handler: handler_module.handle(method, path, body)
       # Nova uses binary strings
-      method = request.method
-      path = request.path
-      body = request.body
       result = apply(handler_module, :handle, [method, path, body])
       normalize_response(result)
     rescue
       e ->
-        IO.puts("[ERROR] Handler error: #{inspect(e)}")
-        {500, "text/plain", "Internal Server Error"}
+        IO.puts("[ERROR] Handler error: #{inspect(e)} < #{method} #{path}")
+        IO.puts("[ERROR] Request body: #{inspect(body)}")
+        IO.puts("[ERROR] Stacktrace:")
+        Exception.format(:error, e, __STACKTRACE__)
+        |> String.split("\n")
+        |> Enum.take(15)
+        |> Enum.each(&IO.puts("[ERROR]   #{&1}"))
+        {500, "text/plain", "Internal Server Error: #{inspect(e)}"}
     catch
       kind, reason ->
-        IO.puts("[ERROR] Handler #{kind}: #{inspect(reason)}")
-        {500, "text/plain", "Internal Server Error"}
+        IO.puts("[ERROR] Handler #{kind}: #{inspect(reason)} < #{method} #{path}")
+        IO.puts("[ERROR] Request body: #{inspect(body)}")
+        IO.puts("[ERROR] Stacktrace:")
+        Exception.format(kind, reason, __STACKTRACE__)
+        |> String.split("\n")
+        |> Enum.take(15)
+        |> Enum.each(&IO.puts("[ERROR]   #{&1}"))
+        {500, "text/plain", "Internal Server Error: #{inspect(reason)}"}
     end
   end
 

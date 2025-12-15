@@ -220,10 +220,43 @@ async function main() {
     compiled++;
   }
 
+  // Compile .core files to .beam
+  console.log('\n=== Compiling Core Erlang to BEAM ===\n');
+  const { execSync } = require('child_process');
+  let beamCompiled = 0;
+  let beamErrors = 0;
+
+  const coreFiles = findFiles(config.targetDir, '.core');
+  const os = require('os');
+  const tmpDir = os.tmpdir();
+
+  for (const coreFile of coreFiles) {
+    const modName = coreFile
+      .slice(config.targetDir.length)
+      .replace(/\.core$/, '')
+      .replace(/\//g, '.');
+    process.stdout.write(`${modName}... `);
+    try {
+      // erlc expects source filename to match module name
+      // Copy to temp file with correct name, compile, then clean up
+      const tmpFile = `${tmpDir}/${modName}.core`;
+      fs.copyFileSync(coreFile, tmpFile);
+      execSync(`erlc -o nova_lang/ebin ${tmpFile}`, { stdio: 'pipe' });
+      fs.unlinkSync(tmpFile);
+      console.log('OK');
+      beamCompiled++;
+    } catch (err) {
+      console.log(`ERROR: ${err.stderr?.toString() || err.message}`);
+      beamErrors++;
+    }
+  }
+
   const totalTime = performance.now() - totalStart;
   console.log('\n=== Summary ===');
   console.log(`Compiled: ${compiled}`);
   console.log(`Errors: ${errors}`);
+  console.log(`BEAM compiled: ${beamCompiled}`);
+  console.log(`BEAM errors: ${beamErrors}`);
   console.log(`Total time: ${formatTime(totalTime)}`);
 }
 

@@ -27,16 +27,31 @@ stateKey = "nova_web_state"
 initServiceIfNeeded :: Unit -> Unit
 initServiceIfNeeded _ =
   case PT.get stateKey of
-    Nothing ->
-      case NS.init unit of
-        Right st ->
-          let _s = PT.put stateKey st
-              -- Load from parent directory (we run from nova_lang/)
-              _lib = importAllFromDir "../lib"
-              _src = importAllFromDir "../src"
-          in unit
-        Left _ -> unit
-    Just _ -> unit
+    Nothing -> initFresh unit
+    Just st ->
+      -- Check if state has refFrom table (migration check)
+      if hasRefFromTable st
+      then unit
+      else
+        -- Old state without refFrom - reinitialize
+        let _del = PT.erase stateKey
+        in initFresh unit
+
+-- | Check if state has valid refFrom table (key exists AND table is valid)
+foreign import hasRefFromTable :: NS.ServiceState -> Boolean
+  = "case $0 of <~{'refFrom' := Tab}~> when 'true' -> case catch call 'ets':'info'(Tab) of <'undefined'> when 'true' -> 'false' <{'EXIT', _}> when 'true' -> 'false' <_> when 'true' -> 'true' end <_> when 'true' -> 'false' end"
+
+-- | Fresh initialization
+initFresh :: Unit -> Unit
+initFresh _ =
+  case NS.init unit of
+    Right st ->
+      let _s = PT.put stateKey st
+          -- Load from parent directory (we run from nova_lang/)
+          _lib = importAllFromDir "../lib"
+          _src = importAllFromDir "../src"
+      in unit
+    Left _ -> unit
 
 -- | Import all .purs files from a directory recursively
 importAllFromDir :: String -> Array (Either String { moduleName :: String, declCount :: Int })
@@ -193,7 +208,14 @@ importGroupedFunction namespace group =
   let -- Render all clauses in order
       clauseTexts = Array.map renderFunctionBody group.clauses
       src = String.joinWith "\n" clauseTexts
-  in addDeclWithType namespace group.name src NS.FunctionDecl group.typeSig
+      result = addDeclWithType namespace group.name src NS.FunctionDecl group.typeSig
+      -- Extract and store refs for each clause
+      sourceQName = namespace <> "." <> group.name
+      _refs = Array.foldl (\acc clause ->
+        let refs = extractFuncRefs clause
+            _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+        in acc) unit group.clauses
+  in result
 
 -- | Import non-function declarations
 importOtherDecl :: String -> Ast.Declaration -> Maybe (Either String String)
@@ -202,23 +224,43 @@ importOtherDecl namespace decl =
     Ast.DeclDataType d ->
       let src = renderDataType d
           typeSig = Just (renderDataTypeSig d)
-      in Just (addDeclWithType namespace d.name src NS.DatatypeDecl typeSig)
+          result = addDeclWithType namespace d.name src NS.DatatypeDecl typeSig
+          sourceQName = namespace <> "." <> d.name
+          refs = extractDataTypeRefs d
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+      in Just result
     Ast.DeclNewtype n ->
       let src = renderNewtype n
           typeSig = Just (renderNewtypeSig n)
-      in Just (addDeclWithType namespace n.name src NS.DatatypeDecl typeSig)
+          result = addDeclWithType namespace n.name src NS.DatatypeDecl typeSig
+          sourceQName = namespace <> "." <> n.name
+          refs = extractTypeExprRefsArr n.wrappedType
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+      in Just result
     Ast.DeclTypeAlias a ->
       let src = renderTypeAlias a
           typeSig = Just (renderTypeExpr a.ty)
-      in Just (addDeclWithType namespace a.name src NS.TypeAliasDecl typeSig)
+          result = addDeclWithType namespace a.name src NS.TypeAliasDecl typeSig
+          sourceQName = namespace <> "." <> a.name
+          refs = extractTypeExprRefsArr a.ty
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+      in Just result
     Ast.DeclForeignImport f ->
       let src = renderForeignBody f
           typeSig = Just (renderTypeExpr f.typeSignature)
-      in Just (addDeclWithType namespace f.functionName src NS.ForeignDecl typeSig)
+          result = addDeclWithType namespace f.functionName src NS.ForeignDecl typeSig
+          sourceQName = namespace <> "." <> f.functionName
+          refs = extractTypeExprRefsArr f.typeSignature
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+      in Just result
     Ast.DeclTypeClass c ->
       let src = renderClass c
           typeSig = Just ("class " <> c.name)
-      in Just (addDeclWithType namespace c.name src NS.DatatypeDecl typeSig)
+          result = addDeclWithType namespace c.name src NS.DatatypeDecl typeSig
+          sourceQName = namespace <> "." <> c.name
+          refs = extractClassRefs c
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+      in Just result
     -- Skip imports, type signatures (merged with functions), instances, infix, functions
     _ -> Nothing
 
@@ -228,6 +270,147 @@ countSuccesses arr = Array.length (Array.filter isRight arr)
   where
     isRight (Right _) = true
     isRight (Left _) = false
+
+-- ============================================================================
+-- Reference Extraction
+-- ============================================================================
+
+-- | A simple ref record for extraction
+type ExtractedRef = { name :: String, refType :: NS.RefType }
+
+-- | Add a reference via FFI
+foreign import addRefFFI :: String -> String -> NS.RefType -> Unit
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'addRef'(St, $0, $1, $2)"
+
+-- | Extract refs from a function declaration
+extractFuncRefs :: Ast.FunctionDeclaration -> Array ExtractedRef
+extractFuncRefs f =
+  let bodyRefs = extractExprRefs f.body
+      paramRefs = Array.concat (Array.fromFoldable (List.map extractPatternRefs f.parameters))
+      sigRefs = case f.typeSignature of
+        Nothing -> []
+        Just sig -> extractTypeSigRefs sig
+  in bodyRefs <> paramRefs <> sigRefs
+
+-- | Extract refs from a type signature
+extractTypeSigRefs :: Ast.TypeSignature -> Array ExtractedRef
+extractTypeSigRefs sig =
+  let constraintRefs = Array.concat (Array.fromFoldable (List.map extractConstraintRefs sig.constraints))
+      tyRefs = extractTypeExprRefsArr sig.ty
+  in constraintRefs <> tyRefs
+
+-- | Extract refs from a constraint
+extractConstraintRefs :: Ast.Constraint -> Array ExtractedRef
+extractConstraintRefs c =
+  let classRef = [{ name: c.className, refType: NS.TypeRef }]
+      typeRefs = Array.concat (Array.fromFoldable (List.map extractTypeExprRefsArr c.types))
+  in classRef <> typeRefs
+
+-- | Extract refs from a data type
+extractDataTypeRefs :: Ast.DataType -> Array ExtractedRef
+extractDataTypeRefs d =
+  Array.concat (Array.fromFoldable (List.map extractCtorRefs d.constructors))
+
+-- | Extract refs from a data constructor
+extractCtorRefs :: Ast.DataConstructor -> Array ExtractedRef
+extractCtorRefs ctor =
+  Array.concat (Array.fromFoldable (List.map (\df -> extractTypeExprRefsArr df.ty) ctor.fields))
+
+-- | Extract refs from a type class
+extractClassRefs :: Ast.TypeClass -> Array ExtractedRef
+extractClassRefs c =
+  Array.concat (Array.fromFoldable (List.map extractTypeSigRefs c.methods))
+
+-- | Extract refs from type expression
+extractTypeExprRefsArr :: Ast.TypeExpr -> Array ExtractedRef
+extractTypeExprRefsArr ty = case ty of
+  Ast.TyExprCon name -> [{ name: name, refType: NS.TypeRef }]
+  Ast.TyExprVar _ -> []
+  Ast.TyExprApp t1 t2 -> extractTypeExprRefsArr t1 <> extractTypeExprRefsArr t2
+  Ast.TyExprArrow t1 t2 -> extractTypeExprRefsArr t1 <> extractTypeExprRefsArr t2
+  Ast.TyExprRecord fields _ ->
+    Array.concat (Array.fromFoldable (List.map (\(Tuple _ t) -> extractTypeExprRefsArr t) fields))
+  Ast.TyExprForAll _ t -> extractTypeExprRefsArr t
+  Ast.TyExprConstrained cs t ->
+    let constraintRefs = Array.concat (Array.fromFoldable (List.map extractConstraintRefs cs))
+    in constraintRefs <> extractTypeExprRefsArr t
+  Ast.TyExprParens t -> extractTypeExprRefsArr t
+  Ast.TyExprTuple ts -> Array.concat (Array.fromFoldable (List.map extractTypeExprRefsArr ts))
+
+-- | Extract refs from expression
+extractExprRefs :: Ast.Expr -> Array ExtractedRef
+extractExprRefs expr = case expr of
+  Ast.ExprVar name -> [{ name: name, refType: NS.CallRef }]
+  Ast.ExprQualified ns name -> [{ name: ns <> "." <> name, refType: NS.CallRef }]
+  Ast.ExprLit _ -> []
+  Ast.ExprApp e1 e2 -> extractExprRefs e1 <> extractExprRefs e2
+  Ast.ExprLambda pats body ->
+    let patRefs = Array.concat (Array.fromFoldable (List.map extractPatternRefs pats))
+    in patRefs <> extractExprRefs body
+  Ast.ExprLet binds body ->
+    let bindRefs = extractLetBindsRefs binds
+    in bindRefs <> extractExprRefs body
+  Ast.ExprIf c t e -> extractExprRefs c <> extractExprRefs t <> extractExprRefs e
+  Ast.ExprCase e clauses ->
+    extractExprRefs e <> Array.concat (Array.fromFoldable (List.map extractCaseClauseRefs clauses))
+  Ast.ExprDo stmts -> extractDoStmtsRefs stmts
+  Ast.ExprBinOp op e1 e2 -> [{ name: op, refType: NS.CallRef }] <> extractExprRefs e1 <> extractExprRefs e2
+  Ast.ExprUnaryOp op e -> [{ name: op, refType: NS.CallRef }] <> extractExprRefs e
+  Ast.ExprList es -> Array.concat (Array.fromFoldable (List.map extractExprRefs es))
+  Ast.ExprTuple es -> Array.concat (Array.fromFoldable (List.map extractExprRefs es))
+  Ast.ExprRecord fields -> Array.concat (Array.fromFoldable (List.map (\(Tuple _ e) -> extractExprRefs e) fields))
+  Ast.ExprRecordAccess e _ -> extractExprRefs e
+  Ast.ExprRecordUpdate e fields -> extractExprRefs e <> Array.concat (Array.fromFoldable (List.map (\(Tuple _ v) -> extractExprRefs v) fields))
+  Ast.ExprTyped e t -> extractExprRefs e <> extractTypeExprRefsArr t
+  Ast.ExprParens e -> extractExprRefs e
+  Ast.ExprSection _ -> []
+  Ast.ExprSectionLeft e _ -> extractExprRefs e
+  Ast.ExprSectionRight _ e -> extractExprRefs e
+
+-- | Extract refs from let bindings
+extractLetBindsRefs :: List Ast.LetBind -> Array ExtractedRef
+extractLetBindsRefs binds =
+  Array.concat (Array.fromFoldable (List.map (\b ->
+    let patRefs = extractPatternRefs b.pattern
+        valRefs = extractExprRefs b.value
+        annRefs = case b.typeAnn of
+          Nothing -> []
+          Just t -> extractTypeExprRefsArr t
+    in patRefs <> valRefs <> annRefs
+  ) binds))
+
+-- | Extract refs from case clause
+extractCaseClauseRefs :: Ast.CaseClause -> Array ExtractedRef
+extractCaseClauseRefs clause =
+  let patRefs = extractPatternRefs clause.pattern
+      bodyRefs = extractExprRefs clause.body
+      guardRefs = case clause.guard of
+        Nothing -> []
+        Just g -> extractExprRefs g
+  in patRefs <> bodyRefs <> guardRefs
+
+-- | Extract refs from do statements
+extractDoStmtsRefs :: List Ast.DoStatement -> Array ExtractedRef
+extractDoStmtsRefs stmts =
+  Array.concat (Array.fromFoldable (List.map (\stmt -> case stmt of
+    Ast.DoLet binds -> extractLetBindsRefs binds
+    Ast.DoBind pat e -> extractPatternRefs pat <> extractExprRefs e
+    Ast.DoExpr e -> extractExprRefs e
+  ) stmts))
+
+-- | Extract refs from pattern (constructors are PatternRef)
+extractPatternRefs :: Ast.Pattern -> Array ExtractedRef
+extractPatternRefs pat = case pat of
+  Ast.PatVar _ -> []
+  Ast.PatWildcard -> []
+  Ast.PatLit _ -> []
+  Ast.PatCon name pats ->
+    [{ name: name, refType: NS.PatternRef }] <> Array.concat (Array.fromFoldable (List.map extractPatternRefs pats))
+  Ast.PatRecord fields -> Array.concat (Array.fromFoldable (List.map (\(Tuple _ p) -> extractPatternRefs p) fields))
+  Ast.PatList pats -> Array.concat (Array.fromFoldable (List.map extractPatternRefs pats))
+  Ast.PatCons p1 p2 -> extractPatternRefs p1 <> extractPatternRefs p2
+  Ast.PatAs _ p -> extractPatternRefs p
+  Ast.PatParens p -> extractPatternRefs p
 
 -- ============================================================================
 -- Declaration Renderers (using actual Ast types)
@@ -545,11 +728,23 @@ handleGet path =
   then { status: 200, contentType: "text/html", body: evalPage }
   else if path == "/namespaces"
   then { status: 200, contentType: "text/html", body: namespacesPage unit }
+  else if String.take 6 path == "/decl/"
+  then
+    -- Parse /decl/{namespace}/{name}
+    let rest = String.drop 6 path
+        parts = splitOnSlash rest
+    in case parts of
+      [ns, name] -> { status: 200, contentType: "text/html", body: declarationPage ns name }
+      _ -> { status: 404, contentType: "text/html", body: notFoundPage }
   else if String.take 11 path == "/namespace/"
   then
     let nsName = String.drop 11 path
     in { status: 200, contentType: "text/html", body: namespaceDetailPage nsName }
   else { status: 404, contentType: "text/html", body: notFoundPage }
+
+-- | Split string on slash
+foreign import splitOnSlash :: String -> Array String
+  = "call 'binary':'split'($0, #{#<47>(8,1,'integer',['unsigned'|['big']])}#, ['global'])"
 
 -- | Handle POST requests
 handlePost :: String -> String -> { status :: Int, contentType :: String, body :: String }
@@ -676,7 +871,7 @@ namespaceDetailPage nsName =
         declsHtml = if Array.null decls
                     then "<div class=\"empty\">No declarations in this namespace.</div>"
                     else dataSection <> typeSection <> funcSection <> foreignSection
-    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><div class=\"decl-list\">" <> declsHtml <> "</div><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><script>function toggleSource(id){var e=document.getElementById('src-'+id);e.style.display=e.style.display==='none'?'block':'none'}async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
+    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><div class=\"decl-list\">" <> declsHtml <> "</div><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><script>async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
 
 -- | Sort declarations by kind then name
 sortDeclarations :: Array NS.ManagedDecl -> Array NS.ManagedDecl
@@ -706,20 +901,57 @@ renderDeclItem decl =
       sigHtml = case decl.inferredType of
         Nothing -> ""
         Just t -> "<div class=\"decl-sig\"><code>" <> escapeHtml t <> "</code></div>"
-      -- For functions/foreign: hidden source with click to expand
-      -- For others: always show source
-      sourceHtml = case decl.kind of
-        NS.FunctionDecl ->
-          "<pre class=\"decl-source\" style=\"display:none\" id=\"src-" <> decl.declId <> "\">" <> escapeHtml decl.sourceText <> "</pre>"
-        NS.ForeignDecl ->
-          "<pre class=\"decl-source\" style=\"display:none\" id=\"src-" <> decl.declId <> "\">" <> escapeHtml decl.sourceText <> "</pre>"
-        _ -> "<pre class=\"decl-source\">" <> escapeHtml decl.sourceText <> "</pre>"
-      -- Add click handler for functions/foreign
-      clickAttr = case decl.kind of
-        NS.FunctionDecl -> " onclick=\"toggleSource('" <> decl.declId <> "')\" style=\"cursor:pointer\""
-        NS.ForeignDecl -> " onclick=\"toggleSource('" <> decl.declId <> "')\" style=\"cursor:pointer\""
-        _ -> ""
-  in "<div class=\"decl-item " <> kindClass <> "\"" <> clickAttr <> "><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> sourceHtml <> "</div>"
+      -- Link to declaration page
+      declUrl = "/decl/" <> decl.namespace <> "/" <> decl.name
+  in "<a href=\"" <> declUrl <> "\" class=\"decl-item " <> kindClass <> "\" style=\"display:block;text-decoration:none;color:inherit\"><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> "</a>"
+
+-- | Declaration detail page
+declarationPage :: String -> String -> String
+declarationPage nsName declName =
+  let maybeDecl = getDeclByName nsName declName
+  in case maybeDecl of
+    Nothing -> htmlPage "Not Found - Nova" ("<a href=\"/namespace/" <> nsName <> "\" class=\"back-link\">&larr; " <> nsName <> "</a><h1>Declaration Not Found</h1><p>The declaration \"" <> declName <> "\" was not found in namespace \"" <> nsName <> "\".</p>")
+    Just decl ->
+      let kindLabel = case decl.kind of
+            NS.FunctionDecl -> "Function"
+            NS.DatatypeDecl -> "Data Type"
+            NS.TypeAliasDecl -> "Type Alias"
+            NS.ForeignDecl -> "Foreign Import"
+          kindClass = case decl.kind of
+            NS.FunctionDecl -> "kind-function"
+            NS.DatatypeDecl -> "kind-data"
+            NS.TypeAliasDecl -> "kind-type"
+            NS.ForeignDecl -> "kind-foreign"
+          -- Type signature
+          sigHtml = case decl.inferredType of
+            Nothing -> ""
+            Just t -> "<div class=\"decl-sig\" style=\"margin-bottom:1rem\"><code style=\"font-size:1.1rem\">" <> escapeHtml t <> "</code></div>"
+          -- Source code
+          sourceHtml = "<h3 class=\"section-title\">Source</h3><pre class=\"decl-source\" style=\"max-height:none;font-size:.9rem;line-height:1.5\">" <> escapeHtml decl.sourceText <> "</pre>"
+          -- Get references to this declaration
+          qname = nsName <> "." <> declName
+          refsTo = getRefsTo qname
+          refsHtml = if Array.null refsTo
+                     then "<div class=\"empty\">No references to this declaration.</div>"
+                     else String.joinWith "" (Array.map renderRefItem refsTo)
+          refsSection = "<h3 class=\"section-title\">Referenced By</h3>" <> refsHtml
+      in htmlPage (declName <> " - " <> nsName <> " - Nova") ("<a href=\"/namespace/" <> nsName <> "\" class=\"back-link\">&larr; " <> nsName <> "</a><h1>" <> declName <> "</h1><div class=\"decl-item " <> kindClass <> "\" style=\"display:inline-block;padding:.25rem .75rem;margin-bottom:1rem\"><small>" <> kindLabel <> "</small></div>" <> sigHtml <> sourceHtml <> refsSection)
+
+-- | Get declaration by namespace and name
+foreign import getDeclByName :: String -> String -> Maybe NS.ManagedDecl
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'getDeclByName'(St, $0, $1)"
+
+-- | Get references TO a qualified name (what references it)
+foreign import getRefsTo :: String -> Array NS.DeclRef
+  = "let <_> = apply 'initServiceIfNeeded'/1('unit') in let <St> = apply 'getState'/1('unit') in call 'Nova.NamespaceService':'getRefsTo'(St, $0)"
+
+-- | Render a reference item (shows source and type)
+renderRefItem :: NS.DeclRef -> String
+renderRefItem ref =
+  let refTypeLabel = NS.showRefType ref.refType
+      -- Parse sourceId to get namespace.name if possible
+      sourceLabel = ref.sourceId
+  in "<div class=\"decl-item\" style=\"border-left-color:#888\"><div class=\"decl-name\">" <> escapeHtml sourceLabel <> "</div><small style=\"color:#888\">" <> refTypeLabel <> "</small></div>"
 
 -- | Escape HTML entities
 foreign import escapeHtml :: String -> String

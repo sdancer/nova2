@@ -2,6 +2,8 @@ module System.File where
 
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
+import Data.Array (concatMap, filter)
+import Data.String (endsWith)
 
 -- | Read a file's contents
 readFile :: String -> Either String String
@@ -54,9 +56,21 @@ foreign import deleteFileImpl :: String -> Either String Unit = "case call 'file
 -- | Find all files with given extension recursively
 -- | Extension should include the dot, e.g., ".purs"
 findFilesRecursive :: String -> String -> Either String (Array String)
-findFilesRecursive dir ext = findFilesRecursiveImpl dir ext
-
-foreign import findFilesRecursiveImpl :: String -> String -> Either String (Array String) = "case catch letrec 'doFind'/2 = fun (Dir, Ext) -> case call 'file':'list_dir'(Dir) of <{'ok', Entries}> when 'true' -> call 'lists':'foldl'(fun (Entry, Acc) -> let <Full> = call 'filename':'join'(Dir, Entry) in case call 'filelib':'is_dir'(Full) of <'true'> when 'true' -> call 'lists':'append'(Acc, apply 'doFind'/2 (Full, Ext)) <'false'> when 'true' -> let <BinName> = call 'erlang':'list_to_binary'(Entry) in case call 'binary':'match'(BinName, Ext, [{'scope', {call 'erlang':'-'(call 'erlang':'byte_size'(BinName), call 'erlang':'byte_size'(Ext)), call 'erlang':'byte_size'(Ext)}}]) of <'nomatch'> when 'true' -> Acc <_> when 'true' -> [call 'erlang':'list_to_binary'(Full)|Acc] end end, [], Entries) <{'error', _}> when 'true' -> [] end in apply 'doFind'/2 ($0, $1) of <Result> when call 'erlang':'is_list'(Result) -> {'Right', Result} <{'EXIT', _}> when 'true' -> {'Left', #<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])#} end"
+findFilesRecursive dir ext =
+  case listDir dir of
+    Left err -> Left err
+    Right entries ->
+      let
+        processEntry entry =
+          let fullPath = joinPath dir entry
+          in if dirExists fullPath
+             then case findFilesRecursive fullPath ext of
+                    Left _ -> []
+                    Right files -> files
+             else if endsWith ext entry
+                  then [fullPath]
+                  else []
+      in Right (concatMap processEntry entries)
 
 -- | Get file basename
 basename :: String -> String

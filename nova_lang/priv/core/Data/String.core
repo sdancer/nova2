@@ -1,4 +1,4 @@
-module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 'split'/2, 'joinWith'/2, 'replaceAll'/3, 'trim'/1, 'toLower'/1, 'toUpper'/1, 'stripPrefix'/2, 'lastIndexOf'/2, 'toInt'/1, 'toCodePointArray'/1, 'singleton'/1, 'fromCharArray'/1, 'codeUnitIndex'/2, 'codeUnitTake'/2, 'codeUnitDrop'/2, 'codeUnitLength'/1, 'indexOf'/2, 'uncons'/1, 'slice'/3, 'null'/1, 'codePointAt'/2, 'fromCodePointArray'/1, 'lengthImpl'/1, 'takeImpl'/2, 'dropImpl'/2, 'charAtImpl'/2, 'containsImpl'/2, 'splitImpl'/2, 'joinWithImpl'/2, 'replaceAllImpl'/3, 'trimImpl'/1, 'toLowerImpl'/1, 'toUpperImpl'/1, 'stripPrefixImpl'/2, 'lastIndexOfImpl'/2, 'toIntImpl'/1, 'toCodePointArrayImpl'/1, 'singletonImpl'/1, 'fromCharArrayImpl'/1, 'codeUnitIndexImpl'/2, 'codeUnitTakeImpl'/2, 'codeUnitDropImpl'/2, 'codeUnitLengthImpl'/1, 'indexOfImpl'/2, 'unconsImpl'/1, 'sliceImpl'/3, 'nullImpl'/1, 'codePointAtImpl'/2, 'fromCodePointArrayImpl'/1, 'Pattern'/1, 'Replacement'/1, 'length'/0, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'charAt'/0, 'charAt'/1, 'contains'/0, 'contains'/1, 'split'/0, 'split'/1, 'joinWith'/0, 'joinWith'/1, 'replaceAll'/0, 'replaceAll'/1, 'replaceAll'/2, 'trim'/0, 'toLower'/0, 'toUpper'/0, 'stripPrefix'/0, 'stripPrefix'/1, 'lastIndexOf'/0, 'lastIndexOf'/1, 'toInt'/0, 'toCodePointArray'/0, 'singleton'/0, 'fromCharArray'/0, 'codeUnitIndex'/0, 'codeUnitIndex'/1, 'codeUnitTake'/0, 'codeUnitTake'/1, 'codeUnitDrop'/0, 'codeUnitDrop'/1, 'codeUnitLength'/0, 'indexOf'/0, 'indexOf'/1, 'uncons'/0, 'slice'/0, 'slice'/1, 'slice'/2, 'null'/0, 'codePointAt'/0, 'codePointAt'/1, 'fromCodePointArray'/0, 'lengthImpl'/0, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'charAtImpl'/0, 'charAtImpl'/1, 'containsImpl'/0, 'containsImpl'/1, 'splitImpl'/0, 'splitImpl'/1, 'joinWithImpl'/0, 'joinWithImpl'/1, 'replaceAllImpl'/0, 'replaceAllImpl'/1, 'replaceAllImpl'/2, 'trimImpl'/0, 'toLowerImpl'/0, 'toUpperImpl'/0, 'stripPrefixImpl'/0, 'stripPrefixImpl'/1, 'lastIndexOfImpl'/0, 'lastIndexOfImpl'/1, 'toIntImpl'/0, 'toCodePointArrayImpl'/0, 'singletonImpl'/0, 'fromCharArrayImpl'/0, 'codeUnitIndexImpl'/0, 'codeUnitIndexImpl'/1, 'codeUnitTakeImpl'/0, 'codeUnitTakeImpl'/1, 'codeUnitDropImpl'/0, 'codeUnitDropImpl'/1, 'codeUnitLengthImpl'/0, 'indexOfImpl'/0, 'indexOfImpl'/1, 'unconsImpl'/0, 'sliceImpl'/0, 'sliceImpl'/1, 'sliceImpl'/2, 'nullImpl'/0, 'codePointAtImpl'/0, 'codePointAtImpl'/1, 'fromCodePointArrayImpl'/0, 'Pattern'/0, 'Replacement'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 'split'/2, 'joinWith'/2, 'replaceAll'/3, 'trim'/1, 'toLower'/1, 'toUpper'/1, 'stripPrefix'/2, 'lastIndexOf'/2, 'toInt'/1, 'toCodePointArray'/1, 'singleton'/1, 'fromCharArray'/1, 'codeUnitIndex'/2, 'codeUnitTake'/2, 'codeUnitDrop'/2, 'codeUnitLength'/1, 'indexOf'/2, 'uncons'/1, 'slice'/3, 'null'/1, 'codePointAt'/2, 'fromCodePointArray'/1, 'stripSuffix'/2, 'endsWith'/2, 'lengthImpl'/1, 'takeImpl'/2, 'dropImpl'/2, 'charAtImpl'/2, 'containsImpl'/2, 'splitImpl'/2, 'joinWithImpl'/2, 'replaceAllImpl'/3, 'trimImpl'/1, 'toLowerImpl'/1, 'toUpperImpl'/1, 'stripPrefixImpl'/2, 'lastIndexOfImpl'/2, 'toIntImpl'/1, 'toCodePointArrayImpl'/1, 'singletonImpl'/1, 'fromCharArrayImpl'/1, 'codeUnitIndexImpl'/2, 'codeUnitTakeImpl'/2, 'codeUnitDropImpl'/2, 'codeUnitLengthImpl'/1, 'indexOfImpl'/2, 'unconsImpl'/1, 'sliceImpl'/3, 'nullImpl'/1, 'codePointAtImpl'/2, 'fromCodePointArrayImpl'/1, 'stripSuffixImpl'/2, 'endsWithImpl'/2, 'Pattern'/1, 'Replacement'/1, 'length'/0, 'take'/0, 'take'/1, 'drop'/0, 'drop'/1, 'charAt'/0, 'charAt'/1, 'contains'/0, 'contains'/1, 'split'/0, 'split'/1, 'joinWith'/0, 'joinWith'/1, 'replaceAll'/0, 'replaceAll'/1, 'replaceAll'/2, 'trim'/0, 'toLower'/0, 'toUpper'/0, 'stripPrefix'/0, 'stripPrefix'/1, 'lastIndexOf'/0, 'lastIndexOf'/1, 'toInt'/0, 'toCodePointArray'/0, 'singleton'/0, 'fromCharArray'/0, 'codeUnitIndex'/0, 'codeUnitIndex'/1, 'codeUnitTake'/0, 'codeUnitTake'/1, 'codeUnitDrop'/0, 'codeUnitDrop'/1, 'codeUnitLength'/0, 'indexOf'/0, 'indexOf'/1, 'uncons'/0, 'slice'/0, 'slice'/1, 'slice'/2, 'null'/0, 'codePointAt'/0, 'codePointAt'/1, 'fromCodePointArray'/0, 'stripSuffix'/0, 'stripSuffix'/1, 'endsWith'/0, 'endsWith'/1, 'lengthImpl'/0, 'takeImpl'/0, 'takeImpl'/1, 'dropImpl'/0, 'dropImpl'/1, 'charAtImpl'/0, 'charAtImpl'/1, 'containsImpl'/0, 'containsImpl'/1, 'splitImpl'/0, 'splitImpl'/1, 'joinWithImpl'/0, 'joinWithImpl'/1, 'replaceAllImpl'/0, 'replaceAllImpl'/1, 'replaceAllImpl'/2, 'trimImpl'/0, 'toLowerImpl'/0, 'toUpperImpl'/0, 'stripPrefixImpl'/0, 'stripPrefixImpl'/1, 'lastIndexOfImpl'/0, 'lastIndexOfImpl'/1, 'toIntImpl'/0, 'toCodePointArrayImpl'/0, 'singletonImpl'/0, 'fromCharArrayImpl'/0, 'codeUnitIndexImpl'/0, 'codeUnitIndexImpl'/1, 'codeUnitTakeImpl'/0, 'codeUnitTakeImpl'/1, 'codeUnitDropImpl'/0, 'codeUnitDropImpl'/1, 'codeUnitLengthImpl'/0, 'indexOfImpl'/0, 'indexOfImpl'/1, 'unconsImpl'/0, 'sliceImpl'/0, 'sliceImpl'/1, 'sliceImpl'/2, 'nullImpl'/0, 'codePointAtImpl'/0, 'codePointAtImpl'/1, 'fromCodePointArrayImpl'/0, 'stripSuffixImpl'/0, 'stripSuffixImpl'/1, 'endsWithImpl'/0, 'endsWithImpl'/1, 'Pattern'/0, 'Replacement'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Newtype: Pattern
 % Constructor: Pattern
@@ -134,6 +134,14 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
   fun (Cps) ->
     apply 'fromCodePointArrayImpl'/1(Cps)
 
+'stripSuffix'/2 =
+  fun (Suffix, S) ->
+    apply 'stripSuffixImpl'/2(Suffix, S)
+
+'endsWith'/2 =
+  fun (Suffix, S) ->
+    apply 'endsWithImpl'/2(Suffix, S)
+
 'lengthImpl'/1 = fun (V0) -> call 'erlang':'byte_size'(V0)
 
 'takeImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in let <N> = case call 'erlang':'>'(V0, Len) of <'true'> when 'true' -> Len <'false'> when 'true' -> V0 end in call 'erlang':'binary_part'(V1, 0, N)
@@ -187,6 +195,10 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
 'codePointAtImpl'/2 = fun (V0, V1) -> let <Len> = call 'erlang':'byte_size'(V1) in case call 'erlang':'and'(call 'erlang':'>='(V0, 0), call 'erlang':'<'(V0, Len)) of <'false'> when 'true' -> 'Nothing' <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, V0, 1)} end
 
 'fromCodePointArrayImpl'/1 = fun (V0) -> call 'unicode':'characters_to_binary'(V0)
+
+'stripSuffixImpl'/2 = fun (V0, V1) -> let <SufLen> = call 'erlang':'byte_size'(V0) in let <SLen> = call 'erlang':'byte_size'(V1) in case call 'erlang':'<'(SLen, SufLen) of <'true'> when 'true' -> 'Nothing' <'false'> when 'true' -> let <Start> = call 'erlang':'-'(SLen, SufLen) in case call 'erlang':'=:='(call 'erlang':'binary_part'(V1, Start, SufLen), V0) of <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'(V1, 0, Start)} <'false'> when 'true' -> 'Nothing' end end
+
+'endsWithImpl'/2 = fun (V0, V1) -> let <SufLen> = call 'erlang':'byte_size'(V0) in let <SLen> = call 'erlang':'byte_size'(V1) in case call 'erlang':'<'(SLen, SufLen) of <'true'> when 'true' -> 'false' <'false'> when 'true' -> let <Start> = call 'erlang':'-'(SLen, SufLen) in call 'erlang':'=:='(call 'erlang':'binary_part'(V1, Start, SufLen), V0) end
 
 'length'/0 =
   fun () ->
@@ -490,6 +502,34 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
         apply 'fromCodePointArray'/1(_A0)
       in _F0
 
+'stripSuffix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'stripSuffix'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'stripSuffix'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'stripSuffix'/2(_A0, _A1)
+      in _F0
+
+'endsWith'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'endsWith'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'endsWith'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'endsWith'/2(_A0, _A1)
+      in _F0
+
 'lengthImpl'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -790,6 +830,34 @@ module 'Data.String' ['length'/1, 'take'/2, 'drop'/2, 'charAt'/2, 'contains'/2, 
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'fromCodePointArrayImpl'/1(_A0)
+      in _F0
+
+'stripSuffixImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'stripSuffixImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'stripSuffixImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'stripSuffixImpl'/2(_A0, _A1)
+      in _F0
+
+'endsWithImpl'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'endsWithImpl'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'endsWithImpl'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'endsWithImpl'/2(_A0, _A1)
       in _F0
 
 'Pattern'/0 =

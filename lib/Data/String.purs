@@ -171,3 +171,15 @@ fromCodePointArray :: Array Int -> String
 fromCodePointArray cps = fromCodePointArrayImpl cps
 
 foreign import fromCodePointArrayImpl :: Array Int -> String = "call 'unicode':'characters_to_binary'($0)"
+
+-- Strip suffix from string
+stripSuffix :: String -> String -> Maybe String
+stripSuffix suffix s = stripSuffixImpl suffix s
+
+foreign import stripSuffixImpl :: String -> String -> Maybe String = "let <SufLen> = call 'erlang':'byte_size'($0) in let <SLen> = call 'erlang':'byte_size'($1) in case call 'erlang':'<'(SLen, SufLen) of <'true'> when 'true' -> 'Nothing' <'false'> when 'true' -> let <Start> = call 'erlang':'-'(SLen, SufLen) in case call 'erlang':'=:='(call 'erlang':'binary_part'($1, Start, SufLen), $0) of <'true'> when 'true' -> {'Just', call 'erlang':'binary_part'($1, 0, Start)} <'false'> when 'true' -> 'Nothing' end end"
+
+-- Check if string ends with suffix
+endsWith :: String -> String -> Boolean
+endsWith suffix s = endsWithImpl suffix s
+
+foreign import endsWithImpl :: String -> String -> Boolean = "let <SufLen> = call 'erlang':'byte_size'($0) in let <SLen> = call 'erlang':'byte_size'($1) in case call 'erlang':'<'(SLen, SufLen) of <'true'> when 'true' -> 'false' <'false'> when 'true' -> let <Start> = call 'erlang':'-'(SLen, SufLen) in call 'erlang':'=:='(call 'erlang':'binary_part'($1, Start, SufLen), $0) end"

@@ -1,0 +1,488 @@
+module 'Nova.Compiler.RefExtractor' ['mkRef'/2, 'refName'/1, 'refRefType'/1, 'extractRefs'/1, 'extractRefsSet'/1, 'extractFunctionRefs'/1, 'extractDataTypeRefs'/1, 'extractConstructorRefs'/1, 'extractTypeAliasRefs'/1, 'extractTypeClassRefs'/1, 'extractInstanceRefs'/1, 'extractForeignRefs'/1, 'extractTypeSigRefs'/1, 'extractNewtypeRefs'/1, 'extractTypeExprRefs'/1, 'extractExprRefs'/1, 'extractLetBindsRefs'/1, 'extractCaseClauseRefs'/1, 'extractDoStatementsRefs'/1, 'extractGuardedRefs'/1, 'extractGuardClauseRefs'/1, 'extractPatternRefs'/1, 'refTypeToInt'/1, 'CallRef'/0, 'TypeRef'/0, 'ImportRef'/0, 'PatternRef'/0, 'ConstructorRef'/0, 'RawRef'/1, 'mkRef'/0, 'mkRef'/1, 'refName'/0, 'refRefType'/0, 'extractRefs'/0, 'extractRefsSet'/0, 'extractFunctionRefs'/0, 'extractDataTypeRefs'/0, 'extractConstructorRefs'/0, 'extractTypeAliasRefs'/0, 'extractTypeClassRefs'/0, 'extractInstanceRefs'/0, 'extractForeignRefs'/0, 'extractTypeSigRefs'/0, 'extractNewtypeRefs'/0, 'extractTypeExprRefs'/0, 'extractExprRefs'/0, 'extractLetBindsRefs'/0, 'extractCaseClauseRefs'/0, 'extractDoStatementsRefs'/0, 'extractGuardedRefs'/0, 'extractGuardClauseRefs'/0, 'extractPatternRefs'/0, 'refTypeToInt'/0, 'RawRef'/0, 'module_info'/0, 'module_info'/1]
+  attributes []
+% Data type: RefType
+% Constructors: CallRef, TypeRef, ImportRef, PatternRef, ConstructorRef
+
+'CallRef'/0 =
+  fun () ->
+    'CallRef'
+
+'TypeRef'/0 =
+  fun () ->
+    'TypeRef'
+
+'ImportRef'/0 =
+  fun () ->
+    'ImportRef'
+
+'PatternRef'/0 =
+  fun () ->
+    'PatternRef'
+
+'ConstructorRef'/0 =
+  fun () ->
+    'ConstructorRef'
+
+% Newtype: RawRef
+% Constructor: RawRef
+
+'RawRef'/1 =
+  fun (V0) ->
+    {'RawRef', V0}
+
+'mkRef'/2 =
+  fun (Name, RefType) ->
+    apply 'RawRef'/1(~{'name'=>Name,'refType'=>RefType}~)
+
+'refName'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'RawRef', R}}> when 'true' ->
+        call 'maps':'get'('name', R)
+    end
+
+'refRefType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'RawRef', R}}> when 'true' ->
+        call 'maps':'get'('refType', R)
+    end
+
+'extractRefs'/1 =
+  fun (Decl) ->
+    call 'Data.Set':'toUnfoldable'(apply 'extractRefsSet'/1(Decl))
+
+'extractRefsSet'/1 =
+  fun (Decl) ->
+    case Decl of
+      <{'DeclFunction', F}> when 'true' ->
+        apply 'extractFunctionRefs'/1(F)
+      <{'DeclDataType', D}> when 'true' ->
+        apply 'extractDataTypeRefs'/1(D)
+      <{'DeclTypeAlias', A}> when 'true' ->
+        apply 'extractTypeAliasRefs'/1(A)
+      <{'DeclTypeClass', C}> when 'true' ->
+        apply 'extractTypeClassRefs'/1(C)
+      <{'DeclTypeClassInstance', I}> when 'true' ->
+        apply 'extractInstanceRefs'/1(I)
+      <{'DeclForeignImport', F}> when 'true' ->
+        apply 'extractForeignRefs'/1(F)
+      <{'DeclTypeSig', S}> when 'true' ->
+        apply 'extractTypeSigRefs'/1(S)
+      <{'DeclNewtype', N}> when 'true' ->
+        apply 'extractNewtypeRefs'/1(N)
+      <{'DeclType', T}> when 'true' ->
+        apply 'extractTypeExprRefs'/1(call 'maps':'get'('typeSignature', T))
+      <{'DeclModule', M}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, D) ->
+      call 'Data.Set':'union'(Acc, apply 'extractRefsSet'/1(D)), call 'Data.Set':'empty'(), call 'maps':'get'('declarations', M))
+      <{'DeclImport', I}> when 'true' ->
+        call 'Data.Set':'singleton'(apply 'mkRef'/2(call 'maps':'get'('moduleName', I), apply 'ImportRef'/0()))
+      <{'DeclInfix', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+    end
+
+'extractFunctionRefs'/1 =
+  fun (F) ->
+    let <BodyRefs> = apply 'extractExprRefs'/1(call 'maps':'get'('body', F))
+      in let <GuardRefs> = call 'Data.Foldable':'foldl'(fun (Acc, G) ->
+      call 'Data.Set':'union'(Acc, apply 'extractGuardedRefs'/1(G)), call 'Data.Set':'empty'(), call 'maps':'get'('guards', F))
+      in let <ParamRefs> = call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'extractPatternRefs'/1(P)), call 'Data.Set':'empty'(), call 'maps':'get'('parameters', F))
+      in let <SigRefs> = case call 'maps':'get'('typeSignature', F) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', Sig}> when 'true' ->
+        apply 'extractTypeSigRefs'/1(Sig)
+    end
+      in call 'Data.Set':'union'(BodyRefs, call 'Data.Set':'union'(GuardRefs, call 'Data.Set':'union'(ParamRefs, SigRefs)))
+
+'extractDataTypeRefs'/1 =
+  fun (D) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, apply 'extractConstructorRefs'/1(C)), call 'Data.Set':'empty'(), call 'maps':'get'('constructors', D))
+
+'extractConstructorRefs'/1 =
+  fun (C) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, F) ->
+      call 'Data.Set':'union'(Acc, apply 'extractTypeExprRefs'/1(call 'maps':'get'('ty', F))), call 'Data.Set':'empty'(), call 'maps':'get'('fields', C))
+
+'extractTypeAliasRefs'/1 =
+  fun (A) ->
+    apply 'extractTypeExprRefs'/1(call 'maps':'get'('ty', A))
+
+'extractTypeClassRefs'/1 =
+  fun (C) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, M) ->
+      call 'Data.Set':'union'(Acc, apply 'extractTypeSigRefs'/1(M)), call 'Data.Set':'empty'(), call 'maps':'get'('methods', C))
+
+'extractInstanceRefs'/1 =
+  fun (I) ->
+    let <ClassRef> = call 'Data.Set':'singleton'(apply 'mkRef'/2(call 'maps':'get'('className', I), apply 'TypeRef'/0()))
+      in let <TyRefs> = apply 'extractTypeExprRefs'/1(call 'maps':'get'('ty', I))
+      in let <MethodRefs> = call 'Data.Foldable':'foldl'(fun (Acc, M) ->
+      call 'Data.Set':'union'(Acc, apply 'extractFunctionRefs'/1(M)), call 'Data.Set':'empty'(), call 'maps':'get'('methods', I))
+      in call 'Data.Set':'union'(ClassRef, call 'Data.Set':'union'(TyRefs, MethodRefs))
+
+'extractForeignRefs'/1 =
+  fun (F) ->
+    apply 'extractTypeExprRefs'/1(call 'maps':'get'('typeSignature', F))
+
+'extractTypeSigRefs'/1 =
+  fun (S) ->
+    let <ConstraintRefs> = call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      let <ClassRef> = call 'Data.Set':'singleton'(apply 'mkRef'/2(call 'maps':'get'('className', C), apply 'TypeRef'/0()))
+      in let <TypeRefs> = call 'Data.Foldable':'foldl'(fun (Acc2, T) ->
+      call 'Data.Set':'union'(Acc2, apply 'extractTypeExprRefs'/1(T)), call 'Data.Set':'empty'(), call 'maps':'get'('types', C))
+      in call 'Data.Set':'union'(Acc, call 'Data.Set':'union'(ClassRef, TypeRefs)), call 'Data.Set':'empty'(), call 'maps':'get'('constraints', S))
+      in call 'Data.Set':'union'(ConstraintRefs, apply 'extractTypeExprRefs'/1(call 'maps':'get'('ty', S)))
+
+'extractNewtypeRefs'/1 =
+  fun (N) ->
+    apply 'extractTypeExprRefs'/1(call 'maps':'get'('wrappedType', N))
+
+'extractTypeExprRefs'/1 =
+  fun (Ty) ->
+    case Ty of
+      <{'TyExprCon', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(apply 'mkRef'/2(Name, apply 'TypeRef'/0()))
+      <{'TyExprVar', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'TyExprApp', T1, T2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractTypeExprRefs'/1(T1), apply 'extractTypeExprRefs'/1(T2))
+      <{'TyExprArrow', T1, T2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractTypeExprRefs'/1(T1), apply 'extractTypeExprRefs'/1(T2))
+      <{'TyExprRecord', Fields, _W0}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, T}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'extractTypeExprRefs'/1(T))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'TyExprForAll', _W0, T}> when 'true' ->
+        apply 'extractTypeExprRefs'/1(T)
+      <{'TyExprConstrained', Cs, T}> when 'true' ->
+        let <ConstraintRefs> = call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      let <ClassRef> = call 'Data.Set':'singleton'(apply 'mkRef'/2(call 'maps':'get'('className', C), apply 'TypeRef'/0()))
+      in let <TypeRefs> = call 'Data.Foldable':'foldl'(fun (Acc2, Ct) ->
+      call 'Data.Set':'union'(Acc2, apply 'extractTypeExprRefs'/1(Ct)), call 'Data.Set':'empty'(), call 'maps':'get'('types', C))
+      in call 'Data.Set':'union'(Acc, call 'Data.Set':'union'(ClassRef, TypeRefs)), call 'Data.Set':'empty'(), Cs)
+      in call 'Data.Set':'union'(ConstraintRefs, apply 'extractTypeExprRefs'/1(T))
+      <{'TyExprParens', T}> when 'true' ->
+        apply 'extractTypeExprRefs'/1(T)
+      <{'TyExprTuple', Ts}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, T) ->
+      call 'Data.Set':'union'(Acc, apply 'extractTypeExprRefs'/1(T)), call 'Data.Set':'empty'(), Ts)
+    end
+
+'extractExprRefs'/1 =
+  fun (Expr) ->
+    case Expr of
+      <{'ExprVar', Name}> when 'true' ->
+        call 'Data.Set':'singleton'(apply 'mkRef'/2(Name, apply 'CallRef'/0()))
+      <{'ExprQualified', Ns, Name}> when 'true' ->
+        call 'Data.Set':'singleton'(apply 'mkRef'/2(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Ns, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), apply 'CallRef'/0()))
+      <{'ExprLit', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprApp', E1, E2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractExprRefs'/1(E1), apply 'extractExprRefs'/1(E2))
+      <{'ExprLambda', Pats, Body}> when 'true' ->
+        let <PatRefs> = call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'extractPatternRefs'/1(P)), call 'Data.Set':'empty'(), Pats)
+      in call 'Data.Set':'union'(PatRefs, apply 'extractExprRefs'/1(Body))
+      <{'ExprLet', Binds, Body}> when 'true' ->
+        let <BindRefs> = apply 'extractLetBindsRefs'/1(Binds)
+      in call 'Data.Set':'union'(BindRefs, apply 'extractExprRefs'/1(Body))
+      <{'ExprIf', C, T, E}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractExprRefs'/1(C), call 'Data.Set':'union'(apply 'extractExprRefs'/1(T), apply 'extractExprRefs'/1(E)))
+      <{'ExprCase', E, Clauses}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractExprRefs'/1(E), call 'Data.Foldable':'foldl'(fun (Acc, C) ->
+      call 'Data.Set':'union'(Acc, apply 'extractCaseClauseRefs'/1(C)), call 'Data.Set':'empty'(), Clauses))
+      <{'ExprDo', Stmts}> when 'true' ->
+        apply 'extractDoStatementsRefs'/1(Stmts)
+      <{'ExprBinOp', Op, E1, E2}> when 'true' ->
+        call 'Data.Set':'union'(call 'Data.Set':'singleton'(apply 'mkRef'/2(Op, apply 'CallRef'/0())), call 'Data.Set':'union'(apply 'extractExprRefs'/1(E1), apply 'extractExprRefs'/1(E2)))
+      <{'ExprUnaryOp', Op, E}> when 'true' ->
+        call 'Data.Set':'union'(call 'Data.Set':'singleton'(apply 'mkRef'/2(Op, apply 'CallRef'/0())), apply 'extractExprRefs'/1(E))
+      <{'ExprList', Es}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, E) ->
+      call 'Data.Set':'union'(Acc, apply 'extractExprRefs'/1(E)), call 'Data.Set':'empty'(), Es)
+      <{'ExprTuple', Es}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, E) ->
+      call 'Data.Set':'union'(Acc, apply 'extractExprRefs'/1(E)), call 'Data.Set':'empty'(), Es)
+      <{'ExprRecord', Fields}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, E}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'extractExprRefs'/1(E))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'ExprRecordAccess', E, _W0}> when 'true' ->
+        apply 'extractExprRefs'/1(E)
+      <{'ExprRecordUpdate', E, Fields}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractExprRefs'/1(E), call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, V}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'extractExprRefs'/1(V))
+      end, call 'Data.Set':'empty'(), Fields))
+      <{'ExprTyped', E, T}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractExprRefs'/1(E), apply 'extractTypeExprRefs'/1(T))
+      <{'ExprParens', E}> when 'true' ->
+        apply 'extractExprRefs'/1(E)
+      <{'ExprSection', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'ExprSectionLeft', E, _W0}> when 'true' ->
+        apply 'extractExprRefs'/1(E)
+      <{'ExprSectionRight', _W0, E}> when 'true' ->
+        apply 'extractExprRefs'/1(E)
+    end
+
+'extractLetBindsRefs'/1 =
+  fun (Binds) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, B) ->
+      let <PatRefs> = apply 'extractPatternRefs'/1(call 'maps':'get'('pattern', B))
+      in let <ValRefs> = apply 'extractExprRefs'/1(call 'maps':'get'('value', B))
+      in let <AnnRefs> = case call 'maps':'get'('typeAnn', B) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', T}> when 'true' ->
+        apply 'extractTypeExprRefs'/1(T)
+    end
+      in call 'Data.Set':'union'(Acc, call 'Data.Set':'union'(PatRefs, call 'Data.Set':'union'(ValRefs, AnnRefs))), call 'Data.Set':'empty'(), Binds)
+
+'extractCaseClauseRefs'/1 =
+  fun (Clause) ->
+    let <PatRefs> = apply 'extractPatternRefs'/1(call 'maps':'get'('pattern', Clause))
+      in let <BodyRefs> = apply 'extractExprRefs'/1(call 'maps':'get'('body', Clause))
+      in let <GuardRefs> = case call 'maps':'get'('guard', Clause) of
+      <'Nothing'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'Just', G}> when 'true' ->
+        apply 'extractExprRefs'/1(G)
+    end
+      in call 'Data.Set':'union'(PatRefs, call 'Data.Set':'union'(BodyRefs, GuardRefs))
+
+'extractDoStatementsRefs'/1 =
+  fun (Stmts) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, Stmt) ->
+      case Stmt of
+      <{'DoLet', Binds}> when 'true' ->
+        call 'Data.Set':'union'(Acc, apply 'extractLetBindsRefs'/1(Binds))
+      <{'DoBind', Pat, E}> when 'true' ->
+        call 'Data.Set':'union'(Acc, call 'Data.Set':'union'(apply 'extractPatternRefs'/1(Pat), apply 'extractExprRefs'/1(E)))
+      <{'DoExpr', E}> when 'true' ->
+        call 'Data.Set':'union'(Acc, apply 'extractExprRefs'/1(E))
+    end, call 'Data.Set':'empty'(), Stmts)
+
+'extractGuardedRefs'/1 =
+  fun (G) ->
+    let <GuardRefs> = call 'Data.Foldable':'foldl'(fun (Acc, Gc) ->
+      call 'Data.Set':'union'(Acc, apply 'extractGuardClauseRefs'/1(Gc)), call 'Data.Set':'empty'(), call 'maps':'get'('guards', G))
+      in let <BodyRefs> = apply 'extractExprRefs'/1(call 'maps':'get'('body', G))
+      in call 'Data.Set':'union'(GuardRefs, BodyRefs)
+
+'extractGuardClauseRefs'/1 =
+  fun (Gc) ->
+    case Gc of
+      <{'GuardExpr', E}> when 'true' ->
+        apply 'extractExprRefs'/1(E)
+      <{'GuardPat', Pat, E}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractPatternRefs'/1(Pat), apply 'extractExprRefs'/1(E))
+    end
+
+'extractPatternRefs'/1 =
+  fun (Pat) ->
+    case Pat of
+      <{'PatVar', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <'PatWildcard'> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'PatLit', _W0}> when 'true' ->
+        call 'Data.Set':'empty'()
+      <{'PatCon', Name, Pats}> when 'true' ->
+        let <ConRef> = call 'Data.Set':'singleton'(apply 'mkRef'/2(Name, apply 'PatternRef'/0()))
+      in let <SubRefs> = call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'extractPatternRefs'/1(P)), call 'Data.Set':'empty'(), Pats)
+      in call 'Data.Set':'union'(ConRef, SubRefs)
+      <{'PatRecord', Fields}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', _W0, P}}> when 'true' -> call 'Data.Set':'union'(Acc, apply 'extractPatternRefs'/1(P))
+      end, call 'Data.Set':'empty'(), Fields)
+      <{'PatList', Pats}> when 'true' ->
+        call 'Data.Foldable':'foldl'(fun (Acc, P) ->
+      call 'Data.Set':'union'(Acc, apply 'extractPatternRefs'/1(P)), call 'Data.Set':'empty'(), Pats)
+      <{'PatCons', P1, P2}> when 'true' ->
+        call 'Data.Set':'union'(apply 'extractPatternRefs'/1(P1), apply 'extractPatternRefs'/1(P2))
+      <{'PatAs', _W0, P}> when 'true' ->
+        apply 'extractPatternRefs'/1(P)
+      <{'PatParens', P}> when 'true' ->
+        apply 'extractPatternRefs'/1(P)
+    end
+
+'refTypeToInt'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'CallRef'}> when 'true' ->
+        0
+      <{'TypeRef'}> when 'true' ->
+        1
+      <{'ImportRef'}> when 'true' ->
+        2
+      <{'PatternRef'}> when 'true' ->
+        3
+      <{'ConstructorRef'}> when 'true' ->
+        4
+    end
+
+'mkRef'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkRef'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkRef'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkRef'/2(_A0, _A1)
+      in _F0
+
+'refName'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'refName'/1(_A0)
+      in _F0
+
+'refRefType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'refRefType'/1(_A0)
+      in _F0
+
+'extractRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractRefs'/1(_A0)
+      in _F0
+
+'extractRefsSet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractRefsSet'/1(_A0)
+      in _F0
+
+'extractFunctionRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractFunctionRefs'/1(_A0)
+      in _F0
+
+'extractDataTypeRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractDataTypeRefs'/1(_A0)
+      in _F0
+
+'extractConstructorRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractConstructorRefs'/1(_A0)
+      in _F0
+
+'extractTypeAliasRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractTypeAliasRefs'/1(_A0)
+      in _F0
+
+'extractTypeClassRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractTypeClassRefs'/1(_A0)
+      in _F0
+
+'extractInstanceRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractInstanceRefs'/1(_A0)
+      in _F0
+
+'extractForeignRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractForeignRefs'/1(_A0)
+      in _F0
+
+'extractTypeSigRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractTypeSigRefs'/1(_A0)
+      in _F0
+
+'extractNewtypeRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractNewtypeRefs'/1(_A0)
+      in _F0
+
+'extractTypeExprRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractTypeExprRefs'/1(_A0)
+      in _F0
+
+'extractExprRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractExprRefs'/1(_A0)
+      in _F0
+
+'extractLetBindsRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractLetBindsRefs'/1(_A0)
+      in _F0
+
+'extractCaseClauseRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractCaseClauseRefs'/1(_A0)
+      in _F0
+
+'extractDoStatementsRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractDoStatementsRefs'/1(_A0)
+      in _F0
+
+'extractGuardedRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractGuardedRefs'/1(_A0)
+      in _F0
+
+'extractGuardClauseRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractGuardClauseRefs'/1(_A0)
+      in _F0
+
+'extractPatternRefs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'extractPatternRefs'/1(_A0)
+      in _F0
+
+'refTypeToInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'refTypeToInt'/1(_A0)
+      in _F0
+
+'RawRef'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'RawRef'/1(_A0)
+      in _F0
+
+'module_info'/0 = fun () -> call 'erlang':'get_module_info'('Nova.Compiler.RefExtractor')
+
+'module_info'/1 = fun (_0) -> call 'erlang':'get_module_info'('Nova.Compiler.RefExtractor', _0)
+end
