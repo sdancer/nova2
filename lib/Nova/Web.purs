@@ -676,7 +676,7 @@ namespaceDetailPage nsName =
         declsHtml = if Array.null decls
                     then "<div class=\"empty\">No declarations in this namespace.</div>"
                     else dataSection <> typeSection <> funcSection <> foreignSection
-    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><div class=\"decl-list\">" <> declsHtml <> "</div><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><script>async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
+    in htmlPage (nsName <> " - Nova") ("<a href=\"/namespaces\" class=\"back-link\">&larr; Namespaces</a><h1>" <> nsName <> "</h1><div class=\"decl-list\">" <> declsHtml <> "</div><h2>Add Declaration</h2><div class=\"form-group\"><input type=\"text\" id=\"declName\" placeholder=\"Declaration name\" style=\"margin-bottom:.5rem\"><br><select id=\"declKind\" style=\"background:#1a1a2e;color:#eee;border:1px solid #444;padding:.5rem;border-radius:4px\"><option value=\"function\">Function</option><option value=\"datatype\">Data Type</option><option value=\"typealias\">Type Alias</option><option value=\"foreign\">Foreign</option></select></div><div class=\"form-group\"><textarea id=\"declSource\" rows=\"4\" placeholder=\"add :: Int -> Int -> Int\\nadd x y = x + y\"></textarea></div><button onclick=\"addDecl()\">Add Declaration</button><script>function toggleSource(id){var e=document.getElementById('src-'+id);e.style.display=e.style.display==='none'?'block':'none'}async function addDecl(){const n=document.getElementById('declName').value;const s=document.getElementById('declSource').value;const k=document.getElementById('declKind').value;if(!n||!s)return alert('Name and source required');const r=await fetch('/api/decl/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({namespace:'" <> nsName <> "',name:n,source:s,kind:k})});const d=await r.json();if(d.error)alert(d.error);else location.reload()}</script>")
 
 -- | Sort declarations by kind then name
 sortDeclarations :: Array NS.ManagedDecl -> Array NS.ManagedDecl
@@ -706,12 +706,20 @@ renderDeclItem decl =
       sigHtml = case decl.inferredType of
         Nothing -> ""
         Just t -> "<div class=\"decl-sig\"><code>" <> escapeHtml t <> "</code></div>"
-      -- Only show source for non-functions (data types, type aliases, foreign)
+      -- For functions/foreign: hidden source with click to expand
+      -- For others: always show source
       sourceHtml = case decl.kind of
-        NS.FunctionDecl -> ""
-        NS.ForeignDecl -> ""
+        NS.FunctionDecl ->
+          "<pre class=\"decl-source\" style=\"display:none\" id=\"src-" <> decl.declId <> "\">" <> escapeHtml decl.sourceText <> "</pre>"
+        NS.ForeignDecl ->
+          "<pre class=\"decl-source\" style=\"display:none\" id=\"src-" <> decl.declId <> "\">" <> escapeHtml decl.sourceText <> "</pre>"
         _ -> "<pre class=\"decl-source\">" <> escapeHtml decl.sourceText <> "</pre>"
-  in "<div class=\"decl-item " <> kindClass <> "\"><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> sourceHtml <> "</div>"
+      -- Add click handler for functions/foreign
+      clickAttr = case decl.kind of
+        NS.FunctionDecl -> " onclick=\"toggleSource('" <> decl.declId <> "')\" style=\"cursor:pointer\""
+        NS.ForeignDecl -> " onclick=\"toggleSource('" <> decl.declId <> "')\" style=\"cursor:pointer\""
+        _ -> ""
+  in "<div class=\"decl-item " <> kindClass <> "\"" <> clickAttr <> "><div class=\"decl-name\">" <> decl.name <> "</div>" <> sigHtml <> sourceHtml <> "</div>"
 
 -- | Escape HTML entities
 foreign import escapeHtml :: String -> String
