@@ -580,11 +580,11 @@ renderExpr expr = case expr of
   Ast.ExprLambda pats body ->
     "\\" <> String.joinWith " " (Array.fromFoldable (List.map renderPattern pats)) <> " -> " <> renderExpr body
   Ast.ExprLet binds body ->
-    "let " <> renderBindings binds <> " in " <> renderExpr body
+    "let " <> renderBindings binds <> "\n  in " <> renderExpr body
   Ast.ExprIf cond t f ->
     "if " <> renderExpr cond <> " then " <> renderExpr t <> " else " <> renderExpr f
   Ast.ExprCase e clauses ->
-    "case " <> renderExpr e <> " of " <> renderClauses clauses
+    "case " <> renderExpr e <> " of\n    " <> renderClauses clauses
   Ast.ExprDo stmts -> "do " <> renderDoStmts stmts
   Ast.ExprBinOp op e1 e2 -> renderExpr e1 <> " " <> op <> " " <> renderExpr e2
   Ast.ExprUnaryOp op e -> op <> renderExpr e
@@ -617,7 +617,7 @@ wrapExpr e = case e of
 -- | Render let bindings (List LetBind)
 renderBindings :: List Ast.LetBind -> String
 renderBindings binds =
-  String.joinWith "; " (Array.fromFoldable (List.map renderBinding binds))
+  String.joinWith "\n      " (Array.fromFoldable (List.map renderBinding binds))
 
 -- | Render a single let binding (LetBind is a record)
 renderBinding :: Ast.LetBind -> String
@@ -627,7 +627,7 @@ renderBinding bind =
 -- | Render case clauses (List CaseClause)
 renderClauses :: List Ast.CaseClause -> String
 renderClauses clauses =
-  String.joinWith "; " (Array.fromFoldable (List.map renderClause clauses))
+  String.joinWith "\n    " (Array.fromFoldable (List.map renderClause clauses))
 
 -- | Render a single case clause
 renderClause :: Ast.CaseClause -> String
@@ -640,7 +640,7 @@ renderClause clause =
 -- | Render do statements
 renderDoStmts :: List Ast.DoStatement -> String
 renderDoStmts stmts =
-  String.joinWith "; " (Array.fromFoldable (List.map renderDoStmt stmts))
+  "\n    " <> String.joinWith "\n    " (Array.fromFoldable (List.map renderDoStmt stmts))
 
 -- | Render a single do statement
 renderDoStmt :: Ast.DoStatement -> String

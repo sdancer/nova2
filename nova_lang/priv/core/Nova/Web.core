@@ -615,11 +615,11 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'initFresh'/1, 'import
       <{'ExprLambda', Pats, Body}> when 'true' ->
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<92>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderPattern'/1(_Mf0), Pats)))), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderExpr'/1(Body))
       <{'ExprLet', Binds, Body}> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderBindings'/1(Binds)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderExpr'/1(Body))
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderBindings'/1(Binds)), #{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderExpr'/1(Body))
       <{'ExprIf', Cond, T, F}> when 'true' ->
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderExpr'/1(Cond)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderExpr'/1(T)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderExpr'/1(F))
       <{'ExprCase', E, Clauses}> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderExpr'/1(E)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderClauses'/1(Clauses))
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderExpr'/1(E)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'renderClauses'/1(Clauses))
       <{'ExprDo', Stmts}> when 'true' ->
         call 'Nova.Prelude':'semigroupAppendImpl'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'renderDoStmts'/1(Stmts))
       <{'ExprBinOp', Op, E1, E2}> when 'true' ->
@@ -669,7 +669,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'initFresh'/1, 'import
 
 'renderBindings'/1 =
   fun (Binds) ->
-    call 'Data.String':'joinWith'(#{#<59>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderBinding'/1(_Mf0), Binds)))
+    call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderBinding'/1(_Mf0), Binds)))
 
 'renderBinding'/1 =
   fun (Bind) ->
@@ -677,7 +677,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'initFresh'/1, 'import
 
 'renderClauses'/1 =
   fun (Clauses) ->
-    call 'Data.String':'joinWith'(#{#<59>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderClause'/1(_Mf0), Clauses)))
+    call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderClause'/1(_Mf0), Clauses)))
 
 'renderClause'/1 =
   fun (Clause) ->
@@ -691,7 +691,7 @@ module 'Nova.Web' ['stateKey'/0, 'initServiceIfNeeded'/1, 'initFresh'/1, 'import
 
 'renderDoStmts'/1 =
   fun (Stmts) ->
-    call 'Data.String':'joinWith'(#{#<59>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderDoStmt'/1(_Mf0), Stmts)))
+    call 'Nova.Prelude':'semigroupAppendImpl'(#{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.Array':'fromFoldable'(call 'Data.List':'map'(fun (_Mf0) -> apply 'renderDoStmt'/1(_Mf0), Stmts))))
 
 'renderDoStmt'/1 =
   fun (Stmt) ->
