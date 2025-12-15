@@ -1,16 +1,16 @@
-module 'Data.Json' ['decode'/1, 'encode'/1, 'getString'/2, 'decodeImpl'/1, 'getStringImpl'/2, 'encodeImpl'/1, 'decode'/0, 'encode'/0, 'getString'/0, 'getString'/1, 'decodeImpl'/0, 'getStringImpl'/0, 'getStringImpl'/1, 'encodeImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.Json' ['decode'/1, 'getString'/2, 'encode'/1, 'decodeImpl'/1, 'getStringImpl'/2, 'encodeImpl'/1, 'decode'/0, 'getString'/0, 'getString'/1, 'encode'/0, 'decodeImpl'/0, 'getStringImpl'/0, 'getStringImpl'/1, 'encodeImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 'decode'/1 =
   fun (Str) ->
     apply 'decodeImpl'/1(Str)
 
-'encode'/1 =
-  fun (Val) ->
-    apply 'encodeImpl'/1(Val)
-
 'getString'/2 =
   fun (Json, Field) ->
     apply 'getStringImpl'/2(Json, Field)
+
+'encode'/1 =
+  fun (Val) ->
+    apply 'encodeImpl'/1(Val)
 
 'decodeImpl'/1 = fun (V0) -> case catch call 'json':'decode'(V0) of <{'EXIT', _}> when 'true' -> 'Nothing' <V> when call 'erlang':'is_map'(V) -> {'Just', V} <_> when 'true' -> 'Nothing' end
 
@@ -22,12 +22,6 @@ module 'Data.Json' ['decode'/1, 'encode'/1, 'getString'/2, 'decodeImpl'/1, 'getS
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'decode'/1(_A0)
-      in _F0
-
-'encode'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'encode'/1(_A0)
       in _F0
 
 'getString'/0 =
@@ -42,6 +36,12 @@ module 'Data.Json' ['decode'/1, 'encode'/1, 'getString'/2, 'decodeImpl'/1, 'getS
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'getString'/2(_A0, _A1)
+      in _F0
+
+'encode'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'encode'/1(_A0)
       in _F0
 
 'decodeImpl'/0 =

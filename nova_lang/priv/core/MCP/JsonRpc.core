@@ -1,4 +1,4 @@
-module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'parseError'/0, 'encodeId'/1, 'isNotification'/1, 'mkParseError'/1, 'parseId'/1, 'parseRequest'/1, 'encodeSuccess'/2, 'mkInternalError'/2, 'mkMethodNotFound'/2, 'encodeError'/4, 'IdString'/1, 'IdInt'/1, 'IdNull'/0, 'encodeId'/0, 'isNotification'/0, 'mkParseError'/0, 'parseId'/0, 'parseRequest'/0, 'encodeSuccess'/0, 'encodeSuccess'/1, 'mkInternalError'/0, 'mkInternalError'/1, 'mkMethodNotFound'/0, 'mkMethodNotFound'/1, 'encodeError'/0, 'encodeError'/1, 'encodeError'/2, 'encodeError'/3, 'IdString'/0, 'IdInt'/0, 'module_info'/0, 'module_info'/1]
+module 'MCP.JsonRpc' ['parseError'/0, 'invalidRequest'/0, 'methodNotFound'/0, 'invalidParams'/0, 'internalError'/0, 'parseRequest'/1, 'parseId'/1, 'isNotification'/1, 'encodeSuccess'/2, 'encodeError'/4, 'encodeId'/1, 'mkParseError'/1, 'mkMethodNotFound'/2, 'mkInternalError'/2, 'IdString'/1, 'IdInt'/1, 'IdNull'/0, 'parseRequest'/0, 'parseId'/0, 'isNotification'/0, 'encodeSuccess'/0, 'encodeSuccess'/1, 'encodeError'/0, 'encodeError'/1, 'encodeError'/2, 'encodeError'/3, 'encodeId'/0, 'mkParseError'/0, 'mkMethodNotFound'/0, 'mkMethodNotFound'/1, 'mkInternalError'/0, 'mkInternalError'/1, 'IdString'/0, 'IdInt'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: RequestId
 % Constructors: IdString, IdInt, IdNull
@@ -15,13 +15,9 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
   fun () ->
     'IdNull'
 
-'internalError'/0 =
+'parseError'/0 =
   fun () ->
-    call 'erlang':'-'(32603)
-
-'invalidParams'/0 =
-  fun () ->
-    call 'erlang':'-'(32602)
+    call 'erlang':'-'(32700)
 
 'invalidRequest'/0 =
   fun () ->
@@ -31,54 +27,13 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
   fun () ->
     call 'erlang':'-'(32601)
 
-'parseError'/0 =
+'invalidParams'/0 =
   fun () ->
-    call 'erlang':'-'(32700)
+    call 'erlang':'-'(32602)
 
-'encodeId'/1 =
-  fun (_P0) ->
-    case {_P0} of
-      <{'IdNull'}> when 'true' ->
-        call 'MCP.Json':'jsonNull'()
-      <{{'IdString', S}}> when 'true' ->
-        call 'MCP.Json':'toJsonString'(S)
-      <{{'IdInt', N}}> when 'true' ->
-        call 'MCP.Json':'toJsonInt'(N)
-    end
-
-'isNotification'/1 =
-  fun (Req) ->
-    case call 'maps':'get'('id', Req) of
-      <'Nothing'> when 'true' ->
-        'true'
-      <{'Just', 'IdNull'}> when 'true' ->
-        'false'
-      <_W0> when 'true' ->
-        'false'
-    end
-
-'mkParseError'/1 =
-  fun (Msg) ->
-    apply 'encodeError'/4('Nothing', apply 'parseError'/0(), Msg, 'Nothing')
-
-'parseId'/1 =
-  fun (Json) ->
-    case let <_Oa0> = call 'MCP.Json':'getField'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
-      in apply _Oa0(Json) of
-      <'Nothing'> when 'true' ->
-        'Nothing'
-      <{'Just', IdVal}> when 'true' ->
-        case call 'MCP.Json':'isNull'(IdVal) of
-      <'true'> when 'true' -> {'Just', apply 'IdNull'/0()}
-      <'false'> when 'true' -> case call 'MCP.Json':'isString'(IdVal) of
-      <'true'> when 'true' -> {'Just', apply 'IdString'/1(call 'MCP.Json':'jsonStringToString'(IdVal))}
-      <'false'> when 'true' -> case call 'MCP.Json':'isNumber'(IdVal) of
-      <'true'> when 'true' -> {'Just', apply 'IdInt'/1(call 'MCP.Json':'jsonNumberToInt'(IdVal))}
-      <'false'> when 'true' -> 'Nothing'
-    end
-    end
-    end
-    end
+'internalError'/0 =
+  fun () ->
+    call 'erlang':'-'(32603)
 
 'parseRequest'/1 =
   fun (JsonStr) ->
@@ -107,6 +62,36 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
     end
     end
 
+'parseId'/1 =
+  fun (Json) ->
+    case let <_Oa0> = call 'MCP.Json':'getField'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
+      in apply _Oa0(Json) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Just', IdVal}> when 'true' ->
+        case call 'MCP.Json':'isNull'(IdVal) of
+      <'true'> when 'true' -> {'Just', apply 'IdNull'/0()}
+      <'false'> when 'true' -> case call 'MCP.Json':'isString'(IdVal) of
+      <'true'> when 'true' -> {'Just', apply 'IdString'/1(call 'MCP.Json':'jsonStringToString'(IdVal))}
+      <'false'> when 'true' -> case call 'MCP.Json':'isNumber'(IdVal) of
+      <'true'> when 'true' -> {'Just', apply 'IdInt'/1(call 'MCP.Json':'jsonNumberToInt'(IdVal))}
+      <'false'> when 'true' -> 'Nothing'
+    end
+    end
+    end
+    end
+
+'isNotification'/1 =
+  fun (Req) ->
+    case call 'maps':'get'('id', Req) of
+      <'Nothing'> when 'true' ->
+        'true'
+      <{'Just', 'IdNull'}> when 'true' ->
+        'false'
+      <_W0> when 'true' ->
+        'false'
+    end
+
 'encodeSuccess'/2 =
   fun (ReqId, Result) ->
     let <IdJson> = apply 'encodeId'/1(ReqId)
@@ -115,14 +100,6 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
       in apply _Oa0(IdJson), let <_Oa0> = call 'MCP.Json':'kv'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#)
       in apply _Oa0(Result)])
       in call 'MCP.Json':'encode'(Response)
-
-'mkInternalError'/2 =
-  fun (ReqId, Msg) ->
-    apply 'encodeError'/4({'Just', ReqId}, apply 'internalError'/0(), Msg, 'Nothing')
-
-'mkMethodNotFound'/2 =
-  fun (ReqId, Method) ->
-    apply 'encodeError'/4({'Just', ReqId}, apply 'methodNotFound'/0(), call 'Nova.Prelude':'semigroupAppendImpl'(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Method), 'Nothing')
 
 'encodeError'/4 =
   fun (MaybeId, Code, Message, MaybeData) ->
@@ -149,22 +126,33 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
       in apply _Oa0(ErrorObj)])
       in call 'MCP.Json':'encode'(Response)
 
-'encodeId'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'encodeId'/1(_A0)
-      in _F0
+'encodeId'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{'IdNull'}> when 'true' ->
+        call 'MCP.Json':'jsonNull'()
+      <{{'IdString', S}}> when 'true' ->
+        call 'MCP.Json':'toJsonString'(S)
+      <{{'IdInt', N}}> when 'true' ->
+        call 'MCP.Json':'toJsonInt'(N)
+    end
 
-'isNotification'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isNotification'/1(_A0)
-      in _F0
+'mkParseError'/1 =
+  fun (Msg) ->
+    apply 'encodeError'/4('Nothing', apply 'parseError'/0(), Msg, 'Nothing')
 
-'mkParseError'/0 =
+'mkMethodNotFound'/2 =
+  fun (ReqId, Method) ->
+    apply 'encodeError'/4({'Just', ReqId}, apply 'methodNotFound'/0(), call 'Nova.Prelude':'semigroupAppendImpl'(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Method), 'Nothing')
+
+'mkInternalError'/2 =
+  fun (ReqId, Msg) ->
+    apply 'encodeError'/4({'Just', ReqId}, apply 'internalError'/0(), Msg, 'Nothing')
+
+'parseRequest'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'mkParseError'/1(_A0)
+        apply 'parseRequest'/1(_A0)
       in _F0
 
 'parseId'/0 =
@@ -173,10 +161,10 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
         apply 'parseId'/1(_A0)
       in _F0
 
-'parseRequest'/0 =
+'isNotification'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'parseRequest'/1(_A0)
+        apply 'isNotification'/1(_A0)
       in _F0
 
 'encodeSuccess'/0 =
@@ -191,34 +179,6 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'encodeSuccess'/2(_A0, _A1)
-      in _F0
-
-'mkInternalError'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkInternalError'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mkInternalError'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkInternalError'/2(_A0, _A1)
-      in _F0
-
-'mkMethodNotFound'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkMethodNotFound'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mkMethodNotFound'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkMethodNotFound'/2(_A0, _A1)
       in _F0
 
 'encodeError'/0 =
@@ -255,6 +215,46 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
   fun (_A0, _A1, _A2) ->
     let <_F0> = fun (_A3) ->
         apply 'encodeError'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'encodeId'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'encodeId'/1(_A0)
+      in _F0
+
+'mkParseError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'mkParseError'/1(_A0)
+      in _F0
+
+'mkMethodNotFound'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkMethodNotFound'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkMethodNotFound'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkMethodNotFound'/2(_A0, _A1)
+      in _F0
+
+'mkInternalError'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkInternalError'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkInternalError'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkInternalError'/2(_A0, _A1)
       in _F0
 
 'IdString'/0 =

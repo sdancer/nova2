@@ -1,40 +1,5 @@
-module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDoStmtList'/2, 'refEqExpr'/2, 'refEqExprList'/2, 'refEqLetBindList'/2, 'refEqLit'/2, 'refEqMaybeExpr'/2, 'refEqPattern'/2, 'refEqPatternList'/2, 'refEqRecordFields'/2, 'refEqCaseClauseList'/0, 'refEqCaseClauseList'/1, 'refEqDoStmt'/0, 'refEqDoStmt'/1, 'refEqDoStmtList'/0, 'refEqDoStmtList'/1, 'refEqExpr'/0, 'refEqExpr'/1, 'refEqExprList'/0, 'refEqExprList'/1, 'refEqLetBindList'/0, 'refEqLetBindList'/1, 'refEqLit'/0, 'refEqLit'/1, 'refEqMaybeExpr'/0, 'refEqMaybeExpr'/1, 'refEqPattern'/0, 'refEqPattern'/1, 'refEqPatternList'/0, 'refEqPatternList'/1, 'refEqRecordFields'/0, 'refEqRecordFields'/1, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.RefEq' ['refEqExpr'/2, 'refEqLit'/2, 'refEqPattern'/2, 'refEqPatternList'/2, 'refEqExprList'/2, 'refEqLetBindList'/2, 'refEqCaseClauseList'/2, 'refEqMaybeExpr'/2, 'refEqDoStmtList'/2, 'refEqDoStmt'/2, 'refEqRecordFields'/2, 'refEqExpr'/0, 'refEqExpr'/1, 'refEqLit'/0, 'refEqLit'/1, 'refEqPattern'/0, 'refEqPattern'/1, 'refEqPatternList'/0, 'refEqPatternList'/1, 'refEqExprList'/0, 'refEqExprList'/1, 'refEqLetBindList'/0, 'refEqLetBindList'/1, 'refEqCaseClauseList'/0, 'refEqCaseClauseList'/1, 'refEqMaybeExpr'/0, 'refEqMaybeExpr'/1, 'refEqDoStmtList'/0, 'refEqDoStmtList'/1, 'refEqDoStmt'/0, 'refEqDoStmt'/1, 'refEqRecordFields'/0, 'refEqRecordFields'/1, 'module_info'/0, 'module_info'/1]
   attributes []
-'refEqCaseClauseList'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{[], []}> when 'true' ->
-        'true'
-      <{[C1|Cs1], [C2|Cs2]}> when 'true' ->
-        case case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', C1), call 'maps':'get'('pattern', C2)) of <'true'> when 'true' -> apply 'refEqMaybeExpr'/2(call 'maps':'get'('guard', C1), call 'maps':'get'('guard', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('body', C1), call 'maps':'get'('body', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqCaseClauseList'/2(Cs1, Cs2) <_> when 'true' -> 'false' end
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
-'refEqDoStmt'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{{'DoLet', Binds1}, {'DoLet', Binds2}}> when 'true' ->
-        apply 'refEqLetBindList'/2(Binds1, Binds2)
-      <{{'DoBind', P1, E1}, {'DoBind', P2, E2}}> when 'true' ->
-        case apply 'refEqPattern'/2(P1, P2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
-      <{{'DoExpr', E1}, {'DoExpr', E2}}> when 'true' ->
-        apply 'refEqExpr'/2(E1, E2)
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
-'refEqDoStmtList'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{[], []}> when 'true' ->
-        'true'
-      <{[S1|Ss1], [S2|Ss2]}> when 'true' ->
-        case apply 'refEqDoStmt'/2(S1, S2) of <'true'> when 'true' -> apply 'refEqDoStmtList'/2(Ss1, Ss2) <_> when 'true' -> 'false' end
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
 'refEqExpr'/2 =
   fun (_P0, _P1) ->
     case {_P0, _P1} of
@@ -84,28 +49,6 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
         'false'
     end
 
-'refEqExprList'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{[], []}> when 'true' ->
-        'true'
-      <{[E1|Es1], [E2|Es2]}> when 'true' ->
-        case apply 'refEqExpr'/2(E1, E2) of <'true'> when 'true' -> apply 'refEqExprList'/2(Es1, Es2) <_> when 'true' -> 'false' end
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
-'refEqLetBindList'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{[], []}> when 'true' ->
-        'true'
-      <{[B1|Bs1], [B2|Bs2]}> when 'true' ->
-        case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', B1), call 'maps':'get'('pattern', B2)) of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('value', B1), call 'maps':'get'('value', B2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqLetBindList'/2(Bs1, Bs2) <_> when 'true' -> 'false' end
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
 'refEqLit'/2 =
   fun (_P0, _P1) ->
     case {_P0, _P1} of
@@ -119,17 +62,6 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
         call 'erlang':'=:='(A, B)
       <{{'LitBool', A}, {'LitBool', B}}> when 'true' ->
         call 'erlang':'=:='(A, B)
-      <{_W0, _W1}> when 'true' ->
-        'false'
-    end
-
-'refEqMaybeExpr'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{'Nothing', 'Nothing'}> when 'true' ->
-        'true'
-      <{{'Just', E1}, {'Just', E2}}> when 'true' ->
-        apply 'refEqExpr'/2(E1, E2)
       <{_W0, _W1}> when 'true' ->
         'false'
     end
@@ -177,6 +109,74 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
         'false'
     end
 
+'refEqExprList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[E1|Es1], [E2|Es2]}> when 'true' ->
+        case apply 'refEqExpr'/2(E1, E2) of <'true'> when 'true' -> apply 'refEqExprList'/2(Es1, Es2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqLetBindList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[B1|Bs1], [B2|Bs2]}> when 'true' ->
+        case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', B1), call 'maps':'get'('pattern', B2)) of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('value', B1), call 'maps':'get'('value', B2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqLetBindList'/2(Bs1, Bs2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqCaseClauseList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[C1|Cs1], [C2|Cs2]}> when 'true' ->
+        case case case apply 'refEqPattern'/2(call 'maps':'get'('pattern', C1), call 'maps':'get'('pattern', C2)) of <'true'> when 'true' -> apply 'refEqMaybeExpr'/2(call 'maps':'get'('guard', C1), call 'maps':'get'('guard', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqExpr'/2(call 'maps':'get'('body', C1), call 'maps':'get'('body', C2)) <_> when 'true' -> 'false' end of <'true'> when 'true' -> apply 'refEqCaseClauseList'/2(Cs1, Cs2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqMaybeExpr'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{'Nothing', 'Nothing'}> when 'true' ->
+        'true'
+      <{{'Just', E1}, {'Just', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqDoStmtList'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{[], []}> when 'true' ->
+        'true'
+      <{[S1|Ss1], [S2|Ss2]}> when 'true' ->
+        case apply 'refEqDoStmt'/2(S1, S2) of <'true'> when 'true' -> apply 'refEqDoStmtList'/2(Ss1, Ss2) <_> when 'true' -> 'false' end
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
+'refEqDoStmt'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'DoLet', Binds1}, {'DoLet', Binds2}}> when 'true' ->
+        apply 'refEqLetBindList'/2(Binds1, Binds2)
+      <{{'DoBind', P1, E1}, {'DoBind', P2, E2}}> when 'true' ->
+        case apply 'refEqPattern'/2(P1, P2) of <'true'> when 'true' -> apply 'refEqExpr'/2(E1, E2) <_> when 'true' -> 'false' end
+      <{{'DoExpr', E1}, {'DoExpr', E2}}> when 'true' ->
+        apply 'refEqExpr'/2(E1, E2)
+      <{_W0, _W1}> when 'true' ->
+        'false'
+    end
+
 'refEqRecordFields'/2 =
   fun (_P0, _P1) ->
     case {_P0, _P1} of
@@ -187,48 +187,6 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
       <{_W0, _W1}> when 'true' ->
         'false'
     end
-
-'refEqCaseClauseList'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'refEqCaseClauseList'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'refEqCaseClauseList'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'refEqCaseClauseList'/2(_A0, _A1)
-      in _F0
-
-'refEqDoStmt'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'refEqDoStmt'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'refEqDoStmt'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'refEqDoStmt'/2(_A0, _A1)
-      in _F0
-
-'refEqDoStmtList'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'refEqDoStmtList'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'refEqDoStmtList'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'refEqDoStmtList'/2(_A0, _A1)
-      in _F0
 
 'refEqExpr'/0 =
   fun () ->
@@ -242,6 +200,48 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'refEqExpr'/2(_A0, _A1)
+      in _F0
+
+'refEqLit'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqLit'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqLit'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqLit'/2(_A0, _A1)
+      in _F0
+
+'refEqPattern'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqPattern'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqPattern'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqPattern'/2(_A0, _A1)
+      in _F0
+
+'refEqPatternList'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'refEqPatternList'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'refEqPatternList'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'refEqPatternList'/2(_A0, _A1)
       in _F0
 
 'refEqExprList'/0 =
@@ -272,18 +272,18 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
         apply 'refEqLetBindList'/2(_A0, _A1)
       in _F0
 
-'refEqLit'/0 =
+'refEqCaseClauseList'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'refEqLit'/2(_A0, _A1)
+        apply 'refEqCaseClauseList'/2(_A0, _A1)
       in _F1
       in _F0
 
-'refEqLit'/1 =
+'refEqCaseClauseList'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'refEqLit'/2(_A0, _A1)
+        apply 'refEqCaseClauseList'/2(_A0, _A1)
       in _F0
 
 'refEqMaybeExpr'/0 =
@@ -300,32 +300,32 @@ module 'Nova.Compiler.RefEq' ['refEqCaseClauseList'/2, 'refEqDoStmt'/2, 'refEqDo
         apply 'refEqMaybeExpr'/2(_A0, _A1)
       in _F0
 
-'refEqPattern'/0 =
+'refEqDoStmtList'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'refEqPattern'/2(_A0, _A1)
+        apply 'refEqDoStmtList'/2(_A0, _A1)
       in _F1
       in _F0
 
-'refEqPattern'/1 =
+'refEqDoStmtList'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'refEqPattern'/2(_A0, _A1)
+        apply 'refEqDoStmtList'/2(_A0, _A1)
       in _F0
 
-'refEqPatternList'/0 =
+'refEqDoStmt'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'refEqPatternList'/2(_A0, _A1)
+        apply 'refEqDoStmt'/2(_A0, _A1)
       in _F1
       in _F0
 
-'refEqPatternList'/1 =
+'refEqDoStmt'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'refEqPatternList'/2(_A0, _A1)
+        apply 'refEqDoStmt'/2(_A0, _A1)
       in _F0
 
 'refEqRecordFields'/0 =

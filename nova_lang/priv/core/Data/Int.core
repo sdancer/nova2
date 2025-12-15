@@ -1,24 +1,24 @@
-module 'Data.Int' ['ceil'/1, 'floor'/1, 'fromString'/1, 'round'/1, 'toNumber'/1, 'fromStringImpl'/1, 'toNumberImpl'/1, 'roundImpl'/1, 'floorImpl'/1, 'ceilImpl'/1, 'ceil'/0, 'floor'/0, 'fromString'/0, 'round'/0, 'toNumber'/0, 'fromStringImpl'/0, 'toNumberImpl'/0, 'roundImpl'/0, 'floorImpl'/0, 'ceilImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Data.Int' ['fromString'/1, 'toNumber'/1, 'round'/1, 'floor'/1, 'ceil'/1, 'fromStringImpl'/1, 'toNumberImpl'/1, 'roundImpl'/1, 'floorImpl'/1, 'ceilImpl'/1, 'fromString'/0, 'toNumber'/0, 'round'/0, 'floor'/0, 'ceil'/0, 'fromStringImpl'/0, 'toNumberImpl'/0, 'roundImpl'/0, 'floorImpl'/0, 'ceilImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'ceil'/1 =
-  fun (N) ->
-    apply 'ceilImpl'/1(N)
-
-'floor'/1 =
-  fun (N) ->
-    apply 'floorImpl'/1(N)
-
 'fromString'/1 =
   fun (S) ->
     apply 'fromStringImpl'/1(S)
+
+'toNumber'/1 =
+  fun (I) ->
+    apply 'toNumberImpl'/1(I)
 
 'round'/1 =
   fun (N) ->
     apply 'roundImpl'/1(N)
 
-'toNumber'/1 =
-  fun (I) ->
-    apply 'toNumberImpl'/1(I)
+'floor'/1 =
+  fun (N) ->
+    apply 'floorImpl'/1(N)
+
+'ceil'/1 =
+  fun (N) ->
+    apply 'ceilImpl'/1(N)
 
 'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_integer'(call 'erlang':'binary_to_list'(V0)) of
         <{I, []}> when 'true' -> {'Just', I}
@@ -33,22 +33,16 @@ module 'Data.Int' ['ceil'/1, 'floor'/1, 'fromString'/1, 'round'/1, 'toNumber'/1,
 
 'ceilImpl'/1 = fun (V0) -> call 'erlang':'ceil'(V0)
 
-'ceil'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'ceil'/1(_A0)
-      in _F0
-
-'floor'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'floor'/1(_A0)
-      in _F0
-
 'fromString'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'fromString'/1(_A0)
+      in _F0
+
+'toNumber'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toNumber'/1(_A0)
       in _F0
 
 'round'/0 =
@@ -57,10 +51,16 @@ module 'Data.Int' ['ceil'/1, 'floor'/1, 'fromString'/1, 'round'/1, 'toNumber'/1,
         apply 'round'/1(_A0)
       in _F0
 
-'toNumber'/0 =
+'floor'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'toNumber'/1(_A0)
+        apply 'floor'/1(_A0)
+      in _F0
+
+'ceil'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'ceil'/1(_A0)
       in _F0
 
 'fromStringImpl'/0 =

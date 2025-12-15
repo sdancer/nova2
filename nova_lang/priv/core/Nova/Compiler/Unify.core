@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRecords'/0, 'unifyStep'/0, 'showType'/1, 'showTypeParens'/1, 'stripModulePrefix'/1, 'areEquivalentTypes'/2, 'bindVar'/2, 'isRecordTypeAliasInMap'/2, 'lookupRecordAlias'/2, 'occurs'/2, 'unifyManyWithAliases'/3, 'unifyRecordsWithAliases'/3, 'unifyStepWithAliases'/3, 'unifyWithAliases'/3, 'unifyFieldWithAliases'/5, 'OccursCheck'/2, 'TypeMismatch'/2, 'ArityMismatch'/3, 'RecordFieldMismatch'/1, 'showType'/0, 'showTypeParens'/0, 'stripModulePrefix'/0, 'areEquivalentTypes'/0, 'areEquivalentTypes'/1, 'bindVar'/0, 'bindVar'/1, 'isRecordTypeAliasInMap'/0, 'isRecordTypeAliasInMap'/1, 'lookupRecordAlias'/0, 'lookupRecordAlias'/1, 'occurs'/0, 'occurs'/1, 'unifyManyWithAliases'/0, 'unifyManyWithAliases'/1, 'unifyManyWithAliases'/2, 'unifyRecordsWithAliases'/0, 'unifyRecordsWithAliases'/1, 'unifyRecordsWithAliases'/2, 'unifyStepWithAliases'/0, 'unifyStepWithAliases'/1, 'unifyStepWithAliases'/2, 'unifyWithAliases'/0, 'unifyWithAliases'/1, 'unifyWithAliases'/2, 'unifyFieldWithAliases'/0, 'unifyFieldWithAliases'/1, 'unifyFieldWithAliases'/2, 'unifyFieldWithAliases'/3, 'unifyFieldWithAliases'/4, 'OccursCheck'/0, 'OccursCheck'/1, 'TypeMismatch'/0, 'TypeMismatch'/1, 'ArityMismatch'/0, 'ArityMismatch'/1, 'ArityMismatch'/2, 'RecordFieldMismatch'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.Unify' ['showType'/1, 'showTypeParens'/1, 'occurs'/2, 'bindVar'/2, 'stripModulePrefix'/1, 'areEquivalentTypes'/2, 'isRecordTypeAliasInMap'/2, 'lookupRecordAlias'/2, 'unifyWithAliases'/3, 'unify'/0, 'unifyStepWithAliases'/3, 'unifyManyWithAliases'/3, 'unifyFieldWithAliases'/5, 'unifyRecordsWithAliases'/3, 'unifyStep'/0, 'unifyMany'/0, 'unifyField'/0, 'unifyRecords'/0, 'OccursCheck'/2, 'TypeMismatch'/2, 'ArityMismatch'/3, 'RecordFieldMismatch'/1, 'showType'/0, 'showTypeParens'/0, 'occurs'/0, 'occurs'/1, 'bindVar'/0, 'bindVar'/1, 'stripModulePrefix'/0, 'areEquivalentTypes'/0, 'areEquivalentTypes'/1, 'isRecordTypeAliasInMap'/0, 'isRecordTypeAliasInMap'/1, 'lookupRecordAlias'/0, 'lookupRecordAlias'/1, 'unifyWithAliases'/0, 'unifyWithAliases'/1, 'unifyWithAliases'/2, 'unifyStepWithAliases'/0, 'unifyStepWithAliases'/1, 'unifyStepWithAliases'/2, 'unifyManyWithAliases'/0, 'unifyManyWithAliases'/1, 'unifyManyWithAliases'/2, 'unifyFieldWithAliases'/0, 'unifyFieldWithAliases'/1, 'unifyFieldWithAliases'/2, 'unifyFieldWithAliases'/3, 'unifyFieldWithAliases'/4, 'unifyRecordsWithAliases'/0, 'unifyRecordsWithAliases'/1, 'unifyRecordsWithAliases'/2, 'OccursCheck'/0, 'OccursCheck'/1, 'TypeMismatch'/0, 'TypeMismatch'/1, 'ArityMismatch'/0, 'ArityMismatch'/1, 'ArityMismatch'/2, 'RecordFieldMismatch'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: UnifyError
 % Constructors: OccursCheck, TypeMismatch, ArityMismatch, RecordFieldMismatch
@@ -18,26 +18,6 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
 'RecordFieldMismatch'/1 =
   fun (V0) ->
     {'RecordFieldMismatch', V0}
-
-'unify'/0 =
-  fun () ->
-    fun (_Pc0, _Pc1) -> apply 'unifyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
-
-'unifyField'/0 =
-  fun () ->
-    fun (_Pc0, _Pc1, _Pc2, _Pc3) -> apply 'unifyFieldWithAliases'/5(call 'Data.Map':'empty'(), _Pc0, _Pc1, _Pc2, _Pc3)
-
-'unifyMany'/0 =
-  fun () ->
-    fun (_Pc0, _Pc1) -> apply 'unifyManyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
-
-'unifyRecords'/0 =
-  fun () ->
-    fun (_Pc0, _Pc1) -> apply 'unifyRecordsWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
-
-'unifyStep'/0 =
-  fun () ->
-    fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
 
 'showType'/1 =
   fun (_P0) ->
@@ -81,6 +61,28 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(T)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
+'occurs'/2 =
+  fun (V, T) ->
+    call 'Data.Set':'member'(call 'maps':'get'('id', V), call 'Nova.Compiler.Types':'freeTypeVars'(T))
+
+'bindVar'/2 =
+  fun (V, T) ->
+    letrec 'isSameVar'/2 = fun (Tv, Ty) ->
+      case Ty of
+      <{'TyVar', Tv2}> when 'true' ->
+        call 'erlang':'=:='(call 'maps':'get'('id', Tv), call 'maps':'get'('id', Tv2))
+      <_W0> when 'true' ->
+        'false'
+    end
+      in case apply 'isSameVar'/2(V, T) of
+      <'true'> when 'true' -> {'Right', call 'Nova.Compiler.Types':'emptySubst'()}
+      <'false'> when 'true' -> case apply 'occurs'/2(V, T) of
+      <'true'> when 'true' -> {'Left', apply 'OccursCheck'/2(V, T)}
+      <'false'> when 'true' -> {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'singleSubst'(V)
+      in apply _Oa0(T)}
+    end
+    end
+
 'stripModulePrefix'/1 =
   fun (Name) ->
     case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
@@ -114,24 +116,6 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       end
       end
       end
-
-'bindVar'/2 =
-  fun (V, T) ->
-    letrec 'isSameVar'/2 = fun (Tv, Ty) ->
-      case Ty of
-      <{'TyVar', Tv2}> when 'true' ->
-        call 'erlang':'=:='(call 'maps':'get'('id', Tv), call 'maps':'get'('id', Tv2))
-      <_W0> when 'true' ->
-        'false'
-    end
-      in case apply 'isSameVar'/2(V, T) of
-      <'true'> when 'true' -> {'Right', call 'Nova.Compiler.Types':'emptySubst'()}
-      <'false'> when 'true' -> case apply 'occurs'/2(V, T) of
-      <'true'> when 'true' -> {'Left', apply 'OccursCheck'/2(V, T)}
-      <'false'> when 'true' -> {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'singleSubst'(V)
-      in apply _Oa0(T)}
-    end
-    end
 
 'isRecordTypeAliasInMap'/2 =
   fun (AliasMap, Name) ->
@@ -185,39 +169,6 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
     end
       <'false'> when 'true' -> 'Nothing'
     end
-    end
-
-'occurs'/2 =
-  fun (V, T) ->
-    call 'Data.Set':'member'(call 'maps':'get'('id', V), call 'Nova.Compiler.Types':'freeTypeVars'(T))
-
-'unifyManyWithAliases'/3 =
-  fun (Aliases, Ts1, Ts2) ->
-    call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(Aliases, _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), call 'Data.Array':'zip'(Ts1, Ts2))
-
-'unifyRecordsWithAliases'/3 =
-  fun (Aliases, R1, R2) ->
-    let <Keys1> = call 'Data.Map':'keys'(call 'maps':'get'('fields', R1))
-      in call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyFieldWithAliases'/5(Aliases, call 'maps':'get'('fields', R1), call 'maps':'get'('fields', R2), _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), Keys1)
-
-'unifyStepWithAliases'/3 =
-  fun (_P0, _P1, _P2) ->
-    case {_P0, _P1, _P2} of
-      <{Aliases, Sub, {'Tuple', T1, T2}}> when 'true' ->
-        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
-      in apply _Oa0(T1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
-      in apply _Oa0(T2)) of
-      <'Nothing'> when 'true' ->
-        'Nothing'
-      <{'Left', _Err}> when 'true' ->
-        {'Left', _Err}
-      <{'Just', S}> when 'true' ->
-        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
-      in apply _Oa0(Sub)}
-      <{'Right', S}> when 'true' ->
-        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
-      in apply _Oa0(Sub)}
-      end
     end
 
 'unifyWithAliases'/3 =
@@ -415,6 +366,34 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
         {'Left', apply 'TypeMismatch'/2(T1, T2)}
     end
 
+'unify'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyStepWithAliases'/3 =
+  fun (_P0, _P1, _P2) ->
+    case {_P0, _P1, _P2} of
+      <{Aliases, Sub, {'Tuple', T1, T2}}> when 'true' ->
+        case apply 'unifyWithAliases'/3(Aliases, let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T1), let <_Oa0> = call 'Nova.Compiler.Types':'applySubst'(Sub)
+      in apply _Oa0(T2)) of
+      <'Nothing'> when 'true' ->
+        'Nothing'
+      <{'Left', _Err}> when 'true' ->
+        {'Left', _Err}
+      <{'Just', S}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}
+      <{'Right', S}> when 'true' ->
+        {'Right', let <_Oa0> = call 'Nova.Compiler.Types':'composeSubst'(S)
+      in apply _Oa0(Sub)}
+      end
+    end
+
+'unifyManyWithAliases'/3 =
+  fun (Aliases, Ts1, Ts2) ->
+    call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(Aliases, _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), call 'Data.Array':'zip'(Ts1, Ts2))
+
 'unifyFieldWithAliases'/5 =
   fun (Aliases, Fields1, Fields2, Sub, K) ->
     case call 'Data.Tuple':'Tuple'(call 'Data.Map':'lookup'(K, Fields1), call 'Data.Map':'lookup'(K, Fields2)) of
@@ -432,6 +411,27 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
         {'Right', Sub}
     end
 
+'unifyRecordsWithAliases'/3 =
+  fun (Aliases, R1, R2) ->
+    let <Keys1> = call 'Data.Map':'keys'(call 'maps':'get'('fields', R1))
+      in call 'Data.Foldable':'foldM'(fun (_Pc0, _Pc1) -> apply 'unifyFieldWithAliases'/5(Aliases, call 'maps':'get'('fields', R1), call 'maps':'get'('fields', R2), _Pc0, _Pc1), call 'Nova.Compiler.Types':'emptySubst'(), Keys1)
+
+'unifyStep'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyStepWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyMany'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyManyWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
+'unifyField'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1, _Pc2, _Pc3) -> apply 'unifyFieldWithAliases'/5(call 'Data.Map':'empty'(), _Pc0, _Pc1, _Pc2, _Pc3)
+
+'unifyRecords'/0 =
+  fun () ->
+    fun (_Pc0, _Pc1) -> apply 'unifyRecordsWithAliases'/3(call 'Data.Map':'empty'(), _Pc0, _Pc1)
+
 'showType'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -442,6 +442,34 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'showTypeParens'/1(_A0)
+      in _F0
+
+'occurs'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'occurs'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'occurs'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'occurs'/2(_A0, _A1)
+      in _F0
+
+'bindVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'bindVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'bindVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'bindVar'/2(_A0, _A1)
       in _F0
 
 'stripModulePrefix'/0 =
@@ -462,20 +490,6 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'areEquivalentTypes'/2(_A0, _A1)
-      in _F0
-
-'bindVar'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'bindVar'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'bindVar'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'bindVar'/2(_A0, _A1)
       in _F0
 
 'isRecordTypeAliasInMap'/0 =
@@ -506,66 +520,28 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
         apply 'lookupRecordAlias'/2(_A0, _A1)
       in _F0
 
-'occurs'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'occurs'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'occurs'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'occurs'/2(_A0, _A1)
-      in _F0
-
-'unifyManyWithAliases'/0 =
+'unifyWithAliases'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
         let <_F2> = fun (_A2) ->
-        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
       in _F2
       in _F1
       in _F0
 
-'unifyManyWithAliases'/1 =
+'unifyWithAliases'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         let <_F1> = fun (_A2) ->
-        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
       in _F1
       in _F0
 
-'unifyManyWithAliases'/2 =
+'unifyWithAliases'/2 =
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
-        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
-      in _F0
-
-'unifyRecordsWithAliases'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'unifyRecordsWithAliases'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'unifyRecordsWithAliases'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
       in _F0
 
 'unifyStepWithAliases'/0 =
@@ -592,28 +568,28 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
         apply 'unifyStepWithAliases'/3(_A0, _A1, _A2)
       in _F0
 
-'unifyWithAliases'/0 =
+'unifyManyWithAliases'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
         let <_F2> = fun (_A2) ->
-        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
       in _F2
       in _F1
       in _F0
 
-'unifyWithAliases'/1 =
+'unifyManyWithAliases'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         let <_F1> = fun (_A2) ->
-        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
       in _F1
       in _F0
 
-'unifyWithAliases'/2 =
+'unifyManyWithAliases'/2 =
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
-        apply 'unifyWithAliases'/3(_A0, _A1, _A2)
+        apply 'unifyManyWithAliases'/3(_A0, _A1, _A2)
       in _F0
 
 'unifyFieldWithAliases'/0 =
@@ -664,6 +640,30 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
   fun (_A0, _A1, _A2, _A3) ->
     let <_F0> = fun (_A4) ->
         apply 'unifyFieldWithAliases'/5(_A0, _A1, _A2, _A3, _A4)
+      in _F0
+
+'unifyRecordsWithAliases'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'unifyRecordsWithAliases'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'unifyRecordsWithAliases'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'unifyRecordsWithAliases'/3(_A0, _A1, _A2)
       in _F0
 
 'OccursCheck'/0 =

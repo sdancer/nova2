@@ -1,64 +1,64 @@
-module 'MCP.Json' ['jsonNull'/0, 'decode'/1, 'encode'/1, 'isMap'/1, 'isNull'/1, 'isNumber'/1, 'isString'/1, 'jsonNumberToInt'/1, 'jsonStringToString'/1, 'object'/1, 'toJsonArray'/1, 'toJsonBool'/1, 'toJsonInt'/1, 'toJsonString'/1, 'getField'/2, 'kv'/2, 'encodeImpl'/1, 'decodeImpl'/1, 'isNullImpl'/1, 'isStringImpl'/1, 'isNumberImpl'/1, 'isMapImpl'/1, 'getFieldImpl'/2, 'jsonStringToStringImpl'/1, 'jsonNumberToIntImpl'/1, 'objectImpl'/1, 'toJsonStringImpl'/1, 'toJsonIntImpl'/1, 'toJsonBoolImpl'/1, 'jsonNullImpl'/0, 'toJsonArrayImpl'/1, 'decode'/0, 'encode'/0, 'isMap'/0, 'isNull'/0, 'isNumber'/0, 'isString'/0, 'jsonNumberToInt'/0, 'jsonStringToString'/0, 'object'/0, 'toJsonArray'/0, 'toJsonBool'/0, 'toJsonInt'/0, 'toJsonString'/0, 'getField'/0, 'getField'/1, 'kv'/0, 'kv'/1, 'encodeImpl'/0, 'decodeImpl'/0, 'isNullImpl'/0, 'isStringImpl'/0, 'isNumberImpl'/0, 'isMapImpl'/0, 'getFieldImpl'/0, 'getFieldImpl'/1, 'jsonStringToStringImpl'/0, 'jsonNumberToIntImpl'/0, 'objectImpl'/0, 'toJsonStringImpl'/0, 'toJsonIntImpl'/0, 'toJsonBoolImpl'/0, 'toJsonArrayImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'MCP.Json' ['encode'/1, 'decode'/1, 'isNull'/1, 'isString'/1, 'isNumber'/1, 'isMap'/1, 'getField'/2, 'jsonStringToString'/1, 'jsonNumberToInt'/1, 'object'/1, 'toJsonString'/1, 'toJsonInt'/1, 'toJsonBool'/1, 'jsonNull'/0, 'toJsonArray'/1, 'kv'/2, 'encodeImpl'/1, 'decodeImpl'/1, 'isNullImpl'/1, 'isStringImpl'/1, 'isNumberImpl'/1, 'isMapImpl'/1, 'getFieldImpl'/2, 'jsonStringToStringImpl'/1, 'jsonNumberToIntImpl'/1, 'objectImpl'/1, 'toJsonStringImpl'/1, 'toJsonIntImpl'/1, 'toJsonBoolImpl'/1, 'jsonNullImpl'/0, 'toJsonArrayImpl'/1, 'encode'/0, 'decode'/0, 'isNull'/0, 'isString'/0, 'isNumber'/0, 'isMap'/0, 'getField'/0, 'getField'/1, 'jsonStringToString'/0, 'jsonNumberToInt'/0, 'object'/0, 'toJsonString'/0, 'toJsonInt'/0, 'toJsonBool'/0, 'toJsonArray'/0, 'kv'/0, 'kv'/1, 'encodeImpl'/0, 'decodeImpl'/0, 'isNullImpl'/0, 'isStringImpl'/0, 'isNumberImpl'/0, 'isMapImpl'/0, 'getFieldImpl'/0, 'getFieldImpl'/1, 'jsonStringToStringImpl'/0, 'jsonNumberToIntImpl'/0, 'objectImpl'/0, 'toJsonStringImpl'/0, 'toJsonIntImpl'/0, 'toJsonBoolImpl'/0, 'toJsonArrayImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'jsonNull'/0 =
-  fun () ->
-    apply 'jsonNullImpl'/0()
+'encode'/1 =
+  fun (X) ->
+    apply 'encodeImpl'/1(X)
 
 'decode'/1 =
   fun (S) ->
     apply 'decodeImpl'/1(S)
 
-'encode'/1 =
-  fun (X) ->
-    apply 'encodeImpl'/1(X)
-
-'isMap'/1 =
-  fun (V) ->
-    apply 'isMapImpl'/1(V)
-
 'isNull'/1 =
   fun (V) ->
     apply 'isNullImpl'/1(V)
-
-'isNumber'/1 =
-  fun (V) ->
-    apply 'isNumberImpl'/1(V)
 
 'isString'/1 =
   fun (V) ->
     apply 'isStringImpl'/1(V)
 
-'jsonNumberToInt'/1 =
+'isNumber'/1 =
   fun (V) ->
-    apply 'jsonNumberToIntImpl'/1(V)
+    apply 'isNumberImpl'/1(V)
+
+'isMap'/1 =
+  fun (V) ->
+    apply 'isMapImpl'/1(V)
+
+'getField'/2 =
+  fun (K, Obj) ->
+    apply 'getFieldImpl'/2(K, Obj)
 
 'jsonStringToString'/1 =
   fun (V) ->
     apply 'jsonStringToStringImpl'/1(V)
 
+'jsonNumberToInt'/1 =
+  fun (V) ->
+    apply 'jsonNumberToIntImpl'/1(V)
+
 'object'/1 =
   fun (Pairs) ->
     apply 'objectImpl'/1(Pairs)
-
-'toJsonArray'/1 =
-  fun (Arr) ->
-    apply 'toJsonArrayImpl'/1(Arr)
-
-'toJsonBool'/1 =
-  fun (B) ->
-    apply 'toJsonBoolImpl'/1(B)
-
-'toJsonInt'/1 =
-  fun (N) ->
-    apply 'toJsonIntImpl'/1(N)
 
 'toJsonString'/1 =
   fun (S) ->
     apply 'toJsonStringImpl'/1(S)
 
-'getField'/2 =
-  fun (K, Obj) ->
-    apply 'getFieldImpl'/2(K, Obj)
+'toJsonInt'/1 =
+  fun (N) ->
+    apply 'toJsonIntImpl'/1(N)
+
+'toJsonBool'/1 =
+  fun (B) ->
+    apply 'toJsonBoolImpl'/1(B)
+
+'jsonNull'/0 =
+  fun () ->
+    apply 'jsonNullImpl'/0()
+
+'toJsonArray'/1 =
+  fun (Arr) ->
+    apply 'toJsonArrayImpl'/1(Arr)
 
 'kv'/2 =
   fun (K, V) ->
@@ -94,22 +94,16 @@ module 'MCP.Json' ['jsonNull'/0, 'decode'/1, 'encode'/1, 'isMap'/1, 'isNull'/1, 
 
 'toJsonArrayImpl'/1 = fun (V0) -> call 'erlang':'tl'(call 'erlang':'tuple_to_list'(V0))
 
-'decode'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'decode'/1(_A0)
-      in _F0
-
 'encode'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'encode'/1(_A0)
       in _F0
 
-'isMap'/0 =
+'decode'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'isMap'/1(_A0)
+        apply 'decode'/1(_A0)
       in _F0
 
 'isNull'/0 =
@@ -118,58 +112,22 @@ module 'MCP.Json' ['jsonNull'/0, 'decode'/1, 'encode'/1, 'isMap'/1, 'isNull'/1, 
         apply 'isNull'/1(_A0)
       in _F0
 
-'isNumber'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'isNumber'/1(_A0)
-      in _F0
-
 'isString'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'isString'/1(_A0)
       in _F0
 
-'jsonNumberToInt'/0 =
+'isNumber'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'jsonNumberToInt'/1(_A0)
+        apply 'isNumber'/1(_A0)
       in _F0
 
-'jsonStringToString'/0 =
+'isMap'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'jsonStringToString'/1(_A0)
-      in _F0
-
-'object'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'object'/1(_A0)
-      in _F0
-
-'toJsonArray'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toJsonArray'/1(_A0)
-      in _F0
-
-'toJsonBool'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toJsonBool'/1(_A0)
-      in _F0
-
-'toJsonInt'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toJsonInt'/1(_A0)
-      in _F0
-
-'toJsonString'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'toJsonString'/1(_A0)
+        apply 'isMap'/1(_A0)
       in _F0
 
 'getField'/0 =
@@ -184,6 +142,48 @@ module 'MCP.Json' ['jsonNull'/0, 'decode'/1, 'encode'/1, 'isMap'/1, 'isNull'/1, 
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'getField'/2(_A0, _A1)
+      in _F0
+
+'jsonStringToString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'jsonStringToString'/1(_A0)
+      in _F0
+
+'jsonNumberToInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'jsonNumberToInt'/1(_A0)
+      in _F0
+
+'object'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'object'/1(_A0)
+      in _F0
+
+'toJsonString'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toJsonString'/1(_A0)
+      in _F0
+
+'toJsonInt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toJsonInt'/1(_A0)
+      in _F0
+
+'toJsonBool'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toJsonBool'/1(_A0)
+      in _F0
+
+'toJsonArray'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'toJsonArray'/1(_A0)
       in _F0
 
 'kv'/0 =

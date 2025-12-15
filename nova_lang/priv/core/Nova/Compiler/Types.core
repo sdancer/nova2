@@ -1,4 +1,4 @@
-module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectConsoleExports'/0, 'emptyEnv'/0, 'emptyExports'/0, 'emptyRegistry'/0, 'emptySubst'/0, 'preludeExports'/0, 'tAssociativity'/0, 'tBool'/0, 'tCaseClause'/0, 'tChar'/0, 'tConstraint'/0, 'tDataConstructor'/0, 'tDataField'/0, 'tDataType'/0, 'tDeclaration'/0, 'tDoStatement'/0, 'tEnv'/0, 'tExpr'/0, 'tForeignImport'/0, 'tFunctionDecl'/0, 'tGuardClause'/0, 'tGuardedExpr'/0, 'tGuardedExprRec'/0, 'tImportDecl'/0, 'tImportItem'/0, 'tImportSpec'/0, 'tInferResult'/0, 'tInfixDecl'/0, 'tInstantiateResult'/0, 'tInt'/0, 'tLetBind'/0, 'tLiteral'/0, 'tModule'/0, 'tModuleDecl'/0, 'tModuleExports'/0, 'tModuleRegistry'/0, 'tNewtypeDecl'/0, 'tNumber'/0, 'tOrdering'/0, 'tPatResult'/0, 'tPattern'/0, 'tRecord'/0, 'tScheme'/0, 'tString'/0, 'tSubst'/0, 'tTCError'/0, 'tTCon'/0, 'tTConRecord'/0, 'tTVar'/0, 'tTokenType'/0, 'tType'/0, 'tTypeAlias'/0, 'tTypeAliasInfo'/0, 'tTypeClass'/0, 'tTypeClassInstance'/0, 'tTypeDecl'/0, 'tTypeExpr'/0, 'tTypeInfo'/0, 'tTypeSig'/0, 'tTypeSigRec'/0, 'tTypedModule'/0, 'tUnifyError'/0, 'tUnit'/0, 'freeTypeVars'/1, 'freeTypeVarsEnv'/1, 'freeTypeVarsScheme'/1, 'getAliasInfoBody'/1, 'getAliasInfoParams'/1, 'mkTCon0'/1, 'normalizeTypeName'/1, 'showRecord'/1, 'showScheme'/1, 'showTyCon'/1, 'showType'/1, 'showTypeArg'/1, 'tArray'/1, 'tList'/1, 'tMaybe'/1, 'tSet'/1, 'tTuple'/1, 'typedModuleEnv'/1, 'typedModuleToModule'/1, 'applySubst'/2, 'applySubstToEnv'/2, 'composeSubst'/2, 'freshVar'/2, 'lookupEnv'/2, 'lookupModule'/2, 'lookupSubst'/2, 'lookupTypeAlias'/2, 'mergeExportsToEnv'/2, 'mkScheme'/2, 'mkTCon'/2, 'mkTVar'/2, 'mkTyApp'/2, 'mkTypedModule'/2, 'singleSubst'/2, 'tArrow'/2, 'tEither'/2, 'tMap'/2, 'extendEnv'/3, 'extendTypeAlias'/3, 'mergeExportsToEnvWithPrefix'/3, 'mergeSelectedExports'/3, 'registerModule'/3, 'mergeTypeExport'/4, 'TyVar'/1, 'TyCon'/1, 'TyRecord'/1, 'TyApp'/2, 'freeTypeVars'/0, 'freeTypeVarsEnv'/0, 'freeTypeVarsScheme'/0, 'getAliasInfoBody'/0, 'getAliasInfoParams'/0, 'mkTCon0'/0, 'normalizeTypeName'/0, 'showRecord'/0, 'showScheme'/0, 'showTyCon'/0, 'showType'/0, 'showTypeArg'/0, 'tArray'/0, 'tList'/0, 'tMaybe'/0, 'tSet'/0, 'tTuple'/0, 'typedModuleEnv'/0, 'typedModuleToModule'/0, 'applySubst'/0, 'applySubst'/1, 'applySubstToEnv'/0, 'applySubstToEnv'/1, 'composeSubst'/0, 'composeSubst'/1, 'freshVar'/0, 'freshVar'/1, 'lookupEnv'/0, 'lookupEnv'/1, 'lookupModule'/0, 'lookupModule'/1, 'lookupSubst'/0, 'lookupSubst'/1, 'lookupTypeAlias'/0, 'lookupTypeAlias'/1, 'mergeExportsToEnv'/0, 'mergeExportsToEnv'/1, 'mkScheme'/0, 'mkScheme'/1, 'mkTCon'/0, 'mkTCon'/1, 'mkTVar'/0, 'mkTVar'/1, 'mkTyApp'/0, 'mkTyApp'/1, 'mkTypedModule'/0, 'mkTypedModule'/1, 'singleSubst'/0, 'singleSubst'/1, 'tArrow'/0, 'tArrow'/1, 'tEither'/0, 'tEither'/1, 'tMap'/0, 'tMap'/1, 'extendEnv'/0, 'extendEnv'/1, 'extendEnv'/2, 'extendTypeAlias'/0, 'extendTypeAlias'/1, 'extendTypeAlias'/2, 'mergeExportsToEnvWithPrefix'/0, 'mergeExportsToEnvWithPrefix'/1, 'mergeExportsToEnvWithPrefix'/2, 'mergeSelectedExports'/0, 'mergeSelectedExports'/1, 'mergeSelectedExports'/2, 'registerModule'/0, 'registerModule'/1, 'registerModule'/2, 'mergeTypeExport'/0, 'mergeTypeExport'/1, 'mergeTypeExport'/2, 'mergeTypeExport'/3, 'TyVar'/0, 'TyCon'/0, 'TyRecord'/0, 'TyApp'/0, 'TyApp'/1, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.Types' ['mkTVar'/2, 'normalizeTypeName'/1, 'mkTCon'/2, 'mkTCon0'/1, 'tInt'/0, 'tString'/0, 'tChar'/0, 'tBool'/0, 'tList'/1, 'tArray'/1, 'tArrow'/2, 'tMaybe'/1, 'tEither'/2, 'tMap'/2, 'tSet'/1, 'tUnit'/0, 'tOrdering'/0, 'tNumber'/0, 'tTokenType'/0, 'mkTyApp'/2, 'tTuple'/1, 'emptySubst'/0, 'lookupSubst'/2, 'singleSubst'/2, 'applySubst'/2, 'composeSubst'/2, 'mkScheme'/2, 'freeTypeVars'/1, 'freeTypeVarsScheme'/1, 'mkTypedModule'/2, 'typedModuleToModule'/1, 'typedModuleEnv'/1, 'emptyEnv'/0, 'extendEnv'/3, 'extendTypeAlias'/3, 'lookupTypeAlias'/2, 'lookupEnv'/2, 'applySubstToEnv'/2, 'freshVar'/2, 'freeTypeVarsEnv'/1, 'builtinPrelude'/0, 'tSubst'/0, 'tEnv'/0, 'tScheme'/0, 'tType'/0, 'tTVar'/0, 'tTCon'/0, 'tTConRecord'/0, 'tRecord'/0, 'tTypeInfo'/0, 'tTypeAliasInfo'/0, 'tModuleExports'/0, 'tModuleRegistry'/0, 'tModule'/0, 'tTypedModule'/0, 'tPattern'/0, 'tExpr'/0, 'tLiteral'/0, 'tTypeExpr'/0, 'tLetBind'/0, 'tCaseClause'/0, 'tDeclaration'/0, 'tFunctionDecl'/0, 'tGuardedExprRec'/0, 'tTypeSigRec'/0, 'tTypeSig'/0, 'tDataType'/0, 'tDataConstructor'/0, 'tDataField'/0, 'tTypeAlias'/0, 'tModuleDecl'/0, 'tImportDecl'/0, 'tDoStatement'/0, 'tGuardedExpr'/0, 'tGuardClause'/0, 'tTypeClass'/0, 'tTypeClassInstance'/0, 'tInfixDecl'/0, 'tConstraint'/0, 'tImportItem'/0, 'tImportSpec'/0, 'tAssociativity'/0, 'tForeignImport'/0, 'tNewtypeDecl'/0, 'tTypeDecl'/0, 'tUnifyError'/0, 'tTCError'/0, 'tPatResult'/0, 'tInstantiateResult'/0, 'tInferResult'/0, 'getAliasInfoParams'/1, 'getAliasInfoBody'/1, 'emptyExports'/0, 'preludeExports'/0, 'effectConsoleExports'/0, 'defaultRegistry'/0, 'emptyRegistry'/0, 'lookupModule'/2, 'registerModule'/3, 'mergeExportsToEnv'/2, 'mergeExportsToEnvWithPrefix'/3, 'mergeSelectedExports'/3, 'mergeTypeExport'/4, 'showType'/1, 'showTyCon'/1, 'showTypeArg'/1, 'showRecord'/1, 'showScheme'/1, 'TyVar'/1, 'TyCon'/1, 'TyRecord'/1, 'TyApp'/2, 'mkTVar'/0, 'mkTVar'/1, 'normalizeTypeName'/0, 'mkTCon'/0, 'mkTCon'/1, 'mkTCon0'/0, 'tList'/0, 'tArray'/0, 'tArrow'/0, 'tArrow'/1, 'tMaybe'/0, 'tEither'/0, 'tEither'/1, 'tMap'/0, 'tMap'/1, 'tSet'/0, 'mkTyApp'/0, 'mkTyApp'/1, 'tTuple'/0, 'lookupSubst'/0, 'lookupSubst'/1, 'singleSubst'/0, 'singleSubst'/1, 'applySubst'/0, 'applySubst'/1, 'composeSubst'/0, 'composeSubst'/1, 'mkScheme'/0, 'mkScheme'/1, 'freeTypeVars'/0, 'freeTypeVarsScheme'/0, 'mkTypedModule'/0, 'mkTypedModule'/1, 'typedModuleToModule'/0, 'typedModuleEnv'/0, 'extendEnv'/0, 'extendEnv'/1, 'extendEnv'/2, 'extendTypeAlias'/0, 'extendTypeAlias'/1, 'extendTypeAlias'/2, 'lookupTypeAlias'/0, 'lookupTypeAlias'/1, 'lookupEnv'/0, 'lookupEnv'/1, 'applySubstToEnv'/0, 'applySubstToEnv'/1, 'freshVar'/0, 'freshVar'/1, 'freeTypeVarsEnv'/0, 'getAliasInfoParams'/0, 'getAliasInfoBody'/0, 'lookupModule'/0, 'lookupModule'/1, 'registerModule'/0, 'registerModule'/1, 'registerModule'/2, 'mergeExportsToEnv'/0, 'mergeExportsToEnv'/1, 'mergeExportsToEnvWithPrefix'/0, 'mergeExportsToEnvWithPrefix'/1, 'mergeExportsToEnvWithPrefix'/2, 'mergeSelectedExports'/0, 'mergeSelectedExports'/1, 'mergeSelectedExports'/2, 'mergeTypeExport'/0, 'mergeTypeExport'/1, 'mergeTypeExport'/2, 'mergeTypeExport'/3, 'showType'/0, 'showTyCon'/0, 'showTypeArg'/0, 'showRecord'/0, 'showScheme'/0, 'TyVar'/0, 'TyCon'/0, 'TyRecord'/0, 'TyApp'/0, 'TyApp'/1, 'module_info'/0, 'module_info'/1]
   attributes []
 % Data type: Type
 % Constructors: TyVar, TyCon, TyRecord, TyApp
@@ -19,274 +19,147 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
   fun (V0, V1) ->
     {'TyApp', V0, V1}
 
-'builtinPrelude'/0 =
-  fun () ->
-    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), #{#<97>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), #{#<98>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), #{#<99>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), #{#<100>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <E> = apply 'mkTVar'/2(call 'erlang':'-'(7), #{#<101>(8,1,'integer',['unsigned'|['big']])}#)
-      in call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0()))|[call 'Data.Tuple':'Tuple'(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tString'/0()))|[call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tChar'/0()))|[call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArray'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tList'/1(apply 'TyVar'/1(A)), apply 'tList'/1(apply 'TyVar'/1(A))))))|[call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, [apply 'TyVar'/1(A)]))))|[call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'TyCon'/1(apply 'mkTCon'/2(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, [apply 'TyVar'/1(A), apply 'TyVar'/1(B)])))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0())), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<58>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']]),#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<35>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<74>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tMaybe'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tMaybe'/1(apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<74>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<82>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<50>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<51>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C)])))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<52>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D)]))))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<53>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D, E], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tArrow'/2(apply 'TyVar'/1(E), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D), apply 'TyVar'/1(E)])))))))), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyVar'/1(A))), call 'Data.Tuple':'Tuple'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyVar'/1(A)))]]]]]]]]]]]]]]])
+'mkTVar'/2 =
+  fun (Id, Name) ->
+    ~{'id'=>Id,'name'=>Name}~
 
-'defaultRegistry'/0 =
-  fun () ->
-    call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'preludeExports'/0()), call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'effectConsoleExports'/0())])
+'normalizeTypeName'/1 =
+  fun (Name) ->
+    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
+      <'Nothing'> when 'true' ->
+        Name
+      <{'Just', Idx}> when 'true' ->
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+    end
 
-'effectConsoleExports'/0 =
-  fun () ->
-    apply 'emptyExports'/0()
+'mkTCon'/2 =
+  fun (Name, Args) ->
+    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>Args}~
 
-'emptyEnv'/0 =
-  fun () ->
-    ~{'bindings'=>apply 'builtinPrelude'/0(),'counter'=>0,'registryLayer'=>'Nothing','namespace'=>'Nothing','typeAliases'=>call 'Data.Map':'empty'()}~
-
-'emptyExports'/0 =
-  fun () ->
-    ~{'types'=>call 'Data.Map':'empty'(),'constructors'=>call 'Data.Map':'empty'(),'values'=>call 'Data.Map':'empty'(),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
-
-'emptyRegistry'/0 =
-  fun () ->
-    call 'Data.Map':'empty'()
-
-'emptySubst'/0 =
-  fun () ->
-    call 'Data.Map':'empty'()
-
-'preludeExports'/0 =
-  fun () ->
-    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), #{#<97>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), #{#<98>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), #{#<99>(8,1,'integer',['unsigned'|['big']])}#)
-      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), #{#<100>(8,1,'integer',['unsigned'|['big']])}#)
-      in ~{'types'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>1,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#]}~), call 'Data.Tuple':'Tuple'(#{#<79>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[#{#<76>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, #{#<69>(8,1,'integer',['unsigned'|['big']]),#<81>(8,1,'integer',['unsigned'|['big']])}#, #{#<71>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#]}~)]),'constructors'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tUnit'/0())), call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<81>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'(#{#<71>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0()))]),'values'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<35>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<36>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'TyVar'/1(D))))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'TyVar'/1(C))))), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))]),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
-
-'tAssociativity'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tBool'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tCaseClause'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tExpr'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0())]),'row'=>'Nothing'}~)
-
-'tChar'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tConstraint'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
-
-'tDataConstructor'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDataField'/0())), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
-
-'tDataField'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
-
-'tDataType'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDataConstructor'/0()))]),'row'=>'Nothing'}~)
-
-'tDeclaration'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tDoStatement'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<68>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tEnv'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
-
-'tExpr'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tForeignImport'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
-
-'tFunctionDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tPattern'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tGuardedExprRec'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTypeSigRec'/0()))]),'row'=>'Nothing'}~)
-
-'tGuardClause'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tGuardedExpr'/0 =
-  fun () ->
-    apply 'tGuardedExprRec'/0()
-
-'tGuardedExprRec'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tGuardClause'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0())]),'row'=>'Nothing'}~)
-
-'tImportDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tImportItem'/0())), call 'Data.Tuple':'Tuple'(#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
-
-'tImportItem'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<73>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tImportSpec'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tInferResult'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']])}#, apply 'tSubst'/0())]),'row'=>'Nothing'}~)
-
-'tInfixDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0())]),'row'=>'Nothing'}~)
-
-'tInstantiateResult'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0())]),'row'=>'Nothing'}~)
+'mkTCon0'/1 =
+  fun (Name) ->
+    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>[]}~
 
 'tInt'/0 =
   fun () ->
     apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tLetBind'/0 =
+'tString'/0 =
   fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tLiteral'/0 =
+'tChar'/0 =
   fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#))
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tModule'/0 =
+'tBool'/0 =
   fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tModuleDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDeclaration'/0()))]),'row'=>'Nothing'}~)
+'tList'/1 =
+  fun (El) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, [El]))
 
-'tModuleExports'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeInfo'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeAliasInfo'/0()))]),'row'=>'Nothing'}~)
+'tArray'/1 =
+  fun (El) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, [El]))
 
-'tModuleRegistry'/0 =
-  fun () ->
-    apply 'tMap'/2(apply 'tString'/0(), apply 'tModuleExports'/0())
+'tArrow'/2 =
+  fun (A, B) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, [A, B]))
 
-'tNewtypeDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+'tMaybe'/1 =
+  fun (T) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, [T]))
 
-'tNumber'/0 =
+'tEither'/2 =
+  fun (L, R) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, [L, R]))
+
+'tMap'/2 =
+  fun (K, V) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#, [K, V]))
+
+'tSet'/1 =
+  fun (T) ->
+    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, [T]))
+
+'tUnit'/0 =
   fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#))
 
 'tOrdering'/0 =
   fun () ->
     apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<79>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tPatResult'/0 =
+'tNumber'/0 =
   fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']])}#, apply 'tSubst'/0())]),'row'=>'Nothing'}~)
-
-'tPattern'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tRecord'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tType'/0())), call 'Data.Tuple':'Tuple'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTVar'/0()))]),'row'=>'Nothing'}~)
-
-'tScheme'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTVar'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0())]),'row'=>'Nothing'}~)
-
-'tString'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tSubst'/0 =
-  fun () ->
-    apply 'tMap'/2(apply 'tInt'/0(), apply 'tType'/0())
-
-'tTCError'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tTCon'/0 =
-  fun () ->
-    apply 'tTConRecord'/0()
-
-'tTConRecord'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tType'/0()))]),'row'=>'Nothing'}~)
-
-'tTVar'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0())]),'row'=>'Nothing'}~)
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
 
 'tTokenType'/0 =
   fun () ->
     apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
 
-'tType'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
+'mkTyApp'/2 =
+  fun (F, A) ->
+    apply 'TyApp'/2(F, A)
 
-'tTypeAlias'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+'tTuple'/1 =
+  fun (Ts) ->
+    let <N> = call 'Data.Array':'length'(Ts)
+      in let <Name> = case call 'erlang':'=:='(N, 2) of
+      <'true'> when 'true' -> #{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
+      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N))
+    end
+      in apply 'TyCon'/1(~{'name'=>Name,'args'=>Ts}~)
 
-'tTypeAliasInfo'/0 =
+'emptySubst'/0 =
   fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+    call 'Data.Map':'empty'()
 
-'tTypeClass'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTypeSig'/0())), call 'Data.Tuple':'Tuple'(#{#<107>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+'lookupSubst'/2 =
+  fun (Sub, V) ->
+    case call 'Data.Map':'lookup'(call 'maps':'get'('id', V), Sub) of
+      <{'Just', T}> when 'true' ->
+        T
+      <'Nothing'> when 'true' ->
+        apply 'TyVar'/1(V)
+    end
 
-'tTypeClassInstance'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tFunctionDecl'/0())), call 'Data.Tuple':'Tuple'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
+'singleSubst'/2 =
+  fun (V, T) ->
+    call 'Data.Map':'singleton'(call 'maps':'get'('id', V), T)
 
-'tTypeDecl'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+'applySubst'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{Sub, {'TyVar', V}}> when 'true' ->
+        apply 'lookupSubst'/2(Sub, V)
+      <{Sub, {'TyCon', C}}> when 'true' ->
+        apply 'TyCon'/1(call 'maps':'merge'(C, ~{'args'=>call 'lists':'map'(fun (_Pc0) -> apply 'applySubst'/2(Sub, _Pc0), call 'maps':'get'('args', C))}~))
+      <{Sub, {'TyRecord', R}}> when 'true' ->
+        let <FieldsList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R))
+      in let <MappedFields> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', K, V}}> when 'true' -> call 'Data.Tuple':'Tuple'(K, apply 'applySubst'/2(Sub, V))
+      end, FieldsList)
+      in apply 'TyRecord'/1(call 'maps':'merge'(R, ~{'fields'=>call 'Data.Map':'fromFoldable'(MappedFields)}~))
+      <{Sub, {'TyApp', F, Arg}}> when 'true' ->
+        apply 'mkTyApp'/2(apply 'applySubst'/2(Sub, F), apply 'applySubst'/2(Sub, Arg))
+    end
 
-'tTypeExpr'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+'composeSubst'/2 =
+  fun (S1, S2) ->
+    let <S2List> = call 'Data.Map':'toUnfoldable'(S2)
+      in let <Mapped> = call 'lists':'map'(fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', K, V}}> when 'true' -> call 'Data.Tuple':'Tuple'(K, apply 'applySubst'/2(S1, V))
+      end, S2List)
+      in call 'Data.Map':'union'(S1, call 'Data.Map':'fromFoldable'(Mapped))
 
-'tTypeInfo'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
-
-'tTypeSig'/0 =
-  fun () ->
-    apply 'tTypeSigRec'/0()
-
-'tTypeSigRec'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tConstraint'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
-
-'tTypedModule'/0 =
-  fun () ->
-    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tModule'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0())]),'row'=>'Nothing'}~)
-
-'tUnifyError'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
-
-'tUnit'/0 =
-  fun () ->
-    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#))
+'mkScheme'/2 =
+  fun (Vars, Ty) ->
+    ~{'vars'=>Vars,'ty'=>Ty}~
 
 'freeTypeVars'/1 =
   fun (_P0) ->
@@ -303,58 +176,390 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         call 'Data.Set':'union'(apply 'freeTypeVars'/1(F), apply 'freeTypeVars'/1(Arg))
     end
 
-'freeTypeVarsEnv'/1 =
-  fun (Env) ->
-    call 'Data.Foldable':'foldl'(fun (Acc, S) ->
-      call 'Data.Set':'union'(Acc, apply 'freeTypeVarsScheme'/1(S)), call 'Data.Set':'empty'(), call 'Data.Map':'values'(call 'maps':'get'('bindings', Env)))
-
 'freeTypeVarsScheme'/1 =
   fun (S) ->
     let <BoundIds> = call 'Data.Set':'fromFoldable'(call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('id', _Ra), call 'maps':'get'('vars', S)))
       in call 'Data.Set':'difference'(apply 'freeTypeVars'/1(call 'maps':'get'('ty', S)), BoundIds)
 
-'getAliasInfoBody'/1 =
-  fun (Info) ->
-    call 'maps':'get'('body', Info)
+'mkTypedModule'/2 =
+  fun (Mod, Env) ->
+    ~{'mod'=>Mod,'env'=>Env}~
+
+'typedModuleToModule'/1 =
+  fun (Tm) ->
+    call 'maps':'get'('mod', Tm)
+
+'typedModuleEnv'/1 =
+  fun (Tm) ->
+    call 'maps':'get'('env', Tm)
+
+'emptyEnv'/0 =
+  fun () ->
+    ~{'bindings'=>apply 'builtinPrelude'/0(),'counter'=>0,'registryLayer'=>'Nothing','namespace'=>'Nothing','typeAliases'=>call 'Data.Map':'empty'()}~
+
+'extendEnv'/3 =
+  fun (Env, Name, Scheme) ->
+    call 'maps':'merge'(Env, ~{'bindings'=>call 'Data.Map':'insert'(Name, Scheme, call 'maps':'get'('bindings', Env))}~)
+
+'extendTypeAlias'/3 =
+  fun (Env, Name, Ty) ->
+    call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', Env))}~)
+
+'lookupTypeAlias'/2 =
+  fun (Env, Name) ->
+    call 'Data.Map':'lookup'(Name, call 'maps':'get'('typeAliases', Env))
+
+'lookupEnv'/2 =
+  fun (Env, Name) ->
+    call 'Data.Map':'lookup'(Name, call 'maps':'get'('bindings', Env))
+
+'applySubstToEnv'/2 =
+  fun (Sub, Env) ->
+    letrec 'applyToScheme'/1 = fun (S) ->
+      call 'maps':'merge'(S, ~{'ty'=>apply 'applySubst'/2(Sub, call 'maps':'get'('ty', S))}~)
+       'mapBindings'/2 = fun (F, M) ->
+      let <Arr> = call 'Data.Map':'toUnfoldable'(M)
+      in call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{Acc, {'Tuple', K, V}}> when 'true' -> call 'Data.Map':'insert'(K, apply F(V), Acc)
+      end, call 'Data.Map':'empty'(), Arr)
+      in call 'maps':'merge'(Env, ~{'bindings'=>apply 'mapBindings'/2(fun (_Mf0) -> apply 'applyToScheme'/1(_Mf0), call 'maps':'get'('bindings', Env))}~)
+
+'freshVar'/2 =
+  fun (Env, Hint) ->
+    let <V> = apply 'mkTVar'/2(call 'maps':'get'('counter', Env), call 'Nova.Prelude':'semigroupAppendImpl'(Hint, call 'erlang':'integer_to_list'(call 'maps':'get'('counter', Env))))
+      in let <Env_> = call 'maps':'merge'(Env, ~{'counter'=>call 'erlang':'+'(call 'maps':'get'('counter', Env), 1)}~)
+      in call 'Data.Tuple':'Tuple'(V, Env_)
+
+'freeTypeVarsEnv'/1 =
+  fun (Env) ->
+    call 'Data.Foldable':'foldl'(fun (Acc, S) ->
+      call 'Data.Set':'union'(Acc, apply 'freeTypeVarsScheme'/1(S)), call 'Data.Set':'empty'(), call 'Data.Map':'values'(call 'maps':'get'('bindings', Env)))
+
+'builtinPrelude'/0 =
+  fun () ->
+    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), #{#<97>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), #{#<98>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), #{#<99>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), #{#<100>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <E> = apply 'mkTVar'/2(call 'erlang':'-'(7), #{#<101>(8,1,'integer',['unsigned'|['big']])}#)
+      in call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0()))|[call 'Data.Tuple':'Tuple'(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tString'/0()))|[call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tChar'/0()))|[call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))|[call 'Data.Tuple':'Tuple'(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArray'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tList'/1(apply 'TyVar'/1(A)), apply 'tList'/1(apply 'TyVar'/1(A))))))|[call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tList'/1(apply 'TyVar'/1(A))))|[call 'Data.Tuple':'Tuple'(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, [apply 'TyVar'/1(A)]))))|[call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'TyCon'/1(apply 'mkTCon'/2(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, [apply 'TyVar'/1(A), apply 'TyVar'/1(B)])))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0())), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<58>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']]),#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArrow'/2(apply 'tArray'/1(apply 'TyVar'/1(A)), apply 'tArray'/1(apply 'TyVar'/1(A)))))), call 'Data.Tuple':'Tuple'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<35>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<74>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tMaybe'/1(apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tMaybe'/1(apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(B)))))), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<74>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'tMaybe'/1(apply 'TyVar'/1(A)), apply 'tBool'/0()))), call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<82>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tEither'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<50>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<51>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C)])))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<52>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D)]))))))), call 'Data.Tuple':'Tuple'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<53>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D, E], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'tArrow'/2(apply 'TyVar'/1(D), apply 'tArrow'/2(apply 'TyVar'/1(E), apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B), apply 'TyVar'/1(C), apply 'TyVar'/1(D), apply 'TyVar'/1(E)])))))))), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(A)))), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tTuple'/1([apply 'TyVar'/1(A), apply 'TyVar'/1(B)]), apply 'TyVar'/1(B)))), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tString'/0()))), call 'Data.Tuple':'Tuple'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tString'/0(), apply 'tUnit'/0()))), call 'Data.Tuple':'Tuple'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyVar'/1(A))), call 'Data.Tuple':'Tuple'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'TyVar'/1(A)))]]]]]]]]]]]]]]])
+
+'tSubst'/0 =
+  fun () ->
+    apply 'tMap'/2(apply 'tInt'/0(), apply 'tType'/0())
+
+'tEnv'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tInt'/0())), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tScheme'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTVar'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0())]),'row'=>'Nothing'}~)
+
+'tType'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tTVar'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0())]),'row'=>'Nothing'}~)
+
+'tTCon'/0 =
+  fun () ->
+    apply 'tTConRecord'/0()
+
+'tTConRecord'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tType'/0()))]),'row'=>'Nothing'}~)
+
+'tRecord'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tType'/0())), call 'Data.Tuple':'Tuple'(#{#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTVar'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeInfo'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeAliasInfo'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tModuleExports'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeInfo'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tScheme'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMap'/2(apply 'tString'/0(), apply 'tTypeAliasInfo'/0()))]),'row'=>'Nothing'}~)
+
+'tModuleRegistry'/0 =
+  fun () ->
+    apply 'tMap'/2(apply 'tString'/0(), apply 'tModuleExports'/0())
+
+'tModule'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tTypedModule'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tModule'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0())]),'row'=>'Nothing'}~)
+
+'tPattern'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tExpr'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tLiteral'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tTypeExpr'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tLetBind'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'(#{#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
+
+'tCaseClause'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, apply 'tPattern'/0()), call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tExpr'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0())]),'row'=>'Nothing'}~)
+
+'tDeclaration'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<68>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tFunctionDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tPattern'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tGuardedExprRec'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tTypeSigRec'/0()))]),'row'=>'Nothing'}~)
+
+'tGuardedExprRec'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<103>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tGuardClause'/0())), call 'Data.Tuple':'Tuple'(#{#<98>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeSigRec'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tConstraint'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeSig'/0 =
+  fun () ->
+    apply 'tTypeSigRec'/0()
+
+'tDataType'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDataConstructor'/0()))]),'row'=>'Nothing'}~)
+
+'tDataConstructor'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDataField'/0())), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tDataField'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeAlias'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tModuleDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tList'/1(apply 'tDeclaration'/0()))]),'row'=>'Nothing'}~)
+
+'tImportDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tImportItem'/0())), call 'Data.Tuple':'Tuple'(#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tDoStatement'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<68>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tGuardedExpr'/0 =
+  fun () ->
+    apply 'tGuardedExprRec'/0()
+
+'tGuardClause'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<71>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tTypeClass'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTypeSig'/0())), call 'Data.Tuple':'Tuple'(#{#<107>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tMaybe'/1(apply 'tString'/0()))]),'row'=>'Nothing'}~)
+
+'tTypeClassInstance'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0()), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tFunctionDecl'/0())), call 'Data.Tuple':'Tuple'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'tBool'/0())]),'row'=>'Nothing'}~)
+
+'tInfixDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tInt'/0()), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0())]),'row'=>'Nothing'}~)
+
+'tConstraint'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tTypeExpr'/0()))]),'row'=>'Nothing'}~)
+
+'tImportItem'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<73>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tImportSpec'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tAssociativity'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tForeignImport'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tNewtypeDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<86>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#, apply 'tArray'/1(apply 'tString'/0())), call 'Data.Tuple':'Tuple'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tTypeDecl'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'tString'/0()), call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tTypeExpr'/0())]),'row'=>'Nothing'}~)
+
+'tUnifyError'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tTCError'/0 =
+  fun () ->
+    apply 'TyCon'/1(apply 'mkTCon0'/1(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#))
+
+'tPatResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']])}#, apply 'tSubst'/0())]),'row'=>'Nothing'}~)
+
+'tInstantiateResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0())]),'row'=>'Nothing'}~)
+
+'tInferResult'/0 =
+  fun () ->
+    apply 'TyRecord'/1(~{'fields'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, apply 'tType'/0()), call 'Data.Tuple':'Tuple'(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']])}#, apply 'tEnv'/0()), call 'Data.Tuple':'Tuple'(#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']])}#, apply 'tSubst'/0())]),'row'=>'Nothing'}~)
 
 'getAliasInfoParams'/1 =
   fun (Info) ->
     call 'maps':'get'('params', Info)
 
-'mkTCon0'/1 =
-  fun (Name) ->
-    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>[]}~
+'getAliasInfoBody'/1 =
+  fun (Info) ->
+    call 'maps':'get'('body', Info)
 
-'normalizeTypeName'/1 =
-  fun (Name) ->
-    case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
+'emptyExports'/0 =
+  fun () ->
+    ~{'types'=>call 'Data.Map':'empty'(),'constructors'=>call 'Data.Map':'empty'(),'values'=>call 'Data.Map':'empty'(),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
+
+'preludeExports'/0 =
+  fun () ->
+    let <A> = apply 'mkTVar'/2(call 'erlang':'-'(1), #{#<97>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <B> = apply 'mkTVar'/2(call 'erlang':'-'(2), #{#<98>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <C> = apply 'mkTVar'/2(call 'erlang':'-'(3), #{#<99>(8,1,'integer',['unsigned'|['big']])}#)
+      in let <D> = apply 'mkTVar'/2(call 'erlang':'-'(6), #{#<100>(8,1,'integer',['unsigned'|['big']])}#)
+      in ~{'types'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<73>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>1,'constructors'=>[]}~), call 'Data.Tuple':'Tuple'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#]}~), call 'Data.Tuple':'Tuple'(#{#<79>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, ~{'arity'=>0,'constructors'=>[#{#<76>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, #{#<69>(8,1,'integer',['unsigned'|['big']]),#<81>(8,1,'integer',['unsigned'|['big']])}#, #{#<71>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#]}~)]),'constructors'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tUnit'/0())), call 'Data.Tuple':'Tuple'(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<81>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0())), call 'Data.Tuple':'Tuple'(#{#<71>(8,1,'integer',['unsigned'|['big']]),#<84>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tOrdering'/0()))]),'values'=>call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<43>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<45>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tInt'/0(), apply 'tArrow'/2(apply 'tInt'/0(), apply 'tInt'/0())))), call 'Data.Tuple':'Tuple'(#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tArrow'/2(apply 'tBool'/0(), apply 'tArrow'/2(apply 'tBool'/0(), apply 'tBool'/0())))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<35>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(C)))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<36>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C, D], apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'TyVar'/1(B)), apply 'tArrow'/2(apply 'TyVar'/1(C), apply 'TyVar'/1(D))))), call 'Data.Tuple':'Tuple'(#{#<42>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(B))))), call 'Data.Tuple':'Tuple'(#{#<60>(8,1,'integer',['unsigned'|['big']]),#<42>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(A))))), call 'Data.Tuple':'Tuple'(#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([A, B, C], apply 'tArrow'/2(apply 'TyVar'/1(A), apply 'tArrow'/2(apply 'tArrow'/2(apply 'TyVar'/1(B), apply 'TyVar'/1(C)), apply 'TyVar'/1(C))))), call 'Data.Tuple':'Tuple'(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'mkScheme'/2([], apply 'tBool'/0()))]),'typeAliases'=>call 'Data.Map':'empty'(),'expandedTypeAliases'=>call 'Data.Map':'empty'()}~
+
+'effectConsoleExports'/0 =
+  fun () ->
+    apply 'emptyExports'/0()
+
+'defaultRegistry'/0 =
+  fun () ->
+    call 'Data.Map':'fromFoldable'([call 'Data.Tuple':'Tuple'(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'preludeExports'/0()), call 'Data.Tuple':'Tuple'(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, apply 'effectConsoleExports'/0())])
+
+'emptyRegistry'/0 =
+  fun () ->
+    call 'Data.Map':'empty'()
+
+'lookupModule'/2 =
+  fun (Reg, Name) ->
+    call 'Data.Map':'lookup'(Name, Reg)
+
+'registerModule'/3 =
+  fun (Reg, Name, Exports) ->
+    call 'Data.Map':'insert'(Name, Exports, Reg)
+
+'mergeExportsToEnv'/2 =
+  fun (Env, Exports) ->
+    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
+      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
+      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
+      end, Env, CtorList)
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
+      end, Env1, ValList)
+      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>call 'Data.Map':'union'(call 'maps':'get'('expandedTypeAliases', Exports), call 'maps':'get'('typeAliases', Env2))}~)
+      in Env3
+
+'mergeExportsToEnvWithPrefix'/3 =
+  fun (Env, Exports, Prefix) ->
+    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
+      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
+      in let <AliasList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('expandedTypeAliases', Exports))
+      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Scheme)
+      end, Env, CtorList)
+      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Scheme)
+      end, Env1, ValList)
+      in let <NewAliases> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
+      case {_L0, _L1} of
+        <{M, {'Tuple', Name, Ty}}> when 'true' -> call 'Data.Map':'insert'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Ty, M)
+      end, call 'maps':'get'('typeAliases', Env2), AliasList)
+      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>NewAliases}~)
+      in Env3
+
+'mergeSelectedExports'/3 =
+  fun (Env, Exports, Items) ->
+    letrec 'addItem'/2 = fun (E, Name) ->
+      let <E_> = case call 'Data.Map':'lookup'(Name, call 'maps':'get'('expandedTypeAliases', Exports)) of
+      <{'Just', Ty}> when 'true' ->
+        call 'maps':'merge'(E, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', E))}~)
       <'Nothing'> when 'true' ->
-        Name
-      <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
+        E
     end
-
-'showRecord'/1 =
-  fun (R) ->
-    let <Fields> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R))
-      in let <FieldStrs> = call 'lists':'map'(fun (_L0) ->
-      case {_L0} of
-        <{{'Tuple', Name, Ty}}> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Name, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Ty))
-      end, Fields)
-      in let <Inner> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FieldStrs)
-      in case call 'maps':'get'('row', R) of
+      in case call 'Data.Map':'lookup'(Name, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E_, Name, Scheme)
       <'Nothing'> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Inner), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
-      <{'Just', Rv}> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Inner), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('name', Rv)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
+        case call 'Data.Map':'lookup'(Name, call 'maps':'get'('values', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E_, Name, Scheme)
+      <'Nothing'> when 'true' ->
+        E_
     end
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addItem'/2(_Mf0, _Mf1), Env, Items)
 
-'showScheme'/1 =
-  fun (S) ->
-    let <TyStr> = apply 'showType'/1(call 'maps':'get'('ty', S))
-      in case call 'Data.Array':'null'(call 'maps':'get'('vars', S)) of
-      <'true'> when 'true' -> TyStr
-      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), call 'maps':'get'('vars', S)))), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), TyStr)
+'mergeTypeExport'/4 =
+  fun (Env, Exports, TypeName, CtorNames) ->
+    letrec 'addCtor'/2 = fun (E, CtorName) ->
+      case call 'Data.Map':'lookup'(CtorName, call 'maps':'get'('constructors', Exports)) of
+      <{'Just', Scheme}> when 'true' ->
+        apply 'extendEnv'/3(E, CtorName, Scheme)
+      <'Nothing'> when 'true' ->
+        E
+    end
+      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addCtor'/2(_Mf0, _Mf1), Env, CtorNames)
+
+'showType'/1 =
+  fun (_P0) ->
+    case {_P0} of
+      <{{'TyVar', V}}> when 'true' ->
+        call 'maps':'get'('name', V)
+      <{{'TyCon', C}}> when 'true' ->
+        apply 'showTyCon'/1(C)
+      <{{'TyRecord', R}}> when 'true' ->
+        apply 'showRecord'/1(R)
+      <{{'TyApp', F, Arg}}> when 'true' ->
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(F)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Arg)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
 'showTyCon'/1 =
@@ -428,19 +633,6 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         end
     end
 
-'showType'/1 =
-  fun (_P0) ->
-    case {_P0} of
-      <{{'TyVar', V}}> when 'true' ->
-        call 'maps':'get'('name', V)
-      <{{'TyCon', C}}> when 'true' ->
-        apply 'showTyCon'/1(C)
-      <{{'TyRecord', R}}> when 'true' ->
-        apply 'showRecord'/1(R)
-      <{{'TyApp', F, Arg}}> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(F)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Arg)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
-    end
-
 'showTypeArg'/1 =
   fun (Ty) ->
     case Ty of
@@ -462,473 +654,47 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(Ty)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
-'tArray'/1 =
-  fun (El) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<65>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']])}#, [El]))
-
-'tList'/1 =
-  fun (El) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<76>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, [El]))
-
-'tMaybe'/1 =
-  fun (T) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, [T]))
-
-'tSet'/1 =
-  fun (T) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<83>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, [T]))
-
-'tTuple'/1 =
-  fun (Ts) ->
-    let <N> = call 'Data.Array':'length'(Ts)
-      in let <Name> = case call 'erlang':'=:='(N, 2) of
-      <'true'> when 'true' -> #{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
-      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N))
-    end
-      in apply 'TyCon'/1(~{'name'=>Name,'args'=>Ts}~)
-
-'typedModuleEnv'/1 =
-  fun (Tm) ->
-    call 'maps':'get'('env', Tm)
-
-'typedModuleToModule'/1 =
-  fun (Tm) ->
-    call 'maps':'get'('mod', Tm)
-
-'applySubst'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{Sub, {'TyVar', V}}> when 'true' ->
-        apply 'lookupSubst'/2(Sub, V)
-      <{Sub, {'TyCon', C}}> when 'true' ->
-        apply 'TyCon'/1(call 'maps':'merge'(C, ~{'args'=>call 'lists':'map'(fun (_Pc0) -> apply 'applySubst'/2(Sub, _Pc0), call 'maps':'get'('args', C))}~))
-      <{Sub, {'TyRecord', R}}> when 'true' ->
-        let <FieldsList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R))
-      in let <MappedFields> = call 'lists':'map'(fun (_L0) ->
+'showRecord'/1 =
+  fun (R) ->
+    let <Fields> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R))
+      in let <FieldStrs> = call 'lists':'map'(fun (_L0) ->
       case {_L0} of
-        <{{'Tuple', K, V}}> when 'true' -> call 'Data.Tuple':'Tuple'(K, apply 'applySubst'/2(Sub, V))
-      end, FieldsList)
-      in apply 'TyRecord'/1(call 'maps':'merge'(R, ~{'fields'=>call 'Data.Map':'fromFoldable'(MappedFields)}~))
-      <{Sub, {'TyApp', F, Arg}}> when 'true' ->
-        apply 'mkTyApp'/2(apply 'applySubst'/2(Sub, F), apply 'applySubst'/2(Sub, Arg))
-    end
-
-'applySubstToEnv'/2 =
-  fun (Sub, Env) ->
-    letrec 'applyToScheme'/1 = fun (S) ->
-      call 'maps':'merge'(S, ~{'ty'=>apply 'applySubst'/2(Sub, call 'maps':'get'('ty', S))}~)
-       'mapBindings'/2 = fun (F, M) ->
-      let <Arr> = call 'Data.Map':'toUnfoldable'(M)
-      in call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{Acc, {'Tuple', K, V}}> when 'true' -> call 'Data.Map':'insert'(K, apply F(V), Acc)
-      end, call 'Data.Map':'empty'(), Arr)
-      in call 'maps':'merge'(Env, ~{'bindings'=>apply 'mapBindings'/2(fun (_Mf0) -> apply 'applyToScheme'/1(_Mf0), call 'maps':'get'('bindings', Env))}~)
-
-'composeSubst'/2 =
-  fun (S1, S2) ->
-    let <S2List> = call 'Data.Map':'toUnfoldable'(S2)
-      in let <Mapped> = call 'lists':'map'(fun (_L0) ->
-      case {_L0} of
-        <{{'Tuple', K, V}}> when 'true' -> call 'Data.Tuple':'Tuple'(K, apply 'applySubst'/2(S1, V))
-      end, S2List)
-      in call 'Data.Map':'union'(S1, call 'Data.Map':'fromFoldable'(Mapped))
-
-'freshVar'/2 =
-  fun (Env, Hint) ->
-    let <V> = apply 'mkTVar'/2(call 'maps':'get'('counter', Env), call 'Nova.Prelude':'semigroupAppendImpl'(Hint, call 'erlang':'integer_to_list'(call 'maps':'get'('counter', Env))))
-      in let <Env_> = call 'maps':'merge'(Env, ~{'counter'=>call 'erlang':'+'(call 'maps':'get'('counter', Env), 1)}~)
-      in call 'Data.Tuple':'Tuple'(V, Env_)
-
-'lookupEnv'/2 =
-  fun (Env, Name) ->
-    call 'Data.Map':'lookup'(Name, call 'maps':'get'('bindings', Env))
-
-'lookupModule'/2 =
-  fun (Reg, Name) ->
-    call 'Data.Map':'lookup'(Name, Reg)
-
-'lookupSubst'/2 =
-  fun (Sub, V) ->
-    case call 'Data.Map':'lookup'(call 'maps':'get'('id', V), Sub) of
-      <{'Just', T}> when 'true' ->
-        T
+        <{{'Tuple', Name, Ty}}> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Name, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Ty))
+      end, Fields)
+      in let <Inner> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FieldStrs)
+      in case call 'maps':'get'('row', R) of
       <'Nothing'> when 'true' ->
-        apply 'TyVar'/1(V)
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Inner), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
+      <{'Just', Rv}> when 'true' ->
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Inner), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('name', Rv)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
     end
 
-'lookupTypeAlias'/2 =
-  fun (Env, Name) ->
-    call 'Data.Map':'lookup'(Name, call 'maps':'get'('typeAliases', Env))
-
-'mergeExportsToEnv'/2 =
-  fun (Env, Exports) ->
-    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
-      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
-      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
-      end, Env, CtorList)
-      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, Name, Scheme)
-      end, Env1, ValList)
-      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>call 'Data.Map':'union'(call 'maps':'get'('expandedTypeAliases', Exports), call 'maps':'get'('typeAliases', Env2))}~)
-      in Env3
-
-'mkScheme'/2 =
-  fun (Vars, Ty) ->
-    ~{'vars'=>Vars,'ty'=>Ty}~
-
-'mkTCon'/2 =
-  fun (Name, Args) ->
-    ~{'name'=>apply 'normalizeTypeName'/1(Name),'args'=>Args}~
-
-'mkTVar'/2 =
-  fun (Id, Name) ->
-    ~{'id'=>Id,'name'=>Name}~
-
-'mkTyApp'/2 =
-  fun (F, A) ->
-    apply 'TyApp'/2(F, A)
-
-'mkTypedModule'/2 =
-  fun (Mod, Env) ->
-    ~{'mod'=>Mod,'env'=>Env}~
-
-'singleSubst'/2 =
-  fun (V, T) ->
-    call 'Data.Map':'singleton'(call 'maps':'get'('id', V), T)
-
-'tArrow'/2 =
-  fun (A, B) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#, [A, B]))
-
-'tEither'/2 =
-  fun (L, R) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<69>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, [L, R]))
-
-'tMap'/2 =
-  fun (K, V) ->
-    apply 'TyCon'/1(apply 'mkTCon'/2(#{#<77>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#, [K, V]))
-
-'extendEnv'/3 =
-  fun (Env, Name, Scheme) ->
-    call 'maps':'merge'(Env, ~{'bindings'=>call 'Data.Map':'insert'(Name, Scheme, call 'maps':'get'('bindings', Env))}~)
-
-'extendTypeAlias'/3 =
-  fun (Env, Name, Ty) ->
-    call 'maps':'merge'(Env, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', Env))}~)
-
-'mergeExportsToEnvWithPrefix'/3 =
-  fun (Env, Exports, Prefix) ->
-    let <CtorList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('constructors', Exports))
-      in let <ValList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('values', Exports))
-      in let <AliasList> = call 'Data.Map':'toUnfoldable'(call 'maps':'get'('expandedTypeAliases', Exports))
-      in let <Env1> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Scheme)
-      end, Env, CtorList)
-      in let <Env2> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{E, {'Tuple', Name, Scheme}}> when 'true' -> apply 'extendEnv'/3(E, call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Scheme)
-      end, Env1, ValList)
-      in let <NewAliases> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
-      case {_L0, _L1} of
-        <{M, {'Tuple', Name, Ty}}> when 'true' -> call 'Data.Map':'insert'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name), Ty, M)
-      end, call 'maps':'get'('typeAliases', Env2), AliasList)
-      in let <Env3> = call 'maps':'merge'(Env2, ~{'typeAliases'=>NewAliases}~)
-      in Env3
-
-'mergeSelectedExports'/3 =
-  fun (Env, Exports, Items) ->
-    letrec 'addItem'/2 = fun (E, Name) ->
-      let <E_> = case call 'Data.Map':'lookup'(Name, call 'maps':'get'('expandedTypeAliases', Exports)) of
-      <{'Just', Ty}> when 'true' ->
-        call 'maps':'merge'(E, ~{'typeAliases'=>call 'Data.Map':'insert'(Name, Ty, call 'maps':'get'('typeAliases', E))}~)
-      <'Nothing'> when 'true' ->
-        E
+'showScheme'/1 =
+  fun (S) ->
+    let <TyStr> = apply 'showType'/1(call 'maps':'get'('ty', S))
+      in case call 'Data.Array':'null'(call 'maps':'get'('vars', S)) of
+      <'true'> when 'true' -> TyStr
+      <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'lists':'map'(fun (_Ra) -> call 'maps':'get'('name', _Ra), call 'maps':'get'('vars', S)))), #{#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), TyStr)
     end
-      in case call 'Data.Map':'lookup'(Name, call 'maps':'get'('constructors', Exports)) of
-      <{'Just', Scheme}> when 'true' ->
-        apply 'extendEnv'/3(E_, Name, Scheme)
-      <'Nothing'> when 'true' ->
-        case call 'Data.Map':'lookup'(Name, call 'maps':'get'('values', Exports)) of
-      <{'Just', Scheme}> when 'true' ->
-        apply 'extendEnv'/3(E_, Name, Scheme)
-      <'Nothing'> when 'true' ->
-        E_
-    end
-    end
-      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addItem'/2(_Mf0, _Mf1), Env, Items)
 
-'registerModule'/3 =
-  fun (Reg, Name, Exports) ->
-    call 'Data.Map':'insert'(Name, Exports, Reg)
-
-'mergeTypeExport'/4 =
-  fun (Env, Exports, TypeName, CtorNames) ->
-    letrec 'addCtor'/2 = fun (E, CtorName) ->
-      case call 'Data.Map':'lookup'(CtorName, call 'maps':'get'('constructors', Exports)) of
-      <{'Just', Scheme}> when 'true' ->
-        apply 'extendEnv'/3(E, CtorName, Scheme)
-      <'Nothing'> when 'true' ->
-        E
-    end
-      in call 'Data.Array':'foldl'(fun (_Mf0, _Mf1) -> apply 'addCtor'/2(_Mf0, _Mf1), Env, CtorNames)
-
-'freeTypeVars'/0 =
+'mkTVar'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'freeTypeVars'/1(_A0)
+        let <_F1> = fun (_A1) ->
+        apply 'mkTVar'/2(_A0, _A1)
+      in _F1
       in _F0
 
-'freeTypeVarsEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'freeTypeVarsEnv'/1(_A0)
-      in _F0
-
-'freeTypeVarsScheme'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'freeTypeVarsScheme'/1(_A0)
-      in _F0
-
-'getAliasInfoBody'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getAliasInfoBody'/1(_A0)
-      in _F0
-
-'getAliasInfoParams'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'getAliasInfoParams'/1(_A0)
-      in _F0
-
-'mkTCon0'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'mkTCon0'/1(_A0)
+'mkTVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTVar'/2(_A0, _A1)
       in _F0
 
 'normalizeTypeName'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         apply 'normalizeTypeName'/1(_A0)
-      in _F0
-
-'showRecord'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'showRecord'/1(_A0)
-      in _F0
-
-'showScheme'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'showScheme'/1(_A0)
-      in _F0
-
-'showTyCon'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'showTyCon'/1(_A0)
-      in _F0
-
-'showType'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'showType'/1(_A0)
-      in _F0
-
-'showTypeArg'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'showTypeArg'/1(_A0)
-      in _F0
-
-'tArray'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tArray'/1(_A0)
-      in _F0
-
-'tList'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tList'/1(_A0)
-      in _F0
-
-'tMaybe'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tMaybe'/1(_A0)
-      in _F0
-
-'tSet'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tSet'/1(_A0)
-      in _F0
-
-'tTuple'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tTuple'/1(_A0)
-      in _F0
-
-'typedModuleEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'typedModuleEnv'/1(_A0)
-      in _F0
-
-'typedModuleToModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'typedModuleToModule'/1(_A0)
-      in _F0
-
-'applySubst'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'applySubst'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'applySubst'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'applySubst'/2(_A0, _A1)
-      in _F0
-
-'applySubstToEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'applySubstToEnv'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'applySubstToEnv'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'applySubstToEnv'/2(_A0, _A1)
-      in _F0
-
-'composeSubst'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'composeSubst'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'composeSubst'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'composeSubst'/2(_A0, _A1)
-      in _F0
-
-'freshVar'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'freshVar'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'freshVar'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'freshVar'/2(_A0, _A1)
-      in _F0
-
-'lookupEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lookupEnv'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'lookupEnv'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lookupEnv'/2(_A0, _A1)
-      in _F0
-
-'lookupModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lookupModule'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'lookupModule'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lookupModule'/2(_A0, _A1)
-      in _F0
-
-'lookupSubst'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lookupSubst'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'lookupSubst'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lookupSubst'/2(_A0, _A1)
-      in _F0
-
-'lookupTypeAlias'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'lookupTypeAlias'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'lookupTypeAlias'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'lookupTypeAlias'/2(_A0, _A1)
-      in _F0
-
-'mergeExportsToEnv'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mergeExportsToEnv'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mergeExportsToEnv'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mergeExportsToEnv'/2(_A0, _A1)
-      in _F0
-
-'mkScheme'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkScheme'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mkScheme'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkScheme'/2(_A0, _A1)
       in _F0
 
 'mkTCon'/0 =
@@ -945,60 +711,22 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         apply 'mkTCon'/2(_A0, _A1)
       in _F0
 
-'mkTVar'/0 =
+'mkTCon0'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkTVar'/2(_A0, _A1)
-      in _F1
+        apply 'mkTCon0'/1(_A0)
       in _F0
 
-'mkTVar'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkTVar'/2(_A0, _A1)
-      in _F0
-
-'mkTyApp'/0 =
+'tList'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkTyApp'/2(_A0, _A1)
-      in _F1
+        apply 'tList'/1(_A0)
       in _F0
 
-'mkTyApp'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkTyApp'/2(_A0, _A1)
-      in _F0
-
-'mkTypedModule'/0 =
+'tArray'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'mkTypedModule'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'mkTypedModule'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'mkTypedModule'/2(_A0, _A1)
-      in _F0
-
-'singleSubst'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'singleSubst'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'singleSubst'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'singleSubst'/2(_A0, _A1)
+        apply 'tArray'/1(_A0)
       in _F0
 
 'tArrow'/0 =
@@ -1013,6 +741,12 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'tArrow'/2(_A0, _A1)
+      in _F0
+
+'tMaybe'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tMaybe'/1(_A0)
       in _F0
 
 'tEither'/0 =
@@ -1041,6 +775,140 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'tMap'/2(_A0, _A1)
+      in _F0
+
+'tSet'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tSet'/1(_A0)
+      in _F0
+
+'mkTyApp'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTyApp'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTyApp'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTyApp'/2(_A0, _A1)
+      in _F0
+
+'tTuple'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tTuple'/1(_A0)
+      in _F0
+
+'lookupSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupSubst'/2(_A0, _A1)
+      in _F0
+
+'singleSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'singleSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'singleSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'singleSubst'/2(_A0, _A1)
+      in _F0
+
+'applySubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'applySubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'applySubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'applySubst'/2(_A0, _A1)
+      in _F0
+
+'composeSubst'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'composeSubst'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'composeSubst'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'composeSubst'/2(_A0, _A1)
+      in _F0
+
+'mkScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkScheme'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkScheme'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkScheme'/2(_A0, _A1)
+      in _F0
+
+'freeTypeVars'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVars'/1(_A0)
+      in _F0
+
+'freeTypeVarsScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVarsScheme'/1(_A0)
+      in _F0
+
+'mkTypedModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mkTypedModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mkTypedModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mkTypedModule'/2(_A0, _A1)
+      in _F0
+
+'typedModuleToModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typedModuleToModule'/1(_A0)
+      in _F0
+
+'typedModuleEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'typedModuleEnv'/1(_A0)
       in _F0
 
 'extendEnv'/0 =
@@ -1091,6 +959,132 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         apply 'extendTypeAlias'/3(_A0, _A1, _A2)
       in _F0
 
+'lookupTypeAlias'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupTypeAlias'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupTypeAlias'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupTypeAlias'/2(_A0, _A1)
+      in _F0
+
+'lookupEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupEnv'/2(_A0, _A1)
+      in _F0
+
+'applySubstToEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'applySubstToEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'applySubstToEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'applySubstToEnv'/2(_A0, _A1)
+      in _F0
+
+'freshVar'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'freshVar'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'freshVar'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'freshVar'/2(_A0, _A1)
+      in _F0
+
+'freeTypeVarsEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'freeTypeVarsEnv'/1(_A0)
+      in _F0
+
+'getAliasInfoParams'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getAliasInfoParams'/1(_A0)
+      in _F0
+
+'getAliasInfoBody'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'getAliasInfoBody'/1(_A0)
+      in _F0
+
+'lookupModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'lookupModule'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'lookupModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'lookupModule'/2(_A0, _A1)
+      in _F0
+
+'registerModule'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        let <_F2> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F2
+      in _F1
+      in _F0
+
+'registerModule'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        let <_F1> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F1
+      in _F0
+
+'registerModule'/2 =
+  fun (_A0, _A1) ->
+    let <_F0> = fun (_A2) ->
+        apply 'registerModule'/3(_A0, _A1, _A2)
+      in _F0
+
+'mergeExportsToEnv'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'mergeExportsToEnv'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'mergeExportsToEnv'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'mergeExportsToEnv'/2(_A0, _A1)
+      in _F0
+
 'mergeExportsToEnvWithPrefix'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -1139,30 +1133,6 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
         apply 'mergeSelectedExports'/3(_A0, _A1, _A2)
       in _F0
 
-'registerModule'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        let <_F2> = fun (_A2) ->
-        apply 'registerModule'/3(_A0, _A1, _A2)
-      in _F2
-      in _F1
-      in _F0
-
-'registerModule'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        let <_F1> = fun (_A2) ->
-        apply 'registerModule'/3(_A0, _A1, _A2)
-      in _F1
-      in _F0
-
-'registerModule'/2 =
-  fun (_A0, _A1) ->
-    let <_F0> = fun (_A2) ->
-        apply 'registerModule'/3(_A0, _A1, _A2)
-      in _F0
-
 'mergeTypeExport'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -1197,6 +1167,36 @@ module 'Nova.Compiler.Types' ['builtinPrelude'/0, 'defaultRegistry'/0, 'effectCo
   fun (_A0, _A1, _A2) ->
     let <_F0> = fun (_A3) ->
         apply 'mergeTypeExport'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'showType'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showType'/1(_A0)
+      in _F0
+
+'showTyCon'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showTyCon'/1(_A0)
+      in _F0
+
+'showTypeArg'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showTypeArg'/1(_A0)
+      in _F0
+
+'showRecord'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showRecord'/1(_A0)
+      in _F0
+
+'showScheme'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'showScheme'/1(_A0)
       in _F0
 
 'TyVar'/0 =

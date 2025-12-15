@@ -1,9 +1,5 @@
-module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerformEffect'/1, 'void'/1, 'applySecond'/2, 'bind'/2, 'logImpl'/1, 'logShowImpl'/1, 'errorImpl'/1, 'unsafePerformEffectImpl'/1, 'pureImpl'/1, 'bindImpl'/2, 'applySecondImpl'/2, 'voidImpl'/1, 'error'/0, 'log'/0, 'logShow'/0, 'pure'/0, 'unsafePerformEffect'/0, 'void'/0, 'applySecond'/0, 'applySecond'/1, 'bind'/0, 'bind'/1, 'logImpl'/0, 'logShowImpl'/0, 'errorImpl'/0, 'unsafePerformEffectImpl'/0, 'pureImpl'/0, 'bindImpl'/0, 'bindImpl'/1, 'applySecondImpl'/0, 'applySecondImpl'/1, 'voidImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'Effect.Console' ['log'/1, 'logShow'/1, 'error'/1, 'unsafePerformEffect'/1, 'pure'/1, 'bind'/2, 'applySecond'/2, 'void'/1, 'logImpl'/1, 'logShowImpl'/1, 'errorImpl'/1, 'unsafePerformEffectImpl'/1, 'pureImpl'/1, 'bindImpl'/2, 'applySecondImpl'/2, 'voidImpl'/1, 'log'/0, 'logShow'/0, 'error'/0, 'unsafePerformEffect'/0, 'pure'/0, 'bind'/0, 'bind'/1, 'applySecond'/0, 'applySecond'/1, 'void'/0, 'logImpl'/0, 'logShowImpl'/0, 'errorImpl'/0, 'unsafePerformEffectImpl'/0, 'pureImpl'/0, 'bindImpl'/0, 'bindImpl'/1, 'applySecondImpl'/0, 'applySecondImpl'/1, 'voidImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'error'/1 =
-  fun (Msg) ->
-    apply 'errorImpl'/1(Msg)
-
 'log'/1 =
   fun (Msg) ->
     apply 'logImpl'/1(Msg)
@@ -12,25 +8,29 @@ module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerfo
   fun (Val) ->
     apply 'logShowImpl'/1(Val)
 
-'pure'/1 =
-  fun (A) ->
-    apply 'pureImpl'/1(A)
+'error'/1 =
+  fun (Msg) ->
+    apply 'errorImpl'/1(Msg)
 
 'unsafePerformEffect'/1 =
   fun (Eff) ->
     apply 'unsafePerformEffectImpl'/1(Eff)
 
-'void'/1 =
-  fun (Eff) ->
-    apply 'voidImpl'/1(Eff)
+'pure'/1 =
+  fun (A) ->
+    apply 'pureImpl'/1(A)
+
+'bind'/2 =
+  fun (Eff, F) ->
+    apply 'bindImpl'/2(Eff, F)
 
 'applySecond'/2 =
   fun (Ea, Eb) ->
     apply 'applySecondImpl'/2(Ea, Eb)
 
-'bind'/2 =
-  fun (Eff, F) ->
-    apply 'bindImpl'/2(Eff, F)
+'void'/1 =
+  fun (Eff) ->
+    apply 'voidImpl'/1(Eff)
 
 'logImpl'/1 = fun (V0) -> fun () -> do call 'io':'put_chars'([V0, 10]) 'unit'
 
@@ -48,12 +48,6 @@ module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerfo
 
 'voidImpl'/1 = fun (V0) -> fun () -> do apply V0 () 'unit'
 
-'error'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'error'/1(_A0)
-      in _F0
-
 'log'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -66,10 +60,10 @@ module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerfo
         apply 'logShow'/1(_A0)
       in _F0
 
-'pure'/0 =
+'error'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'pure'/1(_A0)
+        apply 'error'/1(_A0)
       in _F0
 
 'unsafePerformEffect'/0 =
@@ -78,10 +72,24 @@ module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerfo
         apply 'unsafePerformEffect'/1(_A0)
       in _F0
 
-'void'/0 =
+'pure'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        apply 'void'/1(_A0)
+        apply 'pure'/1(_A0)
+      in _F0
+
+'bind'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'bind'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'bind'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'bind'/2(_A0, _A1)
       in _F0
 
 'applySecond'/0 =
@@ -98,18 +106,10 @@ module 'Effect.Console' ['error'/1, 'log'/1, 'logShow'/1, 'pure'/1, 'unsafePerfo
         apply 'applySecond'/2(_A0, _A1)
       in _F0
 
-'bind'/0 =
+'void'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'bind'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'bind'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'bind'/2(_A0, _A1)
+        apply 'void'/1(_A0)
       in _F0
 
 'logImpl'/0 =

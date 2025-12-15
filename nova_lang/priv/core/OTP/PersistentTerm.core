@@ -1,9 +1,5 @@
-module 'OTP.PersistentTerm' ['erase'/1, 'get'/1, 'getWithDefault'/2, 'put'/2, 'getImpl'/1, 'getWithDefaultImpl'/2, 'putImpl'/2, 'eraseImpl'/1, 'erase'/0, 'get'/0, 'getWithDefault'/0, 'getWithDefault'/1, 'put'/0, 'put'/1, 'getImpl'/0, 'getWithDefaultImpl'/0, 'getWithDefaultImpl'/1, 'putImpl'/0, 'putImpl'/1, 'eraseImpl'/0, 'module_info'/0, 'module_info'/1]
+module 'OTP.PersistentTerm' ['get'/1, 'getWithDefault'/2, 'put'/2, 'erase'/1, 'getImpl'/1, 'getWithDefaultImpl'/2, 'putImpl'/2, 'eraseImpl'/1, 'get'/0, 'getWithDefault'/0, 'getWithDefault'/1, 'put'/0, 'put'/1, 'erase'/0, 'getImpl'/0, 'getWithDefaultImpl'/0, 'getWithDefaultImpl'/1, 'putImpl'/0, 'putImpl'/1, 'eraseImpl'/0, 'module_info'/0, 'module_info'/1]
   attributes []
-'erase'/1 =
-  fun (Key) ->
-    apply 'eraseImpl'/1(Key)
-
 'get'/1 =
   fun (Key) ->
     apply 'getImpl'/1(Key)
@@ -16,6 +12,10 @@ module 'OTP.PersistentTerm' ['erase'/1, 'get'/1, 'getWithDefault'/2, 'put'/2, 'g
   fun (Key, Val) ->
     apply 'putImpl'/2(Key, Val)
 
+'erase'/1 =
+  fun (Key) ->
+    apply 'eraseImpl'/1(Key)
+
 'getImpl'/1 = fun (V0) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in case call 'persistent_term':'get'(Key, 'undefined') of <'undefined'> when 'true' -> 'Nothing' <V> when 'true' -> {'Just', V} end
 
 'getWithDefaultImpl'/2 = fun (V0, V1) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in call 'persistent_term':'get'(Key, V1)
@@ -23,12 +23,6 @@ module 'OTP.PersistentTerm' ['erase'/1, 'get'/1, 'getWithDefault'/2, 'put'/2, 'g
 'putImpl'/2 = fun (V0, V1) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in let <_> = call 'persistent_term':'put'(Key, V1) in 'unit'
 
 'eraseImpl'/1 = fun (V0) -> let <Key> = call 'erlang':'binary_to_atom'(V0) in let <_> = call 'persistent_term':'erase'(Key) in 'unit'
-
-'erase'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'erase'/1(_A0)
-      in _F0
 
 'get'/0 =
   fun () ->
@@ -62,6 +56,12 @@ module 'OTP.PersistentTerm' ['erase'/1, 'get'/1, 'getWithDefault'/2, 'put'/2, 'g
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'put'/2(_A0, _A1)
+      in _F0
+
+'erase'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'erase'/1(_A0)
       in _F0
 
 'getImpl'/0 =

@@ -671,8 +671,9 @@ kindEq NS.ForeignDecl NS.ForeignDecl = true
 kindEq _ _ = false
 
 -- | Sort declarations by name (FFI for simplicity)
+-- Note: Nova records are Erlang maps, not tuples, so use maps:get
 foreign import sortByNameImpl :: Array NS.ManagedDecl -> Array NS.ManagedDecl
-  = "call 'lists':'sort'(fun (A, B) -> call 'erlang':'<'(call 'erlang':'element'(4, A), call 'erlang':'element'(4, B)), $0)"
+  = "call 'lists':'sort'(fun (A, B) -> call 'erlang':'<'(call 'maps':'get'('name', A), call 'maps':'get'('name', B)), $0)"
 
 renderDeclItem :: NS.ManagedDecl -> String
 renderDeclItem decl =

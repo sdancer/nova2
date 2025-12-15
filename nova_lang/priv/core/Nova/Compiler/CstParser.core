@@ -1,4 +1,4 @@
-module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder1'/0, 'parseBinder2'/0, 'parseBinder3'/0, 'parseBinderArray'/0, 'parseBinderAtom'/0, 'parseBinderBool'/0, 'parseBinderChar'/0, 'parseBinderCon'/0, 'parseBinderHole'/0, 'parseBinderInt'/0, 'parseBinderLiteral'/0, 'parseBinderNullaryCon'/0, 'parseBinderNumber'/0, 'parseBinderParens'/0, 'parseBinderRecord'/0, 'parseBinderRecordField'/0, 'parseBinderRecordFull'/0, 'parseBinderRecordPun'/0, 'parseBinderString'/0, 'parseBinderVar'/0, 'parseBinderWildcard'/0, 'parseCase'/0, 'parseCaseBranch'/0, 'parseClassMember'/0, 'parseDataAll'/0, 'parseDataCtor'/0, 'parseDataEnumerated'/0, 'parseDataMembers'/0, 'parseDeclClass'/0, 'parseDeclData'/0, 'parseDeclDerive'/0, 'parseDeclFixity'/0, 'parseDeclForeign'/0, 'parseDeclInstance'/0, 'parseDeclNewtype'/0, 'parseDeclSignature'/0, 'parseDeclType'/0, 'parseDeclValue'/0, 'parseDeclaration'/0, 'parseDo'/0, 'parseDoBind'/0, 'parseDoDiscard'/0, 'parseDoLet'/0, 'parseDoStatement'/0, 'parseExport'/0, 'parseExportModule'/0, 'parseExportType'/0, 'parseExportValue'/0, 'parseExports'/0, 'parseExpr'/0, 'parseExpr1'/0, 'parseExpr2'/0, 'parseExpr3'/0, 'parseExpr4'/0, 'parseExpr5'/0, 'parseExprArray'/0, 'parseExprAtom'/0, 'parseExprBool'/0, 'parseExprChar'/0, 'parseExprConstructor'/0, 'parseExprHole'/0, 'parseExprIdent'/0, 'parseExprInt'/0, 'parseExprLiteral'/0, 'parseExprNumber'/0, 'parseExprParens'/0, 'parseExprRecord'/0, 'parseExprSection'/0, 'parseExprString'/0, 'parseFixityKeyword'/0, 'parseFixityOp'/0, 'parseForeignValue'/0, 'parseGuarded'/0, 'parseGuardedArrow'/0, 'parseGuardedExpr'/0, 'parseGuardedExprArrow'/0, 'parseGuardedExprs'/0, 'parseGuardedExprsArrow'/0, 'parseIf'/0, 'parseImport'/0, 'parseImportClass'/0, 'parseImportItem'/0, 'parseImportOp'/0, 'parseImportType'/0, 'parseImportValue'/0, 'parseInstanceBinding'/0, 'parseInstanceName'/0, 'parseInstanceSig'/0, 'parseLabel'/0, 'parseLambda'/0, 'parseLet'/0, 'parseLetBinding'/0, 'parseLetName'/0, 'parseLetPattern'/0, 'parseLetSig'/0, 'parseModule'/0, 'parseModuleBody'/0, 'parseModuleDecls'/0, 'parseModuleHeader'/0, 'parseModuleImports'/0, 'parseModuleName'/0, 'parseOpName'/0, 'parsePatternGuard'/0, 'parseRecordField'/0, 'parseRecordFieldFull'/0, 'parseRecordPun'/0, 'parseRecordUpdateField'/0, 'parseRecordUpdatePart'/0, 'parseRow'/0, 'parseRowLabel'/0, 'parseType'/0, 'parseType1'/0, 'parseType2'/0, 'parseType3'/0, 'parseTypeAtom'/0, 'parseTypeCon'/0, 'parseTypeForall'/0, 'parseTypeParens'/0, 'parseTypeRecord'/0, 'parseTypeVar'/0, 'parseTypeVarBinding'/0, 'parseTypeVarName'/0, 'parseUnconditional'/0, 'parseUnconditionalArrow'/0, 'tokBackslash'/0, 'tokChar'/0, 'tokColon'/0, 'tokComma'/0, 'tokDot'/0, 'tokDoubleColon'/0, 'tokDoubleDot'/0, 'tokEquals'/0, 'tokForall'/0, 'tokHole'/0, 'tokInt'/0, 'tokLayoutEnd'/0, 'tokLayoutSep'/0, 'tokLayoutStart'/0, 'tokLeftArrow'/0, 'tokLeftBrace'/0, 'tokLeftParen'/0, 'tokLeftSquare'/0, 'tokLowerName'/0, 'tokLowerNameOrHole'/0, 'tokNumber'/0, 'tokOperator'/0, 'tokPipe'/0, 'tokQualifiedLowerName'/0, 'tokQualifiedUpperName'/0, 'tokRightArrow'/0, 'tokRightBrace'/0, 'tokRightFatArrow'/0, 'tokRightParen'/0, 'tokRightSquare'/0, 'tokString'/0, 'tokTick'/0, 'tokUpperName'/0, 'deferP'/1, 'expectMap'/1, 'fail'/1, 'layoutBlock'/1, 'layoutItems'/1, 'many'/1, 'optional'/1, 'parseExpr2Infix'/1, 'parseExpr2Ops'/1, 'parseExpr2Rest'/1, 'parseRecordAccessor'/1, 'pureP'/1, 'satisfy'/1, 'some'/1, 'tokKeyword'/1, 'token'/1, 'alt'/2, 'bindP'/2, 'optionalSeparated'/2, 'runParser'/2, 'separated'/2, 'thenP'/2, 'manyGo'/3, 'wrapped'/3, 'delimited'/4, 'Parser'/1, 'deferP'/0, 'expectMap'/0, 'fail'/0, 'layoutBlock'/0, 'layoutItems'/0, 'many'/0, 'optional'/0, 'parseExpr2Infix'/0, 'parseExpr2Ops'/0, 'parseExpr2Rest'/0, 'parseRecordAccessor'/0, 'pureP'/0, 'satisfy'/0, 'some'/0, 'tokKeyword'/0, 'token'/0, 'alt'/0, 'alt'/1, 'bindP'/0, 'bindP'/1, 'optionalSeparated'/0, 'optionalSeparated'/1, 'runParser'/0, 'runParser'/1, 'separated'/0, 'separated'/1, 'thenP'/0, 'thenP'/1, 'manyGo'/0, 'manyGo'/1, 'manyGo'/2, 'wrapped'/0, 'wrapped'/1, 'wrapped'/2, 'delimited'/0, 'delimited'/1, 'delimited'/2, 'delimited'/3, 'Parser'/0, 'module_info'/0, 'module_info'/1]
+module 'Nova.Compiler.CstParser' ['runParser'/2, 'bindP'/2, 'thenP'/2, 'pureP'/1, 'alt'/2, 'deferP'/1, 'fail'/1, 'getPosition'/0, 'satisfy'/1, 'token'/1, 'expectMap'/1, 'tokLeftParen'/0, 'tokRightParen'/0, 'tokLeftBrace'/0, 'tokRightBrace'/0, 'tokLeftSquare'/0, 'tokRightSquare'/0, 'tokEquals'/0, 'tokPipe'/0, 'tokDot'/0, 'tokDoubleDot'/0, 'tokComma'/0, 'tokBackslash'/0, 'tokRightArrow'/0, 'tokLeftArrow'/0, 'tokDoubleColon'/0, 'tokColon'/0, 'tokRightFatArrow'/0, 'tokForall'/0, 'tokTick'/0, 'tokLayoutStart'/0, 'tokLayoutSep'/0, 'tokLayoutEnd'/0, 'tokLowerName'/0, 'tokLowerNameOrHole'/0, 'tokQualifiedLowerName'/0, 'tokUpperName'/0, 'tokQualifiedUpperName'/0, 'tokOperator'/0, 'tokKeyword'/1, 'tokString'/0, 'tokHole'/0, 'tokInt'/0, 'tokNumber'/0, 'tokChar'/0, 'optional'/1, 'many'/1, 'manyGo'/3, 'some'/1, 'separated'/2, 'optionalSeparated'/2, 'wrapped'/3, 'delimited'/4, 'layoutBlock'/1, 'layoutItems'/1, 'parseType'/0, 'parseTypeForall'/0, 'parseType1'/0, 'parseType2'/0, 'parseType3'/0, 'parseTypeAtom'/0, 'parseTypeVar'/0, 'parseTypeCon'/0, 'parseTypeParens'/0, 'parseTypeRecord'/0, 'parseRow'/0, 'parseRowLabel'/0, 'parseLabel'/0, 'parseExpr'/0, 'parseExpr1'/0, 'parseExpr2'/0, 'parseExpr2Rest'/1, 'parseExpr2Ops'/1, 'parseExpr2Infix'/1, 'parseExpr3'/0, 'parseExpr4'/0, 'parseExpr5'/0, 'parseRecordAccessor'/1, 'parseRecordUpdatePart'/0, 'parseRecordUpdateField'/0, 'parseIf'/0, 'parseLet'/0, 'parseLambda'/0, 'parseCase'/0, 'parseCaseBranch'/0, 'parseGuardedArrow'/0, 'parseUnconditionalArrow'/0, 'parseGuardedExprsArrow'/0, 'parseGuardedExprArrow'/0, 'parseDo'/0, 'parseDoStatement'/0, 'parseDoLet'/0, 'parseDoBind'/0, 'parseDoDiscard'/0, 'parseLetBinding'/0, 'parseLetSig'/0, 'parseLetPattern'/0, 'parseLetName'/0, 'parseGuarded'/0, 'parseUnconditional'/0, 'parseGuardedExprs'/0, 'parseGuardedExpr'/0, 'parsePatternGuard'/0, 'parseExprAtom'/0, 'parseExprSection'/0, 'parseExprHole'/0, 'parseExprIdent'/0, 'parseExprConstructor'/0, 'parseExprLiteral'/0, 'parseExprString'/0, 'parseExprInt'/0, 'parseExprNumber'/0, 'parseExprChar'/0, 'parseExprBool'/0, 'parseExprArray'/0, 'parseExprRecord'/0, 'parseRecordField'/0, 'parseRecordFieldFull'/0, 'parseRecordPun'/0, 'parseExprParens'/0, 'parseBinder'/0, 'parseBinder1'/0, 'parseBinder2'/0, 'parseBinder3'/0, 'parseBinderCon'/0, 'parseBinderAtom'/0, 'parseBinderNullaryCon'/0, 'parseBinderWildcard'/0, 'parseBinderHole'/0, 'parseBinderVar'/0, 'parseBinderLiteral'/0, 'parseBinderString'/0, 'parseBinderInt'/0, 'parseBinderNumber'/0, 'parseBinderChar'/0, 'parseBinderBool'/0, 'parseBinderArray'/0, 'parseBinderRecord'/0, 'parseBinderRecordField'/0, 'parseBinderRecordFull'/0, 'parseBinderRecordPun'/0, 'parseBinderParens'/0, 'parseModule'/0, 'parseModuleImports'/0, 'parseModuleDecls'/0, 'parseModuleHeader'/0, 'parseModuleName'/0, 'parseExports'/0, 'parseExport'/0, 'parseExportValue'/0, 'parseExportType'/0, 'parseExportModule'/0, 'parseDataMembers'/0, 'parseDataAll'/0, 'parseDataEnumerated'/0, 'parseImport'/0, 'parseImportItem'/0, 'parseImportOp'/0, 'parseImportValue'/0, 'parseImportType'/0, 'parseImportClass'/0, 'parseModuleBody'/0, 'parseDeclaration'/0, 'parseDeclData'/0, 'parseDataCtor'/0, 'parseTypeVarBinding'/0, 'parseTypeVarName'/0, 'parseDeclType'/0, 'parseDeclNewtype'/0, 'parseDeclClass'/0, 'parseClassMember'/0, 'parseDeclInstance'/0, 'parseInstanceBinding'/0, 'parseInstanceSig'/0, 'parseInstanceName'/0, 'parseDeclDerive'/0, 'parseDeclForeign'/0, 'parseForeignValue'/0, 'parseDeclFixity'/0, 'parseFixityKeyword'/0, 'parseFixityOp'/0, 'parseOpName'/0, 'parseDeclSignature'/0, 'parseDeclValue'/0, 'Parser'/1, 'runParser'/0, 'runParser'/1, 'bindP'/0, 'bindP'/1, 'thenP'/0, 'thenP'/1, 'pureP'/0, 'alt'/0, 'alt'/1, 'deferP'/0, 'fail'/0, 'satisfy'/0, 'token'/0, 'expectMap'/0, 'tokKeyword'/0, 'optional'/0, 'many'/0, 'manyGo'/0, 'manyGo'/1, 'manyGo'/2, 'some'/0, 'separated'/0, 'separated'/1, 'optionalSeparated'/0, 'optionalSeparated'/1, 'wrapped'/0, 'wrapped'/1, 'wrapped'/2, 'delimited'/0, 'delimited'/1, 'delimited'/2, 'delimited'/3, 'layoutBlock'/0, 'layoutItems'/0, 'parseExpr2Rest'/0, 'parseExpr2Ops'/0, 'parseExpr2Infix'/0, 'parseRecordAccessor'/0, 'Parser'/0, 'module_info'/0, 'module_info'/1]
   attributes []
 % Newtype: Parser
 % Constructor: Parser
@@ -6,6 +6,59 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
 'Parser'/1 =
   fun (V0) ->
     {'Parser', V0}
+
+'runParser'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Parser', P}, Tokens}> when 'true' ->
+        apply P(Tokens)
+    end
+
+'bindP'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Parser', Pa}, F}> when 'true' ->
+        apply 'Parser'/1(fun (Ts) ->
+      case apply Pa(Ts) of
+      <{'Left', Err}> when 'true' ->
+        {'Left', Err}
+      <{'Right', {'Tuple', A, Rest}}> when 'true' ->
+        apply 'runParser'/2(apply F(A), Rest)
+    end)
+    end
+
+'thenP'/2 =
+  fun (Pa, Pb) ->
+    apply 'bindP'/2(Pa, fun (_W0) ->
+      Pb)
+
+'pureP'/1 =
+  fun (A) ->
+    apply 'Parser'/1(fun (Ts) ->
+      {'Right', call 'Data.Tuple':'Tuple'(A, Ts)})
+
+'alt'/2 =
+  fun (_P0, _P1) ->
+    case {_P0, _P1} of
+      <{{'Parser', P1}, {'Parser', P2}}> when 'true' ->
+        apply 'Parser'/1(fun (Ts) ->
+      case apply P1(Ts) of
+      <{'Right', Result}> when 'true' ->
+        {'Right', Result}
+      <{'Left', _W0}> when 'true' ->
+        apply P2(Ts)
+    end)
+    end
+
+'deferP'/1 =
+  fun (F) ->
+    apply 'Parser'/1(fun (Ts) ->
+      apply 'runParser'/2(apply F('unit'), Ts))
+
+'fail'/1 =
+  fun (Msg) ->
+    apply 'Parser'/1(fun (_W0) ->
+      {'Left', Msg})
 
 'getPosition'/0 =
   fun () ->
@@ -17,891 +70,391 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
         {'Right', call 'Data.Tuple':'Tuple'(~{'line'=>0,'column'=>0}~, Ts)}
     end)
 
-'parseBinder'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'parseBinder1'/0())
+'satisfy'/1 =
+  fun (Pred) ->
+    apply 'Parser'/1(fun (Ts) ->
+      case Ts of
+      <[Tok | Rest]> when 'true' ->
+        case apply Pred(call 'maps':'get'('value', Tok)) of
+      <'true'> when 'true' -> {'Right', call 'Data.Tuple':'Tuple'(Tok, Rest)}
+      <'false'> when 'true' -> {'Left', #{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
+    end
+      <[]> when 'true' ->
+        {'Left', #{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
+    end)
 
-'parseBinder1'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseBinder2'/0(), fun (B) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
-      apply 'bindP'/2(apply 'parseBinder2'/0(), fun (B2) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Op, B2))))), fun (Ops) ->
-      case call 'Data.List':'null'(Ops) of
-      <'true'> when 'true' -> apply 'pureP'/1(B)
-      <'false'> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderOp'(B, Ops))
-    end)))
+'token'/1 =
+  fun (Expected) ->
+    apply 'satisfy'/1(fun (X) -> call 'erlang':'=:='(X, Expected))
 
-'parseBinder2'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseBinder3'/0(), fun (B) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Dc, T))))), fun (Ann) ->
-      case Ann of
-      <{'Just', {'Tuple', Dc, T}}> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderTyped'(B, Dc, T))
+'expectMap'/1 =
+  fun (F) ->
+    apply 'Parser'/1(fun (Ts) ->
+      case Ts of
+      <[Tok | Rest]> when 'true' ->
+        case apply F(call 'maps':'get'('value', Tok)) of
+      <{'Just', A}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(call 'Data.Tuple':'Tuple'(Tok, A), Rest)}
       <'Nothing'> when 'true' ->
-        apply 'pureP'/1(B)
-    end)))
+        {'Left', #{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#}
+    end
+      <[]> when 'true' ->
+        {'Left', #{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
+    end)
 
-'parseBinder3'/0 =
+'tokLeftParen'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'parseBinderCon'/0(), apply 'parseBinderAtom'/0()))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftParen'())
 
-'parseBinderArray'/0 =
+'tokRightParen'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftSquare'/0(), apply 'parseBinder'/0(), apply 'tokComma'/0(), apply 'tokRightSquare'/0()), fun (D) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderArray'(D))))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightParen'())
 
-'parseBinderAtom'/0 =
+'tokLeftBrace'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseBinderWildcard'/0(), apply 'parseBinderHole'/0()), apply 'parseBinderNullaryCon'/0()), apply 'parseBinderVar'/0()), apply 'parseBinderLiteral'/0()), apply 'parseBinderArray'/0()), apply 'parseBinderRecord'/0()), apply 'parseBinderParens'/0()))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftBrace'())
 
-'parseBinderBool'/0 =
+'tokRightBrace'/0 =
   fun () ->
-    let <ParseBinderTrue> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderBoolean'(Tok, 'true')))
-      in let <ParseBinderFalse> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderBoolean'(Tok, 'false')))
-      in apply 'alt'/2(ParseBinderTrue, ParseBinderFalse)
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightBrace'())
 
-'parseBinderChar'/0 =
+'tokLeftSquare'/0 =
   fun () ->
-    apply 'bindP'/2(apply 'tokChar'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, C}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderChar'(Tok, C))
-      end)
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftSquare'())
 
-'parseBinderCon'/0 =
+'tokRightSquare'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (Con) ->
-      apply 'bindP'/2(apply 'some'/1(apply 'parseBinderAtom'/0()), fun (Args) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderConstructor'(Con, Args)))))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightSquare'())
 
-'parseBinderHole'/0 =
+'tokEquals'/0 =
   fun () ->
-    apply 'bindP'/2(apply 'tokHole'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, HoleName}> when 'true' -> let <FullName> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, HoleName)
-      in let <Name> = ~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(FullName)}~
-      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderVar'(Name))
-      end)
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokEquals'())
 
-'parseBinderInt'/0 =
+'tokPipe'/0 =
   fun () ->
-    letrec 'isNeg'/1 = fun (_L0) ->
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokPipe'())
+
+'tokDot'/0 =
+  fun () ->
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokDot'())
+
+'tokDoubleDot'/0 =
+  fun () ->
+    letrec 'isDoubleDot'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
+        <{{'TokOperator', _W0, #{#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
         <{_W0}> when 'true' -> 'false'
       end
-      in apply 'bindP'/2(apply 'optional'/1(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNeg'/1(_Mf0))), fun (Neg) ->
-      apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderInt'(Neg, Tok, N))
-      end))
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isDoubleDot'/1(_Mf0))
 
-'parseBinderLiteral'/0 =
+'tokComma'/0 =
   fun () ->
-    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseBinderString'/0(), apply 'parseBinderInt'/0()), apply 'parseBinderNumber'/0()), apply 'parseBinderChar'/0()), apply 'parseBinderBool'/0())
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokComma'())
 
-'parseBinderNullaryCon'/0 =
+'tokBackslash'/0 =
   fun () ->
-    apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (Con) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderConstructor'(Con, [])))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokBackslash'())
 
-'parseBinderNumber'/0 =
+'tokRightArrow'/0 =
   fun () ->
-    letrec 'isNeg'/1 = fun (_L0) ->
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightArrow'())
+
+'tokLeftArrow'/0 =
+  fun () ->
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftArrow'())
+
+'tokDoubleColon'/0 =
+  fun () ->
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokDoubleColon'())
+
+'tokColon'/0 =
+  fun () ->
+    letrec 'isColon'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
+        <{{'TokOperator', _W0, #{#<58>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
         <{_W0}> when 'true' -> 'false'
       end
-      in apply 'bindP'/2(apply 'optional'/1(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNeg'/1(_Mf0))), fun (Neg) ->
-      apply 'bindP'/2(apply 'tokNumber'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderNumber'(Neg, Tok, N))
-      end))
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isColon'/1(_Mf0))
 
-'parseBinderParens'/0 =
+'tokRightFatArrow'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'parseBinder'/0(), apply 'tokRightParen'/0()), fun (W) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderParens'(W))))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightFatArrow'())
 
-'parseBinderRecord'/0 =
+'tokForall'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftBrace'/0(), apply 'parseBinderRecordField'/0(), apply 'tokComma'/0(), apply 'tokRightBrace'/0()), fun (D) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderRecord'(D))))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokForall'())
 
-'parseBinderRecordField'/0 =
+'tokTick'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'parseBinderRecordFull'/0(), apply 'parseBinderRecordPun'/0()))
+    apply 'token'/1(call 'Nova.Compiler.Cst':'TokTick'())
 
-'parseBinderRecordFull'/0 =
+'tokLayoutStart'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
-      apply 'bindP'/2(apply 'alt'/2(apply 'tokColon'/0(), apply 'tokEquals'/0()), fun (Sep) ->
-      apply 'bindP'/2(apply 'parseBinder'/0(), fun (Value) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordField'(Label, Sep, Value))))))
-
-'parseBinderRecordPun'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'RecordPun'()(_MapX)))
-
-'parseBinderString'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, S}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderString'(Tok, S))
-      end)
-
-'parseBinderVar'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokAt'()), fun (At) ->
-      apply 'bindP'/2(apply 'parseBinderAtom'/0(), fun (B) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(At, B))))), fun (Named) ->
-      case Named of
-      <{'Just', {'Tuple', At, B}}> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderNamed'(Name, At, B))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderVar'(Name))
-    end)))
-
-'parseBinderWildcard'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokUnderscore'()), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderWildcard'(Tok)))
-
-'parseCase'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parseExpr'/0(), apply 'tokComma'/0()), fun (Head) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#), fun (OfKw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseCaseBranch'/0()), fun (Branches) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprCase'(~{'keyword'=>Kw,'head'=>Head,'of'=>OfKw,'branches'=>Branches}~)))))))
-
-'parseCaseBranch'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parseBinder'/0(), apply 'tokComma'/0()), fun (Pats) ->
-      apply 'bindP'/2(apply 'parseGuardedArrow'/0(), fun (Guarded) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Pats, Guarded)))))
-
-'parseClassMember'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))))
-
-'parseDataAll'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
-      apply 'bindP'/2(apply 'tokDoubleDot'/0(), fun (Dotdot) ->
-      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DataAll'(Dotdot)))))
-
-'parseDataCtor'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Fields) ->
-      apply 'pureP'/1(~{'name'=>Name,'fields'=>Fields}~)))
-
-'parseDataEnumerated'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftParen'/0(), apply 'tokUpperName'/0(), apply 'tokComma'/0(), apply 'tokRightParen'/0()), fun (D) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DataEnumerated'(D)))
-
-'parseDataMembers'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'parseDataAll'/0(), apply 'parseDataEnumerated'/0())
-
-'parseDeclClass'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseClassMember'/0()), fun (Ms) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Ms))))), fun (Methods) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclClass'(~{'keyword'=>Kw,'super'=>'Nothing','name'=>Name,'vars'=>Vars,'fundeps'=>'Nothing'}~, Methods))))))
-
-'parseDeclData'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parseDataCtor'/0(), apply 'tokPipe'/0()), fun (Cs) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Eq, Cs))))), fun (Ctors) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclData'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Ctors))))))
-
-'parseDeclDerive'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (DeriveKw) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'tokKeyword'/1(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)), fun (NewtypeKw) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (InstanceKw) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokLowerName'/0(), fun (N) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(N, Dc))))), fun (Name) ->
-      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (ClassName) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Types) ->
-      let <InstanceHead> = ~{'keyword'=>InstanceKw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
-      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclDerive'(DeriveKw, NewtypeKw, InstanceHead))))))))
-
-'parseDeclFixity'/0 =
-  fun () ->
-    letrec 'intValueToInt'/1 = fun (_L0) ->
+    letrec 'isLayoutStart'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'SmallInt', N}}> when 'true' -> N
-        <{{'BigInt', _W0}}> when 'true' -> 0
-      end
-      in apply 'bindP'/2(apply 'parseFixityKeyword'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Kw, Fixity}> when 'true' -> apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor1) ->
-      case _cor1 of
-        <{'Tuple', PrecTok, Prec}> when 'true' -> apply 'bindP'/2(apply 'parseFixityOp'/0(), fun (Op) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclFixity'(~{'keyword'=>call 'Data.Tuple':'Tuple'(Kw, Fixity),'prec'=>call 'Data.Tuple':'Tuple'(PrecTok, apply 'intValueToInt'/1(Prec)),'operator'=>Op}~)))
-      end)
-      end)
-
-'parseDeclForeign'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (Foreign_) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Import_) ->
-      apply 'bindP'/2(apply 'parseForeignValue'/0(), fun (Foreign_) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclForeign'(Foreign_, Import_, Foreign_)))))
-
-'parseDeclInstance'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokLowerName'/0(), fun (N) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(N, Dc))))), fun (Name) ->
-      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (ClassName) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Types) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseInstanceBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Bindings))))), fun (Body) ->
-      let <InstanceHead> = ~{'keyword'=>Kw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
-      in let <Inst> = ~{'head'=>InstanceHead,'body'=>Body}~
-      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclInstanceChain'(~{'head'=>Inst,'tail'=>[]}~)))))))
-
-'parseDeclNewtype'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (CtorName) ->
-      apply 'bindP'/2(apply 'parseTypeAtom'/0(), fun (WrappedTy) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclNewtype'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Eq, CtorName, WrappedTy))))))))
-
-'parseDeclSignature'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~)))))
-
-'parseDeclType'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclType'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Eq, Ty)))))))
-
-'parseDeclValue'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseBinderAtom'/0()), fun (Binders) ->
-      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclValue'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~)))))
-
-'parseDeclaration'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseDeclData'/0(), apply 'parseDeclType'/0()), apply 'parseDeclNewtype'/0()), apply 'parseDeclClass'/0()), apply 'parseDeclDerive'/0()), apply 'parseDeclInstance'/0()), apply 'parseDeclForeign'/0()), apply 'parseDeclFixity'/0()), apply 'parseDeclSignature'/0()), apply 'parseDeclValue'/0())
-
-'parseDo'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseDoStatement'/0()), fun (Stmts) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprDo'(~{'keyword'=>Kw,'statements'=>Stmts}~)))))
-
-'parseDoBind'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseBinder'/0(), fun (Binder) ->
-      apply 'bindP'/2(apply 'tokLeftArrow'/0(), fun (Arr) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DoBind'(Binder, Arr, Expr))))))
-
-'parseDoDiscard'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'DoDiscard'()(_MapX))))
-
-'parseDoLet'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DoLet'(Kw, Bindings)))))
-
-'parseDoStatement'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'alt'/2(apply 'parseDoLet'/0(), apply 'parseDoBind'/0()), apply 'parseDoDiscard'/0()))
-
-'parseExport'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'alt'/2(apply 'parseExportValue'/0(), apply 'parseExportType'/0()), apply 'parseExportModule'/0())
-
-'parseExportModule'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExportModule'(Kw, Name))))
-
-'parseExportType'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'parseDataMembers'/0()), fun (Members) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExportType'(Name, Members))))
-
-'parseExportValue'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExportValue'()(_MapX)))
-
-'parseExports'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (Open) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parseExport'/0(), apply 'tokComma'/0()), fun (Exports) ->
-      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (Close) ->
-      apply 'pureP'/1(~{'open'=>Open,'value'=>Exports,'close'=>Close}~))))
-
-'parseExpr'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'parseExpr1'/0())
-
-'parseExpr1'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseExpr2'/0(), fun (E) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Dc, T))))), fun (Ann) ->
-      case Ann of
-      <{'Just', {'Tuple', Dc, T}}> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprTyped'(E, Dc, T))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(E)
-    end)))
-
-'parseExpr2'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E) ->
-      apply 'parseExpr2Rest'/1(E)))
-
-'parseExpr3'/0 =
-  fun () ->
-    letrec 'isNegate'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
+        <{{'TokLayoutStart', _W0}}> when 'true' -> 'true'
         <{_W0}> when 'true' -> 'false'
       end
-      in let <ParseNegate> = apply 'bindP'/2(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNegate'/1(_Mf0)), fun (Neg) ->
-      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprNegate'(Neg, E))))
-      in apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(ParseNegate, apply 'parseExpr4'/0()))
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutStart'/1(_Mf0))
 
-'parseExpr4'/0 =
+'tokLayoutSep'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseExpr5'/0(), fun (Head) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseExpr5'/0()), fun (Args) ->
-      case call 'Data.List':'null'(Args) of
-      <'true'> when 'true' -> apply 'pureP'/1(Head)
-      <'false'> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprApp'(Head, Args))
-    end)))
-
-'parseExpr5'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseIf'/0(), apply 'parseLet'/0()), apply 'parseLambda'/0()), apply 'parseCase'/0()), apply 'parseDo'/0()), apply 'parseExprAtom'/0()), fun (E) ->
-      apply 'parseRecordAccessor'/1(E)))
-
-'parseExprArray'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftSquare'/0(), apply 'parseExpr'/0(), apply 'tokComma'/0(), apply 'tokRightSquare'/0()), fun (D) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprArray'(D))))
-
-'parseExprAtom'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseExprIdent'/0(), apply 'parseExprConstructor'/0()), apply 'parseExprLiteral'/0()), apply 'parseExprArray'/0()), apply 'parseExprRecord'/0()), apply 'parseExprParens'/0()), apply 'parseExprSection'/0()), apply 'parseExprHole'/0()))
-
-'parseExprBool'/0 =
-  fun () ->
-    let <ParseTrue> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprBoolean'(Tok, 'true')))
-      in let <ParseFalse> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprBoolean'(Tok, 'false')))
-      in apply 'alt'/2(ParseTrue, ParseFalse)
-
-'parseExprChar'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokChar'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, C}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprChar'(Tok, C))
-      end)
-
-'parseExprConstructor'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExprConstructor'()(_MapX)))
-
-'parseExprHole'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokHole'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, HoleName}> when 'true' -> let <FullName> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, HoleName)
-      in let <Name> = ~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(FullName)}~
-      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprHole'(Name))
-      end)
-
-'parseExprIdent'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokQualifiedLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExprIdent'()(_MapX)))
-
-'parseExprInt'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprInt'(Tok, N))
-      end)
-
-'parseExprLiteral'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseExprString'/0(), apply 'parseExprInt'/0()), apply 'parseExprNumber'/0()), apply 'parseExprChar'/0()), apply 'parseExprBool'/0())
-
-'parseExprNumber'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokNumber'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprNumber'(Tok, N))
-      end)
-
-'parseExprParens'/0 =
-  fun () ->
-    let <ParseExprOpSection> = apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
-      apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
-      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprOpName'(Op)))))
-      in let <ParseExprParensNormal> = apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'parseExpr'/0(), apply 'tokRightParen'/0()), fun (W) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprParens'(W))))
-      in apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(ParseExprOpSection, ParseExprParensNormal))
-
-'parseExprRecord'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftBrace'/0(), apply 'parseRecordField'/0(), apply 'tokComma'/0(), apply 'tokRightBrace'/0()), fun (D) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprRecord'(D))))
-
-'parseExprSection'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokUnderscore'()), fun (Tok) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprSection'(Tok)))
-
-'parseExprString'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, S}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprString'(Tok, S))
-      end)
-
-'parseFixityKeyword'/0 =
-  fun () ->
-    let <ParseInfix> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infix'())))
-      in let <ParseInfixl> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infixl'())))
-      in let <ParseInfixr> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infixr'())))
-      in apply 'alt'/2(apply 'alt'/2(ParseInfix, ParseInfixl), ParseInfixr)
-
-'parseFixityOp'/0 =
-  fun () ->
-    letrec 'toEitherName'/1 = fun (Qn) ->
-      ~{'token'=>call 'maps':'get'('token', Qn),'module'=>call 'maps':'get'('module', Qn),'name'=>{'Left', call 'maps':'get'('name', Qn)}}~
-      in apply 'bindP'/2(apply 'tokQualifiedLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (AsKw) ->
-      apply 'bindP'/2(apply 'parseOpName'/0(), fun (Op) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'FixityValue'(apply 'toEitherName'/1(Name), AsKw, Op)))))
-
-'parseForeignValue'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', _W0, Impl}> when 'true' -> apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Eq, Impl))
-      end))), fun (InlineImpl) ->
-      case InlineImpl of
-      <{'Just', {'Tuple', Eq, Impl}}> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ForeignValueInline'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~, Eq, Impl))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ForeignValue'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))
-    end))))
-
-'parseGuarded'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'parseUnconditional'/0(), apply 'parseGuardedExprs'/0()))
-
-'parseGuardedArrow'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'parseUnconditionalArrow'/0(), apply 'parseGuardedExprsArrow'/0()))
-
-'parseGuardedExpr'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokPipe'/0(), fun (Bar) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parsePatternGuard'/0(), apply 'tokComma'/0()), fun (Patterns) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Sep) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
-      apply 'pureP'/1(~{'bar'=>Bar,'patterns'=>Patterns,'separator'=>Sep,'where'=>~{'expr'=>Expr,'bindings'=>WhereClause}~}~)))))))
-
-'parseGuardedExprArrow'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokPipe'/0(), fun (Bar) ->
-      apply 'bindP'/2(apply 'separated'/2(apply 'parsePatternGuard'/0(), apply 'tokComma'/0()), fun (Patterns) ->
-      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Sep) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
-      apply 'pureP'/1(~{'bar'=>Bar,'patterns'=>Patterns,'separator'=>Sep,'where'=>~{'expr'=>Expr,'bindings'=>WhereClause}~}~)))))))
-
-'parseGuardedExprs'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'some'/1(apply 'parseGuardedExpr'/0()), fun (Guards) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Guarded'(Guards))))
-
-'parseGuardedExprsArrow'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'some'/1(apply 'parseGuardedExprArrow'/0()), fun (Guards) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Guarded'(Guards))))
-
-'parseIf'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (CondExpr) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (ThenKw) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (TrueExpr) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (ElseKw) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (FalseExpr) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprIf'(~{'keyword'=>Kw,'cond'=>CondExpr,'thenKw'=>ThenKw,'thenBranch'=>TrueExpr,'elseKw'=>ElseKw,'elseBranch'=>FalseExpr}~)))))))))
-
-'parseImport'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Mod) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'optional'/1(apply 'tokKeyword'/1(#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#)), fun (IsHiding) ->
-      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'separated'/2(apply 'parseImportItem'/0(), apply 'tokComma'/0()), apply 'tokRightParen'/0()), fun (Imports) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(IsHiding, Imports))))), fun (Names) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (AsKw) ->
-      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Alias) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(AsKw, Alias))))), fun (Qualified) ->
-      apply 'pureP'/1(~{'keyword'=>Kw,'module'=>Mod,'names'=>Names,'qualified'=>Qualified}~)))))
-
-'parseImportClass'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportClass'(Kw, Name))))
-
-'parseImportItem'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseImportOp'/0(), apply 'parseImportValue'/0()), apply 'parseImportType'/0()), apply 'parseImportClass'/0())
-
-'parseImportOp'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
-      apply 'bindP'/2(apply 'parseOpName'/0(), fun (Op) ->
-      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportOp'(Op)))))
-
-'parseImportType'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'parseDataMembers'/0()), fun (Members) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportType'(Name, Members))))
-
-'parseImportValue'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ImportValue'()(_MapX)))
-
-'parseInstanceBinding'/0 =
-  fun () ->
-    apply 'alt'/2(apply 'parseInstanceSig'/0(), apply 'parseInstanceName'/0())
-
-'parseInstanceName'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseBinder'/0()), fun (Binders) ->
-      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'InstanceBindingName'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~)))))
-
-'parseInstanceSig'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'InstanceBindingSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~)))))
-
-'parseLabel'/0 =
-  fun () ->
-    letrec 'extractLabel'/1 = fun (_L0) ->
+    letrec 'isLayoutSep'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
+        <{{'TokLayoutSep', _W0}}> when 'true' -> 'true'
+        <{_W0}> when 'true' -> 'false'
+      end
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutSep'/1(_Mf0))
+
+'tokLayoutEnd'/0 =
+  fun () ->
+    letrec 'isLayoutEnd'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokLayoutEnd', _W0}}> when 'true' -> 'true'
+        <{_W0}> when 'true' -> 'false'
+      end
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutEnd'/1(_Mf0))
+
+'tokLowerName'/0 =
+  fun () ->
+    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
+      in letrec 'extractLower'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', Name}
+    end
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'isKeyword'/1 = fun (S) ->
+      call 'Data.List':'elem'(S, ReservedKeywords)
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLower'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
+      end)
+
+'tokLowerNameOrHole'/0 =
+  fun () ->
+    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
+      in letrec 'extractLowerOrHole'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', Name}
+    end
+        <{{'TokHole', Name}}> when 'true' -> {'Just', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, Name)}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'isKeyword'/1 = fun (S) ->
+      call 'Data.List':'elem'(S, ReservedKeywords)
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLowerOrHole'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
+      end)
+
+'tokQualifiedLowerName'/0 =
+  fun () ->
+    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
+      in letrec 'extractQualLower'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokLowerName', Mod, Name}}> when 'true' -> let <MappedMod> = case Mod of
+      <{'Just', M}> when 'true' ->
+        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in case apply 'isKeyword'/1(Name) of
+      <'true'> when 'true' -> 'Nothing'
+      <'false'> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
+    end
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+       'isKeyword'/1 = fun (S) ->
+      call 'Data.List':'elem'(S, ReservedKeywords)
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractQualLower'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, {'Tuple', Mod, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
+      end)
+
+'tokUpperName'/0 =
+  fun () ->
+    letrec 'extractUpper'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokUpperName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractUpper'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Proper'(Name)}~)
+      end)
+
+'tokQualifiedUpperName'/0 =
+  fun () ->
+    letrec 'extractQualUpper'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokUpperName', Mod, Name}}> when 'true' -> let <MappedMod> = case Mod of
+      <{'Just', M}> when 'true' ->
+        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractQualUpper'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, {'Tuple', Mod, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Proper'(Name)}~)
+      end)
+
+'tokOperator'/0 =
+  fun () ->
+    letrec 'extractOp'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokOperator', Mod, Op}}> when 'true' -> let <MappedMod> = case Mod of
+      <{'Just', M}> when 'true' ->
+        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
+      <'Nothing'> when 'true' ->
+        'Nothing'
+    end
+      in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Op)}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractOp'/1(_Mf0)), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, {'Tuple', Mod, Op}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Operator'(Op)}~)
+      end)
+
+'tokKeyword'/1 =
+  fun (Kw) ->
+    letrec 'isKw'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> call 'erlang':'=:='(Name, Kw)
+        <{_W0}> when 'true' -> 'false'
+      end
+      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isKw'/1(_Mf0))
+
+'tokString'/0 =
+  fun () ->
+    letrec 'extractStr'/1 = fun (_L0) ->
+      case {_L0} of
         <{{'TokString', _W0, S}}> when 'true' -> {'Just', S}
         <{{'TokRawString', S}}> when 'true' -> {'Just', S}
         <{_W0}> when 'true' -> 'Nothing'
       end
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLabel'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Label'(Name)}~)
-      end)
+      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractStr'/1(_Mf0))
 
-'parseLambda'/0 =
+'tokHole'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokBackslash'/0(), fun (Bs) ->
-      apply 'bindP'/2(apply 'some'/1(apply 'parseBinder'/0()), fun (Binders) ->
-      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Arr) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Body) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprLambda'(~{'symbol'=>Bs,'binders'=>Binders,'arrow'=>Arr,'body'=>Body}~)))))))
-
-'parseLet'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (InKw) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Body) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprLet'(~{'keyword'=>Kw,'bindings'=>Bindings,'in'=>InKw,'body'=>Body}~)))))))
-
-'parseLetBinding'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'alt'/2(apply 'parseLetSig'/0(), apply 'parseLetPattern'/0()), apply 'parseLetName'/0()))
-
-'parseLetName'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokLowerNameOrHole'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'parseBinderAtom'/0()), fun (Binders) ->
-      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingName'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~))))))
-
-'parseLetPattern'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'alt'/2(apply 'parseBinderCon'/0(), apply 'parseBinderRecord'/0()), fun (Pat) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingPattern'(Pat, Eq, ~{'expr'=>Expr,'bindings'=>WhereClause}~)))))))
-
-'parseLetSig'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))))))
-
-'parseModule'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'parseExports'/0()), fun (Exports) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
-      apply 'bindP'/2(apply 'tokLayoutStart'/0(), fun (_W0) ->
-      apply 'bindP'/2(apply 'parseModuleImports'/0(), fun (Imports) ->
-      apply 'bindP'/2(apply 'parseModuleDecls'/0(), fun (Decls) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutEnd'/0()), fun (_W0) ->
-      let <Header> = ~{'keyword'=>Kw,'name'=>Name,'exports'=>Exports,'where'=>WhereKw,'imports'=>Imports}~
-      in let <Body> = ~{'decls'=>Decls,'trailingComments'=>[],'end'=>~{'line'=>0,'column'=>0}~}~
-      in apply 'pureP'/1(~{'header'=>Header,'body'=>Body}~)))))))))
-
-'parseModuleBody'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseDeclaration'/0()), fun (Decls) ->
-      apply 'pureP'/1(~{'decls'=>Decls,'trailingComments'=>[],'end'=>~{'line'=>0,'column'=>0}~}~))
-
-'parseModuleDecls'/0 =
-  fun () ->
-    letrec 'go'/1 = fun (Acc) ->
-      apply 'alt'/2(apply 'bindP'/2(apply 'parseDeclaration'/0(), fun (Decl) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (Sep) ->
-      case Sep of
-      <{'Just', _W0}> when 'true' ->
-        apply 'go'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Decl | []]))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Decl | []]))
-    end)), apply 'pureP'/1(Acc))
-      in apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (_W0) ->
-      apply 'go'/1([]))
-
-'parseModuleHeader'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
-      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'parseExports'/0()), fun (Exports) ->
-      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
-      apply 'pureP'/1(~{'keyword'=>Kw,'name'=>Name,'exports'=>Exports,'where'=>WhereKw,'imports'=>[]}~)))))
-
-'parseModuleImports'/0 =
-  fun () ->
-    letrec 'go'/1 = fun (Acc) ->
-      apply 'alt'/2(apply 'bindP'/2(apply 'parseImport'/0(), fun (Imp) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (Sep) ->
-      case Sep of
-      <{'Just', _W0}> when 'true' ->
-        apply 'go'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Imp | []]))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Imp | []]))
-    end)), apply 'pureP'/1(Acc))
-      in apply 'go'/1([])
-
-'parseModuleName'/0 =
-  fun () ->
-    letrec 'extractModuleName'/1 = fun (Tok) ->
-      case Tok of
-      <{'TokUpperName', {'Just', Prefix}, Proper}> when 'true' ->
-        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Proper))}
-      <{'TokUpperName', 'Nothing', Proper}> when 'true' ->
-        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(Proper)}
-      <_W0> when 'true' ->
-        'Nothing'
-    end
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractModuleName'/1(_Mf0)), fun (_L0) ->
+    letrec 'extractHole'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'Tuple', Tok, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>Name}~)
-      end)
+        <{{'TokHole', Name}}> when 'true' -> {'Just', Name}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractHole'/1(_Mf0))
 
-'parseOpName'/0 =
+'tokInt'/0 =
   fun () ->
-    apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
-      apply 'pureP'/1(~{'token'=>call 'maps':'get'('token', Op),'name'=>call 'maps':'get'('name', Op)}~))
+    letrec 'extractInt'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokInt', _W0, N}}> when 'true' -> {'Just', N}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractInt'/1(_Mf0))
 
-'parsePatternGuard'/0 =
+'tokNumber'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'parseBinder'/0(), fun (B) ->
-      apply 'bindP'/2(apply 'tokLeftArrow'/0(), fun (Arr) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(B, Arr))))), fun (PatBind) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'pureP'/1(~{'binder'=>PatBind,'expr'=>Expr}~))))
+    letrec 'extractNum'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokNumber', _W0, N}}> when 'true' -> {'Just', N}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractNum'/1(_Mf0))
 
-'parseRecordField'/0 =
+'tokChar'/0 =
   fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'alt'/2(apply 'parseRecordFieldFull'/0(), apply 'parseRecordPun'/0()))
+    letrec 'extractChar'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokChar', _W0, C}}> when 'true' -> {'Just', C}
+        <{_W0}> when 'true' -> 'Nothing'
+      end
+      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractChar'/1(_Mf0))
 
-'parseRecordFieldFull'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
-      apply 'bindP'/2(apply 'alt'/2(apply 'tokColon'/0(), apply 'tokEquals'/0()), fun (Sep) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Value) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordField'(Label, Sep, Value))))))
+'optional'/1 =
+  fun (P) ->
+    apply 'alt'/2(apply 'bindP'/2(P, fun (X) ->
+      apply 'pureP'/1({'Just', X})), apply 'pureP'/1('Nothing'))
 
-'parseRecordPun'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'RecordPun'()(_MapX)))
+'many'/1 =
+  fun (P) ->
+    apply 'Parser'/1(fun (Ts) ->
+      apply 'manyGo'/3(P, Ts, []))
 
-'parseRecordUpdateField'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Value) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordUpdateLeaf'(Label, Eq, Value)))))
+'manyGo'/3 =
+  fun (P, Tokens, Acc) ->
+    let <PFunc> = fun (_Pc0) -> apply 'runParser'/2(P, _Pc0)
+      in case apply PFunc(Tokens) of
+      <{'Right', {'Tuple', A, Rest}}> when 'true' ->
+        apply 'manyGo'/3(P, Rest, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [A | []]))
+      <{'Left', _W0}> when 'true' ->
+        {'Right', call 'Data.Tuple':'Tuple'(Acc, Tokens)}
+    end
 
-'parseRecordUpdatePart'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLeftBrace'/0(), fun (Open) ->
-      apply 'bindP'/2(apply 'parseRecordUpdateField'/0(), fun (First) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(apply 'tokComma'/0(), fun (Comma) ->
-      apply 'bindP'/2(apply 'parseRecordUpdateField'/0(), fun (Field) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Comma, Field))))), fun (Rest) ->
-      apply 'bindP'/2(apply 'tokRightBrace'/0(), fun (Close) ->
-      apply 'pureP'/1(~{'open'=>Open,'value'=>~{'head'=>First,'tail'=>Rest}~,'close'=>Close}~)))))
+'some'/1 =
+  fun (P) ->
+    apply 'bindP'/2(P, fun (First) ->
+      apply 'bindP'/2(apply 'many'/1(P), fun (Rest) ->
+      apply 'pureP'/1([First | Rest])))
 
-'parseRow'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'optionalSeparated'/2(apply 'parseRowLabel'/0(), apply 'tokComma'/0()), fun (Labels) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokPipe'/0(), fun (Pipe) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Pipe, T))))), fun (Tail) ->
-      apply 'pureP'/1(~{'labels'=>Labels,'tail'=>Tail}~))))
+'separated'/2 =
+  fun (P, Sep) ->
+    apply 'bindP'/2(P, fun (Head) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(Sep, fun (S) ->
+      apply 'bindP'/2(P, fun (A) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(S, A))))), fun (Tail) ->
+      apply 'pureP'/1(~{'head'=>Head,'tail'=>Tail}~)))
 
-'parseRowLabel'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
-      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Sep) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
-      apply 'pureP'/1(~{'label'=>Label,'separator'=>Sep,'value'=>Ty}~)))))
+'optionalSeparated'/2 =
+  fun (P, Sep) ->
+    apply 'optional'/1(apply 'separated'/2(P, Sep))
+
+'wrapped'/3 =
+  fun (Open, P, Close) ->
+    apply 'bindP'/2(Open, fun (O) ->
+      apply 'bindP'/2(P, fun (Value) ->
+      apply 'bindP'/2(Close, fun (C) ->
+      apply 'pureP'/1(~{'open'=>O,'value'=>Value,'close'=>C}~))))
+
+'delimited'/4 =
+  fun (Open, P, Sep, Close) ->
+    apply 'wrapped'/3(Open, apply 'optionalSeparated'/2(P, Sep), Close)
+
+'layoutBlock'/1 =
+  fun (P) ->
+    let <DummyToken> = ~{'range'=>~{'start'=>~{'line'=>0,'column'=>0}~,'end'=>~{'line'=>0,'column'=>0}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>call 'Nova.Compiler.Cst':'TokLayoutEnd'(0)}~
+      in apply 'bindP'/2(apply 'tokLayoutStart'/0(), fun (_W0) ->
+      apply 'bindP'/2(apply 'layoutItems'/1(P), fun (Items) ->
+      apply 'bindP'/2(apply 'alt'/2(apply 'tokLayoutEnd'/0(), apply 'pureP'/1(DummyToken)), fun (_W0) ->
+      apply 'pureP'/1(Items))))
+
+'layoutItems'/1 =
+  fun (P) ->
+    apply 'bindP'/2(P, fun (First) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'thenP'/2(apply 'tokLayoutSep'/0(), P)), fun (Rest) ->
+      apply 'pureP'/1([First | Rest])))
 
 'parseType'/0 =
   fun () ->
     apply 'deferP'/1(fun (_W0) ->
       apply 'alt'/2(apply 'parseTypeForall'/0(), apply 'parseType1'/0()))
+
+'parseTypeForall'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokForall'/0(), fun (ForallTok) ->
+      apply 'bindP'/2(apply 'some'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
+      apply 'bindP'/2(apply 'tokDot'/0(), fun (Dot) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Body) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'TypeForall'(ForallTok, Vars, Dot, Body)))))))
 
 'parseType1'/0 =
   fun () ->
@@ -946,19 +499,15 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
     apply 'deferP'/1(fun (_W0) ->
       apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseTypeVar'/0(), apply 'parseTypeCon'/0()), apply 'parseTypeParens'/0()), apply 'parseTypeRecord'/0()))
 
+'parseTypeVar'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'TypeVar'()(_MapX)))
+
 'parseTypeCon'/0 =
   fun () ->
     apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (_MapX) ->
       apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'TypeConstructor'()(_MapX)))
-
-'parseTypeForall'/0 =
-  fun () ->
-    apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokForall'/0(), fun (ForallTok) ->
-      apply 'bindP'/2(apply 'some'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
-      apply 'bindP'/2(apply 'tokDot'/0(), fun (Dot) ->
-      apply 'bindP'/2(apply 'parseType'/0(), fun (Body) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'TypeForall'(ForallTok, Vars, Dot, Body)))))))
 
 'parseTypeParens'/0 =
   fun () ->
@@ -972,382 +521,61 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
       apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftBrace'/0(), apply 'parseRow'/0(), apply 'tokRightBrace'/0()), fun (W) ->
       apply 'pureP'/1(call 'Nova.Compiler.Cst':'TypeRecord'(W))))
 
-'parseTypeVar'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'TypeVar'()(_MapX)))
-
-'parseTypeVarBinding'/0 =
-  fun () ->
-    apply 'parseTypeVarName'/0()
-
-'parseTypeVarName'/0 =
-  fun () ->
-    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
-      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'TypeVarName'()(_MapX)))
-
-'parseUnconditional'/0 =
+'parseRow'/0 =
   fun () ->
     apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Unconditional'(Eq, ~{'expr'=>Expr,'bindings'=>WhereClause}~))))))
+      apply 'bindP'/2(apply 'optionalSeparated'/2(apply 'parseRowLabel'/0(), apply 'tokComma'/0()), fun (Labels) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokPipe'/0(), fun (Pipe) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Pipe, T))))), fun (Tail) ->
+      apply 'pureP'/1(~{'labels'=>Labels,'tail'=>Tail}~))))
 
-'parseUnconditionalArrow'/0 =
+'parseRowLabel'/0 =
   fun () ->
     apply 'deferP'/1(fun (_W0) ->
-      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Arrow) ->
-      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
-      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
-      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
-      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Unconditional'(Arrow, ~{'expr'=>Expr,'bindings'=>WhereClause}~))))))
+      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Sep) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(~{'label'=>Label,'separator'=>Sep,'value'=>Ty}~)))))
 
-'tokBackslash'/0 =
+'parseLabel'/0 =
   fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokBackslash'())
-
-'tokChar'/0 =
-  fun () ->
-    letrec 'extractChar'/1 = fun (_L0) ->
+    letrec 'extractLabel'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TokChar', _W0, C}}> when 'true' -> {'Just', C}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractChar'/1(_Mf0))
-
-'tokColon'/0 =
-  fun () ->
-    letrec 'isColon'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokOperator', _W0, #{#<58>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
-        <{_W0}> when 'true' -> 'false'
-      end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isColon'/1(_Mf0))
-
-'tokComma'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokComma'())
-
-'tokDot'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokDot'())
-
-'tokDoubleColon'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokDoubleColon'())
-
-'tokDoubleDot'/0 =
-  fun () ->
-    letrec 'isDoubleDot'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokOperator', _W0, #{#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
-        <{_W0}> when 'true' -> 'false'
-      end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isDoubleDot'/1(_Mf0))
-
-'tokEquals'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokEquals'())
-
-'tokForall'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokForall'())
-
-'tokHole'/0 =
-  fun () ->
-    letrec 'extractHole'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokHole', Name}}> when 'true' -> {'Just', Name}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractHole'/1(_Mf0))
-
-'tokInt'/0 =
-  fun () ->
-    letrec 'extractInt'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokInt', _W0, N}}> when 'true' -> {'Just', N}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractInt'/1(_Mf0))
-
-'tokLayoutEnd'/0 =
-  fun () ->
-    letrec 'isLayoutEnd'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLayoutEnd', _W0}}> when 'true' -> 'true'
-        <{_W0}> when 'true' -> 'false'
-      end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutEnd'/1(_Mf0))
-
-'tokLayoutSep'/0 =
-  fun () ->
-    letrec 'isLayoutSep'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLayoutSep', _W0}}> when 'true' -> 'true'
-        <{_W0}> when 'true' -> 'false'
-      end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutSep'/1(_Mf0))
-
-'tokLayoutStart'/0 =
-  fun () ->
-    letrec 'isLayoutStart'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLayoutStart', _W0}}> when 'true' -> 'true'
-        <{_W0}> when 'true' -> 'false'
-      end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isLayoutStart'/1(_Mf0))
-
-'tokLeftArrow'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftArrow'())
-
-'tokLeftBrace'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftBrace'())
-
-'tokLeftParen'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftParen'())
-
-'tokLeftSquare'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokLeftSquare'())
-
-'tokLowerName'/0 =
-  fun () ->
-    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
-      in letrec 'extractLower'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
-      <'false'> when 'true' -> {'Just', Name}
-    end
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-       'isKeyword'/1 = fun (S) ->
-      call 'Data.List':'elem'(S, ReservedKeywords)
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLower'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
-      end)
-
-'tokLowerNameOrHole'/0 =
-  fun () ->
-    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
-      in letrec 'extractLowerOrHole'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
-      <'false'> when 'true' -> {'Just', Name}
-    end
-        <{{'TokHole', Name}}> when 'true' -> {'Just', call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, Name)}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-       'isKeyword'/1 = fun (S) ->
-      call 'Data.List':'elem'(S, ReservedKeywords)
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLowerOrHole'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
-      end)
-
-'tokNumber'/0 =
-  fun () ->
-    letrec 'extractNum'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokNumber', _W0, N}}> when 'true' -> {'Just', N}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractNum'/1(_Mf0))
-
-'tokOperator'/0 =
-  fun () ->
-    letrec 'extractOp'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokOperator', Mod, Op}}> when 'true' -> let <MappedMod> = case Mod of
-      <{'Just', M}> when 'true' ->
-        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
-      <'Nothing'> when 'true' ->
-        'Nothing'
-    end
-      in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Op)}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractOp'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, {'Tuple', Mod, Op}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Operator'(Op)}~)
-      end)
-
-'tokPipe'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokPipe'())
-
-'tokQualifiedLowerName'/0 =
-  fun () ->
-    let <ReservedKeywords> = [#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}# | [#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}# | [#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}# | [#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}# | [#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}# | [#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}# | [#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | [#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}# | []]]]]]]]]]]]]]]]]]]]]]]]]]]]
-      in letrec 'extractQualLower'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokLowerName', Mod, Name}}> when 'true' -> let <MappedMod> = case Mod of
-      <{'Just', M}> when 'true' ->
-        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
-      <'Nothing'> when 'true' ->
-        'Nothing'
-    end
-      in case apply 'isKeyword'/1(Name) of
-      <'true'> when 'true' -> 'Nothing'
-      <'false'> when 'true' -> {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
-    end
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-       'isKeyword'/1 = fun (S) ->
-      call 'Data.List':'elem'(S, ReservedKeywords)
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractQualLower'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, {'Tuple', Mod, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Ident'(Name)}~)
-      end)
-
-'tokQualifiedUpperName'/0 =
-  fun () ->
-    letrec 'extractQualUpper'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokUpperName', Mod, Name}}> when 'true' -> let <MappedMod> = case Mod of
-      <{'Just', M}> when 'true' ->
-        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(M)}
-      <'Nothing'> when 'true' ->
-        'Nothing'
-    end
-      in {'Just', call 'Data.Tuple':'Tuple'(MappedMod, Name)}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractQualUpper'/1(_Mf0)), fun (_cor0) ->
-      case _cor0 of
-        <{'Tuple', Tok, {'Tuple', Mod, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'module'=>Mod,'name'=>call 'Nova.Compiler.Cst':'Proper'(Name)}~)
-      end)
-
-'tokRightArrow'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightArrow'())
-
-'tokRightBrace'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightBrace'())
-
-'tokRightFatArrow'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightFatArrow'())
-
-'tokRightParen'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightParen'())
-
-'tokRightSquare'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokRightSquare'())
-
-'tokString'/0 =
-  fun () ->
-    letrec 'extractStr'/1 = fun (_L0) ->
-      case {_L0} of
+        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
         <{{'TokString', _W0, S}}> when 'true' -> {'Just', S}
         <{{'TokRawString', S}}> when 'true' -> {'Just', S}
         <{_W0}> when 'true' -> 'Nothing'
       end
-      in apply 'expectMap'/1(fun (_Mf0) -> apply 'extractStr'/1(_Mf0))
-
-'tokTick'/0 =
-  fun () ->
-    apply 'token'/1(call 'Nova.Compiler.Cst':'TokTick'())
-
-'tokUpperName'/0 =
-  fun () ->
-    letrec 'extractUpper'/1 = fun (_L0) ->
-      case {_L0} of
-        <{{'TokUpperName', 'Nothing', Name}}> when 'true' -> {'Just', Name}
-        <{_W0}> when 'true' -> 'Nothing'
-      end
-      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractUpper'/1(_Mf0)), fun (_cor0) ->
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractLabel'/1(_Mf0)), fun (_cor0) ->
       case _cor0 of
-        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Proper'(Name)}~)
+        <{'Tuple', Tok, Name}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Label'(Name)}~)
       end)
 
-'deferP'/1 =
-  fun (F) ->
-    apply 'Parser'/1(fun (Ts) ->
-      apply 'runParser'/2(apply F('unit'), Ts))
+'parseExpr'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'parseExpr1'/0())
 
-'expectMap'/1 =
-  fun (F) ->
-    apply 'Parser'/1(fun (Ts) ->
-      case Ts of
-      <[Tok | Rest]> when 'true' ->
-        case apply F(call 'maps':'get'('value', Tok)) of
-      <{'Just', A}> when 'true' ->
-        {'Right', call 'Data.Tuple':'Tuple'(call 'Data.Tuple':'Tuple'(Tok, A), Rest)}
+'parseExpr1'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseExpr2'/0(), fun (E) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Dc, T))))), fun (Ann) ->
+      case Ann of
+      <{'Just', {'Tuple', Dc, T}}> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprTyped'(E, Dc, T))
       <'Nothing'> when 'true' ->
-        {'Left', #{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#}
-    end
-      <[]> when 'true' ->
-        {'Left', #{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
-    end)
+        apply 'pureP'/1(E)
+    end)))
 
-'fail'/1 =
-  fun (Msg) ->
-    apply 'Parser'/1(fun (_W0) ->
-      {'Left', Msg})
-
-'layoutBlock'/1 =
-  fun (P) ->
-    let <DummyToken> = ~{'range'=>~{'start'=>~{'line'=>0,'column'=>0}~,'end'=>~{'line'=>0,'column'=>0}~}~,'leadingComments'=>[],'trailingComments'=>[],'value'=>call 'Nova.Compiler.Cst':'TokLayoutEnd'(0)}~
-      in apply 'bindP'/2(apply 'tokLayoutStart'/0(), fun (_W0) ->
-      apply 'bindP'/2(apply 'layoutItems'/1(P), fun (Items) ->
-      apply 'bindP'/2(apply 'alt'/2(apply 'tokLayoutEnd'/0(), apply 'pureP'/1(DummyToken)), fun (_W0) ->
-      apply 'pureP'/1(Items))))
-
-'layoutItems'/1 =
-  fun (P) ->
-    apply 'bindP'/2(P, fun (First) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'thenP'/2(apply 'tokLayoutSep'/0(), P)), fun (Rest) ->
-      apply 'pureP'/1([First | Rest])))
-
-'many'/1 =
-  fun (P) ->
-    apply 'Parser'/1(fun (Ts) ->
-      apply 'manyGo'/3(P, Ts, []))
-
-'optional'/1 =
-  fun (P) ->
-    apply 'alt'/2(apply 'bindP'/2(P, fun (X) ->
-      apply 'pureP'/1({'Just', X})), apply 'pureP'/1('Nothing'))
-
-'parseExpr2Infix'/1 =
-  fun (Acc) ->
-    apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokTick'/0(), fun (Tick1) ->
-      apply 'bindP'/2(apply 'parseExpr5'/0(), fun (FuncExpr) ->
-      apply 'bindP'/2(apply 'tokTick'/0(), fun (Tick2) ->
-      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E2) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(~{'open'=>Tick1,'value'=>FuncExpr,'close'=>Tick2}~, E2))))))), fun (Result) ->
-      case Result of
-      <{'Just', Item}> when 'true' ->
-        apply 'parseExpr2Infix'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Item | []]))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(Acc)
-    end)
-
-'parseExpr2Ops'/1 =
-  fun (Acc) ->
-    apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
-      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E2) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Op, E2))))), fun (Result) ->
-      case Result of
-      <{'Just', Item}> when 'true' ->
-        apply 'parseExpr2Ops'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Item | []]))
-      <'Nothing'> when 'true' ->
-        apply 'pureP'/1(Acc)
-    end)
+'parseExpr2'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E) ->
+      apply 'parseExpr2Rest'/1(E)))
 
 'parseExpr2Rest'/1 =
   fun (E) ->
@@ -1373,6 +601,61 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
     end)
     end)
 
+'parseExpr2Ops'/1 =
+  fun (Acc) ->
+    apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
+      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E2) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Op, E2))))), fun (Result) ->
+      case Result of
+      <{'Just', Item}> when 'true' ->
+        apply 'parseExpr2Ops'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Item | []]))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(Acc)
+    end)
+
+'parseExpr2Infix'/1 =
+  fun (Acc) ->
+    apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokTick'/0(), fun (Tick1) ->
+      apply 'bindP'/2(apply 'parseExpr5'/0(), fun (FuncExpr) ->
+      apply 'bindP'/2(apply 'tokTick'/0(), fun (Tick2) ->
+      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E2) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(~{'open'=>Tick1,'value'=>FuncExpr,'close'=>Tick2}~, E2))))))), fun (Result) ->
+      case Result of
+      <{'Just', Item}> when 'true' ->
+        apply 'parseExpr2Infix'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Item | []]))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(Acc)
+    end)
+
+'parseExpr3'/0 =
+  fun () ->
+    letrec 'isNegate'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
+        <{_W0}> when 'true' -> 'false'
+      end
+      in let <ParseNegate> = apply 'bindP'/2(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNegate'/1(_Mf0)), fun (Neg) ->
+      apply 'bindP'/2(apply 'parseExpr3'/0(), fun (E) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprNegate'(Neg, E))))
+      in apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(ParseNegate, apply 'parseExpr4'/0()))
+
+'parseExpr4'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseExpr5'/0(), fun (Head) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseExpr5'/0()), fun (Args) ->
+      case call 'Data.List':'null'(Args) of
+      <'true'> when 'true' -> apply 'pureP'/1(Head)
+      <'false'> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprApp'(Head, Args))
+    end)))
+
+'parseExpr5'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseIf'/0(), apply 'parseLet'/0()), apply 'parseLambda'/0()), apply 'parseCase'/0()), apply 'parseDo'/0()), apply 'parseExprAtom'/0()), fun (E) ->
+      apply 'parseRecordAccessor'/1(E)))
+
 'parseRecordAccessor'/1 =
   fun (E) ->
     apply 'deferP'/1(fun (_W0) ->
@@ -1395,222 +678,843 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
     end)
     end))
 
-'pureP'/1 =
-  fun (A) ->
-    apply 'Parser'/1(fun (Ts) ->
-      {'Right', call 'Data.Tuple':'Tuple'(A, Ts)})
+'parseRecordUpdatePart'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLeftBrace'/0(), fun (Open) ->
+      apply 'bindP'/2(apply 'parseRecordUpdateField'/0(), fun (First) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(apply 'tokComma'/0(), fun (Comma) ->
+      apply 'bindP'/2(apply 'parseRecordUpdateField'/0(), fun (Field) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Comma, Field))))), fun (Rest) ->
+      apply 'bindP'/2(apply 'tokRightBrace'/0(), fun (Close) ->
+      apply 'pureP'/1(~{'open'=>Open,'value'=>~{'head'=>First,'tail'=>Rest}~,'close'=>Close}~)))))
 
-'satisfy'/1 =
-  fun (Pred) ->
-    apply 'Parser'/1(fun (Ts) ->
-      case Ts of
-      <[Tok | Rest]> when 'true' ->
-        case apply Pred(call 'maps':'get'('value', Tok)) of
-      <'true'> when 'true' -> {'Right', call 'Data.Tuple':'Tuple'(Tok, Rest)}
-      <'false'> when 'true' -> {'Left', #{#<84>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}
-    end
-      <[]> when 'true' ->
-        {'Left', #{#<85>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}
-    end)
+'parseRecordUpdateField'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Value) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordUpdateLeaf'(Label, Eq, Value)))))
 
-'some'/1 =
-  fun (P) ->
-    apply 'bindP'/2(P, fun (First) ->
-      apply 'bindP'/2(apply 'many'/1(P), fun (Rest) ->
-      apply 'pureP'/1([First | Rest])))
+'parseIf'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (CondExpr) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (ThenKw) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (TrueExpr) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (ElseKw) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (FalseExpr) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprIf'(~{'keyword'=>Kw,'cond'=>CondExpr,'thenKw'=>ThenKw,'thenBranch'=>TrueExpr,'elseKw'=>ElseKw,'elseBranch'=>FalseExpr}~)))))))))
 
-'tokKeyword'/1 =
-  fun (Kw) ->
-    letrec 'isKw'/1 = fun (_L0) ->
+'parseLet'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (InKw) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Body) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprLet'(~{'keyword'=>Kw,'bindings'=>Bindings,'in'=>InKw,'body'=>Body}~)))))))
+
+'parseLambda'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokBackslash'/0(), fun (Bs) ->
+      apply 'bindP'/2(apply 'some'/1(apply 'parseBinder'/0()), fun (Binders) ->
+      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Arr) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Body) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprLambda'(~{'symbol'=>Bs,'binders'=>Binders,'arrow'=>Arr,'body'=>Body}~)))))))
+
+'parseCase'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parseExpr'/0(), apply 'tokComma'/0()), fun (Head) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#), fun (OfKw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseCaseBranch'/0()), fun (Branches) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprCase'(~{'keyword'=>Kw,'head'=>Head,'of'=>OfKw,'branches'=>Branches}~)))))))
+
+'parseCaseBranch'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parseBinder'/0(), apply 'tokComma'/0()), fun (Pats) ->
+      apply 'bindP'/2(apply 'parseGuardedArrow'/0(), fun (Guarded) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Pats, Guarded)))))
+
+'parseGuardedArrow'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'parseUnconditionalArrow'/0(), apply 'parseGuardedExprsArrow'/0()))
+
+'parseUnconditionalArrow'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Arrow) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Unconditional'(Arrow, ~{'expr'=>Expr,'bindings'=>WhereClause}~))))))
+
+'parseGuardedExprsArrow'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'some'/1(apply 'parseGuardedExprArrow'/0()), fun (Guards) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Guarded'(Guards))))
+
+'parseGuardedExprArrow'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokPipe'/0(), fun (Bar) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parsePatternGuard'/0(), apply 'tokComma'/0()), fun (Patterns) ->
+      apply 'bindP'/2(apply 'tokRightArrow'/0(), fun (Sep) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
+      apply 'pureP'/1(~{'bar'=>Bar,'patterns'=>Patterns,'separator'=>Sep,'where'=>~{'expr'=>Expr,'bindings'=>WhereClause}~}~)))))))
+
+'parseDo'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseDoStatement'/0()), fun (Stmts) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprDo'(~{'keyword'=>Kw,'statements'=>Stmts}~)))))
+
+'parseDoStatement'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'alt'/2(apply 'parseDoLet'/0(), apply 'parseDoBind'/0()), apply 'parseDoDiscard'/0()))
+
+'parseDoLet'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DoLet'(Kw, Bindings)))))
+
+'parseDoBind'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseBinder'/0(), fun (Binder) ->
+      apply 'bindP'/2(apply 'tokLeftArrow'/0(), fun (Arr) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DoBind'(Binder, Arr, Expr))))))
+
+'parseDoDiscard'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'DoDiscard'()(_MapX))))
+
+'parseLetBinding'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'alt'/2(apply 'parseLetSig'/0(), apply 'parseLetPattern'/0()), apply 'parseLetName'/0()))
+
+'parseLetSig'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))))))
+
+'parseLetPattern'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'alt'/2(apply 'parseBinderCon'/0(), apply 'parseBinderRecord'/0()), fun (Pat) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingPattern'(Pat, Eq, ~{'expr'=>Expr,'bindings'=>WhereClause}~)))))))
+
+'parseLetName'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokLowerNameOrHole'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseBinderAtom'/0()), fun (Binders) ->
+      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'LetBindingName'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~))))))
+
+'parseGuarded'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'parseUnconditional'/0(), apply 'parseGuardedExprs'/0()))
+
+'parseUnconditional'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Unconditional'(Eq, ~{'expr'=>Expr,'bindings'=>WhereClause}~))))))
+
+'parseGuardedExprs'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'some'/1(apply 'parseGuardedExpr'/0()), fun (Guards) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'Guarded'(Guards))))
+
+'parseGuardedExpr'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokPipe'/0(), fun (Bar) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parsePatternGuard'/0(), apply 'tokComma'/0()), fun (Patterns) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Sep) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Wh) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseLetBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Wh, Bindings))))), fun (WhereClause) ->
+      apply 'pureP'/1(~{'bar'=>Bar,'patterns'=>Patterns,'separator'=>Sep,'where'=>~{'expr'=>Expr,'bindings'=>WhereClause}~}~)))))))
+
+'parsePatternGuard'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'parseBinder'/0(), fun (B) ->
+      apply 'bindP'/2(apply 'tokLeftArrow'/0(), fun (Arr) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(B, Arr))))), fun (PatBind) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Expr) ->
+      apply 'pureP'/1(~{'binder'=>PatBind,'expr'=>Expr}~))))
+
+'parseExprAtom'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseExprIdent'/0(), apply 'parseExprConstructor'/0()), apply 'parseExprLiteral'/0()), apply 'parseExprArray'/0()), apply 'parseExprRecord'/0()), apply 'parseExprParens'/0()), apply 'parseExprSection'/0()), apply 'parseExprHole'/0()))
+
+'parseExprSection'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokUnderscore'()), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprSection'(Tok)))
+
+'parseExprHole'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokHole'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, HoleName}> when 'true' -> let <FullName> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, HoleName)
+      in let <Name> = ~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(FullName)}~
+      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprHole'(Name))
+      end)
+
+'parseExprIdent'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokQualifiedLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExprIdent'()(_MapX)))
+
+'parseExprConstructor'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExprConstructor'()(_MapX)))
+
+'parseExprLiteral'/0 =
+  fun () ->
+    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseExprString'/0(), apply 'parseExprInt'/0()), apply 'parseExprNumber'/0()), apply 'parseExprChar'/0()), apply 'parseExprBool'/0())
+
+'parseExprString'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, S}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprString'(Tok, S))
+      end)
+
+'parseExprInt'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprInt'(Tok, N))
+      end)
+
+'parseExprNumber'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokNumber'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprNumber'(Tok, N))
+      end)
+
+'parseExprChar'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokChar'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, C}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprChar'(Tok, C))
+      end)
+
+'parseExprBool'/0 =
+  fun () ->
+    let <ParseTrue> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprBoolean'(Tok, 'true')))
+      in let <ParseFalse> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprBoolean'(Tok, 'false')))
+      in apply 'alt'/2(ParseTrue, ParseFalse)
+
+'parseExprArray'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftSquare'/0(), apply 'parseExpr'/0(), apply 'tokComma'/0(), apply 'tokRightSquare'/0()), fun (D) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprArray'(D))))
+
+'parseExprRecord'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftBrace'/0(), apply 'parseRecordField'/0(), apply 'tokComma'/0(), apply 'tokRightBrace'/0()), fun (D) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprRecord'(D))))
+
+'parseRecordField'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'parseRecordFieldFull'/0(), apply 'parseRecordPun'/0()))
+
+'parseRecordFieldFull'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
+      apply 'bindP'/2(apply 'alt'/2(apply 'tokColon'/0(), apply 'tokEquals'/0()), fun (Sep) ->
+      apply 'bindP'/2(apply 'parseExpr'/0(), fun (Value) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordField'(Label, Sep, Value))))))
+
+'parseRecordPun'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'RecordPun'()(_MapX)))
+
+'parseExprParens'/0 =
+  fun () ->
+    let <ParseExprOpSection> = apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
+      apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
+      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprOpName'(Op)))))
+      in let <ParseExprParensNormal> = apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'parseExpr'/0(), apply 'tokRightParen'/0()), fun (W) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExprParens'(W))))
+      in apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(ParseExprOpSection, ParseExprParensNormal))
+
+'parseBinder'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'parseBinder1'/0())
+
+'parseBinder1'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseBinder2'/0(), fun (B) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
+      apply 'bindP'/2(apply 'parseBinder2'/0(), fun (B2) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Op, B2))))), fun (Ops) ->
+      case call 'Data.List':'null'(Ops) of
+      <'true'> when 'true' -> apply 'pureP'/1(B)
+      <'false'> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderOp'(B, Ops))
+    end)))
+
+'parseBinder2'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseBinder3'/0(), fun (B) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (T) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Dc, T))))), fun (Ann) ->
+      case Ann of
+      <{'Just', {'Tuple', Dc, T}}> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderTyped'(B, Dc, T))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(B)
+    end)))
+
+'parseBinder3'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'parseBinderCon'/0(), apply 'parseBinderAtom'/0()))
+
+'parseBinderCon'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (Con) ->
+      apply 'bindP'/2(apply 'some'/1(apply 'parseBinderAtom'/0()), fun (Args) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderConstructor'(Con, Args)))))
+
+'parseBinderAtom'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseBinderWildcard'/0(), apply 'parseBinderHole'/0()), apply 'parseBinderNullaryCon'/0()), apply 'parseBinderVar'/0()), apply 'parseBinderLiteral'/0()), apply 'parseBinderArray'/0()), apply 'parseBinderRecord'/0()), apply 'parseBinderParens'/0()))
+
+'parseBinderNullaryCon'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (Con) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderConstructor'(Con, [])))
+
+'parseBinderWildcard'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokUnderscore'()), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderWildcard'(Tok)))
+
+'parseBinderHole'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokHole'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, HoleName}> when 'true' -> let <FullName> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#, HoleName)
+      in let <Name> = ~{'token'=>Tok,'name'=>call 'Nova.Compiler.Cst':'Ident'(FullName)}~
+      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderVar'(Name))
+      end)
+
+'parseBinderVar'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'token'/1(call 'Nova.Compiler.Cst':'TokAt'()), fun (At) ->
+      apply 'bindP'/2(apply 'parseBinderAtom'/0(), fun (B) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(At, B))))), fun (Named) ->
+      case Named of
+      <{'Just', {'Tuple', At, B}}> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderNamed'(Name, At, B))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderVar'(Name))
+    end)))
+
+'parseBinderLiteral'/0 =
+  fun () ->
+    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseBinderString'/0(), apply 'parseBinderInt'/0()), apply 'parseBinderNumber'/0()), apply 'parseBinderChar'/0()), apply 'parseBinderBool'/0())
+
+'parseBinderString'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, S}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderString'(Tok, S))
+      end)
+
+'parseBinderInt'/0 =
+  fun () ->
+    letrec 'isNeg'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TokLowerName', 'Nothing', Name}}> when 'true' -> call 'erlang':'=:='(Name, Kw)
+        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
         <{_W0}> when 'true' -> 'false'
       end
-      in apply 'satisfy'/1(fun (_Mf0) -> apply 'isKw'/1(_Mf0))
+      in apply 'bindP'/2(apply 'optional'/1(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNeg'/1(_Mf0))), fun (Neg) ->
+      apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderInt'(Neg, Tok, N))
+      end))
 
-'token'/1 =
-  fun (Expected) ->
-    apply 'satisfy'/1(fun (X) -> call 'erlang':'=:='(X, Expected))
+'parseBinderNumber'/0 =
+  fun () ->
+    letrec 'isNeg'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'TokOperator', 'Nothing', #{#<45>(8,1,'integer',['unsigned'|['big']])}#}}> when 'true' -> 'true'
+        <{_W0}> when 'true' -> 'false'
+      end
+      in apply 'bindP'/2(apply 'optional'/1(apply 'satisfy'/1(fun (_Mf0) -> apply 'isNeg'/1(_Mf0))), fun (Neg) ->
+      apply 'bindP'/2(apply 'tokNumber'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, N}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderNumber'(Neg, Tok, N))
+      end))
 
-'alt'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{{'Parser', P1}, {'Parser', P2}}> when 'true' ->
-        apply 'Parser'/1(fun (Ts) ->
-      case apply P1(Ts) of
-      <{'Right', Result}> when 'true' ->
-        {'Right', Result}
-      <{'Left', _W0}> when 'true' ->
-        apply P2(Ts)
-    end)
+'parseBinderChar'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokChar'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Tok, C}> when 'true' -> apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderChar'(Tok, C))
+      end)
+
+'parseBinderBool'/0 =
+  fun () ->
+    let <ParseBinderTrue> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderBoolean'(Tok, 'true')))
+      in let <ParseBinderFalse> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderBoolean'(Tok, 'false')))
+      in apply 'alt'/2(ParseBinderTrue, ParseBinderFalse)
+
+'parseBinderArray'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftSquare'/0(), apply 'parseBinder'/0(), apply 'tokComma'/0(), apply 'tokRightSquare'/0()), fun (D) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderArray'(D))))
+
+'parseBinderRecord'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftBrace'/0(), apply 'parseBinderRecordField'/0(), apply 'tokComma'/0(), apply 'tokRightBrace'/0()), fun (D) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderRecord'(D))))
+
+'parseBinderRecordField'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'alt'/2(apply 'parseBinderRecordFull'/0(), apply 'parseBinderRecordPun'/0()))
+
+'parseBinderRecordFull'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'parseLabel'/0(), fun (Label) ->
+      apply 'bindP'/2(apply 'alt'/2(apply 'tokColon'/0(), apply 'tokEquals'/0()), fun (Sep) ->
+      apply 'bindP'/2(apply 'parseBinder'/0(), fun (Value) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'RecordField'(Label, Sep, Value))))))
+
+'parseBinderRecordPun'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'RecordPun'()(_MapX)))
+
+'parseBinderParens'/0 =
+  fun () ->
+    apply 'deferP'/1(fun (_W0) ->
+      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'parseBinder'/0(), apply 'tokRightParen'/0()), fun (W) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'BinderParens'(W))))
+
+'parseModule'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'parseExports'/0()), fun (Exports) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
+      apply 'bindP'/2(apply 'tokLayoutStart'/0(), fun (_W0) ->
+      apply 'bindP'/2(apply 'parseModuleImports'/0(), fun (Imports) ->
+      apply 'bindP'/2(apply 'parseModuleDecls'/0(), fun (Decls) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutEnd'/0()), fun (_W0) ->
+      let <Header> = ~{'keyword'=>Kw,'name'=>Name,'exports'=>Exports,'where'=>WhereKw,'imports'=>Imports}~
+      in let <Body> = ~{'decls'=>Decls,'trailingComments'=>[],'end'=>~{'line'=>0,'column'=>0}~}~
+      in apply 'pureP'/1(~{'header'=>Header,'body'=>Body}~)))))))))
+
+'parseModuleImports'/0 =
+  fun () ->
+    letrec 'go'/1 = fun (Acc) ->
+      apply 'alt'/2(apply 'bindP'/2(apply 'parseImport'/0(), fun (Imp) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (Sep) ->
+      case Sep of
+      <{'Just', _W0}> when 'true' ->
+        apply 'go'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Imp | []]))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Imp | []]))
+    end)), apply 'pureP'/1(Acc))
+      in apply 'go'/1([])
+
+'parseModuleDecls'/0 =
+  fun () ->
+    letrec 'go'/1 = fun (Acc) ->
+      apply 'alt'/2(apply 'bindP'/2(apply 'parseDeclaration'/0(), fun (Decl) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (Sep) ->
+      case Sep of
+      <{'Just', _W0}> when 'true' ->
+        apply 'go'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Decl | []]))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [Decl | []]))
+    end)), apply 'pureP'/1(Acc))
+      in apply 'bindP'/2(apply 'optional'/1(apply 'tokLayoutSep'/0()), fun (_W0) ->
+      apply 'go'/1([]))
+
+'parseModuleHeader'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'parseExports'/0()), fun (Exports) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
+      apply 'pureP'/1(~{'keyword'=>Kw,'name'=>Name,'exports'=>Exports,'where'=>WhereKw,'imports'=>[]}~)))))
+
+'parseModuleName'/0 =
+  fun () ->
+    letrec 'extractModuleName'/1 = fun (Tok) ->
+      case Tok of
+      <{'TokUpperName', {'Just', Prefix}, Proper}> when 'true' ->
+        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Proper))}
+      <{'TokUpperName', 'Nothing', Proper}> when 'true' ->
+        {'Just', call 'Nova.Compiler.Cst':'ModuleName'(Proper)}
+      <_W0> when 'true' ->
+        'Nothing'
     end
+      in apply 'bindP'/2(apply 'expectMap'/1(fun (_Mf0) -> apply 'extractModuleName'/1(_Mf0)), fun (_L0) ->
+      case {_L0} of
+        <{{'Tuple', Tok, Name}}> when 'true' -> apply 'pureP'/1(~{'token'=>Tok,'name'=>Name}~)
+      end)
 
-'bindP'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{{'Parser', Pa}, F}> when 'true' ->
-        apply 'Parser'/1(fun (Ts) ->
-      case apply Pa(Ts) of
-      <{'Left', Err}> when 'true' ->
-        {'Left', Err}
-      <{'Right', {'Tuple', A, Rest}}> when 'true' ->
-        apply 'runParser'/2(apply F(A), Rest)
-    end)
-    end
-
-'optionalSeparated'/2 =
-  fun (P, Sep) ->
-    apply 'optional'/1(apply 'separated'/2(P, Sep))
-
-'runParser'/2 =
-  fun (_P0, _P1) ->
-    case {_P0, _P1} of
-      <{{'Parser', P}, Tokens}> when 'true' ->
-        apply P(Tokens)
-    end
-
-'separated'/2 =
-  fun (P, Sep) ->
-    apply 'bindP'/2(P, fun (Head) ->
-      apply 'bindP'/2(apply 'many'/1(apply 'bindP'/2(Sep, fun (S) ->
-      apply 'bindP'/2(P, fun (A) ->
-      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(S, A))))), fun (Tail) ->
-      apply 'pureP'/1(~{'head'=>Head,'tail'=>Tail}~)))
-
-'thenP'/2 =
-  fun (Pa, Pb) ->
-    apply 'bindP'/2(Pa, fun (_W0) ->
-      Pb)
-
-'manyGo'/3 =
-  fun (P, Tokens, Acc) ->
-    let <PFunc> = fun (_Pc0) -> apply 'runParser'/2(P, _Pc0)
-      in case apply PFunc(Tokens) of
-      <{'Right', {'Tuple', A, Rest}}> when 'true' ->
-        apply 'manyGo'/3(P, Rest, call 'Nova.Prelude':'semigroupAppendImpl'(Acc, [A | []]))
-      <{'Left', _W0}> when 'true' ->
-        {'Right', call 'Data.Tuple':'Tuple'(Acc, Tokens)}
-    end
-
-'wrapped'/3 =
-  fun (Open, P, Close) ->
-    apply 'bindP'/2(Open, fun (O) ->
-      apply 'bindP'/2(P, fun (Value) ->
-      apply 'bindP'/2(Close, fun (C) ->
-      apply 'pureP'/1(~{'open'=>O,'value'=>Value,'close'=>C}~))))
-
-'delimited'/4 =
-  fun (Open, P, Sep, Close) ->
-    apply 'wrapped'/3(Open, apply 'optionalSeparated'/2(P, Sep), Close)
-
-'deferP'/0 =
+'parseExports'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'deferP'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (Open) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parseExport'/0(), apply 'tokComma'/0()), fun (Exports) ->
+      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (Close) ->
+      apply 'pureP'/1(~{'open'=>Open,'value'=>Exports,'close'=>Close}~))))
 
-'expectMap'/0 =
+'parseExport'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'expectMap'/1(_A0)
-      in _F0
+    apply 'alt'/2(apply 'alt'/2(apply 'parseExportValue'/0(), apply 'parseExportType'/0()), apply 'parseExportModule'/0())
 
-'fail'/0 =
+'parseExportValue'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'fail'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ExportValue'()(_MapX)))
 
-'layoutBlock'/0 =
+'parseExportType'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'layoutBlock'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'parseDataMembers'/0()), fun (Members) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExportType'(Name, Members))))
 
-'layoutItems'/0 =
+'parseExportModule'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'layoutItems'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Name) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ExportModule'(Kw, Name))))
 
-'many'/0 =
+'parseDataMembers'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'many'/1(_A0)
-      in _F0
+    apply 'alt'/2(apply 'parseDataAll'/0(), apply 'parseDataEnumerated'/0())
 
-'optional'/0 =
+'parseDataAll'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'optional'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
+      apply 'bindP'/2(apply 'tokDoubleDot'/0(), fun (Dotdot) ->
+      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DataAll'(Dotdot)))))
 
-'parseExpr2Infix'/0 =
+'parseDataEnumerated'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'parseExpr2Infix'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'delimited'/4(apply 'tokLeftParen'/0(), apply 'tokUpperName'/0(), apply 'tokComma'/0(), apply 'tokRightParen'/0()), fun (D) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DataEnumerated'(D)))
 
-'parseExpr2Ops'/0 =
+'parseImport'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'parseExpr2Ops'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Mod) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'optional'/1(apply 'tokKeyword'/1(#{#<104>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#)), fun (IsHiding) ->
+      apply 'bindP'/2(apply 'wrapped'/3(apply 'tokLeftParen'/0(), apply 'separated'/2(apply 'parseImportItem'/0(), apply 'tokComma'/0()), apply 'tokRightParen'/0()), fun (Imports) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(IsHiding, Imports))))), fun (Names) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (AsKw) ->
+      apply 'bindP'/2(apply 'parseModuleName'/0(), fun (Alias) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(AsKw, Alias))))), fun (Qualified) ->
+      apply 'pureP'/1(~{'keyword'=>Kw,'module'=>Mod,'names'=>Names,'qualified'=>Qualified}~)))))
 
-'parseExpr2Rest'/0 =
+'parseImportItem'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'parseExpr2Rest'/1(_A0)
-      in _F0
+    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseImportOp'/0(), apply 'parseImportValue'/0()), apply 'parseImportType'/0()), apply 'parseImportClass'/0())
 
-'parseRecordAccessor'/0 =
+'parseImportOp'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'parseRecordAccessor'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokLeftParen'/0(), fun (_W0) ->
+      apply 'bindP'/2(apply 'parseOpName'/0(), fun (Op) ->
+      apply 'bindP'/2(apply 'tokRightParen'/0(), fun (_W0) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportOp'(Op)))))
 
-'pureP'/0 =
+'parseImportValue'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'pureP'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'ImportValue'()(_MapX)))
 
-'satisfy'/0 =
+'parseImportType'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'satisfy'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'parseDataMembers'/0()), fun (Members) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportType'(Name, Members))))
 
-'some'/0 =
+'parseImportClass'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'some'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'ImportClass'(Kw, Name))))
 
-'tokKeyword'/0 =
+'parseModuleBody'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'tokKeyword'/1(_A0)
-      in _F0
+    apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseDeclaration'/0()), fun (Decls) ->
+      apply 'pureP'/1(~{'decls'=>Decls,'trailingComments'=>[],'end'=>~{'line'=>0,'column'=>0}~}~))
 
-'token'/0 =
+'parseDeclaration'/0 =
   fun () ->
-    let <_F0> = fun (_A0) ->
-        apply 'token'/1(_A0)
-      in _F0
+    apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'alt'/2(apply 'parseDeclData'/0(), apply 'parseDeclType'/0()), apply 'parseDeclNewtype'/0()), apply 'parseDeclClass'/0()), apply 'parseDeclDerive'/0()), apply 'parseDeclInstance'/0()), apply 'parseDeclForeign'/0()), apply 'parseDeclFixity'/0()), apply 'parseDeclSignature'/0()), apply 'parseDeclValue'/0())
 
-'alt'/0 =
+'parseDeclData'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'separated'/2(apply 'parseDataCtor'/0(), apply 'tokPipe'/0()), fun (Cs) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Eq, Cs))))), fun (Ctors) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclData'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Ctors))))))
+
+'parseDataCtor'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Fields) ->
+      apply 'pureP'/1(~{'name'=>Name,'fields'=>Fields}~)))
+
+'parseTypeVarBinding'/0 =
+  fun () ->
+    apply 'parseTypeVarName'/0()
+
+'parseTypeVarName'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (_MapX) ->
+      apply 'pureP'/1(apply call 'Nova.Compiler.Cst':'TypeVarName'()(_MapX)))
+
+'parseDeclType'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclType'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Eq, Ty)))))))
+
+'parseDeclNewtype'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
+      apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (CtorName) ->
+      apply 'bindP'/2(apply 'parseTypeAtom'/0(), fun (WrappedTy) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclNewtype'(~{'keyword'=>Kw,'name'=>Name,'vars'=>Vars}~, Eq, CtorName, WrappedTy))))))))
+
+'parseDeclClass'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'tokUpperName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeVarBinding'/0()), fun (Vars) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseClassMember'/0()), fun (Ms) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Ms))))), fun (Methods) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclClass'(~{'keyword'=>Kw,'super'=>'Nothing','name'=>Name,'vars'=>Vars,'fundeps'=>'Nothing'}~, Methods))))))
+
+'parseClassMember'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))))
+
+'parseDeclInstance'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (Kw) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokLowerName'/0(), fun (N) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(N, Dc))))), fun (Name) ->
+      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (ClassName) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Types) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokKeyword'/1(#{#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (WhereKw) ->
+      apply 'bindP'/2(apply 'layoutBlock'/1(apply 'parseInstanceBinding'/0()), fun (Bindings) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(WhereKw, Bindings))))), fun (Body) ->
+      let <InstanceHead> = ~{'keyword'=>Kw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
+      in let <Inst> = ~{'head'=>InstanceHead,'body'=>Body}~
+      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclInstanceChain'(~{'head'=>Inst,'tail'=>[]}~)))))))
+
+'parseInstanceBinding'/0 =
+  fun () ->
+    apply 'alt'/2(apply 'parseInstanceSig'/0(), apply 'parseInstanceName'/0())
+
+'parseInstanceSig'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'InstanceBindingSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~)))))
+
+'parseInstanceName'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseBinder'/0()), fun (Binders) ->
+      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'InstanceBindingName'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~)))))
+
+'parseDeclDerive'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (DeriveKw) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'tokKeyword'/1(#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#)), fun (NewtypeKw) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#), fun (InstanceKw) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokLowerName'/0(), fun (N) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(N, Dc))))), fun (Name) ->
+      apply 'bindP'/2(apply 'tokQualifiedUpperName'/0(), fun (ClassName) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseTypeAtom'/0()), fun (Types) ->
+      let <InstanceHead> = ~{'keyword'=>InstanceKw,'name'=>Name,'constraints'=>'Nothing','className'=>ClassName,'types'=>Types}~
+      in apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclDerive'(DeriveKw, NewtypeKw, InstanceHead))))))))
+
+'parseDeclForeign'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokKeyword'/1(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#), fun (Foreign_) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#), fun (Import_) ->
+      apply 'bindP'/2(apply 'parseForeignValue'/0(), fun (Foreign_) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclForeign'(Foreign_, Import_, Foreign_)))))
+
+'parseForeignValue'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'bindP'/2(apply 'optional'/1(apply 'bindP'/2(apply 'tokEquals'/0(), fun (Eq) ->
+      apply 'bindP'/2(apply 'tokString'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', _W0, Impl}> when 'true' -> apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Eq, Impl))
+      end))), fun (InlineImpl) ->
+      case InlineImpl of
+      <{'Just', {'Tuple', Eq, Impl}}> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ForeignValueInline'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~, Eq, Impl))
+      <'Nothing'> when 'true' ->
+        apply 'pureP'/1(call 'Nova.Compiler.Cst':'ForeignValue'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~))
+    end))))
+
+'parseDeclFixity'/0 =
+  fun () ->
+    letrec 'intValueToInt'/1 = fun (_L0) ->
+      case {_L0} of
+        <{{'SmallInt', N}}> when 'true' -> N
+        <{{'BigInt', _W0}}> when 'true' -> 0
+      end
+      in apply 'bindP'/2(apply 'parseFixityKeyword'/0(), fun (_cor0) ->
+      case _cor0 of
+        <{'Tuple', Kw, Fixity}> when 'true' -> apply 'bindP'/2(apply 'tokInt'/0(), fun (_cor1) ->
+      case _cor1 of
+        <{'Tuple', PrecTok, Prec}> when 'true' -> apply 'bindP'/2(apply 'parseFixityOp'/0(), fun (Op) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclFixity'(~{'keyword'=>call 'Data.Tuple':'Tuple'(Kw, Fixity),'prec'=>call 'Data.Tuple':'Tuple'(PrecTok, apply 'intValueToInt'/1(Prec)),'operator'=>Op}~)))
+      end)
+      end)
+
+'parseFixityKeyword'/0 =
+  fun () ->
+    let <ParseInfix> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infix'())))
+      in let <ParseInfixl> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infixl'())))
+      in let <ParseInfixr> = apply 'bindP'/2(apply 'tokKeyword'/1(#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<120>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#), fun (Tok) ->
+      apply 'pureP'/1(call 'Data.Tuple':'Tuple'(Tok, call 'Nova.Compiler.Cst':'Infixr'())))
+      in apply 'alt'/2(apply 'alt'/2(ParseInfix, ParseInfixl), ParseInfixr)
+
+'parseFixityOp'/0 =
+  fun () ->
+    letrec 'toEitherName'/1 = fun (Qn) ->
+      ~{'token'=>call 'maps':'get'('token', Qn),'module'=>call 'maps':'get'('module', Qn),'name'=>{'Left', call 'maps':'get'('name', Qn)}}~
+      in apply 'bindP'/2(apply 'tokQualifiedLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokKeyword'/1(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#), fun (AsKw) ->
+      apply 'bindP'/2(apply 'parseOpName'/0(), fun (Op) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'FixityValue'(apply 'toEitherName'/1(Name), AsKw, Op)))))
+
+'parseOpName'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokOperator'/0(), fun (Op) ->
+      apply 'pureP'/1(~{'token'=>call 'maps':'get'('token', Op),'name'=>call 'maps':'get'('name', Op)}~))
+
+'parseDeclSignature'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'tokDoubleColon'/0(), fun (Dc) ->
+      apply 'bindP'/2(apply 'parseType'/0(), fun (Ty) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclSignature'(~{'label'=>Name,'separator'=>Dc,'value'=>Ty}~)))))
+
+'parseDeclValue'/0 =
+  fun () ->
+    apply 'bindP'/2(apply 'tokLowerName'/0(), fun (Name) ->
+      apply 'bindP'/2(apply 'many'/1(apply 'parseBinderAtom'/0()), fun (Binders) ->
+      apply 'bindP'/2(apply 'parseGuarded'/0(), fun (Guarded) ->
+      apply 'pureP'/1(call 'Nova.Compiler.Cst':'DeclValue'(~{'name'=>Name,'binders'=>Binders,'guarded'=>Guarded}~)))))
+
+'runParser'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
         let <_F1> = fun (_A1) ->
-        apply 'alt'/2(_A0, _A1)
+        apply 'runParser'/2(_A0, _A1)
       in _F1
       in _F0
 
-'alt'/1 =
+'runParser'/1 =
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
-        apply 'alt'/2(_A0, _A1)
+        apply 'runParser'/2(_A0, _A1)
       in _F0
 
 'bindP'/0 =
@@ -1627,48 +1531,6 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
         apply 'bindP'/2(_A0, _A1)
       in _F0
 
-'optionalSeparated'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'optionalSeparated'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'optionalSeparated'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'optionalSeparated'/2(_A0, _A1)
-      in _F0
-
-'runParser'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'runParser'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'runParser'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'runParser'/2(_A0, _A1)
-      in _F0
-
-'separated'/0 =
-  fun () ->
-    let <_F0> = fun (_A0) ->
-        let <_F1> = fun (_A1) ->
-        apply 'separated'/2(_A0, _A1)
-      in _F1
-      in _F0
-
-'separated'/1 =
-  fun (_A0) ->
-    let <_F0> = fun (_A1) ->
-        apply 'separated'/2(_A0, _A1)
-      in _F0
-
 'thenP'/0 =
   fun () ->
     let <_F0> = fun (_A0) ->
@@ -1681,6 +1543,74 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
   fun (_A0) ->
     let <_F0> = fun (_A1) ->
         apply 'thenP'/2(_A0, _A1)
+      in _F0
+
+'pureP'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'pureP'/1(_A0)
+      in _F0
+
+'alt'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'alt'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'alt'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'alt'/2(_A0, _A1)
+      in _F0
+
+'deferP'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'deferP'/1(_A0)
+      in _F0
+
+'fail'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'fail'/1(_A0)
+      in _F0
+
+'satisfy'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'satisfy'/1(_A0)
+      in _F0
+
+'token'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'token'/1(_A0)
+      in _F0
+
+'expectMap'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'expectMap'/1(_A0)
+      in _F0
+
+'tokKeyword'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'tokKeyword'/1(_A0)
+      in _F0
+
+'optional'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'optional'/1(_A0)
+      in _F0
+
+'many'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'many'/1(_A0)
       in _F0
 
 'manyGo'/0 =
@@ -1705,6 +1635,40 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
   fun (_A0, _A1) ->
     let <_F0> = fun (_A2) ->
         apply 'manyGo'/3(_A0, _A1, _A2)
+      in _F0
+
+'some'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'some'/1(_A0)
+      in _F0
+
+'separated'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'separated'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'separated'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'separated'/2(_A0, _A1)
+      in _F0
+
+'optionalSeparated'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        let <_F1> = fun (_A1) ->
+        apply 'optionalSeparated'/2(_A0, _A1)
+      in _F1
+      in _F0
+
+'optionalSeparated'/1 =
+  fun (_A0) ->
+    let <_F0> = fun (_A1) ->
+        apply 'optionalSeparated'/2(_A0, _A1)
       in _F0
 
 'wrapped'/0 =
@@ -1765,6 +1729,42 @@ module 'Nova.Compiler.CstParser' ['getPosition'/0, 'parseBinder'/0, 'parseBinder
   fun (_A0, _A1, _A2) ->
     let <_F0> = fun (_A3) ->
         apply 'delimited'/4(_A0, _A1, _A2, _A3)
+      in _F0
+
+'layoutBlock'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'layoutBlock'/1(_A0)
+      in _F0
+
+'layoutItems'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'layoutItems'/1(_A0)
+      in _F0
+
+'parseExpr2Rest'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseExpr2Rest'/1(_A0)
+      in _F0
+
+'parseExpr2Ops'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseExpr2Ops'/1(_A0)
+      in _F0
+
+'parseExpr2Infix'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseExpr2Infix'/1(_A0)
+      in _F0
+
+'parseRecordAccessor'/0 =
+  fun () ->
+    let <_F0> = fun (_A0) ->
+        apply 'parseRecordAccessor'/1(_A0)
       in _F0
 
 'Parser'/0 =
