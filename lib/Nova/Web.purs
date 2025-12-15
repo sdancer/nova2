@@ -202,6 +202,13 @@ finalizeGroup typeSigs g =
   , typeSig: Map.lookup g.name typeSigs
   }
 
+-- | Qualify a name with namespace if not already qualified
+qualifyRef :: String -> String -> String
+qualifyRef namespace name =
+  if String.contains "." name
+  then name  -- Already qualified
+  else namespace <> "." <> name
+
 -- | Import a grouped function (all clauses combined)
 importGroupedFunction :: String -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String } -> Either String String
 importGroupedFunction namespace group =
@@ -213,7 +220,7 @@ importGroupedFunction namespace group =
       sourceQName = namespace <> "." <> group.name
       _refs = Array.foldl (\acc clause ->
         let refs = extractFuncRefs clause
-            _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+            _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
         in acc) unit group.clauses
   in result
 
@@ -227,7 +234,7 @@ importOtherDecl namespace decl =
           result = addDeclWithType namespace d.name src NS.DatatypeDecl typeSig
           sourceQName = namespace <> "." <> d.name
           refs = extractDataTypeRefs d
-          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
       in Just result
     Ast.DeclNewtype n ->
       let src = renderNewtype n
@@ -235,7 +242,7 @@ importOtherDecl namespace decl =
           result = addDeclWithType namespace n.name src NS.DatatypeDecl typeSig
           sourceQName = namespace <> "." <> n.name
           refs = extractTypeExprRefsArr n.wrappedType
-          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
       in Just result
     Ast.DeclTypeAlias a ->
       let src = renderTypeAlias a
@@ -243,7 +250,7 @@ importOtherDecl namespace decl =
           result = addDeclWithType namespace a.name src NS.TypeAliasDecl typeSig
           sourceQName = namespace <> "." <> a.name
           refs = extractTypeExprRefsArr a.ty
-          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
       in Just result
     Ast.DeclForeignImport f ->
       let src = renderForeignBody f
@@ -251,7 +258,7 @@ importOtherDecl namespace decl =
           result = addDeclWithType namespace f.functionName src NS.ForeignDecl typeSig
           sourceQName = namespace <> "." <> f.functionName
           refs = extractTypeExprRefsArr f.typeSignature
-          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
       in Just result
     Ast.DeclTypeClass c ->
       let src = renderClass c
@@ -259,7 +266,7 @@ importOtherDecl namespace decl =
           result = addDeclWithType namespace c.name src NS.DatatypeDecl typeSig
           sourceQName = namespace <> "." <> c.name
           refs = extractClassRefs c
-          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName r.name r.refType in a) unit refs
+          _w = Array.foldl (\a r -> let _x = addRefFFI sourceQName (qualifyRef namespace r.name) r.refType in a) unit refs
       in Just result
     -- Skip imports, type signatures (merged with functions), instances, infix, functions
     _ -> Nothing
