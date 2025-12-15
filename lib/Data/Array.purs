@@ -124,12 +124,16 @@ foreign import mapWithIndexImpl :: forall a b. (Int -> a -> b) -> Array a -> Arr
 foldl :: forall a b. (b -> a -> b) -> b -> Array a -> b
 foldl f acc xs = foldlImpl f acc xs
 
+-- Note: Erlang foldl is fun(Elem, Acc), PureScript foldl is (Acc -> Elem -> Acc)
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
 foreign import foldlImpl :: forall a b. (b -> a -> b) -> b -> Array a -> b = "call 'lists':'foldl'(fun (E, A) -> apply $0 (A, E), $1, $2)"
 
 -- Fold right
 foldr :: forall a b. (a -> b -> b) -> b -> Array a -> b
 foldr f acc xs = foldrImpl f acc xs
 
+-- Note: Erlang foldr is fun(Elem, Acc), PureScript foldr is (Elem -> Acc -> Acc)
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
 foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> Array a -> b = "call 'lists':'foldr'(fun (E, A) -> apply $0 (E, A), $1, $2)"
 
 -- Zip two arrays

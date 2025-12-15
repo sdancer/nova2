@@ -2,7 +2,7 @@ module 'OTP.TCP' ['defaultListenOptions'/0, 'accept'/1, 'close'/1, 'closeListen'
   attributes []
 'defaultListenOptions'/0 =
   fun () ->
-    ~{'port'=>0,'reuseaddr'=>'true','active'=>'false','packet'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}~
+    ~{'port'=>9999,'reuseaddr'=>'true','active'=>'false','packet'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}~
 
 'accept'/1 =
   fun (ListenSocket) ->

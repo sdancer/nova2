@@ -343,7 +343,7 @@ module 'Nova.Compiler.Dependencies' ['emptyGraph'/0, 'buildReverseEdges'/1, 'get
       <'Nothing'> when 'true' ->
         Acc
       <{'Just', N}> when 'true' ->
-        call 'Data.Map':'insert'(Dep, call 'erlang':'-'(N, 0), Acc)
+        call 'Data.Map':'insert'(Dep, call 'erlang':'-'(N, 1), Acc)
     end, InDegree, Dependents)
       in let <NewQueue> = call 'Nova.Prelude':'semigroupAppendImpl'(RestQueue, call 'Data.Array':'filter'(fun (D) ->
       case call 'Data.Map':'lookup'(D, NewInDegree) of

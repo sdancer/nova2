@@ -6,7 +6,9 @@ import Data.Maybe (Maybe(..))
 fromString :: String -> Maybe Int
 fromString s = fromStringImpl s
 
-foreign import fromStringImpl :: String -> Maybe Int = "case call 'string':'to_integer'($0) of\n        <{I, []}> when 'true' -> {'Just', I}\n        <_> when 'true' -> 'Nothing'\n      end"
+-- Note: Use binary_to_integer since Nova strings are binaries, not char lists
+-- First convert binary to list for string:to_integer
+foreign import fromStringImpl :: String -> Maybe Int = "case call 'string':'to_integer'(call 'erlang':'binary_to_list'($0)) of\n        <{I, []}> when 'true' -> {'Just', I}\n        <_> when 'true' -> 'Nothing'\n      end"
 
 -- Convert to Number
 toNumber :: Int -> Number

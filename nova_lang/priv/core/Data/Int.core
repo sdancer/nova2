@@ -20,7 +20,7 @@ module 'Data.Int' ['ceil'/1, 'floor'/1, 'fromString'/1, 'round'/1, 'toNumber'/1,
   fun (I) ->
     apply 'toNumberImpl'/1(I)
 
-'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_integer'(V0) of
+'fromStringImpl'/1 = fun (V0) -> case call 'string':'to_integer'(call 'erlang':'binary_to_list'(V0)) of
         <{I, []}> when 'true' -> {'Just', I}
         <_> when 'true' -> 'Nothing'
       end

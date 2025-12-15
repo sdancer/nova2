@@ -313,7 +313,7 @@ module 'Nova.Compiler.ImportProcessor' ['collectTypeApp'/1, 'collectTypeExprName
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), call 'maps':'get'('moduleName', Imp))
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
     end
       in call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, LastPart)
     end

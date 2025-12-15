@@ -30,7 +30,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       <'Nothing'> when 'true' ->
         'Nothing'
       <{'Just', Idx}> when 'true' ->
-        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Line)
+        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
       in let <ModName> = apply 'takeModuleName'/1(Rest)
       in case call 'Data.String':'null'(ModName) of
       <'true'> when 'true' -> 'Nothing'
@@ -121,12 +121,12 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
         Idx
       <{'Just', Cp}> when 'true' ->
         case apply 'isModuleChar'/1(Cp) of
-      <'true'> when 'true' -> apply 'countValidChars'/2(Cps, call 'erlang':'+'(Idx, 0))
+      <'true'> when 'true' -> apply 'countValidChars'/2(Cps, call 'erlang':'+'(Idx, 1))
       <'false'> when 'true' -> Idx
     end
     end
        'isModuleChar'/1 = fun (Cp) ->
-      case case case case call 'erlang':'>='(Cp, 0) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 0) <_> when 'true' -> 'false' end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 0) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 0) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 0) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 0) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(Cp, 0) end
+      case case case case call 'erlang':'>='(Cp, 65) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 90) <_> when 'true' -> 'false' end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 97) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 122) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'>='(Cp, 48) of <'true'> when 'true' -> call 'erlang':'=<'(Cp, 57) <_> when 'true' -> 'false' end end of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(Cp, 46) end
       in let <CodePoints> = call 'Data.String':'toCodePointArray'(S)
       in let <ValidCount> = apply 'countValidChars'/2(CodePoints, 0)
       in call 'Data.String':'take'(ValidCount, S)
@@ -165,7 +165,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
     end
     end
       in let <Relative> = call 'Data.String':'drop'(BaseLen, FilePath)
-      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 0), Relative)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
       in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
 
 'moduleToPath'/2 =
@@ -220,7 +220,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       in case apply 'readFile'/1(FilePath) of
       <'Nothing'> when 'true' ->
         let <U0> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(ModName, #{#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<68>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']])}#))
-      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 0)}~)
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
       <{'Just', Source}> when 'true' ->
         let <Bytes> = call 'Data.String':'length'(Source)
       in let <ModStart> = apply 'getMonotonicMs'/0()
@@ -229,7 +229,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       in case call 'Nova.Compiler.CstPipeline':'parseModuleCst'(Source) of
       <{'Left', Err}> when 'true' ->
         let <U1> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<80>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<83>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Err))
-      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 0)}~)
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
       <{'Right', Mod}> when 'true' ->
         let <ParseTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), ParseStart)
       in let <TcStart> = apply 'getMonotonicMs'/0()
@@ -238,7 +238,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       in apply apply _Oa0(call 'Nova.Compiler.Types':'emptyEnv'())(DeclsArray) of
       <{'Left', Err}> when 'true' ->
         let <U1> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<89>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(ParseTime)), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showAny'/1(Err)))
-      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 0)}~)
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
       <{'Right', Env}> when 'true' ->
         let <TcTime> = call 'erlang':'-'(apply 'getMonotonicMs'/0(), TcStart)
       in let <CodegenStart> = apply 'getMonotonicMs'/0()
@@ -247,7 +247,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       in case CodegenResult of
       <{'Left', CodegenErr}> when 'true' ->
         let <U1> = apply 'log'/1(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<68>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<71>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<78>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<79>(8,1,'integer',['unsigned'|['big']]),#<82>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'formatTime'/1(ParseTime)), #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'formatTime'/1(TcTime)), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), CodegenErr))
-      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 0)}~)
+      in call 'maps':'merge'(Result, ~{'errors'=>call 'erlang':'+'(call 'maps':'get'('errors', Result), 1)}~)
       <{'Right', Code}> when 'true' ->
         let <ModPath> = call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), ModName)
       in let <Exports> = call 'Nova.Compiler.TypeChecker':'extractExports'(DeclsArray)
@@ -271,7 +271,7 @@ module 'Nova.Regenerate' ['defaultConfig'/0, 'getMonotonicMs'/0, 'unit'/0, 'coun
       <'false'> when 'true' -> let <_Oa0> = call 'Nova.Compiler.Types':'registerModule'(call 'maps':'get'('registry', Result))
       in apply apply _Oa0(ModName)(ExportsWithValues)
     end
-      in call 'maps':'merge'(Result, ~{'compiled'=>call 'erlang':'+'(call 'maps':'get'('compiled', Result), 0),'registry'=>NewRegistry}~)
+      in call 'maps':'merge'(Result, ~{'compiled'=>call 'erlang':'+'(call 'maps':'get'('compiled', Result), 1),'registry'=>NewRegistry}~)
     end
     end
     end

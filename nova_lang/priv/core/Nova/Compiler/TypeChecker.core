@@ -230,12 +230,12 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
     end
        'clauseToTupleCase'/2 = fun (_W0, Func) ->
       let <N> = call 'Data.List':'length'(call 'maps':'get'('parameters', Func))
-      in let <TupName> = case call 'erlang':'=:='(N, 0) of
+      in let <TupName> = case call 'erlang':'=:='(N, 2) of
       <'true'> when 'true' -> #{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
       <'false'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(#{#<84>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
       in apply _Fn0(N))
     end
-      in case call 'erlang':'>'(N, 0) of
+      in case call 'erlang':'>'(N, 1) of
       <'true'> when 'true' -> {'Just', ~{'pattern'=>{'PatCon', TupName, call 'maps':'get'('parameters', Func)},'body'=>call 'maps':'get'('body', Func),'guard'=>'Nothing'}~}
       <'false'> when 'true' -> apply 'clauseToCaseClause'/2([], Func)
     end
@@ -261,7 +261,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
         let <_Let0> = apply 'collectSameName'/3(call 'maps':'get'('name', Func), Rest, [])
       in case _Let0 of
         <~{'sameName':=SameName,'remaining':=Remaining}~> when 'true' -> let <AllClauses> = call 'Data.Array':'cons'(Func, SameName)
-      in case call 'erlang':'>'(call 'Data.Array':'length'(AllClauses), 0) of
+      in case call 'erlang':'>'(call 'Data.Array':'length'(AllClauses), 1) of
       <'true'> when 'true' -> apply 'goMerge'/2(Remaining, call 'Data.Array':'cons'({'DeclFunction', apply 'mergeClausesIntoOne'/1(AllClauses)}, Acc))
       <'false'> when 'true' -> apply 'goMerge'/2(Rest, call 'Data.Array':'cons'(D, Acc))
     end
@@ -280,7 +280,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in let <ClausesList> = call 'Data.List':'fromFoldable'(Clauses)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
       call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
-      in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 0)))
+      in apply _Fn0(I)), call 'Data.List':'range'(0, call 'erlang':'-'(NumParams, 1)))
       in let <ParamPats> = call 'lists':'map'(fun (N) ->
       {'PatVar', N}, ParamNames)
       in let <ParamVars> = call 'lists':'map'(fun (N) ->
@@ -289,7 +289,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in let <CaseExpr> = case NumParams of
       <0> when 'true' ->
         call 'maps':'get'('body', First)
-      <0> when 'true' ->
+      <1> when 'true' ->
         case call 'Data.List':'head'(ParamVars) of
       <{'Just', V}> when 'true' ->
         {'ExprCase', V, CaseClauses}
@@ -313,7 +313,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{{'ExprLit', {'LitInt', N}}}> when 'true' ->
         call 'erlang':'integer_to_list'(N)
       <{{'ExprLit', {'LitString', S}}}> when 'true' ->
-        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<34>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'take'(0, S)), #{#<34>(8,1,'integer',['unsigned'|['big']])}#)
+        call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<34>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'take'(20, S)), #{#<34>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'ExprLit', {'LitBool', B}}}> when 'true' ->
         case B of
       <'true'> when 'true' -> #{#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#
@@ -428,7 +428,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
   fun (Env, Func) ->
     letrec 'isPlaceholder'/1 = fun (_L0) ->
       case {_L0} of
-        <{{'TyVar', Tv}}> when 'true' -> case call 'erlang':'>='(call 'maps':'get'('id', Tv), 0) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(0, call 'maps':'get'('name', Tv)), #{#<102>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
+        <{{'TyVar', Tv}}> when 'true' -> case call 'erlang':'>='(call 'maps':'get'('id', Tv), 0) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(3, call 'maps':'get'('name', Tv)), #{#<102>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
         <{_W0}> when 'true' -> 'false'
       end
       in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
@@ -548,7 +548,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), call 'maps':'get'('moduleName', Imp))
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
     end
     end
       in let <Acc1> = call 'Data.Map':'union'(Acc, Aliases)
@@ -581,7 +581,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in let <ParamAliasMap> = call 'Data.Map':'union'(LocalParamAliasMap, ImportedAliases)
       in letrec 'addConstructorPlaceholder'/3 = fun (Dt, Exp, Ctor) ->
       let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
-      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Dt)))
       in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
       in let <ResultType> = case call 'Data.List':'null'(call 'maps':'get'('typeVars', Dt)) of
@@ -605,7 +605,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
         <{Exp, {'DeclTypeAlias', Ta}}> when 'true' -> call 'maps':'merge'(Exp, ~{'typeAliases'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Ta), ~{'params'=>call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Ta)),'body'=>call 'maps':'get'('ty', Ta)}~, call 'maps':'get'('typeAliases', Exp))}~)
         <{Exp, {'DeclNewtype', Nt}}> when 'true' -> let <TypeInfo> = ~{'arity'=>call 'Data.List':'length'(call 'maps':'get'('typeVars', Nt)),'constructors'=>[call 'maps':'get'('constructor', Nt)]}~
       in let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
-      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Nt)))
       in let <Exp1> = call 'maps':'merge'(Exp, ~{'types'=>call 'Data.Map':'insert'(call 'maps':'get'('name', Nt), TypeInfo, call 'maps':'get'('types', Exp))}~)
       in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
@@ -628,7 +628,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
         <{Exp, {'DeclForeignImport', Fi}}> when 'true' -> let <Ty> = apply 'typeExprToType'/2(call 'Data.Map':'empty'(), call 'maps':'get'('typeSignature', Fi))
       in let <FreeVars> = call 'Data.Array':'fromFoldable'(call 'Data.Set':'toUnfoldable'(call 'Nova.Compiler.Types':'freeTypeVars'(Ty)))
       in let <IdPairs> = call 'Data.Array':'mapWithIndex'(fun (Idx, OldId) ->
-      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 0))), FreeVars)
+      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 1))), FreeVars)
       in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
       case {_L0} of
         <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', ~{'id'=>NewId,'name'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']])}#, let <_Fn0> = apply 'intToString'/0()
@@ -646,7 +646,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in call 'maps':'merge'(Exp, ~{'values'=>call 'Data.Map':'insert'(call 'maps':'get'('functionName', Fi), Scheme, call 'maps':'get'('values', Exp))}~)
         <{Exp, {'DeclTypeClass', Tc}}> when 'true' -> letrec 'addMethod'/2 = fun (E, Sig) ->
       let <VarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
-      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Tc)))
       in let <VarMap> = call 'Data.Map':'fromFoldable'(VarPairs)
       in let <MethodType> = apply 'typeExprToType'/2(VarMap, call 'maps':'get'('ty', Sig))
@@ -664,7 +664,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in let <TyFree> = call 'Nova.Compiler.Types':'freeTypeVars'(Ty)
       in let <FreeIds> = call 'Data.Set':'toUnfoldable'(call 'Data.Set':'difference'(TyFree, EnvFree))
       in let <IdPairs> = call 'Data.Array':'mapWithIndex'(fun (Idx, OldId) ->
-      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 0))), FreeIds)
+      call 'Data.Tuple':'Tuple'(OldId, call 'erlang':'-'(call 'erlang':'+'(Idx, 1))), FreeIds)
       in let <RemapSub> = call 'Data.Map':'fromFoldable'(call 'lists':'map'(fun (_L0) ->
       case {_L0} of
         <{{'Tuple', OldId, NewId}}> when 'true' -> call 'Data.Tuple':'Tuple'(OldId, {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(NewId)
@@ -866,7 +866,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <_W0> when 'true' ->
         let <MkError> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Op) of
       <{'Just', Idx}> when 'true' ->
-        apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, Op), call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Op))
+        apply 'UndefinedQualifiedImport'/2(call 'Data.String':'take'(Idx, Op), call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Op))
       <'Nothing'> when 'true' ->
         apply 'UnboundVariable'/1(Op)
     end
@@ -972,8 +972,8 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{Env, {'ExprDo', Stmts}}> when 'true' ->
         apply 'inferDo'/2(Env, call 'Data.Array':'fromFoldable'(Stmts))
       <{Env, {'ExprSection', Name}}> when 'true' ->
-        case call 'erlang':'=:='(call 'Data.String':'take'(0, Name), #{#<46>(8,1,'integer',['unsigned'|['big']])}#) of
-      <'true'> when 'true' -> let <Field> = call 'Data.String':'drop'(0, Name)
+        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), #{#<46>(8,1,'integer',['unsigned'|['big']])}#) of
+      <'true'> when 'true' -> let <Field> = call 'Data.String':'drop'(1, Name)
       in let <_Let0> = let <_Oa0> = call 'Nova.Compiler.Types':'freshVar'(Env)
       in apply _Oa0(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
       in case _Let0 of
@@ -1362,7 +1362,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
     letrec 'go'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
         <{_W0, []}> when 'true' -> []
-        <{I, [X|Xs]}> when 'true' -> [apply F(I, X)|apply 'go'/2(call 'erlang':'+'(I, 0), Xs)]
+        <{I, [X|Xs]}> when 'true' -> [apply F(I, X)|apply 'go'/2(call 'erlang':'+'(I, 1), Xs)]
       end
       in apply 'go'/2(0, List)
 
@@ -1422,7 +1422,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{VarMap, {'TyExprCon', Name}}> when 'true' ->
         case Name of
       <#{#<95>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(0))
+        {'TyVar', let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(999))
       in apply _Oa0(#{#<95>(8,1,'integer',['unsigned'|['big']])}#)}
       <#{#<66>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         call 'Nova.Compiler.Types':'tBool'()
@@ -1460,7 +1460,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
         let <VarList> = apply 'listMapWithIndex'/2(fun (I, Name) ->
-      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(Name)), Vars)
       in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
       in apply 'typeExprToType'/2(NewVarMap, T)
@@ -1823,7 +1823,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{Env, {'PatCon', ConName, Pats}, Ty}> when 'true' ->
         let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), ConName) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), ConName)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), ConName)
       <'Nothing'> when 'true' ->
         ConName
     end
@@ -2101,7 +2101,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <'Nothing'> when 'true' ->
         call 'maps':'get'('moduleName', Imp)
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), call 'maps':'get'('moduleName', Imp))
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), call 'maps':'get'('moduleName', Imp))
     end
       in call 'Nova.Compiler.Types':'mergeExportsToEnvWithPrefix'(Env, Exports, LastPart)
     end
@@ -2213,7 +2213,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
 'checkDataTypeWithAllAliases'/4 =
   fun (AliasMap, ParamAliasMap, Env, Dt) ->
     let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
-      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Dt)))
       in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
       in let <TypeArgs> = call 'lists':'map'(fun (_L0) ->
@@ -2233,7 +2233,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
 'checkNewtypeWithAllAliases'/4 =
   fun (AliasMap, ParamAliasMap, Env, Nt) ->
     let <TypeVarPairs> = call 'Data.Array':'mapWithIndex'(fun (I, V) ->
-      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(V, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(V)), call 'Data.Array':'fromFoldable'(call 'maps':'get'('typeVars', Nt)))
       in let <TypeVarMap> = call 'Data.Map':'fromFoldable'(TypeVarPairs)
       in let <TypeArgs> = call 'lists':'map'(fun (_L0) ->
@@ -2458,7 +2458,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
         let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -2541,7 +2541,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
         let <VarList> = call 'Data.Array':'mapWithIndex'(fun (I, Name) ->
-      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(Name)), call 'Data.Array':'fromFoldable'(Vars))
       in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
       in apply 'typeExprToTypeWithAllAliases'/4(AliasMap, ParamAliasMap, NewVarMap, T)
@@ -2630,7 +2630,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{ResultTy, E, Ty, [P|Rest], Sub}> when 'true' ->
         case Ty of
       <{'TyCon', C}> when 'true' ->
-        case case call 'erlang':'=:='(call 'maps':'get'('name', C), #{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', C)), 0) <_> when 'true' -> 'false' end of
+        case case call 'erlang':'=:='(call 'maps':'get'('name', C), #{#<70>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.Array':'length'(call 'maps':'get'('args', C)), 2) <_> when 'true' -> 'false' end of
       <'true'> when 'true' -> case ~{'a'=>call 'Data.Array':'head'(call 'maps':'get'('args', C)),'b'=>call 'Data.Array':'last'(call 'maps':'get'('args', C))}~ of
       <~{'a':={'Just', ArgTy},'b':={'Just', ResTy}}~> when 'true' ->
         case apply 'inferPat'/3(E, P, ArgTy) of
@@ -2704,7 +2704,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprCon', Name}}> when 'true' ->
         let <UnqualifiedName> = case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -2796,7 +2796,7 @@ module 'Nova.Compiler.TypeChecker' ['intToString'/0, 'collectParamTypeAliases'/1
       in {'TyRecord', ~{'fields'=>FieldMap,'row'=>Row}~}
       <{Env, AliasMap, ParamAliasMap, VarMap, {'TyExprForAll', Vars, T}}> when 'true' ->
         let <VarList> = call 'Data.Array':'mapWithIndex'(fun (I, Name) ->
-      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 0)))
+      call 'Data.Tuple':'Tuple'(Name, let <_Oa0> = call 'Nova.Compiler.Types':'mkTVar'(call 'erlang':'-'(call 'erlang':'+'(I, 1)))
       in apply _Oa0(Name)), call 'Data.Array':'fromFoldable'(Vars))
       in let <NewVarMap> = call 'Data.Map':'union'(call 'Data.Map':'fromFoldable'(VarList), VarMap)
       in apply 'typeExprToTypeWithEnv'/5(Env, AliasMap, ParamAliasMap, NewVarMap, T)

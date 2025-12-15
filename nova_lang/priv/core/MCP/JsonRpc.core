@@ -17,23 +17,23 @@ module 'MCP.JsonRpc' ['internalError'/0, 'invalidParams'/0, 'invalidRequest'/0, 
 
 'internalError'/0 =
   fun () ->
-    call 'erlang':'-'(0)
+    call 'erlang':'-'(32603)
 
 'invalidParams'/0 =
   fun () ->
-    call 'erlang':'-'(0)
+    call 'erlang':'-'(32602)
 
 'invalidRequest'/0 =
   fun () ->
-    call 'erlang':'-'(0)
+    call 'erlang':'-'(32600)
 
 'methodNotFound'/0 =
   fun () ->
-    call 'erlang':'-'(0)
+    call 'erlang':'-'(32601)
 
 'parseError'/0 =
   fun () ->
-    call 'erlang':'-'(0)
+    call 'erlang':'-'(32700)
 
 'encodeId'/1 =
   fun (_P0) ->

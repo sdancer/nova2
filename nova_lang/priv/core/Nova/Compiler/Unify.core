@@ -51,7 +51,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
     end
       <{{'TyRecord', R}}> when 'true' ->
         let <FieldEntries> = call 'Data.Array':'fromFoldable'(call 'Data.Map':'toUnfoldable'(call 'maps':'get'('fields', R)))
-      in let <Suffix> = case call 'erlang':'>'(call 'Data.Array':'length'(FieldEntries), 0) of
+      in let <Suffix> = case call 'erlang':'>'(call 'Data.Array':'length'(FieldEntries), 8) of
       <'true'> when 'true' -> #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#
       <'false'> when 'true' -> #{}#
     end
@@ -59,7 +59,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       case {_L0} of
         <{{'Tuple', Name, Ty}}> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Name, #{#<32>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<58>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Ty))
       end
-      in let <FieldStrs> = call 'lists':'map'(fun (_Mf0) -> apply 'showField'/1(_Mf0), call 'Data.Array':'take'(0, FieldEntries))
+      in let <FieldStrs> = call 'lists':'map'(fun (_Mf0) -> apply 'showField'/1(_Mf0), call 'Data.Array':'take'(8, FieldEntries))
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FieldStrs)), Suffix), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<125>(8,1,'integer',['unsigned'|['big']])}#)
       <{{'TyApp', F, Arg}}> when 'true' ->
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<40>(8,1,'integer',['unsigned'|['big']])}#, apply 'showType'/1(F)), #{#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'showType'/1(Arg)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
@@ -85,7 +85,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
   fun (Name) ->
     case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -145,7 +145,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       <'Nothing'> when 'true' ->
         let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -172,7 +172,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       <'Nothing'> when 'true' ->
         let <UnqualifiedName> = case apply 'indexOf'/2(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -305,7 +305,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       end
       <{Aliases, {'TyApp', F, A}, {'TyCon', C}}> when 'true' ->
         case call 'erlang':'>'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
-        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0), call 'maps':'get'('args', C))}~}
+        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 1), call 'maps':'get'('args', C))}~}
       in let <LastArg> = case call 'Data.Array':'last'(call 'maps':'get'('args', C)) of
       <{'Just', Arg}> when 'true' ->
         Arg
@@ -356,7 +356,7 @@ module 'Nova.Compiler.Unify' ['unify'/0, 'unifyField'/0, 'unifyMany'/0, 'unifyRe
       end
       <{Aliases, {'TyCon', C}, {'TyApp', F, A}}> when 'true' ->
         case call 'erlang':'>'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0) of
-        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 0), call 'maps':'get'('args', C))}~}
+        <'true'> when 'true' -> let <HeadTyCon> = {'TyCon', ~{'name'=>call 'maps':'get'('name', C),'args'=>call 'Data.Array':'take'(call 'erlang':'-'(call 'erlang':'length'(call 'maps':'get'('args', C)), 1), call 'maps':'get'('args', C))}~}
       in let <LastArg> = case call 'Data.Array':'last'(call 'maps':'get'('args', C)) of
       <{'Just', Arg}> when 'true' ->
         Arg

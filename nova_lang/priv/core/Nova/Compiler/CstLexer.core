@@ -15,13 +15,13 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
 
 'advanceNewline'/1 =
   fun (State) ->
-    call 'maps':'merge'(State, ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', State), 0),'column'=>0}~)
+    call 'maps':'merge'(State, ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', State), 1),'column'=>1}~)
 
 'advanceTab'/1 =
   fun (State) ->
     let <Col> = call 'maps':'get'('column', State)
-      in let <NextTab> = call 'erlang':'+'(call 'erlang':'*'(call 'erlang':'+'(call 'erlang':'div'(call 'erlang':'-'(Col, 0), 0), 0), 0), 0)
-      in call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(0, call 'maps':'get'('chars', State)),'column'=>NextTab}~)
+      in let <NextTab> = call 'erlang':'+'(call 'erlang':'*'(call 'erlang':'+'(call 'erlang':'div'(call 'erlang':'-'(Col, 1), 8), 1), 8), 1)
+      in call 'maps':'merge'(State, ~{'chars'=>apply 'dropChars'/2(1, call 'maps':'get'('chars', State)),'column'=>NextTab}~)
 
 'arrayToList'/1 =
   fun (Arr) ->
@@ -38,13 +38,13 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
 
 'initLexState'/1 =
   fun (Input) ->
-    ~{'chars'=>apply 'arrayToList'/1(call 'Data.String.CodeUnits':'toCharArray'(Input)),'line'=>0,'column'=>0}~
+    ~{'chars'=>apply 'arrayToList'/1(call 'Data.String.CodeUnits':'toCharArray'(Input)),'line'=>1,'column'=>1}~
 
 'insertLayoutTokens'/1 =
   fun (Tokens) ->
     letrec 'getRootLayout'/1 = fun (_W0) ->
       call 'Nova.Compiler.CstLayout':'rootLayoutDelim'()
-      in let <InitPos> = ~{'line'=>0,'column'=>0}~
+      in let <InitPos> = ~{'line'=>1,'column'=>1}~
       in let <InitStack> = [call 'Data.Tuple':'Tuple'(InitPos, apply 'getRootLayout'/1(~{}~)) | []]
       in let <_Fn0> = apply 'reverseList'/0()
       in apply _Fn0(apply 'insertLayoutGo'/3(InitStack, Tokens, []))
@@ -105,27 +105,27 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
     letrec 'parseCharContent'/1 = fun (S) ->
       case call 'maps':'get'('chars', S) of
       <[$\\ | [$n | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\n, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'($\n, apply 'advance'/2(S, 2))
       <[$\\ | [$t | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\t, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'($\t, apply 'advance'/2(S, 2))
       <[$\\ | [$r | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\r, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'($\r, apply 'advance'/2(S, 2))
       <[$\\ | [$' | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($', apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'($', apply 'advance'/2(S, 2))
       <[$\\ | [$\\ | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'($\\, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'($\\, apply 'advance'/2(S, 2))
       <[$\\ | [C | _W0]]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 2))
       <[C | _W0]> when 'true' ->
-        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 0))
+        call 'Data.Tuple':'Tuple'(C, apply 'advance'/2(S, 1))
       <[]> when 'true' ->
         call 'Data.Tuple':'Tuple'($?, S)
     end
       in let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in let <AfterOpen> = apply 'advance'/2(State, 1)
       in case apply 'parseCharContent'/1(AfterOpen) of
       <{'Tuple', Ch, AfterChar}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterChar, 0)
+        let <AfterClose> = apply 'advance'/2(AfterChar, 1)
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokChar'(call 'Data.String.CodeUnits':'singleton'(Ch), Ch), StartState, AfterClose), AfterClose)}
     end
 
@@ -155,7 +155,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <_W0> when 'true' ->
         call 'Nova.Compiler.Cst':'TokComma'()
     end
-      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(Tok, State), apply 'advance'/2(State, 0))}
+      in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(Tok, State), apply 'advance'/2(State, 1))}
       <[]> when 'true' ->
         'Nothing'
     end
@@ -188,7 +188,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
         case call 'maps':'get'('chars', AfterInt) of
       <[$. | [C | _W0]]> when 'true' ->
         case apply 'isDigit'/1(C) of
-          <'true'> when 'true' -> let <AfterDot> = apply 'advance'/2(AfterInt, 0)
+          <'true'> when 'true' -> let <AfterDot> = apply 'advance'/2(AfterInt, 1)
       in case apply 'consumeNumber'/2(AfterDot, []) of
       <{'Tuple', FracPart, AfterFrac}> when 'true' ->
         let <NumStr> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(IntPart, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), FracPart)
@@ -239,20 +239,20 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
 'lexRawString'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in let <AfterOpen> = apply 'advance'/2(State, 3)
       in case apply 'consumeRawString'/2(AfterOpen, []) of
       <{'Tuple', Content, AfterContent}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterContent, 0)
+        let <AfterClose> = apply 'advance'/2(AfterContent, 3)
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokRawString'(Content), StartState, AfterClose), AfterClose)}
     end
 
 'lexString'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <AfterOpen> = apply 'advance'/2(State, 0)
+      in let <AfterOpen> = apply 'advance'/2(State, 1)
       in case apply 'consumeString'/2(AfterOpen, []) of
       <{'Tuple', Content, AfterContent}> when 'true' ->
-        let <AfterClose> = apply 'advance'/2(AfterContent, 0)
+        let <AfterClose> = apply 'advance'/2(AfterContent, 1)
       in {'Just', call 'Data.Tuple':'Tuple'(apply 'makeTokenRange'/3(call 'Nova.Compiler.Cst':'TokString'(Content, Content), StartState, AfterClose), AfterClose)}
     end
 
@@ -262,20 +262,20 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[]> when 'true' ->
         'Nothing'
       <[$  | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advance'/2(State, 0))
+        apply 'lexToken'/1(apply 'advance'/2(State, 1))
       <[$\t | _W0]> when 'true' ->
         apply 'lexToken'/1(apply 'advanceTab'/1(State))
       <[$\n | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)))
       <[$\r | [$\n | _W0]]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 2)))
       <[$\r | _W0]> when 'true' ->
-        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)))
+        apply 'lexToken'/1(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)))
       <[$- | [$- | _W0]]> when 'true' ->
-        let <State_> = apply 'skipLineComment'/1(apply 'advance'/2(State, 0))
+        let <State_> = apply 'skipLineComment'/1(apply 'advance'/2(State, 2))
       in apply 'lexToken'/1(State_)
       <[${ | [$- | _W0]]> when 'true' ->
-        let <State_> = apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), 0)
+        let <State_> = apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), 1)
       in apply 'lexToken'/1(State_)
       <[$" | [$" | [$" | _W0]]]> when 'true' ->
         apply 'lexRawString'/1(State)
@@ -302,7 +302,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[$; | _W0]> when 'true' ->
         apply 'lexDelimiter'/1(State)
       <[$@ | _W0]> when 'true' ->
-        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(call 'Nova.Compiler.Cst':'TokAt'(), State), apply 'advance'/2(State, 0))}
+        {'Just', call 'Data.Tuple':'Tuple'(apply 'makeToken'/2(call 'Nova.Compiler.Cst':'TokAt'(), State), apply 'advance'/2(State, 1))}
       <[C | _W0]> when 'true' ->
         case apply 'isDigit'/1(C) of
       <'true'> when 'true' -> apply 'lexNumber'/1(State)
@@ -314,7 +314,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <'true'> when 'true' -> apply 'lexUpperIdentifier'/1(State)
       <'false'> when 'true' -> case apply 'isOperatorChar'/1(C) of
       <'true'> when 'true' -> apply 'lexOperator'/1(State)
-      <'false'> when 'true' -> apply 'lexToken'/1(apply 'advance'/2(State, 0))
+      <'false'> when 'true' -> apply 'lexToken'/1(apply 'advance'/2(State, 1))
     end
     end
     end
@@ -330,7 +330,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
 'lexUnderscore'/1 =
   fun (State) ->
     let <StartState> = State
-      in let <State_> = apply 'advance'/2(State, 0)
+      in let <State_> = apply 'advance'/2(State, 1)
       in case call 'maps':'get'('chars', State_) of
       <[C | _W0]> when 'true' ->
         case apply 'isIdentChar'/1(C) of
@@ -351,7 +351,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       in case _Let0 of
         <{'Tuple', Name, State_}> when 'true' -> let <Result> = case call 'maps':'get'('chars', State_) of
       <[$. | _W0]> when 'true' ->
-        apply 'checkQualifiedChain'/2(Name, apply 'advance'/2(State_, 0))
+        apply 'checkQualifiedChain'/2(Name, apply 'advance'/2(State_, 1))
       <_W0> when 'true' ->
         call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'('Nothing', Name), State_)
     end
@@ -375,7 +375,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[$\r | _W0]> when 'true' ->
         State
       <[_W0 | _W1]> when 'true' ->
-        apply 'skipLineComment'/1(apply 'advance'/2(State, 0))
+        apply 'skipLineComment'/1(apply 'advance'/2(State, 1))
     end
 
 'advance'/2 =
@@ -392,7 +392,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
         <{'Tuple', Name, State_}> when 'true' -> let <FullPrefix> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(Prefix, #{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name)
       in case call 'maps':'get'('chars', State_) of
       <[$. | _W0]> when 'true' ->
-        apply 'checkQualifiedChain'/2(FullPrefix, apply 'advance'/2(State_, 0))
+        apply 'checkQualifiedChain'/2(FullPrefix, apply 'advance'/2(State_, 1))
       <_W0> when 'true' ->
         call 'Data.Tuple':'Tuple'(call 'Nova.Compiler.Cst':'TokUpperName'({'Just', Prefix}, Name), State_)
     end
@@ -433,7 +433,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
     case call 'maps':'get'('chars', State) of
       <[C | _W0]> when 'true' ->
         case apply 'isIdentChar'/1(C) of
-          <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <'true'> when 'true' -> apply 'consumeIdent'/2(apply 'advance'/2(State, 1), [C | Acc])
           <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
         end
       <_W0> when 'true' ->
@@ -445,16 +445,16 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
     case call 'maps':'get'('chars', State) of
       <[C | _W0]> when 'true' ->
         case apply 'isDigit'/1(C) of
-          <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <'true'> when 'true' -> apply 'consumeNumber'/2(apply 'advance'/2(State, 1), [C | Acc])
           <_> when 'true' -> case call 'maps':'get'('chars', State) of
       <[$_ | _W0]> when 'true' ->
-        apply 'consumeNumber'/2(apply 'advance'/2(State, 0), Acc)
+        apply 'consumeNumber'/2(apply 'advance'/2(State, 1), Acc)
       <_W0> when 'true' ->
         call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
           end
         end
       <[$_ | _W0]> when 'true' ->
-        apply 'consumeNumber'/2(apply 'advance'/2(State, 0), Acc)
+        apply 'consumeNumber'/2(apply 'advance'/2(State, 1), Acc)
       <_W0> when 'true' ->
         call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
     end
@@ -464,7 +464,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
     case call 'maps':'get'('chars', State) of
       <[C | _W0]> when 'true' ->
         case apply 'isOperatorChar'/1(C) of
-          <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <'true'> when 'true' -> apply 'consumeOperator'/2(apply 'advance'/2(State, 1), [C | Acc])
           <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
         end
       <_W0> when 'true' ->
@@ -479,12 +479,12 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[$" | [$" | [$" | _W0]]]> when 'true' ->
         call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
       <[$" | _W0]> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 0), [$" | Acc])
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), [$" | Acc])
       <[$\n | _W0]> when 'true' ->
-        let <State_> = apply 'advanceNewline'/1(apply 'advance'/2(State, 0))
+        let <State_> = apply 'advanceNewline'/1(apply 'advance'/2(State, 1))
       in apply 'consumeRawString'/2(State_, [$\n | Acc])
       <[C | _W0]> when 'true' ->
-        apply 'consumeRawString'/2(apply 'advance'/2(State, 0), [C | Acc])
+        apply 'consumeRawString'/2(apply 'advance'/2(State, 1), [C | Acc])
     end
 
 'consumeString'/2 =
@@ -495,21 +495,21 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[$" | _W0]> when 'true' ->
         call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
       <[$\\ | [$n | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\n | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\n | Acc])
       <[$\\ | [$t | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\t | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\t | Acc])
       <[$\\ | [$r | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\r | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\r | Acc])
       <[$\\ | [$" | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$" | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$" | Acc])
       <[$\\ | [$\\ | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [$\\ | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [$\\ | Acc])
       <[$\\ | [C | _W0]]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [C | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 2), [C | Acc])
       <[$\n | _W0]> when 'true' ->
         call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
       <[C | _W0]> when 'true' ->
-        apply 'consumeString'/2(apply 'advance'/2(State, 0), [C | Acc])
+        apply 'consumeString'/2(apply 'advance'/2(State, 1), [C | Acc])
     end
 
 'consumeUpperIdent'/2 =
@@ -517,7 +517,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
     case call 'maps':'get'('chars', State) of
       <[C | _W0]> when 'true' ->
         case case apply 'isAlphaNum'/1(C) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(C, $_) end of
-          <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 0), [C | Acc])
+          <'true'> when 'true' -> apply 'consumeUpperIdent'/2(apply 'advance'/2(State, 1), [C | Acc])
           <_> when 'true' -> call 'Data.Tuple':'Tuple'(apply 'charsToString'/1(Acc), State)
         end
       <_W0> when 'true' ->
@@ -532,7 +532,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <{_W0, []}> when 'true' ->
         []
       <{N, [_W0 | Xs]}> when 'true' ->
-        apply 'dropChars'/2(call 'erlang':'-'(N, 0), Xs)
+        apply 'dropChars'/2(call 'erlang':'-'(N, 1), Xs)
     end
 
 'lexTokensGo'/2 =
@@ -571,17 +571,17 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[]> when 'true' ->
         State
       <[${ | [$- | _W0]]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), call 'erlang':'+'(Depth, 0))
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), call 'erlang':'+'(Depth, 1))
       <[$- | [$} | _W0]]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), call 'erlang':'-'(Depth, 0))
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 2), call 'erlang':'-'(Depth, 1))
       <[${ | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
       <[$- | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
       <[$\n | _W0]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advanceNewline'/1(apply 'advance'/2(State, 0)), Depth)
+        apply 'skipBlockComment'/2(apply 'advanceNewline'/1(apply 'advance'/2(State, 1)), Depth)
       <[_W0 | _W1]> when 'true' ->
-        apply 'skipBlockComment'/2(apply 'advance'/2(State, 0), Depth)
+        apply 'skipBlockComment'/2(apply 'advance'/2(State, 1), Depth)
     end
     end
 
@@ -599,7 +599,7 @@ module 'Nova.Compiler.CstLexer' ['keywords'/0, 'reverseList'/0, 'advanceNewline'
       <[Next | _W0]> when 'true' ->
         call 'maps':'get'('start', call 'maps':'get'('range', Next))
       <[]> when 'true' ->
-        ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', call 'maps':'get'('end', call 'maps':'get'('range', Tok))), 0),'column'=>0}~
+        ~{'line'=>call 'erlang':'+'(call 'maps':'get'('line', call 'maps':'get'('end', call 'maps':'get'('range', Tok))), 1),'column'=>1}~
     end
       in case apply 'callInsertLayout'/3(Tok, NextPos, Stack) of
       <{'Tuple', NewStack, OutputTokens}> when 'true' ->

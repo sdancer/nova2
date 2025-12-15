@@ -31,7 +31,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'showLogs'/0, 'extractImpo
       <'Nothing'> when 'true' ->
         'Nothing'
       <{'Just', Idx}> when 'true' ->
-        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Line)
+        let <Rest> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 7), Line)
       in let <Parts> = call 'Data.String':'split'(call 'Data.String':'Pattern'(#{#<32>(8,1,'integer',['unsigned'|['big']])}#), Rest)
       in case call 'Data.Array':'head'(Parts) of
       <'Nothing'> when 'true' ->
@@ -108,7 +108,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'showLogs'/0, 'extractImpo
     end
     end
       in let <Relative> = call 'Data.String':'drop'(BaseLen, Path)
-      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 0), Relative)
+      in let <WithoutExt> = call 'Data.String':'take'(call 'erlang':'-'(call 'Data.String':'length'(Relative), 5), Relative)
       in call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), WithoutExt)
 
 'parseAndCheckModule'/2 =
@@ -196,7 +196,7 @@ module 'Nova.Compiler.Regenerate' ['defaultConfig'/0, 'showLogs'/0, 'extractImpo
       in let <LogMsg> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, FullModName), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(LineCount)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#)
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs)(OutputFile, Code)
       in let <_W0> = apply call 'maps':'get'('writeFile', Fs)(TargetFile, Code)
-      in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 0),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
+      in ~{'registry'=>Registry_,'count'=>call 'erlang':'+'(call 'maps':'get'('count', Acc), 1),'logs'=>call 'Data.Array':'snoc'(call 'maps':'get'('logs', Acc), apply 'LogInfo'/1(LogMsg))}~
     end
     end
     end

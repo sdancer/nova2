@@ -2439,55 +2439,55 @@ module 'Nova.Compiler.CstToAst' ['convertBinder'/1, 'convertCaseBranch'/1, 'conv
   fun (Op) ->
     case Op of
       <#{#<42>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        7
       <#{#<47>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        7
       <#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        7
       <#{#<43>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        6
       <#{#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        6
       <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        6
       <#{#<43>(8,1,'integer',['unsigned'|['big']]),#<43>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        5
       <#{#<58>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        5
       <#{#<61>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<47>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<33>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<60>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        4
       <#{#<38>(8,1,'integer',['unsigned'|['big']]),#<38>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        3
       <#{#<124>(8,1,'integer',['unsigned'|['big']]),#<124>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        2
       <#{#<36>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<35>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<62>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
-        0
+        1
       <#{#<60>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']])}#> when 'true' ->
         0
       <_W0> when 'true' ->
-        0
+        5
     end
 
 'qualifiedProperName'/1 =
@@ -2720,7 +2720,7 @@ module 'Nova.Compiler.CstToAst' ['convertBinder'/1, 'convertCaseBranch'/1, 'conv
     letrec 'go'/2 = fun (_L0, _L1) ->
       case {_L0, _L1} of
         <{_W0, []}> when 'true' -> []
-        <{I, [X | Xs]}> when 'true' -> [apply F(I, X) | apply 'go'/2(call 'erlang':'+'(I, 0), Xs)]
+        <{I, [X | Xs]}> when 'true' -> [apply F(I, X) | apply 'go'/2(call 'erlang':'+'(I, 1), Xs)]
       end
       in apply 'go'/2(0, List)
 

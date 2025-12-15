@@ -36,15 +36,15 @@ module 'OTP.Ets' ['defaultOptions'/0, 'publicOrderedSetOptions'/0, 'publicSetOpt
 
 'defaultOptions'/0 =
   fun () ->
-    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Protected'/0(),'named'=>'false','keyPos'=>0}~
+    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Protected'/0(),'named'=>'false','keyPos'=>1}~
 
 'publicOrderedSetOptions'/0 =
   fun () ->
-    ~{'tableType'=>apply 'OrderedSet'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>0}~
+    ~{'tableType'=>apply 'OrderedSet'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>1}~
 
 'publicSetOptions'/0 =
   fun () ->
-    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>0}~
+    ~{'tableType'=>apply 'Set'/0(),'access'=>apply 'Public'/0(),'named'=>'true','keyPos'=>1}~
 
 'accessToAtom'/1 =
   fun (_P0) ->

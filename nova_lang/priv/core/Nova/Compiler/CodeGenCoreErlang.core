@@ -29,15 +29,15 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (Name) ->
     letrec 'toSnake'/1 = fun (S) ->
       call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(#{#<39>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'Replacement'(#{#<95>(8,1,'integer',['unsigned'|['big']])}#), S)
-      in let <First> = call 'Data.String':'take'(0, Name)
-      in let <Rest> = call 'Data.String':'drop'(0, Name)
+      in let <First> = call 'Data.String':'take'(1, Name)
+      in let <Rest> = call 'Data.String':'drop'(1, Name)
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Data.String':'toUpper'(First), apply 'toSnake'/1(Rest))
 
 'countTypeArity'/1 =
   fun (_P0) ->
     case {_P0} of
       <{{'TyExprArrow', _W0, Result}}> when 'true' ->
-        call 'erlang':'+'(0, apply 'countTypeArity'/1(Result))
+        call 'erlang':'+'(1, apply 'countTypeArity'/1(Result))
       <{{'TyExprParens', Inner}}> when 'true' ->
         apply 'countTypeArity'/1(Inner)
       <{{'TyExprConstrained', _W0, Inner}}> when 'true' ->
@@ -78,7 +78,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
 
 'freshVar'/1 =
   fun (Ctx) ->
-    ~{'var'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', Ctx))),'ctx'=>call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 0)}~)}~
+    ~{'var'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', Ctx))),'ctx'=>call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 1)}~)}~
 
 'genBinarySegment'/1 =
   fun (Code) ->
@@ -95,10 +95,10 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (_P0) ->
     case {_P0} of
       <{~{'name':=Name,'arity':=Arity}~}> when 'true' ->
-        case call 'erlang':'<'(Arity, 0) of
+        case call 'erlang':'<'(Arity, 1) of
       <'true'> when 'true' -> []
       <'false'> when 'true' -> call 'lists':'map'(fun (A) ->
-      ~{'name'=>Name,'arity'=>A}~, apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 0)))
+      ~{'name'=>Name,'arity'=>A}~, apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
     end
     end
 
@@ -106,9 +106,9 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (_P0) ->
     case {_P0} of
       <{~{'name':=Name,'arity':=Arity}~}> when 'true' ->
-        case call 'erlang':'<'(Arity, 0) of
+        case call 'erlang':'<'(Arity, 1) of
       <'true'> when 'true' -> []
-      <'false'> when 'true' -> call 'lists':'map'(fun (_Pc0) -> apply 'genCurriedWrapper'/3(Name, Arity, _Pc0), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 0)))
+      <'false'> when 'true' -> call 'lists':'map'(fun (_Pc0) -> apply 'genCurriedWrapper'/3(Name, Arity, _Pc0), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
     end
     end
 
@@ -175,7 +175,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
        'getLastComponent'/1 = fun (Name) ->
       case call 'Data.String':'lastIndexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       <'Nothing'> when 'true' ->
         Name
     end
@@ -185,7 +185,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         <{_W0}> when 'true' -> 'Nothing'
       end
        'getNewtypeExports'/1 = fun (Nt) ->
-      [~{'name'=>call 'maps':'get'('constructor', Nt),'arity'=>0}~]
+      [~{'name'=>call 'maps':'get'('constructor', Nt),'arity'=>1}~]
       in let <ModName> = apply 'translateModuleName'/1(call 'maps':'get'('name', M))
       in let <AllFuncs> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getFunc'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
       in let <AllForeignImports> = call 'Data.Array':'mapMaybe'(fun (_Mf0) -> apply 'getForeignFunc'/1(_Mf0), call 'Data.Array':'fromFoldable'(call 'maps':'get'('declarations', M)))
@@ -276,35 +276,35 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (_P0) ->
     case {_P0} of
       <{#{#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         'Nothing'
       <{#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<102>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>3}~}
       <{#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<109>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>2}~}
       <{#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<102>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>2}~}
       <{#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<104>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<104>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<116>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<116>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<107>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<115>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<98>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>2}~}
       <{#{#<100>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<108>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>2}~}
       <{#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<110>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<110>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<45>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<45>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>1}~}
       <{#{#<109>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
-        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>0}~}
+        {'Just', ~{'mod'=>#{#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<103>(8,1,'integer',['unsigned'|['big']])}#,'func'=>#{#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']])}#,'arity'=>2}~}
       <{#{#<112>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']])}#}> when 'true' ->
         'Nothing'
       <{_W0}> when 'true' ->
@@ -631,7 +631,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
 
 'genCoreList'/2 =
   fun (Ctx, Elems) ->
-    case call 'erlang':'=<'(call 'Data.List':'length'(Elems), 0) of
+    case call 'erlang':'=<'(call 'Data.List':'length'(Elems), 50) of
       <'true'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<91>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), call 'Data.List':'toUnfoldable'(Elems)))), #{#<93>(8,1,'integer',['unsigned'|['big']])}#)
       <'false'> when 'true' -> case call 'Data.List':'uncons'(Elems) of
       <'Nothing'> when 'true' ->
@@ -660,7 +660,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in let <Params> = case call 'erlang':'=<'(Arity, 0) of
       <'true'> when 'true' -> []
       <'false'> when 'true' -> call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
     end
       in let <ParamStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Params)
       in let <Body> = case call 'erlang':'=:='(Arity, 0) of
@@ -741,7 +741,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         apply 'genLiteral'/1(Lit)
       <{Ctx, {'ExprVar', Name}}> when 'true' ->
         letrec 'isConstructorName'/1 = fun (S) ->
-      case call 'Data.String':'take'(0, S) of
+      case call 'Data.String':'take'(1, S) of
       <C> when 'true' ->
         case call 'erlang':'>='(C, #{#<65>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=<'(C, #{#<90>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
     end
@@ -752,7 +752,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <'false'> when 'true' -> case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         let <ModAlias> = call 'Data.String':'take'(Idx, Name)
-      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
       in let <_Fn0> = apply 'str'/0()
       in apply _Fn0([#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(apply 'translateModuleName'/1(FullModName)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(FuncName), #{#<40>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#])
@@ -763,7 +763,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <{'Just', Info}> when 'true' ->
         let <ParamNames> = call 'lists':'map'(fun (I) ->
       let <_Fn0> = apply 'str'/0()
-      in apply _Fn0([#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)]), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Info), 0)))
+      in apply _Fn0([#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)]), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Info), 1)))
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
       in let <_Fn0> = apply 'str'/0()
       in apply _Fn0([#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#, ParamsStr, #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(call 'maps':'get'('mod', Info)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(call 'maps':'get'('func', Info)), #{#<40>(8,1,'integer',['unsigned'|['big']])}#, ParamsStr, #{#<41>(8,1,'integer',['unsigned'|['big']])}#])
@@ -775,7 +775,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in apply _Fn0([#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(Name), #{#<47>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']]),#<41>(8,1,'integer',['unsigned'|['big']])}#])
       <'false'> when 'true' -> let <ParamNames> = call 'lists':'map'(fun (I) ->
       let <_Fn0> = apply 'str'/0()
-      in apply _Fn0([#{#<95>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)]), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 0)))
+      in apply _Fn0([#{#<95>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)]), apply 'safeRange'/2(0, call 'erlang':'-'(Arity, 1)))
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
       in let <_Fn0> = apply 'str'/0()
       in apply _Fn0([#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#, ParamsStr, #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(Name), #{#<47>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(Arity), #{#<40>(8,1,'integer',['unsigned'|['big']])}#, ParamsStr, #{#<41>(8,1,'integer',['unsigned'|['big']])}#])
@@ -805,7 +805,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
     end
       <{Ctx, {'ExprQualified', ModAlias, FuncName}}> when 'true' ->
         letrec 'isConstructorName'/1 = fun (S) ->
-      case call 'Data.String':'take'(0, S) of
+      case call 'Data.String':'take'(1, S) of
       <C> when 'true' ->
         case call 'erlang':'>='(C, #{#<65>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=<'(C, #{#<90>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
     end
@@ -823,7 +823,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
     end
       <{Ctx, {'ExprApp', F, Arg}}> when 'true' ->
         letrec 'isConstructorName'/1 = fun (S) ->
-      case call 'Data.String':'take'(0, S) of
+      case call 'Data.String':'take'(1, S) of
       <C> when 'true' ->
         case call 'erlang':'>='(C, #{#<65>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=<'(C, #{#<90>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
     end
@@ -835,7 +835,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Name) of
       <{'Just', Idx}> when 'true' ->
         let <ModAlias> = call 'Data.String':'take'(Idx, Name)
-      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
       in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
       in let <_Fn0> = apply 'str'/0()
       in apply _Fn0([#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(apply 'translateModuleName'/1(FullModName)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(FuncName), #{#<40>(8,1,'integer',['unsigned'|['big']])}#, ArgsStr, #{#<41>(8,1,'integer',['unsigned'|['big']])}#])
@@ -865,7 +865,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in apply 'genCurriedApply'/3(Ctx, BaseCall, ExtraArgs)
       <'false'> when 'true' -> let <Remaining> = call 'erlang':'-'(DeclaredArity, NumArgs)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Remaining, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Remaining, 1)))
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
       in let <AllArgs> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'Nova.Prelude':'semigroupAppendImpl'(call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args), ParamNames))
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#, ParamsStr), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'atom'/1(Name)), #{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(DeclaredArity)), #{#<40>(8,1,'integer',['unsigned'|['big']])}#), AllArgs), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
@@ -875,7 +875,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <'false'> when 'true' -> case call 'Data.Map':'lookup'(Name, call 'maps':'get'('imports', Ctx)) of
       <{'Just', SrcMod}> when 'true' ->
         let <ModName> = apply 'translateModuleName'/1(SrcMod)
-      in let <IsLibModule> = case case call 'erlang':'=:='(call 'Data.String':'take'(0, SrcMod), #{#<68>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(0, SrcMod), #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'take'(0, SrcMod), #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=/='(call 'Data.String':'take'(0, SrcMod), #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end end
+      in let <IsLibModule> = case case call 'erlang':'=:='(call 'Data.String':'take'(5, SrcMod), #{#<68>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> 'true' <_> when 'true' -> call 'erlang':'=:='(call 'Data.String':'take'(8, SrcMod), #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) end of <'true'> when 'true' -> 'true' <_> when 'true' -> case call 'erlang':'=:='(call 'Data.String':'take'(5, SrcMod), #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=/='(call 'Data.String':'take'(14, SrcMod), #{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<109>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end end
       in case IsLibModule of
       <'true'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(ModName)), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), apply 'atom'/1(Name)), #{#<40>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'lists':'map'(fun (_Pc0) -> apply 'genExpr'/2(Ctx, _Pc0), Args))), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <'false'> when 'true' -> case call 'Data.Array':'uncons'(Args) of
@@ -890,7 +890,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         case apply 'isConstructorName'/1(Name) of
       <'true'> when 'true' -> case call 'erlang':'=:='(Name, #{#<78>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#) of
       <'true'> when 'true' -> #{#<91>(8,1,'integer',['unsigned'|['big']]),#<93>(8,1,'integer',['unsigned'|['big']])}#
-      <'false'> when 'true' -> case case call 'erlang':'=:='(Name, #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Args), 0) <_> when 'true' -> 'false' end of
+      <'false'> when 'true' -> case case call 'erlang':'=:='(Name, #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'erlang':'length'(Args), 2) <_> when 'true' -> 'false' end of
       <'true'> when 'true' -> case Args of
       <[H, T]> when 'true' ->
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<91>(8,1,'integer',['unsigned'|['big']])}#, apply 'genExpr'/2(Ctx, H)), #{#<124>(8,1,'integer',['unsigned'|['big']])}#), apply 'genExpr'/2(Ctx, T)), #{#<93>(8,1,'integer',['unsigned'|['big']])}#)
@@ -935,7 +935,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
       in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
       in let <PatTuple> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('strs', PatResult))), #{#<125>(8,1,'integer',['unsigned'|['big']])}#)
       in let <BodyCode> = apply 'genExpr'/2(CtxWithParams, Body)
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
@@ -959,7 +959,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<72>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'genExpr'/2(Ctx, R)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<72>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<70>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), apply 'genExpr'/2(Ctx, L)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <{Ctx, {'ExprBinOp', #{#<36>(8,1,'integer',['unsigned'|['big']])}#, L, R}}> when 'true' ->
         letrec 'isConstructorName'/1 = fun (S) ->
-      case call 'Data.String':'take'(0, S) of
+      case call 'Data.String':'take'(1, S) of
       <C> when 'true' ->
         case call 'erlang':'>='(C, #{#<65>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=<'(C, #{#<90>(8,1,'integer',['unsigned'|['big']])}#) <_> when 'true' -> 'false' end
     end
@@ -1010,7 +1010,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         case call 'Data.String':'indexOf'(call 'Data.String':'Pattern'(#{#<46>(8,1,'integer',['unsigned'|['big']])}#), Op) of
       <{'Just', Idx}> when 'true' ->
         let <ModAlias> = call 'Data.String':'take'(Idx, Op)
-      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Op)
+      in let <FuncName> = call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Op)
       in let <FullModName> = apply 'resolveModuleName'/2(Ctx, ModAlias)
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(apply 'translateModuleName'/1(FullModName))), #{#<58>(8,1,'integer',['unsigned'|['big']])}#), apply 'atom'/1(FuncName)), #{#<40>(8,1,'integer',['unsigned'|['big']])}#), apply 'genExpr'/2(Ctx, L)), #{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'genExpr'/2(Ctx, R)), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
       <'Nothing'> when 'true' ->
@@ -1077,7 +1077,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in let <PatResult> = apply 'genPatsWithCounter'/2(call 'Data.Array':'fromFoldable'(Pats), 0)
       in let <CtxWithParams> = call 'lists':'foldr'(fun (_Mf0, _Mf1) -> apply 'addLocalsFromPattern'/2(_Mf0, _Mf1), Ctx, Pats)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
       in let <PatTuple> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<123>(8,1,'integer',['unsigned'|['big']])}#, call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, call 'maps':'get'('strs', PatResult))), #{#<125>(8,1,'integer',['unsigned'|['big']])}#)
       in let <BodyCode> = apply 'genExpr'/2(CtxWithParams, Body)
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
@@ -1097,7 +1097,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in let <Params> = case call 'erlang':'=<'(Arity, 0) of
       <'true'> when 'true' -> []
       <'false'> when 'true' -> call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
     end
       in let <ParamStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, Params)
       in case call 'maps':'get'('inlineImpl', Fi) of
@@ -1180,7 +1180,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (Ctx, Group) ->
     let <Arity> = call 'maps':'get'('arity', Group)
       in let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<80>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(Arity, 1)))
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
       in let <CaseClauses> = call 'lists':'map'(fun (_Pc0) -> apply 'genFunctionClauseAsCase'/3(Ctx, ParamNames, _Pc0), call 'maps':'get'('clauses', Group))
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'atom'/1(call 'maps':'get'('name', Group)), #{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(Arity)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']])}#), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), ParamsStr), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']])}#), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<123>(8,1,'integer',['unsigned'|['big']])}#), ParamsStr), #{#<125>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#, CaseClauses)), #{#<10>(8,1,'integer',['unsigned'|['big']])}#), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
@@ -1196,12 +1196,12 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
   fun (_P0, _P1) ->
     case {_P0, _P1} of
       <{{'PatVar', Name}, N}> when 'true' ->
-        case call 'erlang':'=:='(call 'Data.String':'take'(0, Name), #{#<95>(8,1,'integer',['unsigned'|['big']])}#) of
-      <'true'> when 'true' -> ~{'str'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<87>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 0)}~
+        case call 'erlang':'=:='(call 'Data.String':'take'(1, Name), #{#<95>(8,1,'integer',['unsigned'|['big']])}#) of
+      <'true'> when 'true' -> ~{'str'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<87>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 1)}~
       <'false'> when 'true' -> ~{'str'=>apply 'coreVar'/1(Name),'counter'=>N}~
     end
       <{'PatWildcard', N}> when 'true' ->
-        ~{'str'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<87>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 0)}~
+        ~{'str'=>call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<87>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(N)),'counter'=>call 'erlang':'+'(N, 1)}~
       <{{'PatLit', Lit}, N}> when 'true' ->
         ~{'str'=>apply 'genLiteral'/1(Lit),'counter'=>N}~
       <{{'PatCon', Name, Pats}, N}> when 'true' ->
@@ -1209,11 +1209,11 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <'Nothing'> when 'true' ->
         Name
       <{'Just', Idx}> when 'true' ->
-        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 0), Name)
+        call 'Data.String':'drop'(call 'erlang':'+'(Idx, 1), Name)
     end
       in case call 'erlang':'=:='(BaseName, #{#<78>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']])}#) of
       <'true'> when 'true' -> ~{'str'=>#{#<91>(8,1,'integer',['unsigned'|['big']]),#<93>(8,1,'integer',['unsigned'|['big']])}#,'counter'=>N}~
-      <'false'> when 'true' -> case case call 'erlang':'=:='(BaseName, #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.List':'length'(Pats), 0) <_> when 'true' -> 'false' end of
+      <'false'> when 'true' -> case case call 'erlang':'=:='(BaseName, #{#<67>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']])}#) of <'true'> when 'true' -> call 'erlang':'=:='(call 'Data.List':'length'(Pats), 2) <_> when 'true' -> 'false' end of
       <'true'> when 'true' -> case call 'Data.List':'uncons'(Pats) of
       <{'Just', ~{'head':=H,'tail':=Rest}~}> when 'true' ->
         case call 'Data.List':'head'(Rest) of
@@ -1307,7 +1307,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
 'substituteParams'/2 =
   fun (Impl, Params) ->
     call 'Data.Foldable':'foldl'(fun (S, I) ->
-      call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I))), call 'Data.String':'Replacement'(call 'Data.Maybe':'fromMaybe'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'index'(Params, I))), S), Impl, call 'Data.Array':'range'(0, call 'erlang':'-'(call 'Data.Array':'length'(Params), 0)))
+      call 'Data.String':'replaceAll'(call 'Data.String':'Pattern'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<36>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I))), call 'Data.String':'Replacement'(call 'Data.Maybe':'fromMaybe'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<86>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'index'(Params, I))), S), Impl, call 'Data.Array':'range'(0, call 'erlang':'-'(call 'Data.Array':'length'(Params), 1)))
 
 'freeVarsInExprFor'/3 =
   fun (Candidates, Bound, Expr) ->
@@ -1452,14 +1452,14 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
 'genCurriedWrapper'/3 =
   fun (Name, FullArity, WrapperArity) ->
     let <WrapperParams> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), apply 'safeRange'/2(0, call 'erlang':'-'(WrapperArity, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), apply 'safeRange'/2(0, call 'erlang':'-'(WrapperArity, 1)))
       in let <RemainingCount> = call 'erlang':'-'(FullArity, WrapperArity)
       in let <WrapperParamsStr> = case call 'erlang':'=:='(WrapperArity, 0) of
       <'true'> when 'true' -> #{}#
       <'false'> when 'true' -> call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, WrapperParams)
     end
       in let <RemainingParams> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'erlang':'+'(WrapperArity, I))), apply 'safeRange'/2(0, call 'erlang':'-'(RemainingCount, 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<65>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'erlang':'+'(WrapperArity, I))), apply 'safeRange'/2(0, call 'erlang':'-'(RemainingCount, 1)))
       in let <AllParams> = call 'Nova.Prelude':'semigroupAppendImpl'(WrapperParams, RemainingParams)
       in let <AllParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, AllParams)
       in let <InnerCall> = call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<97>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<112>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<121>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, apply 'atom'/1(Name)), #{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(FullArity)), #{#<40>(8,1,'integer',['unsigned'|['big']])}#), AllParamsStr), #{#<41>(8,1,'integer',['unsigned'|['big']])}#)
@@ -1468,8 +1468,8 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, VarName), #{#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), Param), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Body), #{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), VarName)
       in let <NestedLets> = call 'Data.Array':'foldl'(fun (_L0, _L1) ->
       case {_L0, _L1} of
-        <{~{'body':=Body,'idx':=Idx}~, Param}> when 'true' -> ~{'body'=>apply 'buildNested'/3(Idx, Param, Body),'idx'=>call 'erlang':'-'(Idx, 0)}~
-      end, ~{'body'=>InnerCall,'idx'=>call 'erlang':'-'(RemainingCount, 0)}~, call 'Data.Array':'reverse'(RemainingParams))
+        <{~{'body':=Body,'idx':=Idx}~, Param}> when 'true' -> ~{'body'=>apply 'buildNested'/3(Idx, Param, Body),'idx'=>call 'erlang':'-'(Idx, 1)}~
+      end, ~{'body'=>InnerCall,'idx'=>call 'erlang':'-'(RemainingCount, 1)}~, call 'Data.Array':'reverse'(RemainingParams))
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'atom'/1(Name), #{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(WrapperArity)), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), WrapperParamsStr), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), call 'maps':'get'('body', NestedLets))
 
 'genDoLetWithBody'/3 =
@@ -1503,7 +1503,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <'false'> when 'true' -> apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), Ctx)
     end
       in let <TmpVar> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<68>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', NewCtx)))
-      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 0)}~)
+      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 1)}~)
       in let <Continuation> = apply 'genDoLetWithBody'/3(NewCtx, MoreBinds, Rest)
       in let <ContinuationComplex> = apply 'genDoLetWithBody'/3(NextCtx, MoreBinds, Rest)
       in case IsRec of
@@ -1546,7 +1546,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       <'false'> when 'true' -> apply 'addLocalsFromPattern'/2(call 'maps':'get'('pattern', Bind), Ctx)
     end
       in let <TmpVar> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<68>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', NewCtx)))
-      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 0)}~)
+      in let <NextCtx> = call 'maps':'merge'(NewCtx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', NewCtx), 1)}~)
       in let <Continuation> = apply 'genDoLetWithBodyParser'/3(NewCtx, MoreBinds, Rest)
       in let <ContinuationComplex> = apply 'genDoLetWithBodyParser'/3(NextCtx, MoreBinds, Rest)
       in case IsRec of
@@ -1650,7 +1650,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
       in case apply 'isSimplePattern'/1(call 'maps':'get'('pattern', Bind)) of
       <'true'> when 'true' -> call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, Pat), #{#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Val), #{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'genValueBindsWithBodyStrSorted'/3(Ctx, Rest, BodyStr))
       <'false'> when 'true' -> let <TmpVar> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(call 'maps':'get'('varCounter', Ctx)))
-      in let <NextCtx> = call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 0)}~)
+      in let <NextCtx> = call 'maps':'merge'(Ctx, ~{'varCounter'=>call 'erlang':'+'(call 'maps':'get'('varCounter', Ctx), 1)}~)
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(#{#<108>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#, TmpVar), #{#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), Val), #{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<105>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), TmpVar), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<60>(8,1,'integer',['unsigned'|['big']])}#), Pat), #{#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<119>(8,1,'integer',['unsigned'|['big']]),#<104>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<39>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#), apply 'genValueBindsWithBodyStrSorted'/3(NextCtx, Rest, BodyStr)), #{#<10>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)
     end
     end
@@ -1725,7 +1725,7 @@ module 'Nova.Compiler.CodeGenCoreErlang' ['str'/0, 'atom'/1, 'collectArgs'/1, 'c
         apply 'genLetrecDef'/2(Ctx_, Single)
       <Multiple> when 'true' ->
         let <ParamNames> = call 'lists':'map'(fun (I) ->
-      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Group), 0)))
+      call 'Nova.Prelude':'semigroupAppendImpl'(#{#<95>(8,1,'integer',['unsigned'|['big']]),#<76>(8,1,'integer',['unsigned'|['big']])}#, call 'erlang':'integer_to_list'(I)), call 'Data.Array':'range'(0, call 'erlang':'-'(call 'maps':'get'('arity', Group), 1)))
       in let <ParamsStr> = call 'Data.String':'joinWith'(#{#<44>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']])}#, ParamNames)
       in let <CaseClauses> = call 'lists':'map'(fun (_Pc0) -> apply 'genLetrecClauseAsCase'/3(Ctx_, ParamNames, _Pc0), Multiple)
       in call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(call 'Nova.Prelude':'semigroupAppendImpl'(apply 'atom'/1(call 'maps':'get'('name', Group)), #{#<47>(8,1,'integer',['unsigned'|['big']])}#), call 'erlang':'integer_to_list'(call 'maps':'get'('arity', Group))), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<61>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<40>(8,1,'integer',['unsigned'|['big']])}#), ParamsStr), #{#<41>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<45>(8,1,'integer',['unsigned'|['big']]),#<62>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']])}#), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<115>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<123>(8,1,'integer',['unsigned'|['big']])}#), ParamsStr), #{#<125>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<102>(8,1,'integer',['unsigned'|['big']]),#<10>(8,1,'integer',['unsigned'|['big']])}#), call 'Data.String':'joinWith'(#{#<10>(8,1,'integer',['unsigned'|['big']])}#, CaseClauses)), #{#<10>(8,1,'integer',['unsigned'|['big']])}#), #{#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<32>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<100>(8,1,'integer',['unsigned'|['big']])}#)

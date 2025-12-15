@@ -48,7 +48,7 @@ module 'Nova.NamespaceService' ['emptyArray'/0, 'genDeclId'/1, 'init'/1, 'listNa
       <'Nothing'> when 'true' ->
         #{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']]),#<48>(8,1,'integer',['unsigned'|['big']])}#
       <{'Just', N}> when 'true' ->
-        let <Next> = call 'erlang':'+'(N, 0)
+        let <Next> = call 'erlang':'+'(N, 1)
       in let <_W0> = call 'OTP.Ets':'update'(call 'maps':'get'('counter', St), #{#<99>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<117>(8,1,'integer',['unsigned'|['big']]),#<110>(8,1,'integer',['unsigned'|['big']]),#<116>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<114>(8,1,'integer',['unsigned'|['big']])}#, Next)
       in call 'Nova.Prelude':'semigroupAppendImpl'(#{#<100>(8,1,'integer',['unsigned'|['big']]),#<101>(8,1,'integer',['unsigned'|['big']]),#<99>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<95>(8,1,'integer',['unsigned'|['big']])}#, apply 'intToString'/1(Next))
     end

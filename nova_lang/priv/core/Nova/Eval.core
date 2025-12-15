@@ -41,7 +41,7 @@ module 'Nova.Eval' ['compileAndLoad'/0, 'newContext'/0, 'parseSource'/0, 'compil
 'genModuleName'/1 =
   fun (Ctx) ->
     let <Name> = call 'Nova.Prelude':'semigroupAppendImpl'(#{#<78>(8,1,'integer',['unsigned'|['big']]),#<111>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<69>(8,1,'integer',['unsigned'|['big']]),#<118>(8,1,'integer',['unsigned'|['big']]),#<97>(8,1,'integer',['unsigned'|['big']]),#<108>(8,1,'integer',['unsigned'|['big']]),#<46>(8,1,'integer',['unsigned'|['big']]),#<77>(8,1,'integer',['unsigned'|['big']])}#, apply 'intToString'/1(call 'maps':'get'('counter', Ctx)))
-      in let <NewCtx> = call 'maps':'merge'(Ctx, ~{'counter'=>call 'erlang':'+'(call 'maps':'get'('counter', Ctx), 0)}~)
+      in let <NewCtx> = call 'maps':'merge'(Ctx, ~{'counter'=>call 'erlang':'+'(call 'maps':'get'('counter', Ctx), 1)}~)
       in ~{'name'=>Name,'ctx'=>NewCtx}~
 
 'ieval'/1 =
