@@ -11,6 +11,7 @@ import Data.List as List
 import Data.String as String
 import Data.Json as Json
 import Data.Tuple (Tuple(..))
+import Data.Map as Map
 import OTP.PersistentTerm as PT
 import Nova.Eval as Eval
 import Nova.NamespaceService as NS
@@ -101,16 +102,39 @@ importModule source =
 -- | Groups multi-clause functions together to preserve pattern match order
 importDeclarations :: String -> List Ast.Declaration -> Array (Either String String)
 importDeclarations namespace decls =
-  let -- Separate functions from other declarations
+  let -- Extract type signatures into a map by name
+      typeSigs = buildTypeSigMap decls
+      -- Separate functions from other declarations
       funcs = List.mapMaybe getFuncDecl decls
       others = List.filter (not <<< isFuncDecl) decls
       -- Group functions by name, preserving order
-      groupedFuncs = groupFunctionsByName funcs
+      groupedFuncs = groupFunctionsByName typeSigs funcs
       -- Import grouped functions
       funcResults = Array.map (importGroupedFunction namespace) groupedFuncs
       -- Import other declarations
       otherResults = Array.fromFoldable (List.mapMaybe (importOtherDecl namespace) others)
   in funcResults <> otherResults
+
+-- | Build a map of function name -> type signature string
+buildTypeSigMap :: List Ast.Declaration -> Map.Map String String
+buildTypeSigMap decls =
+  List.foldl addTypeSig Map.empty decls
+  where
+    addTypeSig :: Map.Map String String -> Ast.Declaration -> Map.Map String String
+    addTypeSig acc (Ast.DeclTypeSig sig) = Map.insert sig.name (renderTypeSig sig) acc
+    addTypeSig acc _ = acc
+
+-- | Render a type signature to string
+renderTypeSig :: Ast.TypeSignature -> String
+renderTypeSig sig =
+  let constraintPart = case sig.constraints of
+        Nil -> ""
+        cs -> String.joinWith ", " (Array.fromFoldable (List.map renderConstraint cs)) <> " => "
+  in sig.name <> " :: " <> constraintPart <> renderTypeExpr sig.ty
+
+-- | Render a constraint
+renderConstraint :: Ast.Constraint -> String
+renderConstraint c = c.className <> " " <> String.joinWith " " (Array.fromFoldable (List.map renderTypeExpr c.types))
 
 -- | Extract function declaration if present
 getFuncDecl :: Ast.Declaration -> Maybe Ast.FunctionDeclaration
@@ -123,48 +147,44 @@ isFuncDecl (Ast.DeclFunction _) = true
 isFuncDecl _ = false
 
 -- | Group function clauses by name, preserving order within each group
+-- | Uses type signature map to look up signatures for each function
 -- | Returns array of {name, clauses, typeSig} records
-groupFunctionsByName :: List Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
-groupFunctionsByName funcs =
+groupFunctionsByName :: Map.Map String String -> List Ast.FunctionDeclaration -> Array { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
+groupFunctionsByName typeSigs funcs =
   let -- Fold to group by name, building list of groups in reverse order
       grouped = List.foldl (\groups func -> addFuncToGroups groups func) Nil funcs
-      -- Reverse to restore original order, and finalize each group
-  in Array.map finalizeGroup (Array.reverse (Array.fromFoldable grouped))
+      -- Reverse to restore original order, and finalize each group with type sigs
+  in Array.map (finalizeGroup typeSigs) (Array.reverse (Array.fromFoldable grouped))
 
 -- | Add a function to the appropriate group
-addFuncToGroups :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Ast.FunctionDeclaration -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }
+addFuncToGroups :: List { name :: String, clauses :: List Ast.FunctionDeclaration } -> Ast.FunctionDeclaration -> List { name :: String, clauses :: List Ast.FunctionDeclaration }
 addFuncToGroups groups func =
   case findFuncGroup func.name groups of
     Nothing ->
       -- New group
-      Cons { name: func.name, clauses: Cons func Nil, sig: func.typeSignature } groups
+      Cons { name: func.name, clauses: Cons func Nil } groups
     Just { before, group, after } ->
       -- Add to existing group (append to end to preserve order)
-      let newSig = case group.sig of
-            Nothing -> func.typeSignature
-            s -> s
-          newGroup = { name: group.name, clauses: List.snoc group.clauses func, sig: newSig }
+      let newGroup = { name: group.name, clauses: List.snoc group.clauses func }
       in before <> Cons newGroup after
 
 -- | Find a group by name, returning the group and surrounding elements
-findFuncGroup :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
+findFuncGroup :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration } }
 findFuncGroup name groups = findFuncGroupHelper name Nil groups
 
-findFuncGroupHelper :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } }
+findFuncGroupHelper :: String -> List { name :: String, clauses :: List Ast.FunctionDeclaration } -> List { name :: String, clauses :: List Ast.FunctionDeclaration } -> Maybe { before :: List { name :: String, clauses :: List Ast.FunctionDeclaration }, group :: { name :: String, clauses :: List Ast.FunctionDeclaration }, after :: List { name :: String, clauses :: List Ast.FunctionDeclaration } }
 findFuncGroupHelper _ _ Nil = Nothing
 findFuncGroupHelper name before (Cons g rest) =
   if g.name == name
   then Just { before: List.reverse before, group: g, after: rest }
   else findFuncGroupHelper name (Cons g before) rest
 
--- | Convert internal group format to output format
-finalizeGroup :: { name :: String, clauses :: List Ast.FunctionDeclaration, sig :: Maybe Ast.TypeSignature } -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
-finalizeGroup g =
+-- | Convert internal group format to output format, looking up type signature
+finalizeGroup :: Map.Map String String -> { name :: String, clauses :: List Ast.FunctionDeclaration } -> { name :: String, clauses :: Array Ast.FunctionDeclaration, typeSig :: Maybe String }
+finalizeGroup typeSigs g =
   { name: g.name
   , clauses: Array.fromFoldable g.clauses
-  , typeSig: case g.sig of
-      Nothing -> Nothing
-      Just sig -> Just (renderTypeExpr sig.ty)
+  , typeSig: Map.lookup g.name typeSigs
   }
 
 -- | Import a grouped function (all clauses combined)
