@@ -91,7 +91,8 @@ foreign import filterImpl :: forall a. (a -> Boolean) -> List a -> List a = "cal
 foldr :: forall a b. (a -> b -> b) -> b -> List a -> b
 foldr f acc xs = foldrImpl f acc xs
 
-foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> List a -> b = "call 'lists':'foldr'(fun (E, A) -> let <F1> = apply $0 (E) in apply F1 (A), $1, $2)"
+-- Note: Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import foldrImpl :: forall a b. (a -> b -> b) -> b -> List a -> b = "call 'lists':'foldr'(fun (E, A) -> apply $0 (E, A), $1, $2)"
 
 -- Fold left - uses Erlang lists:foldl with uncurried function application
 -- Note: We use uncurried apply (A, E) to match how partial applications are generated

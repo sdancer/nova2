@@ -130,9 +130,9 @@ module 'Data.Set' ['empty'/0, 'findMax'/1, 'findMin'/1, 'fromFoldable'/1, 'isEmp
 
 'filterImpl'/2 = fun (V0, V1) -> call 'sets':'filter'(V0, V1)
 
-'foldlImpl'/3 = fun (V0, V1, V2) -> call 'sets':'fold'(fun (E, A) -> let <F1> = apply V0 (A) in apply F1 (E), V1, V2)
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'sets':'fold'(fun (E, A) -> apply V0 (A, E), V1, V2)
 
-'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> let <F1> = apply V0 (E) in apply F1 (A), V1, call 'sets':'to_list'(V2))
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, call 'sets':'to_list'(V2))
 
 'findMinImpl'/1 = fun (V0) -> case call 'sets':'size'(V0) of
         <0> when 'true' -> 'Nothing'

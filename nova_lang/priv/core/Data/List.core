@@ -142,7 +142,7 @@ module 'Data.List' ['fromFoldable'/1, 'head'/1, 'length'/1, 'null'/1, 'reverse'/
 
 'filterImpl'/2 = fun (V0, V1) -> call 'lists':'filter'(V0, V1)
 
-'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> let <F1> = apply V0 (E) in apply F1 (A), V1, V2)
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (E, A) -> apply V0 (E, A), V1, V2)
 
 'foldlImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldl'(fun (E, A) -> apply V0 (A, E), V1, V2)
 

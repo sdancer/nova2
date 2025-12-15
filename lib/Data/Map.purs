@@ -104,7 +104,8 @@ unionWith :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v
 unionWith f m1 m2 = unionWithImpl f m1 m2
 
 -- Note: With swapped args, V1 is from m2 and V2 is from m1, so we apply f(V2, V1) to get f(m1-val, m2-val)
-foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply $0 (V2) in apply F1 (V1), $1, $0)"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import unionWithImpl :: forall k v. (v -> v -> v) -> Map k v -> Map k v -> Map k v = "call 'maps':'merge'(fun (_K, V1, V2) -> apply $0 (V2, V1), $1, $0)"
 
 -- Intersection of two maps
 intersection :: forall k v. Map k v -> Map k v -> Map k v
@@ -128,7 +129,8 @@ foreign import mapImpl :: forall k a b. (a -> b) -> Map k a -> Map k b = "call '
 mapWithKey :: forall k a b. (k -> a -> b) -> Map k a -> Map k b
 mapWithKey f m = mapWithKeyImpl f m
 
-foreign import mapWithKeyImpl :: forall k a b. (k -> a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (K, V) -> let <F1> = apply $0 (K) in apply F1 (V), $1)"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import mapWithKeyImpl :: forall k a b. (k -> a -> b) -> Map k a -> Map k b = "call 'maps':'map'(fun (K, V) -> apply $0 (K, V), $1)"
 
 -- Filter by value
 filter :: forall k v. (v -> Boolean) -> Map k v -> Map k v
@@ -140,25 +142,29 @@ foreign import filterImpl :: forall k v. (v -> Boolean) -> Map k v -> Map k v = 
 filterWithKey :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v
 filterWithKey f m = filterWithKeyImpl f m
 
-foreign import filterWithKeyImpl :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (K, V) -> let <F1> = apply $0 (K) in apply F1 (V), $1)"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import filterWithKeyImpl :: forall k v. (k -> v -> Boolean) -> Map k v -> Map k v = "call 'maps':'filter'(fun (K, V) -> apply $0 (K, V), $1)"
 
 -- Fold left over values
 foldl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a
 foldl f acc m = foldlImpl f acc m
 
-foreign import foldlImpl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (_K, V, A) -> let <F1> = apply $0 (A) in apply F1 (V), $1, $2)"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import foldlImpl :: forall k v a. (a -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (_K, V, A) -> apply $0 (A, V), $1, $2)"
 
 -- Fold left with key
 foldlWithKey :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a
 foldlWithKey f acc m = foldlWithKeyImpl f acc m
 
-foreign import foldlWithKeyImpl :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (K, V, A) -> let <F1> = apply $0 (A) in let <F2> = apply F1 (K) in apply F2 (V), $1, $2)"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import foldlWithKeyImpl :: forall k v a. (a -> k -> v -> a) -> a -> Map k v -> a = "call 'maps':'fold'(fun (K, V, A) -> apply $0 (A, K, V), $1, $2)"
 
 -- Fold right over values
 foldr :: forall k v a. (v -> a -> a) -> a -> Map k v -> a
 foldr f acc m = foldrImpl f acc m
 
-foreign import foldrImpl :: forall k v a. (v -> a -> a) -> a -> Map k v -> a = "call 'lists':'foldr'(fun (KV, A) -> case KV of <{_K, V}> when 'true' -> let <F1> = apply $0 (V) in apply F1 (A) end, $1, call 'maps':'to_list'($2))"
+-- Nova compiles multi-arg lambdas as multi-arity functions, so use uncurried apply
+foreign import foldrImpl :: forall k v a. (v -> a -> a) -> a -> Map k v -> a = "call 'lists':'foldr'(fun (KV, A) -> case KV of <{_K, V}> when 'true' -> apply $0 (V, A) end, $1, call 'maps':'to_list'($2))"
 
 -- Find minimum key
 findMin :: forall k v. Map k v -> Maybe (Tuple k v)

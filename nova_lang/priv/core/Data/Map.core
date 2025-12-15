@@ -161,7 +161,7 @@ module 'Data.Map' ['empty'/0, 'findMax'/1, 'findMin'/1, 'fromFoldable'/1, 'isEmp
 
 'unionImpl'/2 = fun (V0, V1) -> call 'maps':'merge'(V1, V0)
 
-'unionWithImpl'/3 = fun (V0, V1, V2) -> call 'maps':'merge'(fun (_K, V1, V2) -> let <F1> = apply V0 (V2) in apply F1 (V1), V1, V0)
+'unionWithImpl'/3 = fun (V0, V1, V2) -> call 'maps':'merge'(fun (_K, V1, V2) -> apply V0 (V2, V1), V1, V0)
 
 'intersectionImpl'/2 = fun (V0, V1) -> call 'maps':'with'(call 'maps':'keys'(V1), V0)
 
@@ -169,17 +169,17 @@ module 'Data.Map' ['empty'/0, 'findMax'/1, 'findMin'/1, 'fromFoldable'/1, 'isEmp
 
 'mapImpl'/2 = fun (V0, V1) -> call 'maps':'map'(fun (_K, V) -> apply V0 (V), V1)
 
-'mapWithKeyImpl'/2 = fun (V0, V1) -> call 'maps':'map'(fun (K, V) -> let <F1> = apply V0 (K) in apply F1 (V), V1)
+'mapWithKeyImpl'/2 = fun (V0, V1) -> call 'maps':'map'(fun (K, V) -> apply V0 (K, V), V1)
 
 'filterImpl'/2 = fun (V0, V1) -> call 'maps':'filter'(fun (_K, V) -> apply V0 (V), V1)
 
-'filterWithKeyImpl'/2 = fun (V0, V1) -> call 'maps':'filter'(fun (K, V) -> let <F1> = apply V0 (K) in apply F1 (V), V1)
+'filterWithKeyImpl'/2 = fun (V0, V1) -> call 'maps':'filter'(fun (K, V) -> apply V0 (K, V), V1)
 
-'foldlImpl'/3 = fun (V0, V1, V2) -> call 'maps':'fold'(fun (_K, V, A) -> let <F1> = apply V0 (A) in apply F1 (V), V1, V2)
+'foldlImpl'/3 = fun (V0, V1, V2) -> call 'maps':'fold'(fun (_K, V, A) -> apply V0 (A, V), V1, V2)
 
-'foldlWithKeyImpl'/3 = fun (V0, V1, V2) -> call 'maps':'fold'(fun (K, V, A) -> let <F1> = apply V0 (A) in let <F2> = apply F1 (K) in apply F2 (V), V1, V2)
+'foldlWithKeyImpl'/3 = fun (V0, V1, V2) -> call 'maps':'fold'(fun (K, V, A) -> apply V0 (A, K, V), V1, V2)
 
-'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (KV, A) -> case KV of <{_K, V}> when 'true' -> let <F1> = apply V0 (V) in apply F1 (A) end, V1, call 'maps':'to_list'(V2))
+'foldrImpl'/3 = fun (V0, V1, V2) -> call 'lists':'foldr'(fun (KV, A) -> case KV of <{_K, V}> when 'true' -> apply V0 (V, A) end, V1, call 'maps':'to_list'(V2))
 
 'findMinImpl'/1 = fun (V0) -> case call 'maps':'size'(V0) of
         <0> when 'true' -> 'Nothing'
