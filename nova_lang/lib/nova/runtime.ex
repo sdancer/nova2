@@ -254,7 +254,7 @@ defmodule Nova.Runtime do
 
   def zip([], _), do: []
   def zip(_, []), do: []
-  def zip([h1 | t1], [h2 | t2]), do: [{:tuple, h1, h2} | zip(t1, t2)]
+  def zip([h1 | t1], [h2 | t2]), do: [{:Tuple, h1, h2} | zip(t1, t2)]
 
   def pure(x), do: {:right, x}
 
@@ -441,7 +441,7 @@ defmodule Nova.Array do
       {:arity, 1} -> Enum.with_index(list, fn x, i -> f.(i).(x) end)
     end
   end
-  def zip(l1, l2), do: Enum.zip_with(l1, l2, fn a, b -> {:tuple, a, b} end)
+  def zip(l1, l2), do: Enum.zip_with(l1, l2, fn a, b -> {:Tuple, a, b} end)
   # concat_map (flatMap)
   def concat_map(f, list), do: Enum.flat_map(list, f)
   # partition
